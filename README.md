@@ -127,13 +127,16 @@ Backend CI is defined in:
 The initial CI baseline includes:
 
 - .NET SDK setup;
-- `dotnet restore`;
-- `dotnet build --no-restore --configuration Release`;
-- `dotnet test --no-build --configuration Release`;
+- automatic `.sln` / `.csproj` target detection;
+- `dotnet restore` when a .NET target exists;
+- `dotnet build --no-restore --configuration Release` when a .NET target exists;
+- `dotnet test --no-build --configuration Release` when a .NET target exists;
 - TRX test result artifacts;
-- `dotnet format --verify-no-changes`.
+- `dotnet format --verify-no-changes` when a .NET target exists.
 
-Run core checks locally:
+If the repository does not contain a `.sln` or `.csproj` yet, CI emits a notice and skips .NET commands successfully. Once backend code is introduced, the same checks become enforcing automatically.
+
+Run core checks locally after a .NET solution or project exists:
 
 ```bash
 dotnet restore
