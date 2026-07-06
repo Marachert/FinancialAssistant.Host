@@ -86,14 +86,14 @@ Or use the helper script:
 
 ```bash
 cd infra/docker-compose
-./scripts/up.sh
+bash scripts/up.sh
 ```
 
 Health check:
 
 ```bash
 cd infra/docker-compose
-./scripts/healthcheck.sh
+bash scripts/healthcheck.sh
 ```
 
 Stop services:
