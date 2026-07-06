@@ -37,7 +37,7 @@ docker compose ps
 Or use the helper script:
 
 ```bash
-./scripts/up.sh
+bash scripts/up.sh
 ```
 
 ## Stop services
@@ -49,7 +49,7 @@ docker compose down
 Or:
 
 ```bash
-./scripts/down.sh
+bash scripts/down.sh
 ```
 
 ## Reset local data
@@ -63,10 +63,12 @@ docker compose down -v
 Or:
 
 ```bash
-./scripts/reset-local-data.sh
+bash scripts/reset-local-data.sh
 ```
 
 ## Health checks
+
+Run these checks from the host machine after the stack starts:
 
 ```bash
 curl http://localhost:9200
@@ -81,7 +83,7 @@ docker compose exec rabbitmq rabbitmq-diagnostics -q ping
 Or:
 
 ```bash
-./scripts/healthcheck.sh
+bash scripts/healthcheck.sh
 ```
 
 ## Development rules
