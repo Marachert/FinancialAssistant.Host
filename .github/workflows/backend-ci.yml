@@ -1,0 +1,90 @@
+name: Backend CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'backend/**'
+      - 'shared/**'
+      - 'tests/**'
+      - '*.sln'
+      - 'global.json'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - '.editorconfig'
+      - '.github/workflows/backend-ci.yml'
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'backend/**'
+      - 'shared/**'
+      - 'tests/**'
+      - '*.sln'
+      - 'global.json'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - '.editorconfig'
+      - '.github/workflows/backend-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci-dotnet-build-test:
+    name: .NET restore, build, and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Show .NET information
+        run: dotnet --info
+
+      - name: Restore solution
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test solution
+        run: dotnet test --no-build --configuration Release --logger trx --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-test-results
+          path: TestResults/**/*.trx
+          if-no-files-found: ignore
+
+  ci-dotnet-format:
+    name: .NET format check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore solution
+        run: dotnet restore
+
+      - name: Verify formatting
+        run: dotnet format --verify-no-changes --verbosity diagnostic
