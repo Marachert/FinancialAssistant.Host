@@ -12,6 +12,7 @@ mobile/        React Native mobile application workspace
 web-admin/     Web/Admin UI workspace
 infra/         Local platform, Docker Compose, deployment, and infrastructure assets
 docs/          Engineering documentation and local development guides
+.github/       CI workflows and repository automation
 ```
 
 ## Backend service template
@@ -65,33 +66,89 @@ Initial local development flow:
    - Docker Desktop;
    - Node.js LTS;
    - package manager for mobile/web workspaces.
-2. Start local infrastructure from `infra/` when Docker assets are added.
+2. Start local infrastructure from `infra/docker-compose/`.
 3. Create a backend service from `backend/templates/service-template/`.
 4. Configure service-owned Elasticsearch aliases and RabbitMQ settings.
 5. Run backend service locally.
 6. Run mobile or web-admin workspace when client apps are initialized.
 
-Planned local commands:
+Start local infrastructure:
 
 ```bash
-# infrastructure placeholder
-cd infra
-# docker compose up -d
+cd infra/docker-compose
+cp .env.example .env
+docker compose pull
+docker compose up -d
+docker compose ps
+```
 
-# backend placeholder
-cd ../backend
-# dotnet restore
-# dotnet build
+Or use the helper script:
 
-# mobile placeholder
-cd ../mobile
-# npm install
-# npm run start
+```bash
+cd infra/docker-compose
+bash scripts/up.sh
+```
 
-# web-admin placeholder
-cd ../web-admin
-# npm install
-# npm run dev
+Health check:
+
+```bash
+cd infra/docker-compose
+bash scripts/healthcheck.sh
+```
+
+Stop services:
+
+```bash
+cd infra/docker-compose
+docker compose down
+```
+
+Reset local data:
+
+```bash
+cd infra/docker-compose
+docker compose down -v
+```
+
+Full local infrastructure guide:
+
+```text
+infra/docker-compose/README.md
+```
+
+## CI
+
+Backend CI is defined in:
+
+```text
+.github/workflows/backend-ci.yml
+```
+
+The initial CI baseline includes:
+
+- .NET SDK setup;
+- automatic `.sln` / `.csproj` target detection;
+- `dotnet restore` when a .NET target exists;
+- `dotnet build --no-restore --configuration Release` when a .NET target exists;
+- `dotnet test --no-build --configuration Release` when a .NET target exists;
+- TRX test result artifacts;
+- `dotnet format --verify-no-changes` when a .NET target exists.
+
+If the repository does not contain a `.sln` or `.csproj` yet, CI emits a notice and skips .NET commands successfully. Once backend code is introduced, the same checks become enforcing automatically.
+
+Run core checks locally after a .NET solution or project exists:
+
+```bash
+dotnet restore
+dotnet build --no-restore --configuration Release
+dotnet test --no-build --configuration Release --logger trx --results-directory TestResults
+dotnet format --verify-no-changes --verbosity diagnostic
+```
+
+Full CI guide:
+
+```text
+docs/engineering/ci.md
 ```
 
 ## Architecture guardrails
@@ -102,3 +159,6 @@ cd ../web-admin
 - Storage: Elasticsearch-first, service-owned index namespaces.
 - AI/OCR: assist with parsing and UX, never source of financial truth.
 - Financial truth: deterministic backend logic plus explicit user confirmation.
+- Redis: disposable cache and short-lived state, not source of truth.
+- MinIO: binary object storage for receipts/files, not domain storage.
+- Prometheus/Grafana: observability utilities, not business reporting sources.

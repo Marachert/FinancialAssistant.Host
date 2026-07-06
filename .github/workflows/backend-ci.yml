@@ -1,0 +1,161 @@
+name: Backend CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'backend/**'
+      - 'shared/**'
+      - 'tests/**'
+      - '*.sln'
+      - '*.csproj'
+      - '**/*.sln'
+      - '**/*.csproj'
+      - 'global.json'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - '.editorconfig'
+      - '.github/workflows/backend-ci.yml'
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'backend/**'
+      - 'shared/**'
+      - 'tests/**'
+      - '*.sln'
+      - '*.csproj'
+      - '**/*.sln'
+      - '**/*.csproj'
+      - 'global.json'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - '.editorconfig'
+      - '.github/workflows/backend-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci-dotnet-build-test:
+    name: .NET restore, build, and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Show .NET information
+        run: dotnet --info
+
+      - name: Detect .NET solution or project
+        id: dotnet-target
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t candidates < <(
+            {
+              find . -maxdepth 1 -type f -name "*.sln"
+              find ./backend -type f -name "*.sln" 2>/dev/null || true
+              find ./backend -type f -name "*.csproj" 2>/dev/null || true
+              find . -type f \( -name "*.sln" -o -name "*.csproj" \) \
+                -not -path "*/bin/*" \
+                -not -path "*/obj/*" \
+                -not -path "./.git/*"
+            } | sed 's#^\./##' | awk '!seen[$0]++'
+          )
+
+          if [ "${#candidates[@]}" -eq 0 ]; then
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "target=" >> "$GITHUB_OUTPUT"
+            echo "::notice title=No .NET target found::No .sln or .csproj file exists yet. Skipping restore/build/test until backend code is added."
+            exit 0
+          fi
+
+          target="${candidates[0]}"
+          echo "found=true" >> "$GITHUB_OUTPUT"
+          echo "target=${target}" >> "$GITHUB_OUTPUT"
+          echo "Selected .NET target: ${target}"
+
+      - name: Restore solution
+        if: steps.dotnet-target.outputs.found == 'true'
+        run: dotnet restore "${{ steps.dotnet-target.outputs.target }}"
+
+      - name: Build solution
+        if: steps.dotnet-target.outputs.found == 'true'
+        run: dotnet build "${{ steps.dotnet-target.outputs.target }}" --no-restore --configuration Release
+
+      - name: Test solution
+        if: steps.dotnet-target.outputs.found == 'true'
+        run: dotnet test "${{ steps.dotnet-target.outputs.target }}" --no-build --configuration Release --logger trx --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-test-results
+          path: TestResults/**/*.trx
+          if-no-files-found: ignore
+
+  ci-dotnet-format:
+    name: .NET format check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Detect .NET solution or project
+        id: dotnet-target
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t candidates < <(
+            {
+              find . -maxdepth 1 -type f -name "*.sln"
+              find ./backend -type f -name "*.sln" 2>/dev/null || true
+              find ./backend -type f -name "*.csproj" 2>/dev/null || true
+              find . -type f \( -name "*.sln" -o -name "*.csproj" \) \
+                -not -path "*/bin/*" \
+                -not -path "*/obj/*" \
+                -not -path "./.git/*"
+            } | sed 's#^\./##' | awk '!seen[$0]++'
+          )
+
+          if [ "${#candidates[@]}" -eq 0 ]; then
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "target=" >> "$GITHUB_OUTPUT"
+            echo "::notice title=No .NET target found::No .sln or .csproj file exists yet. Skipping format check until backend code is added."
+            exit 0
+          fi
+
+          target="${candidates[0]}"
+          echo "found=true" >> "$GITHUB_OUTPUT"
+          echo "target=${target}" >> "$GITHUB_OUTPUT"
+          echo "Selected .NET target: ${target}"
+
+      - name: Restore solution
+        if: steps.dotnet-target.outputs.found == 'true'
+        run: dotnet restore "${{ steps.dotnet-target.outputs.target }}"
+
+      - name: Verify formatting
+        if: steps.dotnet-target.outputs.found == 'true'
+        run: dotnet format "${{ steps.dotnet-target.outputs.target }}" --verify-no-changes --verbosity diagnostic

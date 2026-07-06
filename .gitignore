@@ -52,3 +52,9 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Local development environment files
+.env
+.env.*
+!.env.example
+infra/docker-compose/.env
