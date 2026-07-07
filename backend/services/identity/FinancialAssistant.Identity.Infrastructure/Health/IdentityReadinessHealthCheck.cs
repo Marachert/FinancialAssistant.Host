@@ -53,6 +53,21 @@ public sealed class IdentityReadinessHealthCheck : IHealthCheck
             failures.Add("Identity cleanup retention configuration is invalid.");
         }
 
+        var authentication = configuration.Authentication;
+        if (!string.Equals(
+                authentication.RuntimeAdapter,
+                "InMemoryDevelopment",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            failures.Add("Configured identity authentication runtime adapter is not supported by this increment.");
+        }
+
+        if (authentication.AccessTokenLifetimeMinutes < 1
+            || authentication.RefreshTokenLifetimeDays < 1)
+        {
+            failures.Add("Identity session lifetime configuration is invalid.");
+        }
+
         if (string.IsNullOrWhiteSpace(configuration.Events.Mode))
         {
             failures.Add("Identity event publishing mode is missing.");
@@ -65,7 +80,7 @@ public sealed class IdentityReadinessHealthCheck : IHealthCheck
         }
 
         var result = failures.Count == 0
-            ? HealthCheckResult.Healthy("Identity service storage and event configuration is ready.")
+            ? HealthCheckResult.Healthy("Identity service registration configuration is ready.")
             : HealthCheckResult.Unhealthy(string.Join(" ", failures));
 
         return Task.FromResult(result);

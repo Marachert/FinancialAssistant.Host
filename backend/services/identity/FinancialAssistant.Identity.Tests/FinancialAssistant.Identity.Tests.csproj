@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../FinancialAssistant.Identity.Api/FinancialAssistant.Identity.Api.csproj" />
+    <ProjectReference Include="../FinancialAssistant.Identity.Application/FinancialAssistant.Identity.Application.csproj" />
     <ProjectReference Include="../FinancialAssistant.Identity.Contracts/FinancialAssistant.Identity.Contracts.csproj" />
     <ProjectReference Include="../FinancialAssistant.Identity.Domain/FinancialAssistant.Identity.Domain.csproj" />
     <ProjectReference Include="../FinancialAssistant.Identity.Infrastructure/FinancialAssistant.Identity.Infrastructure.csproj" />

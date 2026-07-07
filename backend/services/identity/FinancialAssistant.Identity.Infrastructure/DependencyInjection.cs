@@ -1,4 +1,5 @@
 using FinancialAssistant.Identity.Application.Abstractions;
+using FinancialAssistant.Identity.Infrastructure.Authentication;
 using FinancialAssistant.Identity.Infrastructure.Configuration;
 using FinancialAssistant.Identity.Infrastructure.Health;
 using FinancialAssistant.Identity.Infrastructure.Messaging;
@@ -15,6 +16,11 @@ public static class DependencyInjection
     {
         services.Configure<IdentityServiceOptions>(
             configuration.GetSection(IdentityServiceOptions.SectionName));
+        services.AddSingleton<IIdentityAccountStore, InMemoryIdentityAccountStore>();
+        services.AddSingleton<IEmailLookupHasher, HmacEmailLookupHasher>();
+        services.AddSingleton<IPasswordCredentialHasher, AspNetCorePasswordCredentialHasher>();
+        services.AddSingleton<IInitialSessionIssuer, OpaqueInitialSessionIssuer>();
+        services.AddSingleton<ISystemClock, SystemClock>();
         services.AddSingleton<IIdentityEventPublisher, NoOpIdentityEventPublisher>();
         services.AddSingleton<IdentityReadinessHealthCheck>();
 

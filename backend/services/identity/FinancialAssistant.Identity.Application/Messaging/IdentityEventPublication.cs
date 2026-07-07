@@ -4,4 +4,5 @@ public sealed record IdentityEventPublication(
     string EventName,
     string EventVersion,
     DateTimeOffset OccurredAtUtc,
-    string CorrelationId);
+    string CorrelationId,
+    IReadOnlyDictionary<string, string> Data);
