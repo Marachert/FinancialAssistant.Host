@@ -11,8 +11,9 @@ public sealed record IdentityOperationResult<T>(T? Value, IdentityOperationFailu
         string code,
         string title,
         string detail,
-        IReadOnlyDictionary<string, string[]>? errors = null) =>
-        new(default, new IdentityOperationFailure(kind, code, title, detail, errors));
+        IReadOnlyDictionary<string, string[]>? errors = null,
+        int? retryAfterSeconds = null) =>
+        new(default, new IdentityOperationFailure(kind, code, title, detail, errors, retryAfterSeconds));
 }
 
 public sealed record IdentityOperationFailure(
@@ -20,12 +21,14 @@ public sealed record IdentityOperationFailure(
     string Code,
     string Title,
     string Detail,
-    IReadOnlyDictionary<string, string[]>? Errors);
+    IReadOnlyDictionary<string, string[]>? Errors,
+    int? RetryAfterSeconds = null);
 
 public enum IdentityFailureKind
 {
     Validation = 1,
     Conflict = 2,
     Authentication = 3,
-    ServiceUnavailable = 4
+    ServiceUnavailable = 4,
+    RateLimited = 5
 }
