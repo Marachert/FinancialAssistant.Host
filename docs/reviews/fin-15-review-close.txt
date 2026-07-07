@@ -1,1 +1,0 @@
-Close FIN-266 and FIN-15 after merge.
