@@ -8,6 +8,7 @@ public static class IdentityContractEndpointExtensions
     {
         var group = endpoints.MapGroup(IdentityApiRoutes.Base).WithTags("Identity v1");
         group.MapIdentityCredentialEndpoints();
+        group.MapIdentityProviderEndpoints();
         group.MapIdentitySessionLifecycleEndpoints();
         return endpoints;
     }

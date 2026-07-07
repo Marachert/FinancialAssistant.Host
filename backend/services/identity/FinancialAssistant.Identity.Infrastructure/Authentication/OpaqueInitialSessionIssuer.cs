@@ -17,11 +17,12 @@ public sealed class OpaqueInitialSessionIssuer : IInitialSessionIssuer
     public AuthSessionResponse Issue(
         IdentityAccount account,
         IdentityClientContext client,
+        string authenticationMethod,
         DateTimeOffset issuedAtUtc)
     {
         _ = issuedAtUtc;
         return sessionService
-            .IssueAsync(account, client, "email_password")
+            .IssueAsync(account, client, authenticationMethod)
             .ConfigureAwait(false)
             .GetAwaiter()
             .GetResult();
