@@ -69,6 +69,7 @@ public sealed class IdentityReadinessHealthCheck : IHealthCheck
         }
 
         ValidateGoogleProvider(configuration.Providers, failures);
+        ValidateAppleProvider(configuration.Providers, failures);
 
         if (string.IsNullOrWhiteSpace(configuration.Events.Mode))
         {
@@ -112,6 +113,45 @@ public sealed class IdentityReadinessHealthCheck : IHealthCheck
             || google.ExpirationClockToleranceSeconds < 0)
         {
             failures.Add("Google token clock tolerance configuration is invalid.");
+        }
+    }
+
+    private static void ValidateAppleProvider(
+        IdentityProviderOptions providers,
+        List<string> failures)
+    {
+        var apple = providers.Apple;
+        if (!apple.Enabled)
+        {
+            return;
+        }
+
+        if (apple.ClientIds.Count == 0 || apple.ClientIds.Any(string.IsNullOrWhiteSpace))
+        {
+            failures.Add("At least one Apple client ID is required when Apple sign-in is enabled.");
+        }
+
+        if (string.IsNullOrWhiteSpace(providers.IdentifierHmacKey))
+        {
+            failures.Add("Provider identifier HMAC key is required when Apple sign-in is enabled.");
+        }
+
+        if (!Uri.TryCreate(apple.Issuer, UriKind.Absolute, out var issuer)
+            || issuer.Scheme != Uri.UriSchemeHttps
+            || !Uri.TryCreate(apple.DiscoveryEndpoint, UriKind.Absolute, out var discovery)
+            || discovery.Scheme != Uri.UriSchemeHttps)
+        {
+            failures.Add("Apple issuer and discovery endpoint must be valid HTTPS URLs.");
+        }
+
+        if (apple.ClockSkewSeconds < 0)
+        {
+            failures.Add("Apple token clock skew configuration is invalid.");
+        }
+
+        if (!apple.RequireNonce)
+        {
+            failures.Add("Apple sign-in nonce validation must remain enabled.");
         }
     }
 }
