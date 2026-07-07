@@ -24,20 +24,22 @@ app.MapGet("/", () => Results.Redirect("/health"));
 
 app.MapHealthChecks("/health");
 
-app.MapGet("/gateway/info", (
-    HttpContext context,
-    IHostEnvironment environment,
-    GatewayRouteCatalog routeCatalog,
-    IOptions<GatewaySecurityOptions> securityOptions) => Results.Ok(new
-{
-    service = "financial-assistant-public-api-gateway",
-    status = "running",
-    environment = environment.EnvironmentName,
-    routeCount = routeCatalog.Routes.Count,
-    securityMode = securityOptions.Value.Mode,
-    correlationId = CorrelationHeaders.GetCorrelationId(context),
-    traceId = Activity.Current?.TraceId.ToString()
-}));
+app.MapGet(
+    "/gateway/info",
+    (
+        HttpContext context,
+        IHostEnvironment environment,
+        GatewayRouteCatalog routeCatalog,
+        IOptions<GatewaySecurityOptions> securityOptions) => Results.Ok(new
+        {
+            service = "financial-assistant-public-api-gateway",
+            status = "running",
+            environment = environment.EnvironmentName,
+            routeCount = routeCatalog.Routes.Count,
+            securityMode = securityOptions.Value.Mode,
+            correlationId = CorrelationHeaders.GetCorrelationId(context),
+            traceId = Activity.Current?.TraceId.ToString()
+        }));
 
 app.MapGatewayRouteMap();
 
