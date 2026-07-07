@@ -8,9 +8,18 @@ Implemented/documented scope:
 - FIN-252 — .NET restore/build/test workflow;
 - FIN-253 — formatting and linting baseline;
 - FIN-254 — test reporting and CI diagnostics;
-- FIN-255 — PR quality gate and branch protection expectations.
+- FIN-255 — PR quality gate and branch protection expectations;
+- FIN-256 — contributor CI workflow documentation.
 
-## Workflow file
+## Related documentation
+
+Contributor workflow guide:
+
+```text
+docs/engineering/contributing.md
+```
+
+CI workflow file:
 
 ```text
 .github/workflows/backend-ci.yml
@@ -157,6 +166,12 @@ The artifact upload runs with `if: always()` so results are available even when 
 | Test solution | failing unit/integration test | run `dotnet test --no-build --configuration Release` locally |
 | Verify formatting | formatting differs from repository baseline | run `dotnet format` locally and commit formatting-only changes |
 | Upload test results | missing result files or artifact config issue | verify `TestResults/**/*.trx` path |
+
+For contributor-facing step-by-step troubleshooting, use:
+
+```text
+docs/engineering/contributing.md
+```
 
 ## Security and privacy rules
 
