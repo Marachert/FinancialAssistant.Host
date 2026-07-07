@@ -31,7 +31,10 @@ internal static partial class IdentityCredentialEndpointExtensions
         IIdentityAuthenticationService service,
         CancellationToken cancellationToken)
     {
-        var result = await service.SignInAsync(request, cancellationToken);
+        var result = await service.SignInAsync(
+            request,
+            ResolveCorrelationId(context),
+            cancellationToken);
         return result.IsSuccess ? Results.Ok(result.Value) : ToProblem(result.Failure!, context);
     }
 

@@ -21,7 +21,7 @@ public sealed class IdentityRegistrationLoginTests : IClassFixture<IdentityContr
     }
 
     [Fact]
-    public async Task RegisterAndSignIn_ReturnSessionsAndPublishVersionedEvent()
+    public async Task RegisterAndSignIn_ReturnSessionsAndPublishVersionedEvents()
     {
         var email = CreateEmail();
         const string password = "Synthetic-Only-Password-123!";
@@ -39,7 +39,8 @@ public sealed class IdentityRegistrationLoginTests : IClassFixture<IdentityContr
         Assert.Contains(
             factory.EventPublisher.Publications,
             publication => publication.EventName == "user.registered.v1"
-                && publication.EventVersion == "1"
+                && publication.SchemaVersion == 1
+                && publication.SubjectId == registrationSession.User.UserId
                 && publication.Data.TryGetValue("userId", out var userId)
                 && userId == registrationSession.User.UserId);
 
@@ -52,6 +53,13 @@ public sealed class IdentityRegistrationLoginTests : IClassFixture<IdentityContr
         Assert.NotNull(signInSession);
         Assert.Equal(registrationSession.User.UserId, signInSession.User.UserId);
         Assert.NotEqual(registrationSession.AccessToken, signInSession.AccessToken);
+        Assert.Contains(
+            factory.EventPublisher.Publications,
+            publication => publication.EventName == "user.signed_in.v1"
+                && publication.SchemaVersion == 1
+                && publication.SubjectId == signInSession.User.UserId
+                && publication.Data.TryGetValue("sessionId", out var sessionId)
+                && sessionId == signInSession.User.SessionId);
     }
 
     [Fact]
@@ -96,7 +104,7 @@ public sealed class IdentityRegistrationLoginTests : IClassFixture<IdentityContr
     }
 
     [Fact]
-    public async Task WrongPasswordAndUnknownEmail_ReturnSamePublicFailure()
+    public async Task WrongPasswordAndUnknownEmail_ReturnSameFailureAndSafeMetricEvents()
     {
         var email = CreateEmail();
         const string password = "Synthetic-Only-Password-123!";
@@ -121,6 +129,17 @@ public sealed class IdentityRegistrationLoginTests : IClassFixture<IdentityContr
         Assert.Equal(wrongProblem.Code, unknownProblem.Code);
         Assert.Equal(wrongProblem.Title, unknownProblem.Title);
         Assert.Equal(wrongProblem.Detail, unknownProblem.Detail);
+
+        var failures = factory.EventPublisher.Publications
+            .Where(publication => publication.EventName == "authentication.failed.v1")
+            .ToArray();
+        Assert.True(failures.Length >= 2);
+        Assert.All(failures, publication =>
+        {
+            Assert.Null(publication.SubjectId);
+            Assert.False(publication.Data.ContainsKey("email"));
+            Assert.Equal("credentials_not_accepted", publication.Data["reasonCode"]);
+        });
     }
 
     [Fact]

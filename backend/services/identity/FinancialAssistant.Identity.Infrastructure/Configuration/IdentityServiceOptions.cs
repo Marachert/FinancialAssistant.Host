@@ -42,6 +42,11 @@ public sealed class IdentityAuthenticationOptions
 
 public sealed class IdentityEventPublishingOptions
 {
-    public string Mode { get; set; } = "placeholder";
-    public string Exchange { get; set; } = string.Empty;
+    public string Mode { get; set; } = "InMemoryDevelopment";
+    public string Exchange { get; set; } = "fa.events";
+    public string ConnectionString { get; set; } = string.Empty;
+    public string UserIdHmacKey { get; set; } = string.Empty;
+    public int BatchSize { get; set; } = 25;
+    public int DispatchIntervalMilliseconds { get; set; } = 1000;
+    public int MaximumRetryDelaySeconds { get; set; } = 60;
 }
