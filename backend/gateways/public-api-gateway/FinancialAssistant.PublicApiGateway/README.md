@@ -2,6 +2,14 @@
 
 Initial .NET 8 public API Gateway host for Financial Assistant.
 
+Canonical engineering documentation:
+
+```text
+docs/engineering/api-gateway-routing-foundation.md
+```
+
+The engineering document defines the stable route map, service ownership, request flow, propagation rules, access-policy placeholders, diagnostics boundaries, and change rules. This README remains the gateway-local operational guide.
+
 ## Responsibility
 
 This gateway is the public REST entry point for mobile, web, and admin clients.
@@ -191,6 +199,5 @@ The actual local URL can differ depending on local ASP.NET Core settings.
 
 ## Follow-up subtasks
 
-- FIN-264 — document gateway routing foundation;
 - FIN-265 — add gateway tests and verification checklist;
 - FIN-266 — review API Gateway foundation.
