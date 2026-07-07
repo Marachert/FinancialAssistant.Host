@@ -30,6 +30,26 @@ internal static partial class IdentityProviderEndpointExtensions
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status409Conflict, ProblemJson)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status503ServiceUnavailable, ProblemJson);
 
+        group.MapPost(IdentityApiRoutes.PhoneVerificationStartRelative, PhoneVerificationStartAsync)
+            .WithName("Identity_PhoneVerificationStart_v1")
+            .WithSummary("Request a phone verification message")
+            .WithDescription("Reserves a rate-limited phone challenge and dispatches it through the configured provider boundary.")
+            .Accepts<PhoneVerificationStartRequest>("application/json")
+            .Produces<PhoneVerificationStartResponse>(StatusCodes.Status202Accepted)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status400BadRequest, ProblemJson)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status429TooManyRequests, ProblemJson)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status503ServiceUnavailable, ProblemJson);
+
+        group.MapPost(IdentityApiRoutes.PhoneVerificationConfirmRelative, PhoneVerificationConfirmAsync)
+            .WithName("Identity_PhoneVerificationConfirm_v1")
+            .WithSummary("Confirm a phone verification code")
+            .WithDescription("Checks a provider-held verification code and returns an Identity Service session when approved.")
+            .Accepts<PhoneVerificationConfirmRequest>("application/json")
+            .Produces<AuthSessionResponse>(StatusCodes.Status200OK)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status400BadRequest, ProblemJson)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status401Unauthorized, ProblemJson)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status503ServiceUnavailable, ProblemJson);
+
         return group;
     }
 }
