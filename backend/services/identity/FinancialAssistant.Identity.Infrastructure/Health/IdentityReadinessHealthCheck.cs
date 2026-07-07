@@ -70,6 +70,7 @@ public sealed class IdentityReadinessHealthCheck : IHealthCheck
 
         ValidateGoogleProvider(configuration.Providers, failures);
         ValidateAppleProvider(configuration.Providers, failures);
+        ValidatePhoneProvider(configuration.Providers, failures);
 
         if (string.IsNullOrWhiteSpace(configuration.Events.Mode))
         {
@@ -152,6 +153,39 @@ public sealed class IdentityReadinessHealthCheck : IHealthCheck
         if (!apple.RequireNonce)
         {
             failures.Add("Apple sign-in nonce validation must remain enabled.");
+        }
+    }
+
+    private static void ValidatePhoneProvider(
+        IdentityProviderOptions providers,
+        List<string> failures)
+    {
+        var phone = providers.Phone;
+        if (!phone.Enabled)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(providers.IdentifierHmacKey))
+        {
+            failures.Add("Provider identifier HMAC key is required when phone verification is enabled.");
+        }
+
+        if (string.IsNullOrWhiteSpace(phone.Adapter)
+            || string.Equals(phone.Adapter, "Disabled", StringComparison.OrdinalIgnoreCase))
+        {
+            failures.Add("A phone verification provider adapter is required when phone verification is enabled.");
+        }
+
+        if (phone.CodeLength is < 4 or > 10
+            || phone.ChallengeLifetimeMinutes is < 1 or > 30
+            || phone.ResendCooldownSeconds is < 10 or > 600
+            || phone.MaximumAttempts is < 1 or > 10
+            || phone.StartWindowMinutes is < 1 or > 1440
+            || phone.MaximumStartsPerPhone is < 1 or > 100
+            || phone.MaximumStartsPerClient is < 1 or > 500)
+        {
+            failures.Add("Phone verification retry, cooldown, or challenge policy is invalid.");
         }
     }
 }
