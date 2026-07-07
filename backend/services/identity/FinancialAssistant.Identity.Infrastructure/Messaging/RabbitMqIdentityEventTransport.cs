@@ -32,7 +32,7 @@ public sealed class RabbitMqIdentityEventTransport : IIdentityEventTransport, IA
             {
                 ContentType = "application/json",
                 ContentEncoding = "utf-8",
-                DeliveryMode = 2,
+                DeliveryMode = DeliveryModes.Persistent,
                 MessageId = envelope.EventId,
                 Type = envelope.EventType,
                 CorrelationId = envelope.CorrelationId,
