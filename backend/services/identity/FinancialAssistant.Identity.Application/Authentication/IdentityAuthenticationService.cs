@@ -74,7 +74,7 @@ public sealed class IdentityAuthenticationService : IIdentityAuthenticationServi
             return DuplicateRegistration();
         }
 
-        var session = sessionIssuer.Issue(account, request.Client, now);
+        var session = sessionIssuer.Issue(account, request.Client, EmailPasswordMethod, now);
         await eventPublisher.PublishAsync(
             new IdentityEventPublication(
                 "user.registered.v1",
@@ -142,7 +142,7 @@ public sealed class IdentityAuthenticationService : IIdentityAuthenticationServi
             await accountStore.UpdateCredentialHashAsync(lookupKeyHash, replacement, now, cancellationToken);
         }
 
-        var session = sessionIssuer.Issue(account, request.Client, now);
+        var session = sessionIssuer.Issue(account, request.Client, EmailPasswordMethod, now);
         await eventPublisher.PublishAsync(
             new IdentityEventPublication(
                 "user.signed_in.v1",
