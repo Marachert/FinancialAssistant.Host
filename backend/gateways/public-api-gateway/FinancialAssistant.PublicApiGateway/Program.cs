@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using FinancialAssistant.PublicApiGateway.Diagnostics;
 using FinancialAssistant.PublicApiGateway.Observability;
 using FinancialAssistant.PublicApiGateway.Routing;
 using FinancialAssistant.PublicApiGateway.Security;
@@ -11,6 +12,7 @@ builder.Services.Configure<CorrelationOptions>(builder.Configuration.GetSection(
 builder.Services.Configure<GatewaySecurityOptions>(builder.Configuration.GetSection("Gateway:Security"));
 builder.Services.Configure<GatewayRouteMapOptions>(builder.Configuration.GetSection("Gateway:RouteMap"));
 builder.Services.Configure<GatewayDestinationMapOptions>(builder.Configuration.GetSection("Gateway:DestinationMap"));
+builder.Services.AddSingleton<GatewayDiagnosticsClock>();
 builder.Services.AddSingleton<GatewayRouteCatalog>();
 builder.Services.AddSingleton<GatewayDestinationCatalog>();
 builder.Services.AddSingleton<GatewaySecurityBoundary>();
@@ -23,6 +25,7 @@ app.UseMiddleware<CorrelationMiddleware>();
 app.MapGet("/", () => Results.Redirect("/health"));
 
 app.MapHealthChecks("/health");
+app.MapGatewayDiagnostics();
 
 app.MapGet(
     "/gateway/info",
