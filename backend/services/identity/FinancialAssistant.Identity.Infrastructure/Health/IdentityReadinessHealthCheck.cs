@@ -1,4 +1,5 @@
 using FinancialAssistant.Identity.Infrastructure.Configuration;
+using FinancialAssistant.Identity.Infrastructure.Storage;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
@@ -27,7 +28,29 @@ public sealed class IdentityReadinessHealthCheck : IHealthCheck
 
         if (string.IsNullOrWhiteSpace(configuration.Storage.Provider))
         {
-            failures.Add("Identity storage provider placeholder is missing.");
+            failures.Add("Identity storage provider is missing.");
+        }
+
+        try
+        {
+            _ = IdentityIndexCatalog.Create(
+                configuration.Storage.Environment,
+                configuration.Storage.SchemaVersion,
+                configuration.Storage.InitialGeneration);
+        }
+        catch (ArgumentException exception)
+        {
+            failures.Add($"Identity storage naming configuration is invalid: {exception.Message}");
+        }
+
+        var cleanup = configuration.Storage.Cleanup;
+        if (cleanup.DeletedAccountRetentionDays < 1
+            || cleanup.RemovedCredentialRetentionDays < 1
+            || cleanup.TerminalSessionRetentionDays < 1
+            || cleanup.HardMaximumSessionDocumentDays < cleanup.TerminalSessionRetentionDays
+            || cleanup.RemovedProviderLinkRetentionDays < 1)
+        {
+            failures.Add("Identity cleanup retention configuration is invalid.");
         }
 
         if (string.IsNullOrWhiteSpace(configuration.Events.Mode))
@@ -42,7 +65,7 @@ public sealed class IdentityReadinessHealthCheck : IHealthCheck
         }
 
         var result = failures.Count == 0
-            ? HealthCheckResult.Healthy("Identity service baseline configuration is ready.")
+            ? HealthCheckResult.Healthy("Identity service storage and event configuration is ready.")
             : HealthCheckResult.Unhealthy(string.Join(" ", failures));
 
         return Task.FromResult(result);

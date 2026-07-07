@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Identity
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Identity.Contracts", "backend\services\identity\FinancialAssistant.Identity.Contracts\FinancialAssistant.Identity.Contracts.csproj", "{A1B2C3D4-7777-4777-8777-777777777777}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Identity.Tests", "backend\services\identity\FinancialAssistant.Identity.Tests\FinancialAssistant.Identity.Tests.csproj", "{A1B2C3D4-8888-4888-8888-888888888888}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,5 +52,9 @@ Global
 		{A1B2C3D4-7777-4777-8777-777777777777}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1B2C3D4-7777-4777-8777-777777777777}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1B2C3D4-7777-4777-8777-777777777777}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B2C3D4-8888-4888-8888-888888888888}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-8888-4888-8888-888888888888}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-8888-4888-8888-888888888888}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-8888-4888-8888-888888888888}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

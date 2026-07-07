@@ -15,9 +15,26 @@ public sealed class IdentityStorageOptions
 {
     public string Provider { get; set; } = "Elasticsearch";
 
-    public string AccountsAlias { get; set; } = string.Empty;
+    public string Environment { get; set; } = "dev";
 
-    public string SessionsAlias { get; set; } = string.Empty;
+    public int SchemaVersion { get; set; } = 1;
+
+    public int InitialGeneration { get; set; } = 1;
+
+    public IdentityCleanupOptions Cleanup { get; set; } = new();
+}
+
+public sealed class IdentityCleanupOptions
+{
+    public int DeletedAccountRetentionDays { get; set; } = 30;
+
+    public int RemovedCredentialRetentionDays { get; set; } = 30;
+
+    public int TerminalSessionRetentionDays { get; set; } = 30;
+
+    public int HardMaximumSessionDocumentDays { get; set; } = 90;
+
+    public int RemovedProviderLinkRetentionDays { get; set; } = 30;
 }
 
 public sealed class IdentityEventPublishingOptions
