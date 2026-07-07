@@ -43,6 +43,30 @@ Layer responsibility:
 | Infrastructure | Elasticsearch, RabbitMQ, external providers, file/object storage, technical adapters. |
 | Contracts | Public/internal DTOs, event contracts, integration models. |
 
+## API Gateway
+
+Initial public API Gateway project:
+
+```text
+backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/
+```
+
+Run locally:
+
+```bash
+dotnet run --project backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj
+```
+
+Current gateway endpoints:
+
+```text
+GET /
+GET /health
+GET /gateway/info
+```
+
+The gateway is the public REST boundary. It must not own domain business logic or access service-owned storage directly.
+
 ## Shared backend folders
 
 ```text
@@ -142,19 +166,16 @@ The initial CI baseline includes:
 - automatic `.sln` / `.csproj` target detection;
 - `dotnet restore` when a .NET target exists;
 - `dotnet build --no-restore --configuration Release` when a .NET target exists;
-- `dotnet test --no-build --configuration Release` when a .NET target exists;
+- `dotnet test` when a .NET test project exists;
 - TRX test result artifacts;
 - `dotnet format --verify-no-changes` when a .NET target exists.
-
-If the repository does not contain a `.sln` or `.csproj` yet, CI emits a notice and skips .NET commands successfully. Once backend code is introduced, the same checks become enforcing automatically.
 
 Run core checks locally after a .NET solution or project exists:
 
 ```bash
-dotnet restore
-dotnet build --no-restore --configuration Release
-dotnet test --no-build --configuration Release --logger trx --results-directory TestResults
-dotnet format --verify-no-changes --verbosity diagnostic
+dotnet restore backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj
+dotnet build backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj --no-restore --configuration Release
+dotnet format backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj --verify-no-changes --verbosity diagnostic
 ```
 
 ## Architecture guardrails

@@ -9,7 +9,8 @@ Implemented/documented scope:
 - FIN-253 — formatting and linting baseline;
 - FIN-254 — test reporting and CI diagnostics;
 - FIN-255 — PR quality gate and branch protection expectations;
-- FIN-256 — contributor CI workflow documentation.
+- FIN-256 — contributor CI workflow documentation;
+- FIN-258 — first .NET 8 API Gateway project skeleton.
 
 ## Related documentation
 
@@ -29,7 +30,7 @@ CI workflow file:
 
 | Check | Purpose |
 | --- | --- |
-| `ci-dotnet-build-test` | Restore, build, and test backend/shared .NET code when a .NET target exists |
+| `ci-dotnet-build-test` | Restore and build backend/shared .NET code when a .NET target exists; run tests when a test project exists |
 | `ci-dotnet-format` | Verify formatting with `dotnet format --verify-no-changes` when a .NET target exists |
 
 ## CI triggers
@@ -44,18 +45,26 @@ The workflow is scoped to backend/shared/test code and repository-level .NET bui
 
 ## .NET target detection
 
-The repository is still in the platform-foundation stage, so a backend solution may not exist yet.
-
-Before running restore/build/test/format, the workflow looks for a .NET target in this order:
+Before running restore/build/format, the workflow looks for a .NET target in this order:
 
 1. root-level `*.sln`;
 2. `backend/**/*.sln`;
 3. `backend/**/*.csproj`;
 4. any repository `*.sln` or `*.csproj`, excluding `bin/`, `obj/`, and `.git/`.
 
-If no `.sln` or `.csproj` file exists yet, the workflow emits a GitHub notice and skips the .NET commands successfully. This keeps infrastructure/documentation PRs from failing before backend code is introduced.
+If no `.sln` or `.csproj` file exists, the workflow emits a GitHub notice and skips the .NET commands successfully. This keeps infrastructure/documentation PRs from failing before backend code is introduced.
 
-Once a backend solution or project is added, the same jobs automatically become enforcing checks.
+Once a backend solution or project is added, restore/build/format become enforcing checks automatically.
+
+## Test project detection
+
+`dotnet test` runs only when the workflow finds a project with:
+
+```xml
+<IsTestProject>true</IsTestProject>
+```
+
+This lets production projects, such as the first API Gateway host, enter the repository before test projects exist. After test projects are added, CI runs tests automatically.
 
 ## PR quality gate policy
 
@@ -71,7 +80,7 @@ A pull request is considered merge-ready only when all applicable requirements a
 - no secrets, production configuration values, real receipts, raw OCR text, AI prompts/responses, personal data, or real financial data are added;
 - failing or skipped checks are understood and documented before merge.
 
-During the platform-foundation stage, .NET restore/build/test/format commands may be skipped when no `.sln` or `.csproj` exists yet. This is acceptable for infrastructure/documentation PRs. After backend code is added, skipped .NET checks should be treated as a warning and investigated.
+During the platform-foundation stage, `dotnet test` may be skipped when no test project exists yet. After test projects are introduced, skipped tests should be investigated.
 
 ## Branch protection expectation
 
@@ -126,17 +135,21 @@ Run these from the repository root after a .NET solution or project exists:
 dotnet --info
 dotnet restore
 dotnet build --no-restore --configuration Release
-dotnet test --no-build --configuration Release --logger trx --results-directory TestResults
 dotnet format --verify-no-changes --verbosity diagnostic
 ```
 
-If the backend solution is moved under a specific path, use the explicit solution path:
+If the API Gateway project is the selected target, use the explicit project path:
 
 ```bash
-dotnet restore backend/FinancialAssistant.sln
-dotnet build backend/FinancialAssistant.sln --no-restore --configuration Release
-dotnet test backend/FinancialAssistant.sln --no-build --configuration Release --logger trx --results-directory TestResults
-dotnet format backend/FinancialAssistant.sln --verify-no-changes --verbosity diagnostic
+dotnet restore backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj
+dotnet build backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj --no-restore --configuration Release
+dotnet format backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj --verify-no-changes --verbosity diagnostic
+```
+
+When a test project exists, run:
+
+```bash
+dotnet test <test-project-or-solution> --configuration Release --logger trx --results-directory TestResults
 ```
 
 ## Test reporting
@@ -153,17 +166,18 @@ The workflow uploads test results as an artifact named:
 dotnet-test-results
 ```
 
-The artifact upload runs with `if: always()` so results are available even when tests fail. If tests are skipped because no .NET target exists yet, no artifact is expected.
+The artifact upload runs with `if: always()` so results are available even when tests fail. If tests are skipped because no test project exists yet, no artifact is expected.
 
 ## Failure guide
 
 | Failed step | Likely cause | Developer action |
 | --- | --- | --- |
 | Detect .NET solution or project | unexpected shell or path issue | inspect workflow output and repository paths |
+| Detect .NET test project | test project marker is missing or path detection issue | inspect test `.csproj` files |
 | Setup .NET SDK | SDK version mismatch or CI provider issue | verify `global.json` and workflow SDK version |
 | Restore solution | broken package reference, missing source, invalid solution path | run `dotnet restore` locally against the detected target |
 | Build solution | compilation error, analyzer error, project reference issue | run `dotnet build --no-restore --configuration Release` locally |
-| Test solution | failing unit/integration test | run `dotnet test --no-build --configuration Release` locally |
+| Test solution | failing unit/integration test | run `dotnet test` locally against the detected test target |
 | Verify formatting | formatting differs from repository baseline | run `dotnet format` locally and commit formatting-only changes |
 | Upload test results | missing result files or artifact config issue | verify `TestResults/**/*.trx` path |
 

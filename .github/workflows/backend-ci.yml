@@ -88,6 +88,32 @@ jobs:
           echo "target=${target}" >> "$GITHUB_OUTPUT"
           echo "Selected .NET target: ${target}"
 
+      - name: Detect .NET test project
+        id: dotnet-test-target
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t test_projects < <(
+            find . -type f -name "*.csproj" \
+              -not -path "*/bin/*" \
+              -not -path "*/obj/*" \
+              -not -path "./.git/*" \
+              -print0 | xargs -0 grep -l "<IsTestProject>true</IsTestProject>" 2>/dev/null || true
+          )
+
+          if [ "${#test_projects[@]}" -eq 0 ]; then
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "target=" >> "$GITHUB_OUTPUT"
+            echo "::notice title=No .NET test project found::Skipping dotnet test until a test project is added."
+            exit 0
+          fi
+
+          target="${test_projects[0]#./}"
+          echo "found=true" >> "$GITHUB_OUTPUT"
+          echo "target=${target}" >> "$GITHUB_OUTPUT"
+          echo "Selected .NET test target: ${target}"
+
       - name: Restore solution
         if: steps.dotnet-target.outputs.found == 'true'
         run: dotnet restore "${{ steps.dotnet-target.outputs.target }}"
@@ -97,8 +123,8 @@ jobs:
         run: dotnet build "${{ steps.dotnet-target.outputs.target }}" --no-restore --configuration Release
 
       - name: Test solution
-        if: steps.dotnet-target.outputs.found == 'true'
-        run: dotnet test "${{ steps.dotnet-target.outputs.target }}" --no-build --configuration Release --logger trx --results-directory TestResults
+        if: steps.dotnet-test-target.outputs.found == 'true'
+        run: dotnet test "${{ steps.dotnet-test-target.outputs.target }}" --configuration Release --logger trx --results-directory TestResults
 
       - name: Upload test results
         if: always()
