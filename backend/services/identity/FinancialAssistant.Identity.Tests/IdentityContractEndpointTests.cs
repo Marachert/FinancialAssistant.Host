@@ -40,32 +40,37 @@ public sealed class IdentityContractEndpointTests : IClassFixture<IdentityContra
         Assert.Contains(nameof(IdentityApiErrorResponse), openApi, StringComparison.Ordinal);
     }
 
-    [Theory]
-    [InlineData(IdentityApiRoutes.Refresh)]
-    [InlineData(IdentityApiRoutes.Logout)]
-    public async Task Fin76PostContracts_RemainExplicitPlaceholders(string route)
+    [Fact]
+    public async Task MalformedRefresh_ReturnsValidationProblem()
     {
-        object request = route switch
-        {
-            IdentityApiRoutes.Refresh => new RefreshSessionRequest(
-                "synthetic-refresh-token-value-that-is-not-real-000001",
-                new IdentityClientContext("synthetic-client-001", "ios", "0.0-test")),
-            IdentityApiRoutes.Logout => new LogoutRequest(
-                "synthetic-refresh-token-value-that-is-not-real-000001",
-                new IdentityClientContext("synthetic-client-001", "web", "0.0-test")),
-            _ => throw new InvalidOperationException("Unexpected route.")
-        };
+        var response = await client.PostAsJsonAsync(
+            IdentityApiRoutes.Refresh,
+            new RefreshSessionRequest(
+                "short",
+                new IdentityClientContext("synthetic-client-001", "ios", "0.0-test")));
 
-        var response = await client.PostAsJsonAsync(route, request);
-
-        Assert.Equal(HttpStatusCode.NotImplemented, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    [Fact]
-    public async Task CurrentUserContract_RemainsExplicitPlaceholder()
+    [Theory]
+    [InlineData(IdentityApiRoutes.Logout, "POST")]
+    [InlineData(IdentityApiRoutes.CurrentUser, "GET")]
+    public async Task ProtectedSessionContracts_RejectAnonymousRequests(string route, string method)
     {
-        var response = await client.GetAsync(IdentityApiRoutes.CurrentUser);
+        HttpResponseMessage response;
+        if (method == "POST")
+        {
+            response = await client.PostAsJsonAsync(
+                route,
+                new LogoutRequest(
+                    "synthetic-refresh-token-value-that-is-not-real-000001",
+                    new IdentityClientContext("synthetic-client-001", "web", "0.0-test")));
+        }
+        else
+        {
+            response = await client.GetAsync(route);
+        }
 
-        Assert.Equal(HttpStatusCode.NotImplemented, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }
