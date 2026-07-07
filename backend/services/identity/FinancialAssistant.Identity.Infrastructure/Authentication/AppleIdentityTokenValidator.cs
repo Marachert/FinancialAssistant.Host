@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using FinancialAssistant.Identity.Application.Abstractions;
 using FinancialAssistant.Identity.Application.Providers.Apple;
 using FinancialAssistant.Identity.Infrastructure.Configuration;
@@ -58,7 +56,7 @@ public sealed class AppleIdentityTokenValidator : IAppleIdentityTokenValidator
             var subject = validation.ClaimsIdentity?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
             var tokenNonce = validation.ClaimsIdentity?.FindFirst("nonce")?.Value;
             if (string.IsNullOrWhiteSpace(subject)
-                || options.RequireNonce && !NonceMatches(nonce, tokenNonce))
+                || options.RequireNonce && !AppleNonceVerifier.Matches(nonce, tokenNonce))
             {
                 return AppleIdentityTokenValidationResult.Invalid();
             }
@@ -101,28 +99,6 @@ public sealed class AppleIdentityTokenValidator : IAppleIdentityTokenValidator
         };
 
         return tokenHandler.ValidateTokenAsync(identityToken, parameters);
-    }
-
-    private static bool NonceMatches(string nonce, string? tokenNonce)
-    {
-        if (string.IsNullOrWhiteSpace(tokenNonce))
-        {
-            return false;
-        }
-
-        var digest = SHA256.HashData(Encoding.UTF8.GetBytes(nonce));
-        var hexadecimal = Convert.ToHexString(digest).ToLowerInvariant();
-        var base64Url = Base64UrlEncoder.Encode(digest);
-        return FixedTimeEquals(tokenNonce, hexadecimal)
-            || FixedTimeEquals(tokenNonce, base64Url);
-    }
-
-    private static bool FixedTimeEquals(string left, string right)
-    {
-        var leftBytes = Encoding.ASCII.GetBytes(left);
-        var rightBytes = Encoding.ASCII.GetBytes(right);
-        return leftBytes.Length == rightBytes.Length
-            && CryptographicOperations.FixedTimeEquals(leftBytes, rightBytes);
     }
 
     private static bool ReadBooleanClaim(string? value) =>
