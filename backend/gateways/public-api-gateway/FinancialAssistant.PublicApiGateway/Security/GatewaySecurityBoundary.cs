@@ -53,7 +53,7 @@ public sealed class GatewaySecurityBoundary
             return false;
         }
 
-        if (string.Equals(accessPolicy, GatewayAccessPolicies.Admin, StringComparison.OrdinalIgnoreCase) && !HasAdminPlaceholderScope(context))
+        if (IsAdminPolicy(accessPolicy) && !HasAdminPlaceholderScope(context))
         {
             await WriteSecurityProblemAsync(
                 context,
@@ -97,7 +97,12 @@ public sealed class GatewaySecurityBoundary
             : options.AdminScopeHeaderName;
 
         return context.Request.Headers.TryGetValue(headerName, out var values)
-            && values.Any(value => string.Equals(value, GatewayAccessPolicies.Admin, StringComparison.OrdinalIgnoreCase));
+            && values.Any(value => IsAdminPolicy(value));
+    }
+
+    private static bool IsAdminPolicy(string? value)
+    {
+        return string.Equals(value, GatewayAccessPolicies.Admin, StringComparison.OrdinalIgnoreCase);
     }
 
     private static async Task WriteSecurityProblemAsync(
