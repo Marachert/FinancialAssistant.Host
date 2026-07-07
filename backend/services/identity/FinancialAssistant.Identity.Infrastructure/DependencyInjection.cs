@@ -25,10 +25,10 @@ public static class DependencyInjection
         services.Configure<IdentityServiceOptions>(
             configuration.GetSection(IdentityServiceOptions.SectionName));
 
-        var authentication = configuration
-            .GetSection($"{IdentityServiceOptions.SectionName}:Authentication")
-            .Get<IdentityAuthenticationOptions>() ?? new IdentityAuthenticationOptions();
-        var keyMaterial = new IdentityJwtKeyMaterial(authentication);
+        var identityOptions = configuration
+            .GetSection(IdentityServiceOptions.SectionName)
+            .Get<IdentityServiceOptions>() ?? new IdentityServiceOptions();
+        var keyMaterial = new IdentityJwtKeyMaterial(identityOptions.Authentication);
 
         services.AddSingleton(keyMaterial);
         services.AddSingleton<IIdentityAccountStore, InMemoryIdentityAccountStore>();
@@ -40,7 +40,22 @@ public static class DependencyInjection
         services.AddSingleton<ISessionLifetimePolicy, SessionLifetimePolicy>();
         services.AddScoped<IInitialSessionIssuer, OpaqueInitialSessionIssuer>();
         services.AddSingleton<ISystemClock, SystemClock>();
-        services.AddSingleton<IIdentityEventPublisher, NoOpIdentityEventPublisher>();
+
+        services.AddSingleton<IIdentityEventOutbox, InMemoryIdentityEventOutbox>();
+        services.AddSingleton<IIdentityEventSubjectHasher, HmacIdentityEventSubjectHasher>();
+        services.AddSingleton<IIdentityEventPublisher, OutboxIdentityEventPublisher>();
+        if (string.Equals(identityOptions.Events.Mode, "RabbitMq", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IIdentityEventTransport, RabbitMqIdentityEventTransport>();
+        }
+        else
+        {
+            services.AddSingleton<InMemoryIdentityEventTransport>();
+            services.AddSingleton<IIdentityEventTransport>(provider =>
+                provider.GetRequiredService<InMemoryIdentityEventTransport>());
+        }
+
+        services.AddHostedService<IdentityOutboxDispatcher>();
         services.AddSingleton<IdentityReadinessHealthCheck>();
 
         services
