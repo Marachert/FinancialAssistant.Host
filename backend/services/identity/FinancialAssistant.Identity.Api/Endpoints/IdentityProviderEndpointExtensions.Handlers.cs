@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using FinancialAssistant.Identity.Application.Authentication;
+using FinancialAssistant.Identity.Application.Providers.Apple;
 using FinancialAssistant.Identity.Application.Providers.Google;
 using FinancialAssistant.Identity.Contracts.Auth;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,21 @@ internal static partial class IdentityProviderEndpointExtensions
         [FromBody] GoogleSignInRequest request,
         HttpContext context,
         IGoogleProviderAuthenticationService service,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.AuthenticateAsync(
+            request,
+            ResolveCorrelationId(context),
+            cancellationToken);
+        return result.IsSuccess
+            ? Results.Ok(result.Value)
+            : ToProblem(result.Failure!, context);
+    }
+
+    private static async Task<IResult> AppleSignInAsync(
+        [FromBody] AppleSignInRequest request,
+        HttpContext context,
+        IAppleProviderAuthenticationService service,
         CancellationToken cancellationToken)
     {
         var result = await service.AuthenticateAsync(
