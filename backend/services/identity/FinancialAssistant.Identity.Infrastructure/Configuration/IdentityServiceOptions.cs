@@ -7,6 +7,7 @@ public sealed class IdentityServiceOptions
     public string ServiceName { get; set; } = "financial-assistant-identity-service";
     public IdentityStorageOptions Storage { get; set; } = new();
     public IdentityAuthenticationOptions Authentication { get; set; } = new();
+    public IdentityProviderOptions Providers { get; set; } = new();
     public IdentityEventPublishingOptions Events { get; set; } = new();
 }
 
@@ -38,6 +39,21 @@ public sealed class IdentityAuthenticationOptions
     public string AccessTokenAudience { get; set; } = "financial-assistant-clients";
     public int AccessTokenLifetimeMinutes { get; set; } = 15;
     public int RefreshTokenLifetimeDays { get; set; } = 30;
+}
+
+public sealed class IdentityProviderOptions
+{
+    public string IdentifierHmacKey { get; set; } = string.Empty;
+    public GoogleIdentityProviderOptions Google { get; set; } = new();
+}
+
+public sealed class GoogleIdentityProviderOptions
+{
+    public bool Enabled { get; set; }
+    public List<string> ClientIds { get; set; } = new();
+    public string? HostedDomain { get; set; }
+    public int IssuedAtClockToleranceSeconds { get; set; } = 30;
+    public int ExpirationClockToleranceSeconds { get; set; } = 30;
 }
 
 public sealed class IdentityEventPublishingOptions
