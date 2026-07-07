@@ -6,7 +6,7 @@ Initial .NET 8 public API Gateway host for Financial Assistant.
 
 This gateway is the public REST entry point for mobile, web, and admin clients.
 
-It is responsible for hosting the public HTTP boundary, basic health checks, route catalog, request dispatch foundation, correlation middleware, and security boundary placeholders.
+It is responsible for hosting the public HTTP boundary, basic health checks, safe diagnostics, route catalog, request dispatch foundation, correlation middleware, and security boundary placeholders.
 
 It is not responsible for business calculations, service-owned storage access, identity persistence, or full authentication flows.
 
@@ -15,11 +15,16 @@ It is not responsible for business calculations, service-owned storage access, i
 ```text
 GET /
 GET /health
+GET /health/live
+GET /health/ready
 GET /gateway/info
+GET /gateway/status
 GET /gateway/routes
 ```
 
 `/gateway/info` returns a safe operational summary with service name, environment, route count, security mode, correlation id, and trace id. It must not return user, financial, OCR, AI prompt, or secret data.
+
+`/gateway/status` returns a safe technical status summary for local development and future monitoring. It includes route and destination counts only. It must not return destination base addresses, secrets, tokens, user data, financial data, OCR output, AI prompt/response content, or internal configuration values.
 
 ## Public route groups
 
@@ -66,6 +71,21 @@ Gateway:Security
 | `/admin/monitoring` | Monitoring Admin Service | admin | placeholder |
 
 Placeholder routes return HTTP 501. To enable a route later, set its status to `active` and enable its destination entry.
+
+## Health and diagnostics
+
+The gateway exposes lightweight health and safe diagnostic endpoints for development and future monitoring integration:
+
+| Endpoint | Purpose | Data boundary |
+| --- | --- | --- |
+| `/health` | ASP.NET Core health check baseline | framework health status only |
+| `/health/live` | process liveness | service name, start time, uptime, correlation id |
+| `/health/ready` | gateway readiness summary | route count, destination count, enabled destination count, security mode, correlation id |
+| `/gateway/status` | safe technical status | route summary, destination summary, uptime, environment name, correlation id, trace id |
+
+Diagnostics are technical only. They must not be used for business reporting and must not expose internal destination URLs, secrets, personal data, financial data, receipt content, OCR output, or AI prompt/response payloads.
+
+Future Prometheus/OpenTelemetry work can use these endpoints as a starting point, but exporter configuration is intentionally not part of this routing foundation story.
 
 ## Correlation and tracing
 
@@ -136,8 +156,11 @@ Then verify:
 
 ```bash
 curl -i http://localhost:5000/health
+curl -i http://localhost:5000/health/live
+curl -i http://localhost:5000/health/ready
 curl -i http://localhost:5000/gateway/info
-curl -i -H "correlationId: demo-correlation-id" http://localhost:5000/gateway/info
+curl -i http://localhost:5000/gateway/status
+curl -i -H "correlationId: demo-correlation-id" http://localhost:5000/gateway/status
 curl -i -H "traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00" http://localhost:5000/categories
 ```
 
@@ -145,6 +168,9 @@ Expected verification:
 
 - responses include `correlationId` and `X-Correlation-Id`;
 - `/gateway/info` includes `securityMode`;
+- `/gateway/status` includes safe route and destination summaries only;
+- `/health/live` returns process liveness data;
+- `/health/ready` returns gateway readiness summary;
 - incoming `correlationId` is reused when valid;
 - missing correlation id is generated;
 - route responses include safe access policy headers when enabled;
@@ -156,6 +182,7 @@ The actual local URL can differ depending on local ASP.NET Core settings.
 ## Boundary rules
 
 - Gateway route map defines public API shape and intended service ownership.
+- Gateway diagnostics expose only safe technical status.
 - Gateway placeholders must not implement domain behavior.
 - Gateway must not read or write service-owned storage directly.
 - Gateway must not store identity, profile, transaction, category, receipt, analytics, score, recommendation, or notification data.
@@ -164,7 +191,6 @@ The actual local URL can differ depending on local ASP.NET Core settings.
 
 ## Follow-up subtasks
 
-- FIN-263 — add gateway health and diagnostics endpoints;
 - FIN-264 — document gateway routing foundation;
 - FIN-265 — add gateway tests and verification checklist;
 - FIN-266 — review API Gateway foundation.
