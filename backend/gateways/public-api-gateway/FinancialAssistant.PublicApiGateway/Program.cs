@@ -47,3 +47,7 @@ app.MapGet(
 app.MapGatewayRouteMap();
 
 app.Run();
+
+public partial class Program
+{
+}

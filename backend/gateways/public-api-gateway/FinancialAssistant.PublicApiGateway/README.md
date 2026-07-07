@@ -6,9 +6,10 @@ Canonical engineering documentation:
 
 ```text
 docs/engineering/api-gateway-routing-foundation.md
+docs/engineering/api-gateway-verification-checklist.md
 ```
 
-The engineering document defines the stable route map, service ownership, request flow, propagation rules, access-policy placeholders, diagnostics boundaries, and change rules. This README remains the gateway-local operational guide.
+The routing document defines the stable route map, service ownership, request flow, propagation rules, access-policy placeholders, diagnostics boundaries, and change rules. The verification checklist defines automated and manual gateway checks. This README remains the gateway-local operational guide.
 
 ## Responsibility
 
@@ -152,6 +153,32 @@ For active routes, the gateway request dispatcher:
 
 This is a technical dispatch foundation only. It must not add domain-specific transformations.
 
+## Automated tests
+
+Test project:
+
+```text
+backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway.Tests/
+```
+
+Run from the repository root:
+
+```bash
+dotnet test backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway.Tests/FinancialAssistant.PublicApiGateway.Tests.csproj --configuration Release
+```
+
+Current coverage includes:
+
+- gateway startup and health;
+- route-map loading;
+- destination configuration summary;
+- generated and supplied correlation ids;
+- incoming W3C trace context;
+- placeholder route metadata and policy headers;
+- absence of direct Elasticsearch client references in the gateway assembly.
+
+The test project declares `<IsTestProject>true</IsTestProject>`, so Backend CI executes the test step and uploads TRX results.
+
 ## Local run
 
 From the repository root:
@@ -199,5 +226,4 @@ The actual local URL can differ depending on local ASP.NET Core settings.
 
 ## Follow-up subtasks
 
-- FIN-265 — add gateway tests and verification checklist;
 - FIN-266 — review API Gateway foundation.
