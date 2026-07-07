@@ -1,13 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
 using FinancialAssistant.Identity.Contracts.Auth;
 
 namespace FinancialAssistant.Identity.Tests;
 
 public sealed class IdentityContractEndpointTests : IClassFixture<IdentityContractWebApplicationFactory>
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly HttpClient client;
 
     public IdentityContractEndpointTests(IdentityContractWebApplicationFactory factory)
@@ -42,39 +40,13 @@ public sealed class IdentityContractEndpointTests : IClassFixture<IdentityContra
         Assert.Contains(nameof(IdentityApiErrorResponse), openApi, StringComparison.Ordinal);
     }
 
-    [Fact]
-    public async Task RegisterPlaceholder_ReturnsSafeProblemWithoutEchoingRequestSecrets()
-    {
-        var request = new RegisterAccountRequest(
-            "synthetic.user@example.invalid",
-            "Synthetic-Only-Password-123!",
-            new IdentityClientContext("synthetic-client-001", "web", "0.0-test"));
-
-        var response = await client.PostAsJsonAsync(IdentityApiRoutes.Register, request);
-        var body = await response.Content.ReadAsStringAsync();
-        var problem = JsonSerializer.Deserialize<IdentityApiErrorResponse>(body, JsonOptions);
-
-        Assert.Equal(HttpStatusCode.NotImplemented, response.StatusCode);
-        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
-        Assert.NotNull(problem);
-        Assert.Equal(IdentityErrorCodes.NotImplemented, problem.Code);
-        Assert.False(string.IsNullOrWhiteSpace(problem.TraceId));
-        Assert.DoesNotContain(request.Email, body, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain(request.Password, body, StringComparison.Ordinal);
-    }
-
     [Theory]
-    [InlineData(IdentityApiRoutes.SignIn)]
     [InlineData(IdentityApiRoutes.Refresh)]
     [InlineData(IdentityApiRoutes.Logout)]
-    public async Task PostContracts_ArePublishedAsExplicitPlaceholders(string route)
+    public async Task Fin76PostContracts_RemainExplicitPlaceholders(string route)
     {
         object request = route switch
         {
-            IdentityApiRoutes.SignIn => new SignInRequest(
-                "synthetic.user@example.invalid",
-                "Synthetic-Only-Password-123!",
-                new IdentityClientContext("synthetic-client-001", "android", "0.0-test")),
             IdentityApiRoutes.Refresh => new RefreshSessionRequest(
                 "synthetic-refresh-token-value-that-is-not-real-000001",
                 new IdentityClientContext("synthetic-client-001", "ios", "0.0-test")),
@@ -90,7 +62,7 @@ public sealed class IdentityContractEndpointTests : IClassFixture<IdentityContra
     }
 
     [Fact]
-    public async Task CurrentUserContract_IsPublishedAsExplicitPlaceholder()
+    public async Task CurrentUserContract_RemainsExplicitPlaceholder()
     {
         var response = await client.GetAsync(IdentityApiRoutes.CurrentUser);
 
