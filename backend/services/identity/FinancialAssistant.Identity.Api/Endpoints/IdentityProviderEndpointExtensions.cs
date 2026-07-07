@@ -19,6 +19,17 @@ internal static partial class IdentityProviderEndpointExtensions
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status409Conflict, ProblemJson)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status503ServiceUnavailable, ProblemJson);
 
+        group.MapPost(IdentityApiRoutes.AppleSignInRelative, AppleSignInAsync)
+            .WithName("Identity_AppleSignIn_v1")
+            .WithSummary("Authenticate with Apple")
+            .WithDescription("Validates an Apple identity token and nonce, then returns an Identity Service session.")
+            .Accepts<AppleSignInRequest>("application/json")
+            .Produces<AuthSessionResponse>(StatusCodes.Status200OK)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status400BadRequest, ProblemJson)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status401Unauthorized, ProblemJson)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status409Conflict, ProblemJson)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status503ServiceUnavailable, ProblemJson);
+
         return group;
     }
 }
