@@ -40,6 +40,7 @@ public static class DependencyInjection
         services.AddSingleton<IEmailLookupHasher, HmacEmailLookupHasher>();
         services.AddSingleton<IIdentityProviderIdentifierHasher, HmacIdentityProviderIdentifierHasher>();
         services.AddSingleton<IGoogleIdentityTokenValidator, GoogleIdentityTokenValidator>();
+        services.AddSingleton<IAppleIdentityTokenValidator, AppleIdentityTokenValidator>();
         services.AddSingleton<IPasswordCredentialHasher, AspNetCorePasswordCredentialHasher>();
         services.AddSingleton<IRefreshTokenService, OpaqueRefreshTokenService>();
         services.AddSingleton<IAccessTokenService, JwtAccessTokenService>();

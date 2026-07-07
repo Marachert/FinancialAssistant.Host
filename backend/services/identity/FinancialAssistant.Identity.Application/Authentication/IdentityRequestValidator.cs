@@ -54,6 +54,24 @@ internal static class IdentityRequestValidator
         return Freeze(errors);
     }
 
+    public static IReadOnlyDictionary<string, string[]> ValidateAppleSignIn(AppleSignInRequest request)
+    {
+        var errors = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        if (string.IsNullOrWhiteSpace(request.IdentityToken)
+            || request.IdentityToken.Length is < 64 or > 16384)
+        {
+            Add(errors, "identityToken", "An Apple identity token is required and must have a valid size.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Nonce) || request.Nonce.Length is < 16 or > 512)
+        {
+            Add(errors, "nonce", "A client-generated nonce containing between 16 and 512 characters is required.");
+        }
+
+        ValidateClient(request.Client, errors);
+        return Freeze(errors);
+    }
+
     private static void ValidateEmail(string? email, Dictionary<string, List<string>> errors)
     {
         if (string.IsNullOrWhiteSpace(email) || email.Length > 320 || !EmailValidator.IsValid(email))

@@ -45,6 +45,7 @@ public sealed class IdentityProviderOptions
 {
     public string IdentifierHmacKey { get; set; } = string.Empty;
     public GoogleIdentityProviderOptions Google { get; set; } = new();
+    public AppleIdentityProviderOptions Apple { get; set; } = new();
 }
 
 public sealed class GoogleIdentityProviderOptions
@@ -54,6 +55,16 @@ public sealed class GoogleIdentityProviderOptions
     public string? HostedDomain { get; set; }
     public int IssuedAtClockToleranceSeconds { get; set; } = 30;
     public int ExpirationClockToleranceSeconds { get; set; } = 30;
+}
+
+public sealed class AppleIdentityProviderOptions
+{
+    public bool Enabled { get; set; }
+    public List<string> ClientIds { get; set; } = new();
+    public string Issuer { get; set; } = "https://appleid.apple.com";
+    public string DiscoveryEndpoint { get; set; } = "https://appleid.apple.com/.well-known/openid-configuration";
+    public int ClockSkewSeconds { get; set; } = 60;
+    public bool RequireNonce { get; set; } = true;
 }
 
 public sealed class IdentityEventPublishingOptions

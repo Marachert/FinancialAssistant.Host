@@ -12,6 +12,7 @@ docs/engineering/identity-email-registration-login.md
 docs/engineering/identity-session-lifecycle.md
 docs/engineering/identity-event-publishing.md
 docs/engineering/google-sign-in-backend-validation.md
+docs/engineering/apple-sign-in-backend-validation.md
 ```
 
 ## Responsibility
@@ -24,6 +25,7 @@ Identity Service owns account authentication, session lifecycle, provider links,
 POST /auth/v1/register
 POST /auth/v1/sign-in
 POST /auth/v1/providers/google/sign-in
+POST /auth/v1/providers/apple/sign-in
 POST /auth/v1/refresh
 POST /auth/v1/logout
 GET  /auth/v1/me
@@ -31,16 +33,26 @@ GET  /auth/v1/me
 
 Registration and sign-in create an authoritative server-side session. Refresh rotates the session. Logout revokes it. Current-user context verifies both the signed access value and server-side session state.
 
-Google sign-in accepts a Google ID token, validates it server-side, maps the stable provider subject through an Identity-owned hashed provider link, and returns the same Financial Assistant session contract. The Google token is never used as a Financial Assistant API bearer token.
+Google and Apple sign-in validate provider-issued identity tokens server-side, map stable provider subjects through Identity-owned hashed provider links, and return the same Financial Assistant session contract. Provider tokens are never used as Financial Assistant API bearer tokens.
 
 ## Provider linking
 
-- Google `sub` is the stable provider key; email is not a provider primary key.
-- Provider subjects and hosted-domain identifiers are stored only as purpose-separated HMAC values.
+- Provider `sub` is the stable provider key; email is not a provider primary key.
+- Provider subjects and supported tenant identifiers are stored only as purpose-separated HMAC values.
 - Provider links are stored separately from local email credentials.
-- A verified Google email matching a local credential does not trigger automatic linking.
+- A verified provider email matching a local credential does not trigger automatic linking.
 - Matching local accounts return `provider_link_required`; future linking must require an authenticated existing Identity session.
-- ID tokens, raw provider subjects, email, names, and profile pictures are not persisted in provider-link records.
+- ID tokens, raw provider subjects, raw nonces, email, names, and profile pictures are not persisted in provider-link records.
+- Apple private-relay email is treated as optional profile data, not identity truth.
+
+## Apple validation
+
+- Apple OIDC discovery and JWKS provide signing keys.
+- Identity tokens must use RS256, the configured Apple issuer, and an allowed Bundle ID or Services ID audience.
+- The mobile client supplies a raw nonce; the token must contain the matching SHA-256 nonce representation.
+- Signing-key rotation triggers one metadata refresh and validation retry.
+- Apple sessions use `authenticationMethod = apple_oidc`.
+- Apple private keys and client secrets are not required for identity-token validation; they are future requirements for authorization-code exchange or revocation.
 
 ## Session model
 
@@ -51,6 +63,7 @@ Google sign-in accepts a Google ID token, validates it server-side, maps the sta
 - Logout publishes `token.revoked.v1` through the event publishing boundary.
 - `GET /auth/v1/me` rejects sessions that are revoked, expired, missing, or associated with an unavailable account.
 - Google sessions use `authenticationMethod = google_oidc`.
+- Apple sessions use `authenticationMethod = apple_oidc`.
 
 ## Integration events
 
@@ -80,6 +93,7 @@ IIdentitySessionStore
 IEmailLookupHasher
 IIdentityProviderIdentifierHasher
 IGoogleIdentityTokenValidator
+IAppleIdentityTokenValidator
 IPasswordCredentialHasher
 IRefreshTokenService
 IAccessTokenService
@@ -107,6 +121,12 @@ Identity:Providers:Google:ClientIds
 Identity:Providers:Google:HostedDomain
 Identity:Providers:Google:IssuedAtClockToleranceSeconds
 Identity:Providers:Google:ExpirationClockToleranceSeconds
+Identity:Providers:Apple:Enabled
+Identity:Providers:Apple:ClientIds
+Identity:Providers:Apple:Issuer
+Identity:Providers:Apple:DiscoveryEndpoint
+Identity:Providers:Apple:ClockSkewSeconds
+Identity:Providers:Apple:RequireNonce
 Identity:Events:Mode
 Identity:Events:Exchange
 Identity:Events:ConnectionString
@@ -116,7 +136,7 @@ Identity:Events:DispatchIntervalMilliseconds
 Identity:Events:MaximumRetryDelaySeconds
 ```
 
-Keys, RabbitMQ credentials, and provider configuration belong in environment variables or a secret manager. Google readiness requires at least one allowed client ID and a provider identifier HMAC key when enabled.
+Keys, RabbitMQ credentials, and provider configuration belong in environment variables or a secret manager. Enabled providers require allowed client IDs and the provider identifier HMAC key. Apple readiness additionally requires HTTPS metadata endpoints and nonce validation.
 
 ## Runtime and verification
 
@@ -133,12 +153,12 @@ OpenAPI is available in Development and Testing:
 /openapi/v1.json
 ```
 
-Automated tests cover email registration/sign-in, Google provider authentication, explicit linking, refresh rotation, replay-family revocation, expiry, logout, current-user context, hash-only secret storage, shared event envelopes, safe lifecycle events, outbox retry, OpenAPI, and architecture boundaries.
+Automated tests cover email registration/sign-in, Google and Apple provider authentication, explicit linking, refresh rotation, replay-family revocation, expiry, logout, current-user context, hash-only secret storage, shared event envelopes, safe lifecycle events, outbox retry, OpenAPI, and architecture boundaries.
 
 ## Boundaries
 
 - Deterministic server logic is authoritative.
-- Google validation is isolated behind an application abstraction.
+- Google and Apple validation are isolated behind application abstractions.
 - Public contracts expose no storage implementation fields.
 - Other services never read Identity Service indices directly.
 - RabbitMQ is an integration transport, not the identity source of truth.
