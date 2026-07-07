@@ -116,12 +116,24 @@ Full local infrastructure guide:
 infra/docker-compose/README.md
 ```
 
-## CI
+## CI and contributor workflow
 
 Backend CI is defined in:
 
 ```text
 .github/workflows/backend-ci.yml
+```
+
+Contributor workflow guide:
+
+```text
+docs/engineering/contributing.md
+```
+
+CI quality gate guide:
+
+```text
+docs/engineering/ci.md
 ```
 
 The initial CI baseline includes:
@@ -143,12 +155,6 @@ dotnet restore
 dotnet build --no-restore --configuration Release
 dotnet test --no-build --configuration Release --logger trx --results-directory TestResults
 dotnet format --verify-no-changes --verbosity diagnostic
-```
-
-Full CI guide:
-
-```text
-docs/engineering/ci.md
 ```
 
 ## Architecture guardrails
