@@ -120,11 +120,23 @@ jobs:
 
       - name: Build solution
         if: steps.dotnet-target.outputs.found == 'true'
-        run: dotnet build "${{ steps.dotnet-target.outputs.target }}" --no-restore --configuration Release
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p BuildResults
+          dotnet build "${{ steps.dotnet-target.outputs.target }}" --no-restore --configuration Release 2>&1 | tee BuildResults/build.log
+
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-build-diagnostics
+          path: BuildResults/build.log
+          if-no-files-found: ignore
 
       - name: Test solution
         if: steps.dotnet-test-target.outputs.found == 'true'
-        run: dotnet test "${{ steps.dotnet-test-target.outputs.target }}" --configuration Release --logger trx --results-directory TestResults
+        run: dotnet test "${{ steps.dotnet-target.outputs.target }}" --no-build --configuration Release --logger trx --results-directory TestResults
 
       - name: Upload test results
         if: always()
