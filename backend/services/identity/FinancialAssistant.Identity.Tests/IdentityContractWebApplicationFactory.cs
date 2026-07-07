@@ -10,6 +10,7 @@ namespace FinancialAssistant.Identity.Tests;
 public sealed class IdentityContractWebApplicationFactory : WebApplicationFactory<Program>
 {
     public CapturingIdentityEventPublisher EventPublisher { get; } = new();
+    public StubGoogleIdentityTokenValidator GoogleTokenValidator { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -18,6 +19,8 @@ public sealed class IdentityContractWebApplicationFactory : WebApplicationFactor
         {
             services.RemoveAll<IIdentityEventPublisher>();
             services.AddSingleton<IIdentityEventPublisher>(EventPublisher);
+            services.RemoveAll<IGoogleIdentityTokenValidator>();
+            services.AddSingleton<IGoogleIdentityTokenValidator>(GoogleTokenValidator);
         });
     }
 }
