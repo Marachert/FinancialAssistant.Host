@@ -16,9 +16,11 @@ public sealed partial class IdentitySessionService
         await eventPublisher.PublishAsync(
             new IdentityEventPublication(
                 "token.revoked.v1",
-                "1",
+                1,
                 occurredAtUtc,
                 correlationId,
+                correlationId,
+                session.AccountId,
                 new Dictionary<string, string>(StringComparer.Ordinal)
                 {
                     ["userId"] = session.AccountId,
