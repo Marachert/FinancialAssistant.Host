@@ -133,7 +133,13 @@ public sealed class GatewayRequestDispatcher
 
     private static bool RequestMayHaveBody(HttpRequest request)
     {
-        return request.ContentLength > 0 || string.Equals(request.Headers.TransferEncoding, "chunked", StringComparison.OrdinalIgnoreCase);
+        if (request.ContentLength > 0)
+        {
+            return true;
+        }
+
+        return request.Headers.TryGetValue("Transfer-Encoding", out var transferEncoding)
+            && transferEncoding.Any(value => string.Equals(value, "chunked", StringComparison.OrdinalIgnoreCase));
     }
 
     private static Uri BuildTargetUri(Uri baseAddress, PathString path, QueryString query)
