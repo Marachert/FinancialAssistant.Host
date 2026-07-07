@@ -31,9 +31,15 @@ public static class DependencyInjection
         var keyMaterial = new IdentityJwtKeyMaterial(identityOptions.Authentication);
 
         services.AddSingleton(keyMaterial);
-        services.AddSingleton<IIdentityAccountStore, InMemoryIdentityAccountStore>();
+        services.AddSingleton<InMemoryIdentityAccountStore>();
+        services.AddSingleton<IIdentityAccountStore>(provider =>
+            provider.GetRequiredService<InMemoryIdentityAccountStore>());
+        services.AddSingleton<IIdentityFederatedAccountStore>(provider =>
+            provider.GetRequiredService<InMemoryIdentityAccountStore>());
         services.AddSingleton<IIdentitySessionStore, InMemoryIdentitySessionStore>();
         services.AddSingleton<IEmailLookupHasher, HmacEmailLookupHasher>();
+        services.AddSingleton<IIdentityProviderIdentifierHasher, HmacIdentityProviderIdentifierHasher>();
+        services.AddSingleton<IGoogleIdentityTokenValidator, GoogleIdentityTokenValidator>();
         services.AddSingleton<IPasswordCredentialHasher, AspNetCorePasswordCredentialHasher>();
         services.AddSingleton<IRefreshTokenService, OpaqueRefreshTokenService>();
         services.AddSingleton<IAccessTokenService, JwtAccessTokenService>();
