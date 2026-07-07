@@ -12,7 +12,11 @@ public sealed class GatewayDestinationCatalog
             .Where(destination => !string.IsNullOrWhiteSpace(destination.DestinationKey))
             .GroupBy(destination => destination.DestinationKey, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+
+        Destinations = destinations.Values.ToArray();
     }
+
+    public IReadOnlyCollection<GatewayDestinationDefinition> Destinations { get; }
 
     public bool TryGetDestination(string destinationKey, out GatewayDestinationDefinition destination)
     {
