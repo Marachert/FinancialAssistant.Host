@@ -68,15 +68,17 @@ public sealed class IdentityReadinessHealthCheck : IHealthCheck
             failures.Add("Identity session lifetime configuration is invalid.");
         }
 
+        ValidateGoogleProvider(configuration.Providers, failures);
+
         if (string.IsNullOrWhiteSpace(configuration.Events.Mode))
         {
             failures.Add("Identity event publishing mode is missing.");
         }
 
-        if (string.Equals(configuration.Events.Mode, "active", StringComparison.OrdinalIgnoreCase)
+        if (string.Equals(configuration.Events.Mode, "RabbitMq", StringComparison.OrdinalIgnoreCase)
             && string.IsNullOrWhiteSpace(configuration.Events.Exchange))
         {
-            failures.Add("Identity event exchange is required in active mode.");
+            failures.Add("Identity event exchange is required in RabbitMq mode.");
         }
 
         var result = failures.Count == 0
@@ -84,5 +86,32 @@ public sealed class IdentityReadinessHealthCheck : IHealthCheck
             : HealthCheckResult.Unhealthy(string.Join(" ", failures));
 
         return Task.FromResult(result);
+    }
+
+    private static void ValidateGoogleProvider(
+        IdentityProviderOptions providers,
+        List<string> failures)
+    {
+        var google = providers.Google;
+        if (!google.Enabled)
+        {
+            return;
+        }
+
+        if (google.ClientIds.Count == 0 || google.ClientIds.Any(string.IsNullOrWhiteSpace))
+        {
+            failures.Add("At least one Google OAuth client ID is required when Google sign-in is enabled.");
+        }
+
+        if (string.IsNullOrWhiteSpace(providers.IdentifierHmacKey))
+        {
+            failures.Add("Provider identifier HMAC key is required when Google sign-in is enabled.");
+        }
+
+        if (google.IssuedAtClockToleranceSeconds < 0
+            || google.ExpirationClockToleranceSeconds < 0)
+        {
+            failures.Add("Google token clock tolerance configuration is invalid.");
+        }
     }
 }
