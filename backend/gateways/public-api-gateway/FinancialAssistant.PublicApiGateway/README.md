@@ -6,7 +6,7 @@ Initial .NET 8 public API Gateway host for Financial Assistant.
 
 This gateway is the public REST entry point for mobile, web, and admin clients.
 
-It is responsible for hosting the public HTTP boundary, basic health checks, route catalog, request dispatch foundation, and later correlation/security middleware.
+It is responsible for hosting the public HTTP boundary, basic health checks, route catalog, request dispatch foundation, correlation middleware, and later security middleware.
 
 It is not responsible for business calculations, service-owned storage access, or full authentication flows.
 
@@ -18,6 +18,8 @@ GET /health
 GET /gateway/info
 GET /gateway/routes
 ```
+
+`/gateway/info` returns a safe operational summary with service name, environment, route count, correlation id, and trace id. It must not return user, financial, OCR, AI prompt, or secret data.
 
 ## Public route groups
 
@@ -33,6 +35,13 @@ Destination settings are configured in:
 ```text
 appsettings.json
 Gateway:DestinationMap:Destinations
+```
+
+Correlation settings are configured in:
+
+```text
+appsettings.json
+Gateway:Correlation
 ```
 
 | Public route | Service owner | Access policy | Current status |
@@ -51,6 +60,22 @@ Gateway:DestinationMap:Destinations
 
 Placeholder routes return HTTP 501. To enable a route later, set its status to `active` and enable its destination entry.
 
+## Correlation and tracing
+
+The gateway creates one request correlation boundary for every incoming request:
+
+- accepts `correlationId` when provided by the caller;
+- accepts `X-Correlation-Id` as a compatibility header;
+- generates a new GUID correlation id when neither header is present or the provided value is invalid;
+- writes both `correlationId` and `X-Correlation-Id` to the response;
+- stores the resolved correlation id in `HttpContext.Items` for gateway components;
+- adds the correlation id to the current .NET `Activity` as tag and baggage;
+- uses logger scopes with `CorrelationId` and `TraceId` only.
+
+`traceparent` is not transformed by gateway business code. If the caller sends it, the dispatcher copies it as a normal non-hop-by-hop request header. Standard .NET HTTP diagnostics can also create outgoing trace context when runtime instrumentation is enabled.
+
+Logging rule: gateway logs must stay operational. Do not log raw user input, transaction amounts, receipt text, OCR output, AI prompt/response content, tokens, secrets, or personal financial data.
+
 ## Request dispatch behavior
 
 For active routes, the gateway request dispatcher:
@@ -58,8 +83,9 @@ For active routes, the gateway request dispatcher:
 - builds the destination URI from `Gateway:DestinationMap` plus the incoming path and query string;
 - preserves HTTP method;
 - passes request payload for methods that include a body;
-- copies non-hop-by-hop request headers;
+- copies non-hop-by-hop request headers, including incoming `traceparent`;
 - adds `X-Gateway-Route-Key`;
+- adds canonical `correlationId` and `X-Correlation-Id` headers;
 - returns the destination status code, response headers, and response payload.
 
 This is a technical dispatch foundation only. It must not add domain-specific transformations.
@@ -75,11 +101,19 @@ dotnet run --project backend/gateways/public-api-gateway/FinancialAssistant.Publ
 Then verify:
 
 ```bash
-curl http://localhost:5000/health
-curl http://localhost:5000/gateway/info
-curl http://localhost:5000/gateway/routes
-curl http://localhost:5000/categories
+curl -i http://localhost:5000/health
+curl -i http://localhost:5000/gateway/info
+curl -i -H "correlationId: demo-correlation-id" http://localhost:5000/gateway/info
+curl -i -H "traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00" http://localhost:5000/categories
 ```
+
+Expected verification:
+
+- responses include `correlationId` and `X-Correlation-Id`;
+- incoming `correlationId` is reused when valid;
+- missing correlation id is generated;
+- placeholder routes still return HTTP 501;
+- logs include correlation and trace scope fields without sensitive payload data.
 
 The actual local URL can differ depending on local ASP.NET Core settings.
 
@@ -89,10 +123,10 @@ The actual local URL can differ depending on local ASP.NET Core settings.
 - Gateway placeholders must not implement domain behavior.
 - Gateway must not read or write service-owned storage directly.
 - Auth, profile, transaction, receipt, analytics, score, recommendation, notification, and monitoring behavior belongs to dedicated services.
+- LLM is not a source of truth for transaction data, calculations, or persistence.
 
 ## Follow-up subtasks
 
-- FIN-261 — add correlation and tracing propagation;
 - FIN-262 — add gateway security boundary placeholders;
 - FIN-263 — add gateway health and diagnostics endpoints;
 - FIN-264 — document gateway routing foundation;
