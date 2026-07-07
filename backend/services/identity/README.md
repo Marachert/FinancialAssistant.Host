@@ -1,20 +1,19 @@
 # Financial Assistant Identity Service
 
-Initial .NET 8 Identity Service baseline for FIN-16.
+.NET 8 Identity Service for FIN-16.
 
 Canonical engineering documentation:
 
 ```text
 docs/engineering/identity-service-baseline.md
+docs/engineering/identity-data-model-and-storage.md
 ```
 
 ## Responsibility
 
 Identity Service owns authentication credentials, provider links, refresh sessions, and identity lifecycle events.
 
-It does not own the user financial profile, transaction data, categories, receipts, analytics, scores, recommendations, or notification preferences. Other services must use Identity Service APIs or versioned events and must not read Identity Service storage directly.
-
-The API Gateway remains the public entry point. It may validate or forward safe identity context, but it must not persist credentials or refresh sessions.
+It does not own profile, transaction, category, receipt, analytics, score, recommendation, or notification data. Other services use Identity Service APIs or versioned events and must not read Identity Service indices directly.
 
 ## Project structure
 
@@ -24,19 +23,54 @@ FinancialAssistant.Identity.Application
 FinancialAssistant.Identity.Domain
 FinancialAssistant.Identity.Infrastructure
 FinancialAssistant.Identity.Contracts
+FinancialAssistant.Identity.Tests
 ```
 
 Layer rules:
 
-- `Domain` contains identity business rules and has no infrastructure dependency.
-- `Application` orchestrates identity use cases and depends on Domain and Contracts.
-- `Infrastructure` implements storage and messaging adapters behind application abstractions.
+- `Domain` contains identity rules and has no infrastructure dependency.
+- `Application` orchestrates use cases and depends on Domain and Contracts.
+- `Infrastructure` contains storage documents, index catalog, cleanup policy, and future adapters.
 - `Contracts` contains public and event contracts without storage-specific fields.
 - `Api` hosts REST endpoints, health checks, OpenAPI, and composition only.
 
-FIN-74 intentionally contains no registration, login, token, or provider business flow. Those are delivered by FIN-75, FIN-76, FIN-77, FIN-85, and FIN-86.
+## Owned Elasticsearch storage
 
-## Current endpoints
+FIN-85 defines four service-owned entities:
+
+```text
+accounts
+credentials
+sessions
+external-identities
+```
+
+Physical index convention:
+
+```text
+fa-{environment}-identity-{entity}-v{schemaVersion}-{generation}
+```
+
+Example:
+
+```text
+fa-dev-identity-accounts-v1-000001
+```
+
+Stable aliases:
+
+```text
+fa-dev-identity-accounts-read
+fa-dev-identity-accounts-write
+```
+
+Only Identity Service credentials may access this namespace. Direct cross-service index reads are forbidden.
+
+Storage documents never contain raw passwords, access tokens, refresh tokens, email addresses, phone numbers, verification codes, reset tokens, or raw provider subjects. Exact lookup values and secrets are represented by purpose-specific hashes.
+
+FIN-85 defines naming, documents, and cleanup policy only. It does not activate an Elasticsearch client or create indices.
+
+## Runtime endpoints
 
 ```text
 GET /
@@ -47,49 +81,42 @@ GET /identity/info
 GET /openapi/v1.json   # Development and Testing only
 ```
 
-`/identity/info` exposes a safe technical summary only. It must never expose credentials, tokens, provider identifiers, storage aliases, connection addresses, or user data.
-
-## Configuration placeholders
+## Configuration
 
 ```text
 Identity:ServiceName
 Identity:Storage:Provider
-Identity:Storage:AccountsAlias
-Identity:Storage:SessionsAlias
+Identity:Storage:Environment
+Identity:Storage:SchemaVersion
+Identity:Storage:InitialGeneration
+Identity:Storage:Cleanup:DeletedAccountRetentionDays
+Identity:Storage:Cleanup:RemovedCredentialRetentionDays
+Identity:Storage:Cleanup:TerminalSessionRetentionDays
+Identity:Storage:Cleanup:HardMaximumSessionDocumentDays
+Identity:Storage:Cleanup:RemovedProviderLinkRetentionDays
 Identity:Events:Mode
 Identity:Events:Exchange
 ```
 
-The storage provider is declared as Elasticsearch, but this baseline does not create a client or access an index. Exact aliases, mappings, retention, and cleanup rules belong to FIN-85.
+Secrets and Elasticsearch credentials belong in environment variables or a secret manager, never committed configuration.
 
-Event publishing uses a no-op adapter in `placeholder` mode. RabbitMQ integration and versioned identity events belong to FIN-77.
-
-Secrets, passwords, token material, verification codes, and provider credentials must never be committed to configuration files or written to logs.
-
-## Build and run
+## Build and test
 
 From the repository root:
 
 ```bash
 dotnet restore FinancialAssistant.Backend.sln
 dotnet build FinancialAssistant.Backend.sln --no-restore --configuration Release
+dotnet test FinancialAssistant.Backend.sln --no-build --configuration Release
 dotnet run --project backend/services/identity/FinancialAssistant.Identity.Api/FinancialAssistant.Identity.Api.csproj
-```
-
-Then verify using the actual local ASP.NET Core URL:
-
-```bash
-curl -i http://localhost:5000/health
-curl -i http://localhost:5000/health/live
-curl -i http://localhost:5000/health/ready
-curl -i http://localhost:5000/identity/info
-curl -i http://localhost:5000/openapi/v1.json
 ```
 
 ## Boundary checklist
 
 - Domain has no project reference to Infrastructure or API.
-- API contains no credential or session persistence logic.
-- Infrastructure contains placeholders only and no active Elasticsearch or RabbitMQ client.
-- No plaintext passwords, refresh tokens, access tokens, verification codes, or provider secrets are stored or logged.
-- LLM and OCR are not involved in authentication decisions or identity persistence.
+- Storage documents live in Infrastructure rather than Domain or Contracts.
+- No active Elasticsearch or RabbitMQ client is introduced by FIN-85.
+- No plaintext identity secrets or lookup values are stored.
+- Direct cross-service index reads are forbidden.
+- Cleanup is owned by Identity Service; ILM handles rollover/generation lifecycle, not domain deletion decisions.
+- LLM and OCR are not involved in authentication or identity persistence.
