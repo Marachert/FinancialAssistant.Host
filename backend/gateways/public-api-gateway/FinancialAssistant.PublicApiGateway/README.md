@@ -6,7 +6,7 @@ Initial .NET 8 public API Gateway host for Financial Assistant.
 
 This gateway is the public REST entry point for mobile, web, and admin clients.
 
-It is responsible for hosting the public HTTP boundary, basic health checks, route catalog, and later forwarding/correlation middleware.
+It is responsible for hosting the public HTTP boundary, basic health checks, route catalog, request dispatch foundation, and later correlation/security middleware.
 
 It is not responsible for business calculations, service-owned storage access, or full authentication flows.
 
@@ -28,6 +28,13 @@ appsettings.json
 Gateway:RouteMap:Routes
 ```
 
+Destination settings are configured in:
+
+```text
+appsettings.json
+Gateway:DestinationMap:Destinations
+```
+
 | Public route | Service owner | Access policy | Current status |
 | --- | --- | --- | --- |
 | `/auth` | Auth Service | public | placeholder |
@@ -42,7 +49,20 @@ Gateway:RouteMap:Routes
 | `/notifications` | Notification Service | authenticated | placeholder |
 | `/admin/monitoring` | Monitoring Admin Service | admin | placeholder |
 
-The placeholder endpoints return HTTP 501 until FIN-260 adds request handling to configured internal service destinations.
+Placeholder routes return HTTP 501. To enable a route later, set its status to `active` and enable its destination entry.
+
+## Request dispatch behavior
+
+For active routes, the gateway request dispatcher:
+
+- builds the destination URI from `Gateway:DestinationMap` plus the incoming path and query string;
+- preserves HTTP method;
+- passes request payload for methods that include a body;
+- copies non-hop-by-hop request headers;
+- adds `X-Gateway-Route-Key`;
+- returns the destination status code, response headers, and response payload.
+
+This is a technical dispatch foundation only. It must not add domain-specific transformations.
 
 ## Local run
 
@@ -72,7 +92,6 @@ The actual local URL can differ depending on local ASP.NET Core settings.
 
 ## Follow-up subtasks
 
-- FIN-260 — implement forwarding foundation;
 - FIN-261 — add correlation and tracing propagation;
 - FIN-262 — add gateway security boundary placeholders;
 - FIN-263 — add gateway health and diagnostics endpoints;

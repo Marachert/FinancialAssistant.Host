@@ -5,7 +5,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHealthChecks();
 builder.Services.Configure<GatewayRouteMapOptions>(builder.Configuration.GetSection("Gateway:RouteMap"));
+builder.Services.Configure<GatewayDestinationMapOptions>(builder.Configuration.GetSection("Gateway:DestinationMap"));
 builder.Services.AddSingleton<GatewayRouteCatalog>();
+builder.Services.AddSingleton<GatewayDestinationCatalog>();
+builder.Services.AddHttpClient<GatewayRequestDispatcher>();
 
 var app = builder.Build();
 
