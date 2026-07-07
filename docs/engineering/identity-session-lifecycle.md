@@ -167,6 +167,21 @@ After logout:
 
 The response contains identity/session context only. Profile data and financial data belong to their own services.
 
+## Authentication challenge contract
+
+Protected session endpoints preserve the Identity API error contract even when authorization middleware rejects the request before the endpoint handler runs.
+
+Missing or invalid bearer credentials return:
+
+```text
+HTTP 401
+Content-Type: application/problem+json
+WWW-Authenticate: Bearer
+code: session_invalid
+```
+
+The response is the versioned `IdentityApiErrorResponse` and includes the supplied correlation ID when one is present. It never includes token details, validation exceptions, or credential data.
+
 ## Events
 
 FIN-76 publishes `token.revoked.v1` through `IIdentityEventPublisher` after authoritative in-memory state changes.
@@ -239,5 +254,5 @@ Automated tests cover:
 - hash-only persisted refresh values;
 - expiry rejection in the atomic store;
 - `token.revoked.v1` publication for logout and replay;
-- anonymous rejection for protected routes;
+- structured identity problem responses for missing and invalid bearer credentials;
 - generated OpenAPI continuity.
