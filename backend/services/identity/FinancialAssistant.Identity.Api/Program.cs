@@ -1,3 +1,4 @@
+using FinancialAssistant.Identity.Api.Endpoints;
 using FinancialAssistant.Identity.Application;
 using FinancialAssistant.Identity.Infrastructure;
 using FinancialAssistant.Identity.Infrastructure.Configuration;
@@ -5,11 +6,31 @@ using FinancialAssistant.Identity.Infrastructure.Health;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc(
+        "v1",
+        new OpenApiInfo
+        {
+            Title = "Financial Assistant Identity API",
+            Version = "v1",
+            Description = "Versioned client-facing authentication contracts for mobile and web clients."
+        });
+    options.AddSecurityDefinition(
+        "Bearer",
+        new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            Description = "Bearer access token issued by the Identity Service."
+        });
+});
 builder.Services.AddIdentityApplication();
 builder.Services.AddIdentityInfrastructure(builder.Configuration);
 builder.Services
@@ -56,6 +77,8 @@ app.MapGet(
         storageProvider = options.Value.Storage.Provider,
         eventPublishingMode = options.Value.Events.Mode
     }));
+
+app.MapIdentityContractEndpoints();
 
 app.Run();
 

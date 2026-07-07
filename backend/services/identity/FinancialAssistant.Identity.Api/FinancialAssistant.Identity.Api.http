@@ -1,24 +1,76 @@
 @IdentityService_HostAddress = http://localhost:5000
+@SyntheticRefreshToken = synthetic-refresh-token-value-that-is-not-real-000001
 
 GET {{IdentityService_HostAddress}}/health
 Accept: application/json
 
 ###
 
-GET {{IdentityService_HostAddress}}/health/live
-Accept: application/json
-
-###
-
-GET {{IdentityService_HostAddress}}/health/ready
-Accept: application/json
-
-###
-
-GET {{IdentityService_HostAddress}}/identity/info
-Accept: application/json
-
-###
-
 GET {{IdentityService_HostAddress}}/openapi/v1.json
+Accept: application/json
+
+###
+
+POST {{IdentityService_HostAddress}}/auth/v1/register
+Content-Type: application/json
+Idempotency-Key: synthetic-registration-001
+
+{
+  "email": "synthetic.user@example.invalid",
+  "password": "Synthetic-Only-Password-123!",
+  "client": {
+    "clientInstanceId": "synthetic-client-001",
+    "platform": "web",
+    "appVersion": "0.0-test"
+  }
+}
+
+###
+
+POST {{IdentityService_HostAddress}}/auth/v1/sign-in
+Content-Type: application/json
+
+{
+  "email": "synthetic.user@example.invalid",
+  "password": "Synthetic-Only-Password-123!",
+  "client": {
+    "clientInstanceId": "synthetic-client-001",
+    "platform": "android",
+    "appVersion": "0.0-test"
+  }
+}
+
+###
+
+POST {{IdentityService_HostAddress}}/auth/v1/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{SyntheticRefreshToken}}",
+  "client": {
+    "clientInstanceId": "synthetic-client-001",
+    "platform": "ios",
+    "appVersion": "0.0-test"
+  }
+}
+
+###
+
+POST {{IdentityService_HostAddress}}/auth/v1/logout
+Authorization: Bearer synthetic-access-token-not-real
+Content-Type: application/json
+
+{
+  "refreshToken": "{{SyntheticRefreshToken}}",
+  "client": {
+    "clientInstanceId": "synthetic-client-001",
+    "platform": "web",
+    "appVersion": "0.0-test"
+  }
+}
+
+###
+
+GET {{IdentityService_HostAddress}}/auth/v1/me
+Authorization: Bearer synthetic-access-token-not-real
 Accept: application/json
