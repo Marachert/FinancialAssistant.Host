@@ -46,6 +46,7 @@ public sealed class IdentityProviderOptions
     public string IdentifierHmacKey { get; set; } = string.Empty;
     public GoogleIdentityProviderOptions Google { get; set; } = new();
     public AppleIdentityProviderOptions Apple { get; set; } = new();
+    public PhoneVerificationOptions Phone { get; set; } = new();
 }
 
 public sealed class GoogleIdentityProviderOptions
@@ -65,6 +66,19 @@ public sealed class AppleIdentityProviderOptions
     public string DiscoveryEndpoint { get; set; } = "https://appleid.apple.com/.well-known/openid-configuration";
     public int ClockSkewSeconds { get; set; } = 60;
     public bool RequireNonce { get; set; } = true;
+}
+
+public sealed class PhoneVerificationOptions
+{
+    public bool Enabled { get; set; }
+    public string Adapter { get; set; } = "Disabled";
+    public int CodeLength { get; set; } = 6;
+    public int ChallengeLifetimeMinutes { get; set; } = 10;
+    public int ResendCooldownSeconds { get; set; } = 30;
+    public int MaximumAttempts { get; set; } = 5;
+    public int StartWindowMinutes { get; set; } = 60;
+    public int MaximumStartsPerPhone { get; set; } = 5;
+    public int MaximumStartsPerClient { get; set; } = 10;
 }
 
 public sealed class IdentityEventPublishingOptions
