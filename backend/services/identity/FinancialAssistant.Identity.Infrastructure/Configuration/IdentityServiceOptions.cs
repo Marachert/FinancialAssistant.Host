@@ -32,6 +32,10 @@ public sealed class IdentityAuthenticationOptions
 {
     public string RuntimeAdapter { get; set; } = "InMemoryDevelopment";
     public string LookupHmacKey { get; set; } = string.Empty;
+    public string RefreshTokenHashKey { get; set; } = string.Empty;
+    public string AccessTokenSigningKey { get; set; } = string.Empty;
+    public string AccessTokenIssuer { get; set; } = "financial-assistant-identity";
+    public string AccessTokenAudience { get; set; } = "financial-assistant-clients";
     public int AccessTokenLifetimeMinutes { get; set; } = 15;
     public int RefreshTokenLifetimeDays { get; set; } = 30;
 }

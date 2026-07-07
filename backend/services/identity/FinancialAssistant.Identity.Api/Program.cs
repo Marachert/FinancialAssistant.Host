@@ -52,6 +52,9 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
         options.SwaggerEndpoint("/openapi/v1.json", "Financial Assistant Identity API v1"));
 }
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapGet("/", () => Results.Redirect("/health"));
 app.MapHealthChecks("/health");
 app.MapHealthChecks(
