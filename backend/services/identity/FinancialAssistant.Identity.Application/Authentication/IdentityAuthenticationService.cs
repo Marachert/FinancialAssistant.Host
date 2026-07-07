@@ -7,6 +7,7 @@ namespace FinancialAssistant.Identity.Application.Authentication;
 
 public sealed class IdentityAuthenticationService : IIdentityAuthenticationService
 {
+    private const string EmailPasswordMethod = "email_password";
     private readonly IIdentityAccountStore accountStore;
     private readonly IEmailLookupHasher emailLookupHasher;
     private readonly IPasswordCredentialHasher passwordHasher;
@@ -77,13 +78,15 @@ public sealed class IdentityAuthenticationService : IIdentityAuthenticationServi
         await eventPublisher.PublishAsync(
             new IdentityEventPublication(
                 "user.registered.v1",
-                "1",
+                1,
                 now,
                 correlationId,
+                correlationId,
+                account.Id,
                 new Dictionary<string, string>(StringComparer.Ordinal)
                 {
                     ["userId"] = account.Id,
-                    ["authenticationMethod"] = "email_password"
+                    ["authenticationMethod"] = EmailPasswordMethod
                 }),
             cancellationToken);
 
@@ -92,6 +95,7 @@ public sealed class IdentityAuthenticationService : IIdentityAuthenticationServi
 
     public async Task<IdentityOperationResult<AuthSessionResponse>> SignInAsync(
         SignInRequest request,
+        string correlationId,
         CancellationToken cancellationToken = default)
     {
         var validationErrors = IdentityRequestValidator.ValidateSignIn(request);
@@ -112,6 +116,7 @@ public sealed class IdentityAuthenticationService : IIdentityAuthenticationServi
         if (credential is null)
         {
             passwordHasher.VerifyDummy(request.Password);
+            await PublishSignInFailureAsync(correlationId, cancellationToken);
             return AuthenticationFailed();
         }
 
@@ -119,12 +124,14 @@ public sealed class IdentityAuthenticationService : IIdentityAuthenticationServi
         if (account is null || !account.CanAuthenticate)
         {
             passwordHasher.VerifyDummy(request.Password);
+            await PublishSignInFailureAsync(correlationId, cancellationToken);
             return AuthenticationFailed();
         }
 
         var verification = passwordHasher.Verify(account.Id, credential.SecretHash, request.Password);
         if (verification == PasswordVerificationOutcome.Failed)
         {
+            await PublishSignInFailureAsync(correlationId, cancellationToken);
             return AuthenticationFailed();
         }
 
@@ -136,7 +143,42 @@ public sealed class IdentityAuthenticationService : IIdentityAuthenticationServi
         }
 
         var session = sessionIssuer.Issue(account, request.Client, now);
+        await eventPublisher.PublishAsync(
+            new IdentityEventPublication(
+                "user.signed_in.v1",
+                1,
+                now,
+                correlationId,
+                correlationId,
+                account.Id,
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["userId"] = account.Id,
+                    ["sessionId"] = session.User.SessionId,
+                    ["authenticationMethod"] = EmailPasswordMethod
+                }),
+            cancellationToken);
         return IdentityOperationResult<AuthSessionResponse>.Success(session);
+    }
+
+    private Task PublishSignInFailureAsync(
+        string correlationId,
+        CancellationToken cancellationToken)
+    {
+        return eventPublisher.PublishAsync(
+            new IdentityEventPublication(
+                "authentication.failed.v1",
+                1,
+                clock.UtcNow,
+                correlationId,
+                correlationId,
+                null,
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["authenticationMethod"] = EmailPasswordMethod,
+                    ["reasonCode"] = "credentials_not_accepted"
+                }),
+            cancellationToken);
     }
 
     private static IdentityOperationResult<AuthSessionResponse> DuplicateRegistration()
