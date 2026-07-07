@@ -1,3 +1,5 @@
+using FinancialAssistant.PublicApiGateway.Observability;
+
 namespace FinancialAssistant.PublicApiGateway.Routing;
 
 public sealed class GatewayRequestDispatcher
@@ -42,6 +44,7 @@ public sealed class GatewayRequestDispatcher
                 serviceOwner = route.ServiceOwner,
                 internalDestination = route.InternalDestination,
                 accessPolicy = route.AccessPolicy,
+                correlationId = CorrelationHeaders.GetCorrelationId(context),
                 message = "Route configured. Service integration is not active yet."
             });
             return;
@@ -55,6 +58,7 @@ public sealed class GatewayRequestDispatcher
                 status = "destination_unavailable",
                 routeKey = route.RouteKey,
                 internalDestination = route.InternalDestination,
+                correlationId = CorrelationHeaders.GetCorrelationId(context),
                 message = "Destination is not configured or not enabled."
             });
             return;
@@ -68,6 +72,7 @@ public sealed class GatewayRequestDispatcher
                 status = "destination_invalid",
                 routeKey = route.RouteKey,
                 internalDestination = route.InternalDestination,
+                correlationId = CorrelationHeaders.GetCorrelationId(context),
                 message = "Destination base address is invalid."
             });
             return;
@@ -99,6 +104,7 @@ public sealed class GatewayRequestDispatcher
                 status = "destination_call_failed",
                 routeKey = route.RouteKey,
                 internalDestination = route.InternalDestination,
+                correlationId = CorrelationHeaders.GetCorrelationId(context),
                 message = "Destination call failed."
             });
         }
@@ -107,7 +113,6 @@ public sealed class GatewayRequestDispatcher
     private static HttpRequestMessage CreateRequestMessage(HttpContext context, Uri targetUri, GatewayRouteDefinition route)
     {
         var requestMessage = new HttpRequestMessage(new HttpMethod(context.Request.Method), targetUri);
-        requestMessage.Headers.TryAddWithoutValidation("X-Gateway-Route-Key", route.RouteKey);
 
         foreach (var header in context.Request.Headers)
         {
@@ -128,7 +133,26 @@ public sealed class GatewayRequestDispatcher
             requestMessage.Content = new StreamContent(context.Request.Body);
         }
 
+        AddGatewayHeaders(context, requestMessage, route);
+
         return requestMessage;
+    }
+
+    private static void AddGatewayHeaders(HttpContext context, HttpRequestMessage requestMessage, GatewayRouteDefinition route)
+    {
+        requestMessage.Headers.Remove("X-Gateway-Route-Key");
+        requestMessage.Headers.TryAddWithoutValidation("X-Gateway-Route-Key", route.RouteKey);
+
+        var correlationId = CorrelationHeaders.GetCorrelationId(context);
+        if (string.IsNullOrWhiteSpace(correlationId))
+        {
+            return;
+        }
+
+        requestMessage.Headers.Remove(CorrelationHeaders.CorrelationId);
+        requestMessage.Headers.Remove(CorrelationHeaders.XCorrelationId);
+        requestMessage.Headers.TryAddWithoutValidation(CorrelationHeaders.CorrelationId, correlationId);
+        requestMessage.Headers.TryAddWithoutValidation(CorrelationHeaders.XCorrelationId, correlationId);
     }
 
     private static bool RequestMayHaveBody(HttpRequest request)
