@@ -5,5 +5,9 @@ namespace FinancialAssistant.Identity.Application.Abstractions;
 
 public interface IInitialSessionIssuer
 {
-    AuthSessionResponse Issue(IdentityAccount account, IdentityClientContext client, DateTimeOffset issuedAtUtc);
+    AuthSessionResponse Issue(
+        IdentityAccount account,
+        IdentityClientContext client,
+        string authenticationMethod,
+        DateTimeOffset issuedAtUtc);
 }
