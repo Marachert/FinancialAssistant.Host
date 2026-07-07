@@ -4,6 +4,9 @@ public static class IdentityErrorCodes
 {
     public const string ValidationFailed = "validation_failed";
     public const string AuthenticationFailed = "authentication_failed";
+    public const string ProviderAuthenticationFailed = "provider_authentication_failed";
+    public const string ProviderLinkRequired = "provider_link_required";
+    public const string ProviderUnavailable = "provider_unavailable";
     public const string SessionInvalid = "session_invalid";
     public const string SessionExpired = "session_expired";
     public const string SessionRevoked = "session_revoked";
@@ -17,6 +20,9 @@ public static class IdentityErrorCodes
         {
             ValidationFailed,
             AuthenticationFailed,
+            ProviderAuthenticationFailed,
+            ProviderLinkRequired,
+            ProviderUnavailable,
             SessionInvalid,
             SessionExpired,
             SessionRevoked,
