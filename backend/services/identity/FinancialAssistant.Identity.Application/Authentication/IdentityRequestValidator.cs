@@ -42,6 +42,18 @@ internal static class IdentityRequestValidator
         return Freeze(errors);
     }
 
+    public static IReadOnlyDictionary<string, string[]> ValidateGoogleSignIn(GoogleSignInRequest request)
+    {
+        var errors = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        if (string.IsNullOrWhiteSpace(request.IdToken) || request.IdToken.Length is < 64 or > 16384)
+        {
+            Add(errors, "idToken", "A Google ID token is required and must have a valid size.");
+        }
+
+        ValidateClient(request.Client, errors);
+        return Freeze(errors);
+    }
+
     private static void ValidateEmail(string? email, Dictionary<string, List<string>> errors)
     {
         if (string.IsNullOrWhiteSpace(email) || email.Length > 320 || !EmailValidator.IsValid(email))
