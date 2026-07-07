@@ -7,7 +7,8 @@ Implemented/documented scope:
 - FIN-251 — CI scope and repository quality gates;
 - FIN-252 — .NET restore/build/test workflow;
 - FIN-253 — formatting and linting baseline;
-- FIN-254 — test reporting and CI diagnostics.
+- FIN-254 — test reporting and CI diagnostics;
+- FIN-255 — PR quality gate and branch protection expectations.
 
 ## Workflow file
 
@@ -46,6 +47,67 @@ Before running restore/build/test/format, the workflow looks for a .NET target i
 If no `.sln` or `.csproj` file exists yet, the workflow emits a GitHub notice and skips the .NET commands successfully. This keeps infrastructure/documentation PRs from failing before backend code is introduced.
 
 Once a backend solution or project is added, the same jobs automatically become enforcing checks.
+
+## PR quality gate policy
+
+Every code or infrastructure change should go through a pull request. Direct commits to `main` should be avoided except for emergency repository administration.
+
+A pull request is considered merge-ready only when all applicable requirements are true:
+
+- the PR has a clear summary and scope;
+- the PR references the related Jira issue when applicable;
+- `ci-dotnet-build-test` succeeds;
+- `ci-dotnet-format` succeeds;
+- changed documentation is updated when behavior, commands, or developer workflow changes;
+- no secrets, production configuration values, real receipts, raw OCR text, AI prompts/responses, personal data, or real financial data are added;
+- failing or skipped checks are understood and documented before merge.
+
+During the platform-foundation stage, .NET restore/build/test/format commands may be skipped when no `.sln` or `.csproj` exists yet. This is acceptable for infrastructure/documentation PRs. After backend code is added, skipped .NET checks should be treated as a warning and investigated.
+
+## Branch protection expectation
+
+Recommended protected branches:
+
+```text
+main
+develop
+```
+
+Initial `main` branch protection should require:
+
+- pull request before merge;
+- status checks to pass before merge;
+- required status checks:
+  - `ci-dotnet-build-test`;
+  - `ci-dotnet-format`;
+- conversation resolution before merge, if enabled;
+- linear history or squash merge, if the team chooses that workflow;
+- block force pushes;
+- block branch deletion.
+
+Recommended `develop` branch protection can be slightly lighter during PoC:
+
+- pull request before merge;
+- status checks to pass before merge;
+- required status checks:
+  - `ci-dotnet-build-test`;
+  - `ci-dotnet-format`.
+
+Repository setting limitation:
+
+Branch protection is a GitHub repository setting. It is not implemented by the CI workflow file itself. If the available automation tool cannot modify branch protection settings, this document is the source of truth until an admin configures the rules in GitHub repository settings.
+
+## Recommended merge behavior
+
+Preferred default for the PoC stage:
+
+- small PRs;
+- squash merge for feature branches;
+- merge only after CI is green;
+- avoid mixing unrelated Jira issues in one PR;
+- avoid committing generated local files such as `.env`, Docker volumes, logs, and test result folders.
+
+Do not block the first PoC with heavy enterprise controls such as mandatory multi-review approvals, paid quality tools, or deployment gates unless the team explicitly decides to add them later.
 
 ## Local reproduction commands
 
@@ -95,24 +157,6 @@ The artifact upload runs with `if: always()` so results are available even when 
 | Test solution | failing unit/integration test | run `dotnet test --no-build --configuration Release` locally |
 | Verify formatting | formatting differs from repository baseline | run `dotnet format` locally and commit formatting-only changes |
 | Upload test results | missing result files or artifact config issue | verify `TestResults/**/*.trx` path |
-
-## Pull request quality gate expectation
-
-A pull request should not be treated as merge-ready unless:
-
-- restore succeeds when a .NET target exists;
-- build succeeds when a .NET target exists;
-- tests pass when a .NET target exists;
-- formatting check passes when a .NET target exists;
-- CI output is readable enough to diagnose failures;
-- the change does not introduce sensitive data into logs, tests, or artifacts.
-
-When branch protection is configured, require these checks on the main development branch:
-
-```text
-ci-dotnet-build-test
-ci-dotnet-format
-```
 
 ## Security and privacy rules
 
