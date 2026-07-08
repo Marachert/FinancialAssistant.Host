@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FinancialAssistant.PublicApiGateway.Observability;
+using FinancialAssistant.PublicApiGateway.Security;
 
 namespace FinancialAssistant.PublicApiGateway.Routing;
 
@@ -18,6 +19,14 @@ public sealed class GatewayRequestDispatcher
         "Transfer-Encoding",
         "Upgrade",
         "Host"
+    };
+    private static readonly HashSet<string> ClientControlledGatewayHeaders = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "X-Gateway-Route-Key",
+        GatewayUserContextHeaders.UserId,
+        GatewayUserContextHeaders.SessionId,
+        GatewayUserContextHeaders.Roles,
+        GatewayUserContextHeaders.LegacyAdminScope
     };
 
     private readonly HttpClient httpClient;
@@ -119,7 +128,7 @@ public sealed class GatewayRequestDispatcher
 
         foreach (var header in context.Request.Headers)
         {
-            if (HopByHopHeaders.Contains(header.Key))
+            if (HopByHopHeaders.Contains(header.Key) || ClientControlledGatewayHeaders.Contains(header.Key))
             {
                 continue;
             }
@@ -147,6 +156,19 @@ public sealed class GatewayRequestDispatcher
     {
         requestMessage.Headers.Remove("X-Gateway-Route-Key");
         requestMessage.Headers.TryAddWithoutValidation("X-Gateway-Route-Key", route.RouteKey);
+
+        requestMessage.Headers.Remove(GatewayUserContextHeaders.UserId);
+        requestMessage.Headers.Remove(GatewayUserContextHeaders.SessionId);
+        requestMessage.Headers.Remove(GatewayUserContextHeaders.Roles);
+        var userContext = GatewayUserContext.Get(context);
+        if (userContext is not null)
+        {
+            requestMessage.Headers.TryAddWithoutValidation(GatewayUserContextHeaders.UserId, userContext.UserId);
+            requestMessage.Headers.TryAddWithoutValidation(GatewayUserContextHeaders.SessionId, userContext.SessionId);
+            requestMessage.Headers.TryAddWithoutValidation(
+                GatewayUserContextHeaders.Roles,
+                string.Join(',', userContext.Roles));
+        }
 
         var correlationId = CorrelationHeaders.GetCorrelationId(context);
         if (string.IsNullOrWhiteSpace(correlationId))
