@@ -25,12 +25,12 @@ public sealed class GatewayExceptionMiddleware
         }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
         {
-            logger.LogInformation("Gateway request was cancelled by the client.");
+            GatewayOperationalLog.ClientRequestCancelled(logger);
         }
         catch (Exception exception)
         {
-            logger.LogError(
-                "Unhandled gateway request failure. FailureType: {FailureType}. ResponseStarted: {ResponseStarted}.",
+            GatewayOperationalLog.UnhandledFailure(
+                logger,
                 exception.GetType().Name,
                 context.Response.HasStarted);
 
