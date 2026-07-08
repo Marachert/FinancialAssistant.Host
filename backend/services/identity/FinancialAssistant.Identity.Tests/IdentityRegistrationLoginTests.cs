@@ -63,6 +63,38 @@ public sealed class IdentityRegistrationLoginTests : IClassFixture<IdentityContr
     }
 
     [Fact]
+    public async Task Register_ReplacesUnsafeCorrelationIdBeforePublishing()
+    {
+        var unsafeCorrelationId = $"user-{CreateEmail()}-token";
+        using var request = new HttpRequestMessage(HttpMethod.Post, IdentityApiRoutes.Register)
+        {
+            Content = JsonContent.Create(
+                new RegisterAccountRequest(
+                    CreateEmail(),
+                    "Synthetic-Only-Password-123!",
+                    CreateClient("web")))
+        };
+        request.Headers.TryAddWithoutValidation(
+            IdentityApiHeaders.CorrelationId,
+            unsafeCorrelationId);
+
+        var response = await client.SendAsync(request);
+        var session = await response.Content.ReadFromJsonAsync<AuthSessionResponse>(JsonOptions);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.NotNull(session);
+
+        var publication = Assert.Single(factory.EventPublisher.Publications, candidate => candidate.EventName == "user.registered.v1"
+                    && candidate.SubjectId == session.User.UserId);
+
+        Assert.NotEqual(unsafeCorrelationId, publication.CorrelationId);
+        Assert.Equal(publication.CorrelationId, publication.CausationId);
+        Assert.True(
+            Guid.TryParseExact(publication.CorrelationId, "D", out _)
+            || Guid.TryParseExact(publication.CorrelationId, "N", out _));
+    }
+
+    [Fact]
     public async Task DuplicateRegistration_ReturnsSafeConflict()
     {
         var email = CreateEmail();

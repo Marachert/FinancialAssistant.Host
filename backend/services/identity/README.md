@@ -14,6 +14,7 @@ docs/engineering/identity-event-publishing.md
 docs/engineering/google-sign-in-backend-validation.md
 docs/engineering/apple-sign-in-backend-validation.md
 docs/engineering/phone-verification-authentication.md
+docs/engineering/safe-operational-log-policy.md
 ```
 
 ## Responsibility
@@ -94,6 +95,16 @@ All events use the shared versioned envelope with event ID, event type, occurren
 Application code enqueues event intents through `IIdentityEventPublisher`. `IdentityOutboxDispatcher` publishes pending messages through `IIdentityEventTransport`. RabbitMQ mode uses the durable `fa.events` topic exchange, persistent mandatory messages, and publisher confirmations.
 
 The active outbox is development-only and process-local. It retries transport failures but is not crash durable and is not shared between replicas. Production Elasticsearch outbox persistence must close the state-to-event-intent gap explicitly.
+
+## Operational logging
+
+Identity infrastructure events use the source-generated `IdentityOperationalLog` catalog with stable event IDs in the `2000–2999` range.
+
+The outbox dispatcher may log technical event ID/type, correlation and causation identifiers, failure type name, attempt count, and retry delay. It must not log event payloads, metadata dictionaries, user hashes, account/session IDs, provider tokens, phone/email values, exception messages, stack traces, RabbitMQ connection strings, or Elasticsearch documents.
+
+Exception objects are not passed to the logging provider. Only `exception.GetType().Name` is recorded as `FailureType`.
+
+The complete allowlist, prohibited data list, examples, and code-review checklist are in `docs/engineering/safe-operational-log-policy.md`.
 
 ## Storage boundary
 
@@ -177,7 +188,7 @@ OpenAPI is available in Development and Testing:
 /openapi/v1.json
 ```
 
-Automated tests cover email registration/sign-in, Google and Apple authentication, phone challenge and confirmation, rate limits, lockout, client binding, provider-link hashing, explicit linking, session rotation, replay-family revocation, expiry, logout, current-user context, safe lifecycle events, outbox retry, OpenAPI, and architecture boundaries.
+Automated tests cover email registration/sign-in, Google and Apple authentication, phone challenge and confirmation, rate limits, lockout, client binding, provider-link hashing, explicit linking, session rotation, replay-family revocation, expiry, logout, current-user context, safe lifecycle events, outbox retry, OpenAPI, architecture boundaries, and operational log event-contract enforcement.
 
 ## Boundaries
 

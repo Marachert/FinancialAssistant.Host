@@ -16,7 +16,7 @@ internal static partial class IdentityProviderEndpointExtensions
     {
         var result = await service.StartAsync(
             request,
-            ResolveCorrelationId(context),
+            IdentityCorrelationId.Resolve(context),
             cancellationToken);
         return result.IsSuccess
             ? Results.Accepted(IdentityApiRoutes.PhoneVerificationStart, result.Value)
@@ -31,7 +31,7 @@ internal static partial class IdentityProviderEndpointExtensions
     {
         var result = await service.ConfirmAsync(
             request,
-            ResolveCorrelationId(context),
+            IdentityCorrelationId.Resolve(context),
             cancellationToken);
         return result.IsSuccess
             ? Results.Ok(result.Value)
@@ -62,7 +62,7 @@ internal static partial class IdentityProviderEndpointExtensions
             status,
             failure.Code,
             failure.Detail,
-            ResolveCorrelationId(context),
+            IdentityCorrelationId.Resolve(context),
             failure.Errors,
             failure.RetryAfterSeconds);
         return Results.Json(response, statusCode: status, contentType: ProblemJson);

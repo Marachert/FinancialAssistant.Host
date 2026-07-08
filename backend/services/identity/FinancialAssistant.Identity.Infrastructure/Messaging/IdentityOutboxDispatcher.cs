@@ -1,5 +1,6 @@
 using FinancialAssistant.Identity.Application.Abstractions;
 using FinancialAssistant.Identity.Infrastructure.Configuration;
+using FinancialAssistant.Identity.Infrastructure.Observability;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -58,10 +59,15 @@ public sealed class IdentityOutboxDispatcher : BackgroundService
                     exception.GetType().Name,
                     clock.UtcNow.AddSeconds(retrySeconds),
                     cancellationToken);
-                logger.LogWarning(
-                    "Identity event {EventId} type {EventType} publish failed; retry scheduled.",
+                IdentityOperationalLog.OutboxPublishFailed(
+                    logger,
                     message.Envelope.EventId,
-                    message.Envelope.EventType);
+                    message.Envelope.EventType,
+                    message.Envelope.CorrelationId,
+                    message.Envelope.CausationId,
+                    exception.GetType().Name,
+                    message.AttemptCount,
+                    retrySeconds);
             }
         }
 

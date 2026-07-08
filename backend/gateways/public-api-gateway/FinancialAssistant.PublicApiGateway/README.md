@@ -8,6 +8,7 @@ Canonical routing documentation:
 docs/engineering/gateway-route-groups-and-destinations.md
 docs/engineering/api-gateway-routing-foundation.md
 docs/engineering/api-gateway-verification-checklist.md
+docs/engineering/safe-operational-log-policy.md
 ```
 
 ## Responsibility
@@ -94,7 +95,15 @@ Public errors do not include internal destination keys, internal hosts, service 
 
 The gateway resolves or creates `correlationId`, returns both `correlationId` and `X-Correlation-Id`, and forwards both downstream. Incoming W3C trace context remains a technical header and can be handled by standard .NET diagnostics.
 
-Logging must stay operational and structured. Never log raw request bodies, passwords, tokens, phone codes, transaction notes, receipt content, OCR output, or AI prompt/response payloads.
+## Operational logging
+
+Gateway runtime events use the source-generated `GatewayOperationalLog` catalog with stable event IDs in the `1000–1999` range.
+
+The correlation scope contains only `CorrelationId`, `TraceId`, and `RequestMethod`. Event fields are limited to route/destination keys, access policy, normalized authentication result, HTTP status, latency, timeout, failure type name, and response-start state.
+
+Never log raw request or response bodies, query values, headers, passwords, tokens, user/session IDs, role lists, transaction data, receipt content, OCR output, Elasticsearch documents, RabbitMQ payloads, or AI prompt/response data. Exception objects are not passed to operational logs; only `exception.GetType().Name` may be recorded as `FailureType`.
+
+The complete policy and review checklist are in `docs/engineering/safe-operational-log-policy.md`.
 
 ## Local run
 
@@ -120,7 +129,7 @@ Default route calls return safe `501 route_not_active` responses until a route i
 dotnet test backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway.Tests/FinancialAssistant.PublicApiGateway.Tests.csproj --configuration Release
 ```
 
-Coverage includes startup/configuration validation, sanitized route descriptors, correlation behavior, route security hooks, rate limiting, safe placeholder/destination failures, and active downstream dispatch.
+Coverage includes startup/configuration validation, sanitized route descriptors, correlation behavior, route security hooks, rate limiting, safe placeholder/destination failures, active downstream dispatch, and operational log event-contract enforcement.
 
 ## Boundary rules
 

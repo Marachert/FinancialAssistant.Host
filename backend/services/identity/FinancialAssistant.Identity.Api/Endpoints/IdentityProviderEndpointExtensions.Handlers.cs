@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using FinancialAssistant.Identity.Application.Authentication;
 using FinancialAssistant.Identity.Application.Providers.Apple;
 using FinancialAssistant.Identity.Application.Providers.Google;
@@ -17,7 +16,7 @@ internal static partial class IdentityProviderEndpointExtensions
     {
         var result = await service.AuthenticateAsync(
             request,
-            ResolveCorrelationId(context),
+            IdentityCorrelationId.Resolve(context),
             cancellationToken);
         return result.IsSuccess
             ? Results.Ok(result.Value)
@@ -32,7 +31,7 @@ internal static partial class IdentityProviderEndpointExtensions
     {
         var result = await service.AuthenticateAsync(
             request,
-            ResolveCorrelationId(context),
+            IdentityCorrelationId.Resolve(context),
             cancellationToken);
         return result.IsSuccess
             ? Results.Ok(result.Value)
@@ -57,17 +56,9 @@ internal static partial class IdentityProviderEndpointExtensions
             status,
             failure.Code,
             failure.Detail,
-            ResolveCorrelationId(context),
+            IdentityCorrelationId.Resolve(context),
             failure.Errors);
 
         return Results.Json(response, statusCode: status, contentType: ProblemJson);
-    }
-
-    private static string ResolveCorrelationId(HttpContext context)
-    {
-        var supplied = context.Request.Headers[IdentityApiHeaders.CorrelationId].FirstOrDefault();
-        return string.IsNullOrWhiteSpace(supplied)
-            ? Activity.Current?.Id ?? context.TraceIdentifier
-            : supplied;
     }
 }

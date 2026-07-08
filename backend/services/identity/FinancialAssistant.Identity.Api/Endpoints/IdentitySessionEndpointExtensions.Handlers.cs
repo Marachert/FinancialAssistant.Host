@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using FinancialAssistant.Identity.Application.Authentication;
 using FinancialAssistant.Identity.Application.Sessions;
 using FinancialAssistant.Identity.Contracts.Auth;
@@ -16,7 +15,7 @@ internal static partial class IdentitySessionEndpointExtensions
     {
         var result = await service.RefreshAsync(
             request,
-            ResolveCorrelationId(context),
+            IdentityCorrelationId.Resolve(context),
             cancellationToken);
         return result.IsSuccess ? Results.Ok(result.Value) : ToProblem(result.Failure!, context);
     }
@@ -35,7 +34,7 @@ internal static partial class IdentitySessionEndpointExtensions
         var result = await service.LogoutAsync(
             request,
             access,
-            ResolveCorrelationId(context),
+            IdentityCorrelationId.Resolve(context),
             cancellationToken);
         return result.IsSuccess ? Results.NoContent() : ToProblem(result.Failure!, context);
     }
@@ -81,17 +80,9 @@ internal static partial class IdentitySessionEndpointExtensions
             status,
             failure.Code,
             failure.Detail,
-            ResolveCorrelationId(context),
+            IdentityCorrelationId.Resolve(context),
             failure.Errors);
 
         return Results.Json(response, statusCode: status, contentType: ProblemJson);
-    }
-
-    private static string ResolveCorrelationId(HttpContext context)
-    {
-        var supplied = context.Request.Headers[IdentityApiHeaders.CorrelationId].FirstOrDefault();
-        return string.IsNullOrWhiteSpace(supplied)
-            ? Activity.Current?.Id ?? context.TraceIdentifier
-            : supplied;
     }
 }
