@@ -1,3 +1,4 @@
+using FinancialAssistant.Identity.Api.RateLimiting;
 using FinancialAssistant.Identity.Contracts.Auth;
 
 namespace FinancialAssistant.Identity.Api.Endpoints;
@@ -14,7 +15,9 @@ internal static partial class IdentityCredentialEndpointExtensions
             .Accepts<RegisterAccountRequest>("application/json")
             .Produces<AuthSessionResponse>(StatusCodes.Status201Created)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status400BadRequest, ProblemJson)
-            .Produces<IdentityApiErrorResponse>(StatusCodes.Status409Conflict, ProblemJson);
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status409Conflict, ProblemJson)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status429TooManyRequests, ProblemJson)
+            .RequireRateLimiting(IdentityRateLimitPolicies.Registration);
 
         group.MapPost(IdentityApiRoutes.SignInRelative, SignInAsync)
             .WithName("Identity_SignIn_v1")
@@ -22,7 +25,9 @@ internal static partial class IdentityCredentialEndpointExtensions
             .Accepts<SignInRequest>("application/json")
             .Produces<AuthSessionResponse>(StatusCodes.Status200OK)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status400BadRequest, ProblemJson)
-            .Produces<IdentityApiErrorResponse>(StatusCodes.Status401Unauthorized, ProblemJson);
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status401Unauthorized, ProblemJson)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status429TooManyRequests, ProblemJson)
+            .RequireRateLimiting(IdentityRateLimitPolicies.SignIn);
 
         return group;
     }
