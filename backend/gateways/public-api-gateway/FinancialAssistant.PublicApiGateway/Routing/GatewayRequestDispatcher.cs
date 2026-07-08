@@ -75,7 +75,7 @@ public sealed class GatewayRequestDispatcher
                 requestMessage,
                 HttpCompletionOption.ResponseHeadersRead,
                 timeout.Token);
-            await CopyResponseAsync(context, responseMessage);
+            await CopyResponseAsync(context, responseMessage, timeout.Token);
         }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
         {
@@ -186,7 +186,8 @@ public sealed class GatewayRequestDispatcher
 
     private static async Task CopyResponseAsync(
         HttpContext context,
-        HttpResponseMessage responseMessage)
+        HttpResponseMessage responseMessage,
+        CancellationToken cancellationToken)
     {
         context.Response.StatusCode = (int)responseMessage.StatusCode;
 
@@ -206,7 +207,7 @@ public sealed class GatewayRequestDispatcher
             }
         }
 
-        await responseMessage.Content.CopyToAsync(context.Response.Body);
+        await responseMessage.Content.CopyToAsync(context.Response.Body, cancellationToken);
     }
 
     private static async Task WriteProblemAsync(
