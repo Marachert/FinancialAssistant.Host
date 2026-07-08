@@ -1,0 +1,334 @@
+{
+  "schemaVersion": 1,
+  "checklistId": "gateway-identity-validation-v1",
+  "title": "Gateway and Identity Validation Checklist",
+  "owners": [
+    "public-api-gateway",
+    "identity-service"
+  ],
+  "requiredDomains": [
+    "account",
+    "provider",
+    "route",
+    "session",
+    "throttling"
+  ],
+  "checks": [
+    {
+      "id": "GATEWAY-ROUTE-001",
+      "domain": "route",
+      "component": "public-api-gateway",
+      "intent": "Reject ambiguous or unsafe route and destination configuration before serving traffic.",
+      "expected": "Gateway startup validation fails for duplicate route keys, missing explicit methods, missing addresses, and unsafe destination addresses.",
+      "negativeCases": [
+        "duplicate route key",
+        "empty HTTP method allowlist",
+        "enabled destination without an address",
+        "non-HTTP address or address containing credentials or query values"
+      ],
+      "automationStatus": "enforced",
+      "evidence": [
+        {
+          "path": "backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway.Tests/GatewayRoutingConfigurationTests.cs",
+          "testMethods": [
+            "RouteCatalog_WhenRouteKeyIsDuplicated_FailsFast",
+            "RouteCatalog_WhenMethodsAreNotExplicit_FailsFast",
+            "DestinationCatalog_WhenEnabledDestinationHasNoAddress_FailsFast",
+            "DestinationCatalog_WhenAddressIsUnsafe_FailsFast"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "GATEWAY-ROUTE-002",
+      "domain": "route",
+      "component": "public-api-gateway",
+      "intent": "Expose only sanitized route metadata and enforce exact public endpoint matching.",
+      "expected": "Public route descriptors omit internal destinations and public access is granted only for the configured method and path pair.",
+      "negativeCases": [
+        "internal destination key exposed to clients",
+        "different HTTP method treated as public",
+        "different path treated as public"
+      ],
+      "automationStatus": "enforced",
+      "evidence": [
+        {
+          "path": "backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway.Tests/GatewayRoutingConfigurationTests.cs",
+          "testMethods": [
+            "RouteCatalog_PublicDescriptors_DoNotExposeInternalDestinationKeys"
+          ]
+        },
+        {
+          "path": "backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway.Tests/GatewaySecurityBoundaryTests.cs",
+          "testMethods": [
+            "PublicAllowlist_AllowsExactMethodAndPathWithoutAccessToken",
+            "PublicAllowlist_DoesNotAllowDifferentMethodOrPath"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IDENTITY-ACCOUNT-001",
+      "domain": "account",
+      "component": "identity-service",
+      "intent": "Verify the authoritative email registration and sign-in happy path.",
+      "expected": "Registration and sign-in return distinct sessions and publish versioned lifecycle events without echoing credentials.",
+      "negativeCases": [
+        "credential values returned in API responses",
+        "missing versioned account lifecycle events"
+      ],
+      "automationStatus": "enforced",
+      "evidence": [
+        {
+          "path": "backend/services/identity/FinancialAssistant.Identity.Tests/IdentityRegistrationLoginTests.cs",
+          "testMethods": [
+            "RegisterAndSignIn_ReturnSessionsAndPublishVersionedEvents"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IDENTITY-ACCOUNT-002",
+      "domain": "account",
+      "component": "identity-service",
+      "intent": "Keep account validation and authentication failures deterministic and enumeration-safe.",
+      "expected": "Duplicate registration, malformed input, wrong passwords, and unknown accounts return safe normalized failures.",
+      "negativeCases": [
+        "duplicate account silently created",
+        "field validation omitted",
+        "unknown email distinguishable from wrong password",
+        "email or password leaked in failure content"
+      ],
+      "automationStatus": "enforced",
+      "evidence": [
+        {
+          "path": "backend/services/identity/FinancialAssistant.Identity.Tests/IdentityRegistrationLoginTests.cs",
+          "testMethods": [
+            "DuplicateRegistration_ReturnsSafeConflict",
+            "InvalidRegistration_ReturnsFieldErrors",
+            "WrongPasswordAndUnknownEmail_ReturnSameFailureAndSafeMetricEvents"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IDENTITY-ACCOUNT-003",
+      "domain": "account",
+      "component": "identity-service",
+      "intent": "Persist only protected lookup and credential representations.",
+      "expected": "Stored email lookup and password values are purpose-protected hashes rather than raw credentials.",
+      "negativeCases": [
+        "raw email used as credential lookup key",
+        "raw password persisted",
+        "password embedded in the stored hash representation"
+      ],
+      "automationStatus": "enforced",
+      "evidence": [
+        {
+          "path": "backend/services/identity/FinancialAssistant.Identity.Tests/IdentityRegistrationLoginTests.cs",
+          "testMethods": [
+            "StoredCredential_ContainsOnlyProtectedLookupAndSecretValues"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IDENTITY-SESSION-001",
+      "domain": "session",
+      "component": "identity-service",
+      "intent": "Enforce refresh rotation and replay-family revocation.",
+      "expected": "A refresh succeeds once, rotates the session, and reuse revokes the complete token family.",
+      "negativeCases": [
+        "refresh token reused successfully",
+        "rotated family remains active after replay",
+        "revocation event omitted"
+      ],
+      "automationStatus": "enforced",
+      "evidence": [
+        {
+          "path": "backend/services/identity/FinancialAssistant.Identity.Tests/IdentitySessionLifecycleTests.cs",
+          "testMethods": [
+            "Refresh_RotatesSessionAndReuseRevokesEntireFamily"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IDENTITY-SESSION-002",
+      "domain": "session",
+      "component": "identity-service",
+      "intent": "Verify logout revokes both current access context and refresh capability.",
+      "expected": "After logout, current-user and refresh operations reject the revoked session and publish a normalized revocation event.",
+      "negativeCases": [
+        "access token remains usable after logout",
+        "refresh remains usable after logout",
+        "logout revocation event omitted"
+      ],
+      "automationStatus": "enforced",
+      "evidence": [
+        {
+          "path": "backend/services/identity/FinancialAssistant.Identity.Tests/IdentitySessionLifecycleTests.cs",
+          "testMethods": [
+            "Logout_RevokesSessionForCurrentContextAndRefresh"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IDENTITY-SESSION-003",
+      "domain": "session",
+      "component": "identity-service",
+      "intent": "Protect refresh values at rest and reject expired state atomically.",
+      "expected": "Only a refresh hash is stored and expired sessions cannot be rotated.",
+      "negativeCases": [
+        "raw refresh value persisted",
+        "expired session rotated",
+        "expired state not recorded"
+      ],
+      "automationStatus": "enforced",
+      "evidence": [
+        {
+          "path": "backend/services/identity/FinancialAssistant.Identity.Tests/IdentitySessionLifecycleTests.cs",
+          "testMethods": [
+            "PersistedSession_StoresOnlyHashOfRefreshValue",
+            "ExpiredSession_IsRejectedByAtomicRotationStore"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IDENTITY-PROVIDER-001",
+      "domain": "provider",
+      "component": "identity-service",
+      "intent": "Validate Google provider success, stable linking, explicit-link protection, and normalized provider failures.",
+      "expected": "Valid tokens create or reuse protected provider links while invalid or unavailable providers return safe failures.",
+      "negativeCases": [
+        "raw provider token returned",
+        "verified email silently linked to a local credential",
+        "invalid token accepted",
+        "provider outage exposed as an internal failure"
+      ],
+      "automationStatus": "enforced",
+      "evidence": [
+        {
+          "path": "backend/services/identity/FinancialAssistant.Identity.Tests/GoogleSignInTests.cs",
+          "testMethods": [
+            "ValidGoogleToken_CreatesProviderAccountAndSession",
+            "RepeatedGoogleToken_ReusesLinkedAccount",
+            "VerifiedEmailMatchingLocalCredential_RequiresExplicitLink",
+            "InvalidGoogleToken_ReturnsSafeAuthenticationFailure",
+            "GoogleProviderUnavailable_ReturnsSafeServiceUnavailable",
+            "InvalidGoogleRequest_ReturnsValidationErrors"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IDENTITY-PROVIDER-002",
+      "domain": "provider",
+      "component": "identity-service",
+      "intent": "Validate Apple token and nonce handling, stable linking, explicit-link protection, and provider outage behavior.",
+      "expected": "Valid token/nonce pairs create or reuse protected links; invalid pairs and provider outages return safe normalized failures.",
+      "negativeCases": [
+        "raw Apple token or nonce returned",
+        "verified email silently linked to a local credential",
+        "invalid token or nonce accepted",
+        "provider outage exposed as an internal failure"
+      ],
+      "automationStatus": "enforced",
+      "evidence": [
+        {
+          "path": "backend/services/identity/FinancialAssistant.Identity.Tests/AppleSignInTests.cs",
+          "testMethods": [
+            "ValidAppleToken_CreatesProviderAccountAndSession",
+            "RepeatedAppleToken_ReusesLinkedAccount",
+            "VerifiedEmailMatchingLocalCredential_RequiresExplicitLink",
+            "InvalidAppleTokenOrNonce_ReturnsSafeAuthenticationFailure",
+            "AppleProviderUnavailable_ReturnsSafeServiceUnavailable",
+            "InvalidAppleRequest_ReturnsValidationErrors"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IDENTITY-PROVIDER-003",
+      "domain": "provider",
+      "component": "identity-service",
+      "intent": "Validate phone challenge preparation, client binding, cooldown, attempt lockout, and provider availability behavior.",
+      "expected": "Phone verification creates protected links only after a valid bound challenge and safely rejects abuse or provider failure.",
+      "negativeCases": [
+        "raw phone or verification code returned",
+        "cooldown bypassed",
+        "locked challenge completed",
+        "different client confirms the challenge",
+        "provider outage leaks phone data",
+        "invalid E.164 input accepted"
+      ],
+      "automationStatus": "enforced",
+      "evidence": [
+        {
+          "path": "backend/services/identity/FinancialAssistant.Identity.Tests/PhoneVerificationTests.cs",
+          "testMethods": [
+            "ApprovedVerification_CreatesPhoneAccountAndSession",
+            "RepeatedApprovedVerification_ReusesLinkedAccount",
+            "ImmediateRepeatStart_ReturnsCooldownRateLimit",
+            "MaximumRejectedAttempts_LocksChallengeWithoutLeakingCode",
+            "DifferentClientCannotConfirmChallenge",
+            "ProviderUnavailable_ReturnsSafeServiceUnavailable",
+            "InvalidStartRequest_ReturnsValidationErrors"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "GATEWAY-THROTTLING-001",
+      "domain": "throttling",
+      "component": "public-api-gateway",
+      "intent": "Verify perimeter throttling produces safe responses and cannot be bypassed with client-controlled partition metadata.",
+      "expected": "Gateway limits return a normalized 429, keep partition storage bounded, resist header spoofing, and exclude health endpoints.",
+      "negativeCases": [
+        "credentials leaked in a 429 response",
+        "client-instance header resets the IP partition",
+        "unbounded partition cache growth",
+        "health checks throttled"
+      ],
+      "automationStatus": "enforced",
+      "evidence": [
+        {
+          "path": "backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway.Tests/GatewayRateLimitingTests.cs",
+          "testMethods": [
+            "SignInLimit_ReturnsSafe429WithoutCredentialLeakage",
+            "ChangingClientInstanceHeader_DoesNotResetIpWidePartition",
+            "PartitionCache_IsBoundedAndOverflowDoesNotCreateFreshBuckets",
+            "HealthEndpoints_AreExcludedFromRateLimiting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IDENTITY-THROTTLING-001",
+      "domain": "throttling",
+      "component": "identity-service",
+      "intent": "Verify Identity defense-in-depth throttling is safe, operation-specific, and resistant to partition spoofing.",
+      "expected": "Identity returns normalized 429 responses, isolates operation policies, resists client-header bypass, and excludes health checks.",
+      "negativeCases": [
+        "account data leaked in a 429 response",
+        "registration exhaustion blocks an unrelated sign-in policy",
+        "client-instance header resets the IP partition",
+        "health checks throttled"
+      ],
+      "automationStatus": "enforced",
+      "evidence": [
+        {
+          "path": "backend/services/identity/FinancialAssistant.Identity.Tests/IdentityRateLimitingTests.cs",
+          "testMethods": [
+            "RegistrationLimit_ReturnsGeneric429WithoutAccountLeakage",
+            "RateLimitPolicies_AreIndependentByOperation",
+            "ChangingClientInstanceHeader_DoesNotResetIdentityIpPartition",
+            "HealthEndpoint_IsNotRateLimited"
+          ]
+        }
+      ]
+    }
+  ]
+}
