@@ -85,7 +85,6 @@ public sealed class PhoneVerificationOptions
 public sealed class IdentityRateLimitingOptions
 {
     public bool Enabled { get; set; } = true;
-    public string ClientInstanceHeaderName { get; set; } = "X-Client-Instance-Id";
     public IdentityFixedWindowPolicyOptions Registration { get; set; } = new(5, 600);
     public IdentityFixedWindowPolicyOptions SignIn { get; set; } = new(10, 300);
     public IdentityFixedWindowPolicyOptions ProviderSignIn { get; set; } = new(10, 300);
