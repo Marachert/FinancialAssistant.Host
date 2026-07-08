@@ -39,7 +39,7 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
         Assert.Contains(routes.EnumerateArray(), route =>
             route.GetProperty("routeKey").GetString() == "auth"
             && route.GetProperty("serviceOwner").GetString() == "Auth Service"
-            && route.GetProperty("accessPolicy").GetString() == "public");
+            && route.GetProperty("accessPolicy").GetString() == "authenticated");
         Assert.Contains(routes.EnumerateArray(), route =>
             route.GetProperty("routeKey").GetString() == "admin-monitoring"
             && route.GetProperty("accessPolicy").GetString() == "admin");
