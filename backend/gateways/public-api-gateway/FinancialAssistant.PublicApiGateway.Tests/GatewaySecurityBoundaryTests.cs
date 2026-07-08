@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using FinancialAssistant.PublicApiGateway.Observability;
@@ -86,7 +87,7 @@ public sealed class GatewaySecurityBoundaryTests
     }
 
     [Fact]
-    public async Task AuthenticatedRoute_WithValidToken_SetsSafeUserContext()
+    public async Task AuthenticatedRoute_WithIdentityDerivedToken_SetsSafeUserContext()
     {
         var options = CreateOptions();
         var boundary = CreateBoundary(options);
@@ -252,7 +253,8 @@ public sealed class GatewaySecurityBoundaryTests
             IssuedAt = now.AddMinutes(-5),
             Expires = expiresAtUtc ?? now.AddMinutes(10),
             SigningCredentials = new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey)),
+                new SymmetricSecurityKey(
+                    SHA512.HashData(Encoding.UTF8.GetBytes(signingKey))),
                 SecurityAlgorithms.HmacSha256)
         };
 
