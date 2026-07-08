@@ -7,7 +7,7 @@ namespace FinancialAssistant.Identity.Tests;
 
 public sealed class IdentityContractEndpointTests : IClassFixture<IdentityContractWebApplicationFactory>
 {
-    private const string SyntheticCorrelationId = "synthetic-correlation-fin-76-auth-challenge";
+    private const string SyntheticCorrelationId = "11111111-2222-3333-4444-555555555555";
     private readonly HttpClient client;
 
     public IdentityContractEndpointTests(IdentityContractWebApplicationFactory factory)
