@@ -22,11 +22,15 @@ public sealed class GatewayPropagationTests : IClassFixture<WebApplicationFactor
 
         var primary = GetHeader(response, "correlationId");
         var compatibility = GetHeader(response, "X-Correlation-Id");
+        var traceId = GetHeader(response, "X-Trace-Id");
+        var serverTiming = GetHeader(response, "Server-Timing");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.False(string.IsNullOrWhiteSpace(primary));
         Assert.Equal(primary, compatibility);
         Assert.True(Guid.TryParse(primary, out _));
+        Assert.Equal(32, traceId.Length);
+        Assert.StartsWith("gateway;dur=", serverTiming, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -44,6 +48,7 @@ public sealed class GatewayPropagationTests : IClassFixture<WebApplicationFactor
         Assert.Equal(correlationId, GetHeader(response, "correlationId"));
         Assert.Equal(correlationId, GetHeader(response, "X-Correlation-Id"));
         Assert.Equal(correlationId, document.RootElement.GetProperty("correlationId").GetString());
+        Assert.Equal(document.RootElement.GetProperty("traceId").GetString(), GetHeader(response, "X-Trace-Id"));
     }
 
     [Fact]
@@ -60,6 +65,7 @@ public sealed class GatewayPropagationTests : IClassFixture<WebApplicationFactor
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(traceId, document.RootElement.GetProperty("traceId").GetString());
+        Assert.Equal(traceId, GetHeader(response, "X-Trace-Id"));
     }
 
     private static async Task<JsonDocument> ReadJsonAsync(HttpResponseMessage response)
