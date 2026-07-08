@@ -7,4 +7,6 @@ public sealed class GatewayDestinationDefinition
     public string BaseAddress { get; init; } = string.Empty;
 
     public bool Enabled { get; init; }
+
+    public int RequestTimeoutSeconds { get; init; } = 30;
 }
