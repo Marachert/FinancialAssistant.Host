@@ -1,3 +1,5 @@
+using Xunit;
+
 namespace FinancialAssistant.Repository.Tests;
 
 public sealed class BackendSourceLayoutTests
