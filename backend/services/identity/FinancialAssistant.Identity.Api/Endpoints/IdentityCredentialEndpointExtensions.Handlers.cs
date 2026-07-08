@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using FinancialAssistant.Identity.Application.Authentication;
 using FinancialAssistant.Identity.Contracts.Auth;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +16,7 @@ internal static partial class IdentityCredentialEndpointExtensions
         var result = await service.RegisterAsync(
             request,
             idempotencyKey,
-            ResolveCorrelationId(context),
+            IdentityCorrelationId.Resolve(context),
             cancellationToken);
 
         return result.IsSuccess
@@ -33,7 +32,7 @@ internal static partial class IdentityCredentialEndpointExtensions
     {
         var result = await service.SignInAsync(
             request,
-            ResolveCorrelationId(context),
+            IdentityCorrelationId.Resolve(context),
             cancellationToken);
         return result.IsSuccess ? Results.Ok(result.Value) : ToProblem(result.Failure!, context);
     }
@@ -54,17 +53,9 @@ internal static partial class IdentityCredentialEndpointExtensions
             status,
             failure.Code,
             failure.Detail,
-            ResolveCorrelationId(context),
+            IdentityCorrelationId.Resolve(context),
             failure.Errors);
 
         return Results.Json(response, statusCode: status, contentType: ProblemJson);
-    }
-
-    private static string ResolveCorrelationId(HttpContext context)
-    {
-        var supplied = context.Request.Headers[IdentityApiHeaders.CorrelationId].FirstOrDefault();
-        return string.IsNullOrWhiteSpace(supplied)
-            ? Activity.Current?.Id ?? context.TraceIdentifier
-            : supplied;
     }
 }
