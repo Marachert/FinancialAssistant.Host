@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using FinancialAssistant.Identity.Contracts.Auth;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 
