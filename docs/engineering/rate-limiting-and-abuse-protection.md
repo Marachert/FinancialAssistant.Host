@@ -2,9 +2,7 @@
 
 ## Purpose
 
-FIN-81 adds a deterministic PoC protection layer for public Identity and intake routes.
-
-Rate limiting is applied twice:
+FIN-81 adds deterministic protection for public Identity and intake routes.
 
 ```text
 client
@@ -14,7 +12,7 @@ client
 -> deterministic authentication logic
 ```
 
-The gateway absorbs broad public abuse. Identity applies defense-in-depth limits to sensitive endpoints in case it is reached through an internal route or gateway policy is misconfigured.
+The gateway absorbs broad public abuse. Identity applies defense-in-depth limits to sensitive endpoints when it is reached through internal routing or when gateway policy is misconfigured.
 
 Rate limiting is technical protection. It does not make authentication decisions, calculate financial values, or replace provider fraud controls.
 
@@ -45,23 +43,37 @@ Health and safe gateway diagnostic endpoints are excluded so orchestration and m
 | phone confirm | 20 | 5 minutes | phone verification checks |
 | session | 60 | 60 seconds | refresh, logout, and current-user context |
 
-Phone verification retains its domain-specific challenge cooldown, attempt lockout, and per-phone/per-client counters. Endpoint rate limiting complements those controls; it does not replace them.
+Phone verification retains its challenge cooldown, attempt lockout, per-phone/per-client counters, and one-time completion. Endpoint throttling complements those controls; it does not replace them.
 
 ## Partition strategy
 
-The current in-process limiter partitions by:
+The active PoC partition is deliberately IP-wide:
 
 ```text
 policy name
 + remote connection address
-+ optional X-Client-Instance-Id
 ```
 
-The material is SHA-256 hashed before it becomes an in-memory partition key. Raw IP addresses and client instance identifiers are not logged or included in public responses.
+The material is SHA-256 hashed before it becomes an in-memory partition key. Raw IP addresses are not logged or included in public responses.
 
-`X-Client-Instance-Id` is accepted only when it contains 8–128 characters and no control characters. Missing or invalid values use an IP-only partition.
+Caller-controlled headers such as `X-Client-Instance-Id` are not part of the enforcement key. Changing a client header must not create a fresh rate-limit bucket.
 
-The gateway and Identity Service do not trust `X-Forwarded-For` directly. Production deployment must configure ASP.NET Core Forwarded Headers with an explicit trusted proxy/network allowlist before using forwarded addresses for throttling.
+A future device-aware partition may be added only when the device signal is authenticated or attested. Even then, an IP-wide limiter must remain in the chain so rotating device identifiers cannot bypass public protection.
+
+The gateway and Identity Service do not trust `X-Forwarded-For` directly. Production deployment must configure ASP.NET Core Forwarded Headers with an explicit trusted proxy/network allowlist before forwarded addresses are used for throttling.
+
+## Gateway partition cache
+
+Gateway partition state is held in a bounded, sliding-expiration cache:
+
+```text
+MaximumPartitionCount = 10000
+PartitionIdleExpirationSeconds = 900
+```
+
+When the cache cannot admit a new partition, requests use a shared overflow limiter for the policy. Saturating the cache therefore does not create unlimited fresh buckets.
+
+Cached fixed-window limiters use request-driven replenishment and do not own background timers. Idle entries can be evicted without leaving timer resources behind.
 
 ## Request flow
 
@@ -69,7 +81,7 @@ The gateway and Identity Service do not trust `X-Forwarded-For` directly. Produc
 
 ```text
 classify route or endpoint
--> derive privacy-safe partition key
+-> derive privacy-safe IP-wide partition key
 -> acquire one fixed-window permit
 -> continue to authorization, routing, or authentication logic
 ```
@@ -80,12 +92,12 @@ classify route or endpoint
 permit unavailable
 -> HTTP 429
 -> Retry-After header
--> no-store cache policy
+-> Cache-Control: no-store
 -> generic problem response
--> no backend service call
+-> no backend service call from the gateway
 ```
 
-Public response:
+Identity response:
 
 ```json
 {
@@ -106,12 +118,12 @@ The response never reveals:
 * whether an account exists;
 * whether an email or phone is registered;
 * whether a password, provider token, or code was correct;
-* the active policy name or partition identifier;
+* the active partition identifier;
 * raw request values.
 
 ## Retry behavior
 
-Clients must honor `Retry-After` and avoid automatic immediate retries.
+Clients must honor `Retry-After` and avoid immediate automatic retries.
 
 Recommended client behavior:
 
@@ -127,8 +139,9 @@ Gateway:
 
 ```text
 Gateway:RateLimiting:Enabled
-Gateway:RateLimiting:ClientInstanceHeaderName
 Gateway:RateLimiting:DefaultPolicy
+Gateway:RateLimiting:MaximumPartitionCount
+Gateway:RateLimiting:PartitionIdleExpirationSeconds
 Gateway:RateLimiting:Policies
 Gateway:RateLimiting:Rules
 Gateway:RateLimiting:ExcludedPathPrefixes
@@ -138,7 +151,6 @@ Identity:
 
 ```text
 Identity:RateLimiting:Enabled
-Identity:RateLimiting:ClientInstanceHeaderName
 Identity:RateLimiting:Registration
 Identity:RateLimiting:SignIn
 Identity:RateLimiting:ProviderSignIn
@@ -151,35 +163,24 @@ Configuration is environment-driven. Production values must be tuned from observ
 
 ## Responsibility boundaries
 
-### Public API Gateway
-
-Owns:
+### Public API Gateway owns
 
 * broad route-group throttling;
 * early rejection before downstream dispatch;
-* IP/client-instance partitioning at the public edge;
+* IP-wide partitioning at the public edge;
+* bounded partition-cache behavior;
 * safe gateway `429` responses.
 
-Does not own:
+It does not own account existence, credential validation, phone challenge truth, provider fraud decisions, or financial-domain rules.
 
-* account existence;
-* credential validation;
-* phone challenge truth;
-* provider fraud decisions;
-* financial-domain rules.
-
-### Identity Service
-
-Owns:
+### Identity Service owns
 
 * stricter endpoint-level defense-in-depth limits;
 * authentication-neutral error behavior;
 * phone challenge cooldown, attempt count, and one-time completion;
 * session and account truth.
 
-### External providers
-
-Own:
+### External providers own
 
 * provider-side quotas;
 * SMS/email delivery protection;
@@ -193,39 +194,17 @@ The current limiter is process-local. Each replica owns independent fixed-window
 Production options:
 
 1. Edge/WAF rate limiting for broad IP, ASN, country, and bot controls.
-2. API Gateway distributed limiter backed by Redis or another low-latency atomic counter store.
+2. API Gateway distributed limiting backed by Redis or another low-latency atomic counter store.
 3. Identity-owned Elasticsearch or Redis state for account/provider-specific controls that require durable ownership.
 4. Provider-native service limits for SMS and external authentication operations.
 
 Distributed keys must use purpose-separated HMAC values when persisted or shared. They must not contain raw IP addresses, phone numbers, emails, access tokens, provider subjects, or device identifiers.
 
-A production design must define:
-
-* atomic increment and expiry behavior;
-* replica consistency;
-* fail-open versus fail-closed rules per route;
-* trusted proxy handling;
-* IPv6 normalization;
-* NAT and shared-household fairness;
-* privacy retention;
-* metric cardinality limits;
-* emergency policy overrides;
-* provider cost caps.
+A production design must define atomic increment and expiry behavior, replica consistency, fail-open versus fail-closed rules, trusted proxy handling, IPv6 normalization, NAT fairness, retention, metric cardinality, emergency overrides, and provider cost caps.
 
 ## Abuse signals for later phases
 
-Future controls may combine rate limits with:
-
-* bot detection;
-* IP and ASN reputation;
-* impossible travel and country velocity;
-* device attestation;
-* SIM swap and number-porting signals;
-* breached-password intelligence;
-* provider risk signals;
-* account and session velocity;
-* receipt-upload size and frequency;
-* per-user financial-action step-up rules.
+Future controls may combine rate limits with bot detection, IP/ASN reputation, country velocity, device attestation, SIM-swap signals, breached-password intelligence, provider risk signals, account/session velocity, receipt-upload limits, and step-up authentication.
 
 Device fingerprints must not become hidden permanent identity keys. Collection must be proportionate, documented, privacy-reviewed, and replaceable when a device changes.
 
@@ -237,9 +216,11 @@ Allowed metrics:
 rate_limit_requests_total{service,policy,outcome}
 rate_limit_rejections_total{service,policy}
 rate_limit_retry_after_seconds{service,policy}
+rate_limit_partition_cache_entries{service}
+rate_limit_partition_overflow_total{service,policy}
 ```
 
-Do not use raw IP, email, phone, token, provider subject, receipt text, transaction note, or client-instance value as a metric label.
+Do not use raw IP, email, phone, token, provider subject, receipt text, transaction note, or caller-provided device value as a metric label.
 
 Logs may contain correlation ID, route key, HTTP status, normalized policy name, and duration. Partition keys must not be logged.
 
@@ -249,7 +230,9 @@ Automated tests verify:
 
 * stricter sign-in and registration limits;
 * separate operation policies;
-* independent client-instance partitions;
+* changing `X-Client-Instance-Id` does not reset the IP-wide bucket;
+* bounded gateway partition storage;
+* shared overflow limiting when cache capacity is reached;
 * safe generic `429` response;
 * `Retry-After` propagation;
 * no email or password leakage;
@@ -261,5 +244,6 @@ Automated tests verify:
 * Counters are in-memory and process-local.
 * No distributed store or WAF integration is included.
 * No trusted-forwarded-header configuration is enabled by this task.
-* Client instance headers are caller-provided and are not device attestation.
-* Policy values are PoC defaults and require production tuning.
+* IP-wide limits can affect users behind shared NAT and require production tuning.
+* Caller-provided client instance headers are not device attestation and are not used for enforcement.
+* Policy and cache values are PoC defaults and require production tuning.
