@@ -70,7 +70,7 @@ internal static class IdentityRateLimitingExtensions
                 var policy = selectPolicy(options);
                 Validate(policy);
                 return RateLimitPartition.GetFixedWindowLimiter(
-                    CreatePartitionKey(context, policyName, options),
+                    CreatePartitionKey(context, policyName),
                     _ => new FixedWindowRateLimiterOptions
                     {
                         AutoReplenishment = true,
@@ -82,31 +82,12 @@ internal static class IdentityRateLimitingExtensions
             });
     }
 
-    private static string CreatePartitionKey(
-        HttpContext context,
-        string policyName,
-        IdentityRateLimitingOptions options)
+    private static string CreatePartitionKey(HttpContext context, string policyName)
     {
         var remoteAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-        var clientInstance = ReadClientInstance(context, options.ClientInstanceHeaderName);
-        var material = $"{policyName}|{remoteAddress}|{clientInstance}";
+        var material = $"{policyName}|{remoteAddress}";
         var digest = SHA256.HashData(Encoding.UTF8.GetBytes(material));
         return $"{policyName}:{Convert.ToHexString(digest)}";
-    }
-
-    private static string ReadClientInstance(HttpContext context, string headerName)
-    {
-        if (string.IsNullOrWhiteSpace(headerName))
-        {
-            return "none";
-        }
-
-        var value = context.Request.Headers[headerName].FirstOrDefault();
-        return string.IsNullOrWhiteSpace(value)
-            || value.Length is < 8 or > 128
-            || value.Any(char.IsControl)
-                ? "none"
-                : value;
     }
 
     private static async ValueTask WriteRejectedAsync(
