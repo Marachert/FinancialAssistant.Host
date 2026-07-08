@@ -110,7 +110,7 @@ public sealed class GatewayRateLimitCatalog
         {
             if (string.IsNullOrWhiteSpace(rule.RuleKey)
                 || string.IsNullOrWhiteSpace(rule.Path)
-                || !rule.Path.StartsWith('/', StringComparison.Ordinal)
+                || !rule.Path.StartsWith("/", StringComparison.Ordinal)
                 || string.IsNullOrWhiteSpace(rule.Policy)
                 || !policies.ContainsKey(rule.Policy))
             {
@@ -127,7 +127,7 @@ public sealed class GatewayRateLimitCatalog
         }
 
         var normalized = value.Trim();
-        if (!normalized.StartsWith('/', StringComparison.Ordinal))
+        if (!normalized.StartsWith("/", StringComparison.Ordinal))
         {
             normalized = "/" + normalized;
         }
