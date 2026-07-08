@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -31,7 +32,7 @@ public sealed class GatewayAccessTokenValidator
             validationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.options.AccessTokenSigningKey)),
+                IssuerSigningKey = CreateSigningKey(this.options.AccessTokenSigningKey),
                 ValidateIssuer = true,
                 ValidIssuer = this.options.AccessTokenIssuer,
                 ValidateAudience = true,
@@ -116,6 +117,12 @@ public sealed class GatewayAccessTokenValidator
         {
             return GatewayAccessTokenValidationResult.Invalid();
         }
+    }
+
+    internal static SymmetricSecurityKey CreateSigningKey(string signingSecret)
+    {
+        return new SymmetricSecurityKey(
+            SHA512.HashData(Encoding.UTF8.GetBytes(signingSecret)));
     }
 
     private static bool TryReadBearerToken(StringValues values, out string token)
