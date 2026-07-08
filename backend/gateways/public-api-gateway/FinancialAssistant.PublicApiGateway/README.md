@@ -1,25 +1,22 @@
 # FinancialAssistant.PublicApiGateway
 
-Initial .NET 8 public API Gateway host for Financial Assistant.
+.NET 8 public REST entry point for Financial Assistant mobile, web, and admin clients.
 
-Canonical engineering documentation:
+Canonical routing documentation:
 
 ```text
+docs/engineering/gateway-route-groups-and-destinations.md
 docs/engineering/api-gateway-routing-foundation.md
 docs/engineering/api-gateway-verification-checklist.md
 ```
 
-The routing document defines the stable route map, service ownership, request flow, propagation rules, access-policy placeholders, diagnostics boundaries, and change rules. The verification checklist defines automated and manual gateway checks. This README remains the gateway-local operational guide.
-
 ## Responsibility
 
-This gateway is the public REST entry point for mobile, web, and admin clients.
+The gateway owns the public HTTP boundary, route matching, destination dispatch, correlation, gateway security hooks, rate limiting, and safe technical errors.
 
-It is responsible for hosting the public HTTP boundary, basic health checks, safe diagnostics, route catalog, request dispatch foundation, correlation middleware, and security boundary placeholders.
+It does not own identity/profile persistence, transaction or receipt business logic, financial calculations, OCR, LLM workflows, service-owned Elasticsearch data, or domain events.
 
-It is not responsible for business calculations, service-owned storage access, identity persistence, or full authentication flows.
-
-## Current endpoints
+## Technical endpoints
 
 ```text
 GET /
@@ -31,199 +28,105 @@ GET /gateway/status
 GET /gateway/routes
 ```
 
-`/gateway/info` returns a safe operational summary with service name, environment, route count, security mode, correlation id, and trace id. It must not return user, financial, OCR, AI prompt, or secret data.
+Diagnostics expose safe technical summaries only. They must not return destination URLs, secrets, tokens, personal data, financial data, receipt text, OCR output, or AI prompt/response content.
 
-`/gateway/status` returns a safe technical status summary for local development and future monitoring. It includes route and destination counts only. It must not return destination base addresses, secrets, tokens, user data, financial data, OCR output, AI prompt/response content, or internal configuration values.
+`GET /gateway/routes` returns sanitized route descriptors. Internal destination keys and base addresses are deliberately excluded.
 
-## Public route groups
-
-The route catalog is configured in:
+## Route and destination configuration
 
 ```text
-appsettings.json
 Gateway:RouteMap:Routes
-```
-
-Destination settings are configured in:
-
-```text
-appsettings.json
 Gateway:DestinationMap:Destinations
 ```
 
-Correlation settings are configured in:
+Each route explicitly defines:
+
+* public pattern and optional catch-all pattern;
+* HTTP methods;
+* owning backend service;
+* internal destination key;
+* access policy: `public`, `authenticated`, or `admin`;
+* status: `placeholder` or `active`.
+
+Each destination defines:
+
+* stable destination key;
+* internal HTTP/HTTPS base address;
+* enabled flag;
+* request timeout between 1 and 300 seconds.
+
+Repository defaults keep routes as placeholders and destinations disabled until the owning service contract and security integration are ready.
+
+## Startup validation
+
+Startup fails for duplicate or malformed route keys, reserved public paths, malformed catch-all patterns, missing owners/destinations, unknown policies/statuses, missing/duplicate methods, duplicate endpoint signatures, unsafe destination addresses, or invalid timeout values.
+
+This validation happens while endpoint mapping is built, before the gateway accepts traffic.
+
+## Dispatch flow
 
 ```text
-appsettings.json
-Gateway:Correlation
+request
+-> correlation middleware
+-> rate limiting
+-> route access-policy boundary
+-> route catalog
+-> destination catalog
+-> owning service REST API
 ```
 
-Security boundary settings are configured in:
+For active routes, the dispatcher preserves method, path, query, body, normal headers, and correlation context. It removes hop-by-hop headers and overwrites `X-Gateway-Route-Key` with the trusted configured route key.
 
-```text
-appsettings.json
-Gateway:Security
-```
+The gateway forwards payloads without adding domain transformations.
 
-| Public route | Service owner | Access policy | Current status |
-| --- | --- | --- | --- |
-| `/auth` | Auth Service | public | placeholder |
-| `/users/me` | Profile Service | authenticated | placeholder |
-| `/categories` | Category Service | authenticated | placeholder |
-| `/transactions/intake` | Transaction Intake Service | authenticated | placeholder |
-| `/transactions/drafts/{id}/confirm` | Transaction Intake Service | authenticated | placeholder |
-| `/receipts` | Receipt File Intake Service | authenticated | placeholder |
-| `/analytics` | Analytics Service | authenticated | placeholder |
-| `/score` | Financial Score Service | authenticated | placeholder |
-| `/recommendations` | Recommendation Service | authenticated | placeholder |
-| `/notifications` | Notification Service | authenticated | placeholder |
-| `/admin/monitoring` | Monitoring Admin Service | admin | placeholder |
+## Safe failures
 
-Placeholder routes return HTTP 501. To enable a route later, set its status to `active` and enable its destination entry.
+| Condition | Status | Code |
+| --- | ---: | --- |
+| route is still a placeholder | 501 | `route_not_active` |
+| destination missing or disabled | 503 | `destination_unavailable` |
+| downstream transport failure | 503 | `destination_unavailable` |
+| downstream timeout | 504 | `destination_timeout` |
 
-## Health and diagnostics
+Public errors do not include internal destination keys, internal hosts, service implementation metadata, request bodies, credentials, transaction input, receipt text, OCR content, or LLM content.
 
-The gateway exposes lightweight health and safe diagnostic endpoints for development and future monitoring integration:
+## Correlation
 
-| Endpoint | Purpose | Data boundary |
-| --- | --- | --- |
-| `/health` | ASP.NET Core health check baseline | framework health status only |
-| `/health/live` | process liveness | service name, start time, uptime, correlation id |
-| `/health/ready` | gateway readiness summary | route count, destination count, enabled destination count, security mode, correlation id |
-| `/gateway/status` | safe technical status | route summary, destination summary, uptime, environment name, correlation id, trace id |
+The gateway resolves or creates `correlationId`, returns both `correlationId` and `X-Correlation-Id`, and forwards both downstream. Incoming W3C trace context remains a technical header and can be handled by standard .NET diagnostics.
 
-Diagnostics are technical only. They must not be used for business reporting and must not expose internal destination URLs, secrets, personal data, financial data, receipt content, OCR output, or AI prompt/response payloads.
-
-Future Prometheus/OpenTelemetry work can use these endpoints as a starting point, but exporter configuration is intentionally not part of this routing foundation story.
-
-## Correlation and tracing
-
-The gateway creates one request correlation boundary for every incoming request:
-
-- accepts `correlationId` when provided by the caller;
-- accepts `X-Correlation-Id` as a compatibility header;
-- generates a new GUID correlation id when neither header is present or the provided value is invalid;
-- writes both `correlationId` and `X-Correlation-Id` to the response;
-- stores the resolved correlation id in `HttpContext.Items` for gateway components;
-- adds the correlation id to the current .NET `Activity` as tag and baggage;
-- uses logger scopes with `CorrelationId` and `TraceId` only.
-
-`traceparent` is not transformed by gateway business code. If the caller sends it, the dispatcher copies it as a normal non-hop-by-hop request header. Standard .NET HTTP diagnostics can also create outgoing trace context when runtime instrumentation is enabled.
-
-Logging rule: gateway logs must stay operational. Do not log raw user input, transaction amounts, receipt text, OCR output, AI prompt/response content, tokens, secrets, or personal financial data.
-
-## Security boundary placeholders
-
-The gateway has a central security boundary hook before route dispatch. Its purpose is to keep public/authenticated/admin route policy handling in one place so FIN-16 and FIN-17 can integrate real authentication and authorization without changing every route endpoint.
-
-Current security mode:
-
-```text
-Gateway:Security:Mode = placeholder
-```
-
-Placeholder mode behavior:
-
-- evaluates every route access policy before dispatch;
-- adds safe route policy response headers when enabled;
-- does not validate tokens;
-- does not block requests;
-- keeps real authentication and authorization implementation out of FIN-15.
-
-Prepared enforcement behavior:
-
-- `public` routes are allowed;
-- `authenticated` routes can return HTTP 401 when enforcement is enabled and no authentication header is present;
-- `admin` routes can return HTTP 403 when enforcement is enabled and admin placeholder scope is missing;
-- responses include only route key, access policy, correlation id, and safe status information.
-
-Important: `enforce` mode is a temporary integration hook only. It is not a production authentication model. Real JWT validation, issuer/audience/signature checks, claim mapping, refresh tokens, and identity persistence belong to Auth/Identity tasks, not this gateway routing story.
-
-## Request dispatch behavior
-
-For active routes, the gateway request dispatcher:
-
-- builds the destination URI from `Gateway:DestinationMap` plus the incoming path and query string;
-- preserves HTTP method;
-- passes request payload for methods that include a body;
-- copies non-hop-by-hop request headers, including incoming `traceparent`;
-- adds `X-Gateway-Route-Key`;
-- adds canonical `correlationId` and `X-Correlation-Id` headers;
-- returns the destination status code, response headers, and response payload.
-
-This is a technical dispatch foundation only. It must not add domain-specific transformations.
-
-## Automated tests
-
-Test project:
-
-```text
-backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway.Tests/
-```
-
-Run from the repository root:
-
-```bash
-dotnet test backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway.Tests/FinancialAssistant.PublicApiGateway.Tests.csproj --configuration Release
-```
-
-Current coverage includes:
-
-- gateway startup and health;
-- route-map loading;
-- destination configuration summary;
-- generated and supplied correlation ids;
-- incoming W3C trace context;
-- placeholder route metadata and policy headers;
-- absence of direct Elasticsearch client references in the gateway assembly.
-
-The test project declares `<IsTestProject>true</IsTestProject>`, so Backend CI executes the test step and uploads TRX results.
+Logging must stay operational and structured. Never log raw request bodies, passwords, tokens, phone codes, transaction notes, receipt content, OCR output, or AI prompt/response payloads.
 
 ## Local run
-
-From the repository root:
 
 ```bash
 dotnet run --project backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj
 ```
 
-Then verify:
+Useful checks:
 
 ```bash
 curl -i http://localhost:5000/health
-curl -i http://localhost:5000/health/live
 curl -i http://localhost:5000/health/ready
-curl -i http://localhost:5000/gateway/info
 curl -i http://localhost:5000/gateway/status
-curl -i -H "correlationId: demo-correlation-id" http://localhost:5000/gateway/status
-curl -i -H "traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00" http://localhost:5000/categories
+curl -i http://localhost:5000/gateway/routes
+curl -i http://localhost:5000/categories
 ```
 
-Expected verification:
+Default route calls return safe `501 route_not_active` responses until a route is activated.
 
-- responses include `correlationId` and `X-Correlation-Id`;
-- `/gateway/info` includes `securityMode`;
-- `/gateway/status` includes safe route and destination summaries only;
-- `/health/live` returns process liveness data;
-- `/health/ready` returns gateway readiness summary;
-- incoming `correlationId` is reused when valid;
-- missing correlation id is generated;
-- route responses include safe access policy headers when enabled;
-- placeholder routes still return HTTP 501 in placeholder security mode;
-- logs include correlation and trace scope fields without sensitive payload data.
+## Tests
 
-The actual local URL can differ depending on local ASP.NET Core settings.
+```bash
+dotnet test backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway.Tests/FinancialAssistant.PublicApiGateway.Tests.csproj --configuration Release
+```
+
+Coverage includes startup/configuration validation, sanitized route descriptors, correlation behavior, route security hooks, rate limiting, safe placeholder/destination failures, and active downstream dispatch.
 
 ## Boundary rules
 
-- Gateway route map defines public API shape and intended service ownership.
-- Gateway diagnostics expose only safe technical status.
-- Gateway placeholders must not implement domain behavior.
-- Gateway must not read or write service-owned storage directly.
-- Gateway must not store identity, profile, transaction, category, receipt, analytics, score, recommendation, or notification data.
-- Auth, profile, transaction, receipt, analytics, score, recommendation, notification, and monitoring behavior belongs to dedicated services.
-- LLM is not a source of truth for transaction data, calculations, or persistence.
-
-## Follow-up subtasks
-
-- FIN-266 — review API Gateway foundation.
+* The gateway must never query service-owned Elasticsearch indices.
+* The gateway must not store business entities.
+* The gateway must not calculate financial values.
+* Business validation belongs to the owning service.
+* RabbitMQ domain events are produced and consumed by services, not by the gateway proxy.
+* OCR and LLM integrations stay outside normal route dispatch.
