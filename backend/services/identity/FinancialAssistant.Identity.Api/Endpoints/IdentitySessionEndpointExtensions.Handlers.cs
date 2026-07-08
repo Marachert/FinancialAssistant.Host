@@ -89,9 +89,22 @@ internal static partial class IdentitySessionEndpointExtensions
 
     private static string ResolveCorrelationId(HttpContext context)
     {
-        var supplied = context.Request.Headers[IdentityApiHeaders.CorrelationId].FirstOrDefault();
-        return string.IsNullOrWhiteSpace(supplied)
-            ? Activity.Current?.Id ?? context.TraceIdentifier
-            : supplied;
+        var supplied = context.Request.Headers[IdentityApiHeaders.CorrelationId]
+            .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))
+            ?.Trim();
+
+        if (IsCanonicalCorrelationId(supplied))
+        {
+            return supplied!;
+        }
+
+        return Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString("D");
+    }
+
+    private static bool IsCanonicalCorrelationId(string? value)
+    {
+        return !string.IsNullOrWhiteSpace(value)
+            && (Guid.TryParseExact(value, "D", out _)
+                || Guid.TryParseExact(value, "N", out _));
     }
 }
