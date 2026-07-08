@@ -33,8 +33,8 @@ public sealed class GatewaySecurityBoundary
 
         if (!GatewaySecurityModes.IsEnforceMode(options.Mode))
         {
-            logger.LogDebug(
-                "Gateway security boundary evaluated route {RouteKey} with access policy {AccessPolicy} in placeholder mode.",
+            GatewayOperationalLog.SecurityPlaceholderEvaluated(
+                logger,
                 route.RouteKey,
                 accessPolicy);
             return true;
@@ -43,7 +43,7 @@ public sealed class GatewaySecurityBoundary
         if (accessTokenValidator.IsPublicEndpoint(context.Request)
             || string.Equals(accessPolicy, GatewayAccessPolicies.Public, StringComparison.OrdinalIgnoreCase))
         {
-            logger.LogDebug("Gateway allowed public request for route {RouteKey}.", route.RouteKey);
+            GatewayOperationalLog.PublicRequestAllowed(logger, route.RouteKey);
             return true;
         }
 
@@ -69,10 +69,10 @@ public sealed class GatewaySecurityBoundary
                     "A valid session is required for this request.")
             };
 
-            logger.LogWarning(
-                "Gateway rejected request for route {RouteKey}. AuthenticationResult: {AuthenticationResult}.",
+            GatewayOperationalLog.AuthenticationRejected(
+                logger,
                 route.RouteKey,
-                validation.Status);
+                validation.Status.ToString());
             await WriteSecurityProblemAsync(context, error, includeBearerChallenge: true);
             return false;
         }
@@ -82,7 +82,7 @@ public sealed class GatewaySecurityBoundary
         if (string.Equals(accessPolicy, GatewayAccessPolicies.Admin, StringComparison.OrdinalIgnoreCase)
             && !validation.UserContext.IsInRole(options.AdminRole))
         {
-            logger.LogWarning("Gateway rejected non-admin session for route {RouteKey}.", route.RouteKey);
+            GatewayOperationalLog.AdminRoleRejected(logger, route.RouteKey);
             await WriteSecurityProblemAsync(
                 context,
                 new SecurityError(
@@ -94,8 +94,8 @@ public sealed class GatewaySecurityBoundary
             return false;
         }
 
-        logger.LogDebug(
-            "Gateway authorized route {RouteKey} with access policy {AccessPolicy}.",
+        GatewayOperationalLog.RequestAuthorized(
+            logger,
             route.RouteKey,
             accessPolicy);
         return true;
