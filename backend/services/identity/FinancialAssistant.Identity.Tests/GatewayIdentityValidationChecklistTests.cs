@@ -44,8 +44,7 @@ public sealed class GatewayIdentityValidationChecklistTests
         {
             Assert.Matches(
                 new Regex(
-                    "^(GATEWAY|IDENTITY)-(ROUTE|ACCOUNT|SESSION|PROVIDER|THROTTING|THROTTLING)-[0-9]{3}$"
-                        .Replace("THROTTING|", string.Empty, StringComparison.Ordinal),
+                    "^(GATEWAY|IDENTITY)-(ROUTE|ACCOUNT|SESSION|PROVIDER|THROTTLING)-[0-9]{3}$",
                     RegexOptions.CultureInvariant),
                 check.Id);
             Assert.Contains(check.Domain, expectedDomains);
