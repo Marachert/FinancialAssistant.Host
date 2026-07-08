@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.Json;
 using FinancialAssistant.PublicApiGateway.Observability;
 
@@ -177,7 +176,7 @@ public sealed class GatewayRequestDispatcher
     {
         var baseUri = baseAddress.AbsoluteUri.TrimEnd('/');
         var pathValue = path.Value ?? string.Empty;
-        if (!pathValue.StartsWith('/', StringComparison.Ordinal))
+        if (!pathValue.StartsWith("/", StringComparison.Ordinal))
         {
             pathValue = "/" + pathValue;
         }
