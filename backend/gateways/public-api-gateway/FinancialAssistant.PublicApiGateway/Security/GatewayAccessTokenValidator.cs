@@ -1,9 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.Tokens;
 
 namespace FinancialAssistant.PublicApiGateway.Security;
 
@@ -83,8 +82,8 @@ public sealed class GatewayAccessTokenValidator
                 return GatewayAccessTokenValidationResult.Invalid();
             }
 
-            var userId = principal.FindFirstValue(JwtRegisteredClaimNames.Sub);
-            var sessionId = principal.FindFirstValue("sid");
+            var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            var sessionId = principal.FindFirst("sid")?.Value;
             if (!IsSafeOpaqueIdentifier(userId) || !IsSafeOpaqueIdentifier(sessionId))
             {
                 return GatewayAccessTokenValidationResult.Invalid();
@@ -191,15 +190,15 @@ public sealed class GatewayAccessTokenValidator
         foreach (var endpoint in options.PublicEndpoints)
         {
             if (string.IsNullOrWhiteSpace(endpoint.Method)
-                || !endpoint.Method.All(character => char.IsLetter(character)))
+                || !endpoint.Method.All(char.IsLetter))
             {
                 throw new InvalidOperationException("Gateway public endpoint method is invalid.");
             }
 
             if (string.IsNullOrWhiteSpace(endpoint.Path)
-                || !endpoint.Path.StartsWith('/', StringComparison.Ordinal)
-                || endpoint.Path.Contains('?', StringComparison.Ordinal)
-                || endpoint.Path.Contains('#', StringComparison.Ordinal)
+                || !endpoint.Path.StartsWith("/", StringComparison.Ordinal)
+                || endpoint.Path.Contains("?", StringComparison.Ordinal)
+                || endpoint.Path.Contains("#", StringComparison.Ordinal)
                 || endpoint.Path.Any(char.IsControl))
             {
                 throw new InvalidOperationException("Gateway public endpoint path is invalid.");
@@ -216,7 +215,8 @@ public sealed class GatewayAccessTokenValidator
             return;
         }
 
-        if (Encoding.UTF8.GetByteCount(options.AccessTokenSigningKey) < MinimumSigningKeyBytes)
+        if (string.IsNullOrEmpty(options.AccessTokenSigningKey)
+            || Encoding.UTF8.GetByteCount(options.AccessTokenSigningKey) < MinimumSigningKeyBytes)
         {
             throw new InvalidOperationException("Gateway access-token signing key must contain at least 32 UTF-8 bytes in enforce mode.");
         }
