@@ -3,8 +3,9 @@ namespace FinancialAssistant.PublicApiGateway.RateLimiting;
 public sealed class GatewayRateLimitOptions
 {
     public bool Enabled { get; set; } = true;
-    public string ClientInstanceHeaderName { get; set; } = "X-Client-Instance-Id";
     public string DefaultPolicy { get; set; } = "general";
+    public int MaximumPartitionCount { get; set; } = 10000;
+    public int PartitionIdleExpirationSeconds { get; set; } = 900;
     public Dictionary<string, GatewayRateLimitPolicyOptions> Policies { get; set; } =
         new(StringComparer.OrdinalIgnoreCase);
     public List<GatewayRateLimitRuleOptions> Rules { get; set; } = new();
