@@ -84,10 +84,8 @@ public sealed class IdentityRegistrationLoginTests : IClassFixture<IdentityContr
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.NotNull(session);
 
-        var publication = Assert.Single(
-            factory.EventPublisher.Publications.Where(
-                candidate => candidate.EventName == "user.registered.v1"
-                    && candidate.SubjectId == session.User.UserId));
+        var publication = Assert.Single(factory.EventPublisher.Publications, candidate => candidate.EventName == "user.registered.v1"
+                    && candidate.SubjectId == session.User.UserId);
 
         Assert.NotEqual(unsafeCorrelationId, publication.CorrelationId);
         Assert.Equal(publication.CorrelationId, publication.CausationId);
