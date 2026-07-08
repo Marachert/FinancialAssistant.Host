@@ -2,7 +2,13 @@
 
 ## Purpose
 
-FIN-71 defines the Public API Gateway route groups and the internal service destination configuration used by Android, iOS, Web, and admin clients.
+FIN-71 defines the Public API Gateway route groups and internal service destination configuration used by Android, iOS, Web, and admin clients.
+
+FIN-84 provides the client- and delivery-facing capability catalog in:
+
+```text
+docs/engineering/gateway-public-api-groups.md
+```
 
 The gateway is a technical routing boundary. It selects a configured route, applies gateway-level controls, and forwards the unchanged HTTP request to the service that owns the business capability.
 
@@ -14,7 +20,7 @@ It does not perform financial calculations, validate transaction-domain rules, r
 mobile / web / admin client
 -> Public API Gateway
 -> correlation and rate-limit middleware
--> route access-policy boundary
+-> exact public allowlist or route access-policy boundary
 -> route catalog
 -> destination catalog
 -> owning service REST API
@@ -26,9 +32,11 @@ Asynchronous domain events remain service-to-service concerns through RabbitMQ. 
 
 ## Public route groups
 
+The term **public route group** means a route exposed through the public gateway. It does not mean anonymous access.
+
 | Route key | Public pattern | Methods | Access policy | Owning service | Destination key |
 | --- | --- | --- | --- | --- | --- |
-| `auth` | `/auth` and `/auth/{**gatewayPath}` | GET, POST | public | Identity/Auth Service | `auth-service` |
+| `auth` | `/auth` and `/auth/{**gatewayPath}` | GET, POST | authenticated with exact public allowlist | Auth Service | `auth-service` |
 | `profile-me` | `/users/me` and `/users/me/{**gatewayPath}` | GET, PUT, PATCH | authenticated | Profile Service | `profile-service` |
 | `categories` | `/categories` and `/categories/{**gatewayPath}` | GET, POST, PUT, PATCH | authenticated | Category Service | `category-service` |
 | `transaction-intake` | `/transactions/intake` and child paths | POST | authenticated | Transaction Intake Service | `transaction-intake-service` |
@@ -41,6 +49,24 @@ Asynchronous domain events remain service-to-service concerns through RabbitMQ. 
 | `admin-monitoring` | `/admin/monitoring` and child paths | GET | admin | Monitoring Admin Service | `monitoring-admin-service` |
 
 Route methods are explicit. An empty method list is rejected during startup rather than silently enabling a broad default set.
+
+## Auth public endpoint allowlist
+
+The `/auth` route group is deny-by-default and has the `authenticated` route policy.
+
+Only exact method-and-path pairs configured under `Gateway:Security:PublicEndpoints` bypass access-token validation:
+
+```text
+POST /auth/v1/register
+POST /auth/v1/sign-in
+POST /auth/v1/refresh
+POST /auth/v1/providers/google/sign-in
+POST /auth/v1/providers/apple/sign-in
+POST /auth/v1/providers/phone/verifications
+POST /auth/v1/providers/phone/verifications/confirm
+```
+
+A different method or path requires a valid access token. `POST /auth/v1/logout` and `GET /auth/v1/me` are authenticated operations.
 
 ## Configuration ownership
 
@@ -65,7 +91,7 @@ A route definition owns only technical routing metadata:
   "CatchAllPattern": "/auth/{**gatewayPath}",
   "ServiceOwner": "Auth Service",
   "InternalDestination": "auth-service",
-  "AccessPolicy": "public",
+  "AccessPolicy": "authenticated",
   "Status": "placeholder",
   "Methods": [ "GET", "POST" ]
 }
@@ -168,33 +194,12 @@ The gateway does not deserialize or transform financial domain payloads.
 
 ## Safe failure behavior
 
-### Placeholder route
-
-```text
-HTTP 501
-code = route_not_active
-```
-
-### Missing or disabled destination
-
-```text
-HTTP 503
-code = destination_unavailable
-```
-
-### Downstream transport failure
-
-```text
-HTTP 503
-code = destination_unavailable
-```
-
-### Downstream timeout
-
-```text
-HTTP 504
-code = destination_timeout
-```
+| Condition | HTTP | Code |
+| --- | ---: | --- |
+| route is still a placeholder | 501 | `route_not_active` |
+| destination missing or disabled | 503 | `destination_unavailable` |
+| downstream transport failure | 503 | `destination_unavailable` |
+| downstream timeout | 504 | `destination_timeout` |
 
 Public errors include only a stable error type, title, status, code, generic detail, and correlation identifier.
 
@@ -207,7 +212,7 @@ They do not expose:
 * passwords, access tokens, provider tokens, or phone codes;
 * transaction amounts, notes, receipt text, OCR output, or LLM content.
 
-The gateway may log the normalized route and destination keys for operational diagnosis, but it must not log the proxied request body or raw query values.
+The gateway may log normalized route and destination keys for operational diagnosis, but it must not log the proxied request body or raw query values.
 
 ## Public route catalog
 
@@ -228,9 +233,10 @@ It does not return internal destination keys or destination addresses.
 
 * public route matching;
 * explicit method constraints;
+* exact anonymous endpoint allowlisting;
 * route/destination configuration validation;
 * correlation and technical headers;
-* gateway access-policy enforcement hooks;
+* route-level access-policy enforcement;
 * rate limiting;
 * safe forwarding and technical failure responses.
 
@@ -252,6 +258,8 @@ OCR and LLM providers are never called by the gateway for normal routing. Receip
 Automated coverage verifies:
 
 * configured route group count and ownership;
+* public API group documentation matches route configuration;
+* exact Identity public endpoints are documented;
 * sanitized public route metadata;
 * duplicate and malformed route rejection;
 * explicit HTTP method requirements;
@@ -276,4 +284,3 @@ dotnet test backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGate
 * Destination availability is not proactively probed; an enabled but unreachable service fails safely during dispatch.
 * Service discovery, retries, circuit breaking, load balancing, and distributed tracing exporters are future work.
 * Array-index environment overrides require disciplined deployment configuration.
-* Final JWT and role validation is handled by the gateway access-control task, not by route configuration.
