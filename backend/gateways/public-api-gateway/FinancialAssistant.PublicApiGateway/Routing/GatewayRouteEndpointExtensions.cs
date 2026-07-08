@@ -4,32 +4,28 @@ namespace FinancialAssistant.PublicApiGateway.Routing;
 
 public static class GatewayRouteEndpointExtensions
 {
-    private static readonly string[] DefaultMethods = new[] { "GET", "POST", "PUT", "PATCH" };
-
     public static WebApplication MapGatewayRouteMap(this WebApplication app)
     {
         var routeCatalog = app.Services.GetRequiredService<GatewayRouteCatalog>();
+        _ = app.Services.GetRequiredService<GatewayDestinationCatalog>();
 
         app.MapGet("/gateway/routes", () => Results.Ok(new
         {
-            routes = routeCatalog.Routes
+            routes = routeCatalog.PublicRoutes
         }));
 
         foreach (var route in routeCatalog.Routes)
         {
-            var methods = route.Methods.Length == 0 ? DefaultMethods : route.Methods;
-
             app.MapMethods(
                 route.PublicPattern,
-                methods,
+                route.Methods,
                 (HttpContext context, GatewaySecurityBoundary securityBoundary, GatewayRequestDispatcher dispatcher) =>
                     HandleGatewayRouteAsync(context, securityBoundary, dispatcher, route));
-
             if (!string.IsNullOrWhiteSpace(route.CatchAllPattern))
             {
                 app.MapMethods(
                     route.CatchAllPattern,
-                    methods,
+                    route.Methods,
                     (HttpContext context, GatewaySecurityBoundary securityBoundary, GatewayRequestDispatcher dispatcher) =>
                         HandleGatewayRouteAsync(context, securityBoundary, dispatcher, route));
             }

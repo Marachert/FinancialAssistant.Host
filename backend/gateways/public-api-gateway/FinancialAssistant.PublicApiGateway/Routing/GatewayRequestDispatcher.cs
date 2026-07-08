@@ -1,9 +1,12 @@
+using System.Text.Json;
 using FinancialAssistant.PublicApiGateway.Observability;
 
 namespace FinancialAssistant.PublicApiGateway.Routing;
 
 public sealed class GatewayRequestDispatcher
 {
+    private const string ProblemJson = "application/problem+json";
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private static readonly HashSet<string> HopByHopHeaders = new(StringComparer.OrdinalIgnoreCase)
     {
         "Connection",
@@ -33,84 +36,84 @@ public sealed class GatewayRequestDispatcher
 
     public async Task DispatchAsync(HttpContext context, GatewayRouteDefinition route)
     {
-        if (!string.Equals(route.Status, "active", StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(route.Status, GatewayRouteStatuses.Active, StringComparison.OrdinalIgnoreCase))
         {
-            context.Response.StatusCode = StatusCodes.Status501NotImplemented;
-            await context.Response.WriteAsJsonAsync(new
-            {
-                status = route.Status,
-                routeKey = route.RouteKey,
-                publicPath = context.Request.Path.Value,
-                serviceOwner = route.ServiceOwner,
-                internalDestination = route.InternalDestination,
-                accessPolicy = route.AccessPolicy,
-                correlationId = CorrelationHeaders.GetCorrelationId(context),
-                message = "Route configured. Service integration is not active yet."
-            });
+            await WriteProblemAsync(
+                context,
+                StatusCodes.Status501NotImplemented,
+                "route_not_active",
+                "Route is not active.",
+                "The requested API route is not active yet.");
             return;
         }
 
-        if (!destinationCatalog.TryGetDestination(route.InternalDestination, out var destination) || !destination.Enabled)
+        if (!destinationCatalog.TryGetDestination(route.InternalDestination, out var destination)
+            || !destination.Enabled
+            || !destinationCatalog.TryGetBaseAddress(route.InternalDestination, out var baseAddress))
         {
-            context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-            await context.Response.WriteAsJsonAsync(new
-            {
-                status = "destination_unavailable",
-                routeKey = route.RouteKey,
-                internalDestination = route.InternalDestination,
-                correlationId = CorrelationHeaders.GetCorrelationId(context),
-                message = "Destination is not configured or not enabled."
-            });
-            return;
-        }
-
-        if (!Uri.TryCreate(destination.BaseAddress, UriKind.Absolute, out var baseAddress))
-        {
-            context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-            await context.Response.WriteAsJsonAsync(new
-            {
-                status = "destination_invalid",
-                routeKey = route.RouteKey,
-                internalDestination = route.InternalDestination,
-                correlationId = CorrelationHeaders.GetCorrelationId(context),
-                message = "Destination base address is invalid."
-            });
+            logger.LogWarning(
+                "Gateway destination is unavailable for route {RouteKey} and destination {DestinationKey}.",
+                route.RouteKey,
+                route.InternalDestination);
+            await WriteProblemAsync(
+                context,
+                StatusCodes.Status503ServiceUnavailable,
+                "destination_unavailable",
+                "Service is temporarily unavailable.",
+                "The requested service is temporarily unavailable.");
             return;
         }
 
         var targetUri = BuildTargetUri(baseAddress, context.Request.Path, context.Request.QueryString);
-
         using var requestMessage = CreateRequestMessage(context, targetUri, route);
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
+        timeout.CancelAfter(TimeSpan.FromSeconds(destination.RequestTimeoutSeconds));
 
         try
         {
             using var responseMessage = await httpClient.SendAsync(
                 requestMessage,
                 HttpCompletionOption.ResponseHeadersRead,
-                context.RequestAborted);
-
-            await CopyResponseAsync(context, responseMessage);
+                timeout.Token);
+            await CopyResponseAsync(context, responseMessage, timeout.Token);
         }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
         {
             logger.LogInformation("Gateway request was cancelled for route {RouteKey}.", route.RouteKey);
         }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning(
+                "Gateway destination timed out for route {RouteKey} and destination {DestinationKey}.",
+                route.RouteKey,
+                route.InternalDestination);
+            await WriteProblemAsync(
+                context,
+                StatusCodes.Status504GatewayTimeout,
+                "destination_timeout",
+                "Service response timed out.",
+                "The requested service did not respond in time.");
+        }
         catch (HttpRequestException exception)
         {
-            logger.LogWarning(exception, "Gateway destination call failed for route {RouteKey}.", route.RouteKey);
-            context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-            await context.Response.WriteAsJsonAsync(new
-            {
-                status = "destination_call_failed",
-                routeKey = route.RouteKey,
-                internalDestination = route.InternalDestination,
-                correlationId = CorrelationHeaders.GetCorrelationId(context),
-                message = "Destination call failed."
-            });
+            logger.LogWarning(
+                "Gateway destination call failed for route {RouteKey} and destination {DestinationKey}. FailureType: {FailureType}.",
+                route.RouteKey,
+                route.InternalDestination,
+                exception.GetType().Name);
+            await WriteProblemAsync(
+                context,
+                StatusCodes.Status503ServiceUnavailable,
+                "destination_unavailable",
+                "Service is temporarily unavailable.",
+                "The requested service is temporarily unavailable.");
         }
     }
 
-    private static HttpRequestMessage CreateRequestMessage(HttpContext context, Uri targetUri, GatewayRouteDefinition route)
+    private static HttpRequestMessage CreateRequestMessage(
+        HttpContext context,
+        Uri targetUri,
+        GatewayRouteDefinition route)
     {
         var requestMessage = new HttpRequestMessage(new HttpMethod(context.Request.Method), targetUri);
 
@@ -134,11 +137,13 @@ public sealed class GatewayRequestDispatcher
         }
 
         AddGatewayHeaders(context, requestMessage, route);
-
         return requestMessage;
     }
 
-    private static void AddGatewayHeaders(HttpContext context, HttpRequestMessage requestMessage, GatewayRouteDefinition route)
+    private static void AddGatewayHeaders(
+        HttpContext context,
+        HttpRequestMessage requestMessage,
+        GatewayRouteDefinition route)
     {
         requestMessage.Headers.Remove("X-Gateway-Route-Key");
         requestMessage.Headers.TryAddWithoutValidation("X-Gateway-Route-Key", route.RouteKey);
@@ -163,18 +168,26 @@ public sealed class GatewayRequestDispatcher
         }
 
         return request.Headers.TryGetValue("Transfer-Encoding", out var transferEncoding)
-            && transferEncoding.Any(value => string.Equals(value, "chunked", StringComparison.OrdinalIgnoreCase));
+            && transferEncoding.Any(value =>
+                string.Equals(value, "chunked", StringComparison.OrdinalIgnoreCase));
     }
 
     private static Uri BuildTargetUri(Uri baseAddress, PathString path, QueryString query)
     {
-        var baseUri = baseAddress.ToString().TrimEnd('/');
+        var baseUri = baseAddress.AbsoluteUri.TrimEnd('/');
         var pathValue = path.Value ?? string.Empty;
-        var queryValue = query.Value ?? string.Empty;
-        return new Uri($"{baseUri}{pathValue}{queryValue}");
+        if (!pathValue.StartsWith("/", StringComparison.Ordinal))
+        {
+            pathValue = "/" + pathValue;
+        }
+
+        return new Uri($"{baseUri}{pathValue}{query.Value}", UriKind.Absolute);
     }
 
-    private static async Task CopyResponseAsync(HttpContext context, HttpResponseMessage responseMessage)
+    private static async Task CopyResponseAsync(
+        HttpContext context,
+        HttpResponseMessage responseMessage,
+        CancellationToken cancellationToken)
     {
         context.Response.StatusCode = (int)responseMessage.StatusCode;
 
@@ -194,6 +207,37 @@ public sealed class GatewayRequestDispatcher
             }
         }
 
-        await responseMessage.Content.CopyToAsync(context.Response.Body);
+        await responseMessage.Content.CopyToAsync(context.Response.Body, cancellationToken);
+    }
+
+    private static async Task WriteProblemAsync(
+        HttpContext context,
+        int status,
+        string code,
+        string title,
+        string detail)
+    {
+        if (context.Response.HasStarted)
+        {
+            return;
+        }
+
+        context.Response.StatusCode = status;
+        context.Response.ContentType = ProblemJson;
+        context.Response.Headers.CacheControl = "no-store";
+        var response = new
+        {
+            type = $"https://errors.financial-assistant.app/gateway/{code.Replace('_', '-')}",
+            title,
+            status,
+            code,
+            detail,
+            correlationId = CorrelationHeaders.GetCorrelationId(context)
+        };
+        await JsonSerializer.SerializeAsync(
+            context.Response.Body,
+            response,
+            JsonOptions,
+            context.RequestAborted);
     }
 }

@@ -25,12 +25,13 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
     }
 
     [Fact]
-    public async Task RoutesEndpoint_ReturnsConfiguredRouteMap()
+    public async Task RoutesEndpoint_ReturnsConfiguredSafeRouteMap()
     {
         using var client = CreateClient();
 
         using var response = await client.GetAsync("/gateway/routes");
-        using var document = await ReadJsonAsync(response);
+        var content = await response.Content.ReadAsStringAsync();
+        using var document = JsonDocument.Parse(content);
         var routes = document.RootElement.GetProperty("routes");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -42,6 +43,8 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
         Assert.Contains(routes.EnumerateArray(), route =>
             route.GetProperty("routeKey").GetString() == "admin-monitoring"
             && route.GetProperty("accessPolicy").GetString() == "admin");
+        Assert.DoesNotContain("internalDestination", content, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("auth-service", content, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -62,19 +65,20 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
     }
 
     [Fact]
-    public async Task PlaceholderRoute_ReturnsSafeRouteMetadata()
+    public async Task PlaceholderRoute_ReturnsSafeProblemWithoutInternalMetadata()
     {
         using var client = CreateClient();
 
         using var response = await client.GetAsync("/categories");
-        using var document = await ReadJsonAsync(response);
+        var content = await response.Content.ReadAsStringAsync();
+        using var document = JsonDocument.Parse(content);
         var root = document.RootElement;
 
         Assert.Equal(HttpStatusCode.NotImplemented, response.StatusCode);
-        Assert.Equal("placeholder", root.GetProperty("status").GetString());
-        Assert.Equal("categories", root.GetProperty("routeKey").GetString());
-        Assert.Equal("Category Service", root.GetProperty("serviceOwner").GetString());
-        Assert.Equal("authenticated", root.GetProperty("accessPolicy").GetString());
+        Assert.Equal("route_not_active", root.GetProperty("code").GetString());
+        Assert.Equal(501, root.GetProperty("status").GetInt32());
+        Assert.DoesNotContain("category-service", content, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Category Service", content, StringComparison.OrdinalIgnoreCase);
         Assert.Equal("authenticated", GetHeader(response, "X-Gateway-Access-Policy"));
         Assert.Equal("placeholder", GetHeader(response, "X-Gateway-Security-Mode"));
     }
