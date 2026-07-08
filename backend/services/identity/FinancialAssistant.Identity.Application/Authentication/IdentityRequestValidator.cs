@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using FinancialAssistant.Identity.Application.Phone;
 using FinancialAssistant.Identity.Contracts.Auth;
 
 namespace FinancialAssistant.Identity.Application.Authentication;
@@ -66,6 +67,46 @@ internal static class IdentityRequestValidator
         if (string.IsNullOrWhiteSpace(request.Nonce) || request.Nonce.Length is < 16 or > 512)
         {
             Add(errors, "nonce", "A client-generated nonce containing between 16 and 512 characters is required.");
+        }
+
+        ValidateClient(request.Client, errors);
+        return Freeze(errors);
+    }
+
+    public static IReadOnlyDictionary<string, string[]> ValidatePhoneVerificationStart(
+        PhoneVerificationStartRequest request)
+    {
+        var errors = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        if (!PhoneNumberNormalizer.TryNormalize(request.PhoneNumber, out _))
+        {
+            Add(errors, "phoneNumber", "A valid E.164 phone number is required.");
+        }
+
+        if (!string.Equals(request.Purpose, PhoneVerificationPurposes.SignIn, StringComparison.Ordinal))
+        {
+            Add(errors, "purpose", "Purpose must be sign_in for this API version.");
+        }
+
+        ValidateClient(request.Client, errors);
+        return Freeze(errors);
+    }
+
+    public static IReadOnlyDictionary<string, string[]> ValidatePhoneVerificationConfirm(
+        PhoneVerificationConfirmRequest request,
+        int codeLength)
+    {
+        var errors = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        if (string.IsNullOrWhiteSpace(request.VerificationId)
+            || request.VerificationId.Length is < 16 or > 64)
+        {
+            Add(errors, "verificationId", "A valid verification identifier is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Code)
+            || request.Code.Length != codeLength
+            || request.Code.Any(character => !char.IsDigit(character)))
+        {
+            Add(errors, "code", $"Verification code must contain exactly {codeLength} digits.");
         }
 
         ValidateClient(request.Client, errors);

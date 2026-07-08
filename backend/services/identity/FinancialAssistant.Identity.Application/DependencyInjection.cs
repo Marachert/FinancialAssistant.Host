@@ -1,4 +1,5 @@
 using FinancialAssistant.Identity.Application.Authentication;
+using FinancialAssistant.Identity.Application.Phone;
 using FinancialAssistant.Identity.Application.Providers.Apple;
 using FinancialAssistant.Identity.Application.Providers.Google;
 using FinancialAssistant.Identity.Application.Sessions;
@@ -13,6 +14,7 @@ public static class DependencyInjection
         services.AddScoped<IIdentityAuthenticationService, IdentityAuthenticationService>();
         services.AddScoped<IGoogleProviderAuthenticationService, GoogleProviderAuthenticationService>();
         services.AddScoped<IAppleProviderAuthenticationService, AppleProviderAuthenticationService>();
+        services.AddScoped<IPhoneVerificationAuthenticationService, PhoneVerificationAuthenticationService>();
         services.AddScoped<IIdentitySessionService, IdentitySessionService>();
         return services;
     }

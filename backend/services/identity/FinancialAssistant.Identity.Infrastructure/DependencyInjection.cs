@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using FinancialAssistant.Identity.Application.Abstractions;
+using FinancialAssistant.Identity.Application.Phone;
 using FinancialAssistant.Identity.Contracts.Auth;
 using FinancialAssistant.Identity.Infrastructure.Authentication;
 using FinancialAssistant.Identity.Infrastructure.Configuration;
@@ -29,14 +30,26 @@ public static class DependencyInjection
             .GetSection(IdentityServiceOptions.SectionName)
             .Get<IdentityServiceOptions>() ?? new IdentityServiceOptions();
         var keyMaterial = new IdentityJwtKeyMaterial(identityOptions.Authentication);
+        var phoneOptions = identityOptions.Providers.Phone;
+        var phonePolicy = new PhoneVerificationPolicy(
+            TimeSpan.FromMinutes(phoneOptions.ChallengeLifetimeMinutes),
+            TimeSpan.FromSeconds(phoneOptions.ResendCooldownSeconds),
+            TimeSpan.FromMinutes(phoneOptions.StartWindowMinutes),
+            phoneOptions.MaximumAttempts,
+            phoneOptions.MaximumStartsPerPhone,
+            phoneOptions.MaximumStartsPerClient,
+            phoneOptions.CodeLength);
 
         services.AddSingleton(keyMaterial);
+        services.AddSingleton(phonePolicy);
         services.AddSingleton<InMemoryIdentityAccountStore>();
         services.AddSingleton<IIdentityAccountStore>(provider =>
             provider.GetRequiredService<InMemoryIdentityAccountStore>());
         services.AddSingleton<IIdentityFederatedAccountStore>(provider =>
             provider.GetRequiredService<InMemoryIdentityAccountStore>());
         services.AddSingleton<IIdentitySessionStore, InMemoryIdentitySessionStore>();
+        services.AddSingleton<IPhoneVerificationChallengeStore, InMemoryPhoneVerificationChallengeStore>();
+        services.AddSingleton<IPhoneVerificationProvider, DisabledPhoneVerificationProvider>();
         services.AddSingleton<IEmailLookupHasher, HmacEmailLookupHasher>();
         services.AddSingleton<IIdentityProviderIdentifierHasher, HmacIdentityProviderIdentifierHasher>();
         services.AddSingleton<IGoogleIdentityTokenValidator, GoogleIdentityTokenValidator>();

@@ -12,6 +12,7 @@ public sealed class IdentityContractWebApplicationFactory : WebApplicationFactor
     public CapturingIdentityEventPublisher EventPublisher { get; } = new();
     public StubGoogleIdentityTokenValidator GoogleTokenValidator { get; } = new();
     public StubAppleIdentityTokenValidator AppleTokenValidator { get; } = new();
+    public StubPhoneVerificationProvider PhoneVerificationProvider { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -24,6 +25,8 @@ public sealed class IdentityContractWebApplicationFactory : WebApplicationFactor
             services.AddSingleton<IGoogleIdentityTokenValidator>(GoogleTokenValidator);
             services.RemoveAll<IAppleIdentityTokenValidator>();
             services.AddSingleton<IAppleIdentityTokenValidator>(AppleTokenValidator);
+            services.RemoveAll<IPhoneVerificationProvider>();
+            services.AddSingleton<IPhoneVerificationProvider>(PhoneVerificationProvider);
         });
     }
 }

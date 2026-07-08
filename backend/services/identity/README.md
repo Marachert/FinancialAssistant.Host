@@ -13,11 +13,12 @@ docs/engineering/identity-session-lifecycle.md
 docs/engineering/identity-event-publishing.md
 docs/engineering/google-sign-in-backend-validation.md
 docs/engineering/apple-sign-in-backend-validation.md
+docs/engineering/phone-verification-authentication.md
 ```
 
 ## Responsibility
 
-Identity Service owns account authentication, session lifecycle, provider links, access-token issuance, refresh rotation, revocation, and identity lifecycle event intents. Profile and financial data remain owned by their dedicated services.
+Identity Service owns account authentication, session lifecycle, provider links, verification challenges, access-token issuance, refresh rotation, revocation, and identity lifecycle event intents. Profile and financial data remain owned by their dedicated services.
 
 ## Client API
 
@@ -26,6 +27,8 @@ POST /auth/v1/register
 POST /auth/v1/sign-in
 POST /auth/v1/providers/google/sign-in
 POST /auth/v1/providers/apple/sign-in
+POST /auth/v1/providers/phone/verifications
+POST /auth/v1/providers/phone/verifications/confirm
 POST /auth/v1/refresh
 POST /auth/v1/logout
 GET  /auth/v1/me
@@ -33,17 +36,27 @@ GET  /auth/v1/me
 
 Registration and sign-in create an authoritative server-side session. Refresh rotates the session. Logout revokes it. Current-user context verifies both the signed access value and server-side session state.
 
-Google and Apple sign-in validate provider-issued identity tokens server-side, map stable provider subjects through Identity-owned hashed provider links, and return the same Financial Assistant session contract. Provider tokens are never used as Financial Assistant API bearer tokens.
+Google and Apple sign-in validate provider-issued identity tokens server-side. Phone sign-in uses a provider-neutral two-step challenge. All successful methods map stable provider identifiers through Identity-owned HMAC-protected links and return the same Financial Assistant session contract.
 
 ## Provider linking
 
-- Provider `sub` is the stable provider key; email is not a provider primary key.
-- Provider subjects and supported tenant identifiers are stored only as purpose-separated HMAC values.
+- Provider identifiers are stored only as purpose-separated HMAC values.
 - Provider links are stored separately from local email credentials.
-- A verified provider email matching a local credential does not trigger automatic linking.
-- Matching local accounts return `provider_link_required`; future linking must require an authenticated existing Identity session.
-- ID tokens, raw provider subjects, raw nonces, email, names, and profile pictures are not persisted in provider-link records.
-- Apple private-relay email is treated as optional profile data, not identity truth.
+- Email, phone, Google, Apple, and Profile attributes never silently link accounts.
+- Existing-account linking requires a future authenticated link endpoint.
+- Account recovery requires an existing provider link and a separate recovery workflow.
+- Provider tokens, raw subjects, raw nonces, verification codes, and raw phone numbers are not persisted in provider-link records or integration events.
+
+## Phone verification
+
+- Phone input must be E.164.
+- The public purpose in v1 is `sign_in`.
+- Identity applies challenge TTL, resend cooldown, per-phone and per-client start limits, failed-attempt lockout, client-instance binding, and one-time completion.
+- The external provider owns code delivery and checking through `IPhoneVerificationProvider`.
+- Identity never stores or logs verification codes.
+- Default policy is six digits, ten-minute lifetime, thirty-second resend cooldown, five failed checks, five starts per phone per hour, and ten starts per client per hour.
+- Phone sessions use `authenticationMethod = phone_otp`.
+- SMS is a restricted out-of-band method and should not be the only method for high-risk financial actions.
 
 ## Apple validation
 
@@ -52,7 +65,6 @@ Google and Apple sign-in validate provider-issued identity tokens server-side, m
 - The mobile client supplies a raw nonce; the token must contain the matching SHA-256 nonce representation.
 - Signing-key rotation triggers one metadata refresh and validation retry.
 - Apple sessions use `authenticationMethod = apple_oidc`.
-- Apple private keys and client secrets are not required for identity-token validation; they are future requirements for authorization-code exchange or revocation.
 
 ## Session model
 
@@ -64,6 +76,7 @@ Google and Apple sign-in validate provider-issued identity tokens server-side, m
 - `GET /auth/v1/me` rejects sessions that are revoked, expired, missing, or associated with an unavailable account.
 - Google sessions use `authenticationMethod = google_oidc`.
 - Apple sessions use `authenticationMethod = apple_oidc`.
+- Phone sessions use `authenticationMethod = phone_otp`.
 
 ## Integration events
 
@@ -90,6 +103,8 @@ Application services depend on:
 IIdentityAccountStore
 IIdentityFederatedAccountStore
 IIdentitySessionStore
+IPhoneVerificationChallengeStore
+IPhoneVerificationProvider
 IEmailLookupHasher
 IIdentityProviderIdentifierHasher
 IGoogleIdentityTokenValidator
@@ -102,7 +117,7 @@ IIdentityEventOutbox
 IIdentityEventTransport
 ```
 
-The current `InMemoryDevelopment` adapters support local execution and CI. They are not production persistence: state is lost on restart and is not shared between replicas. Production Elasticsearch adapters must preserve duplicate, provider-subject uniqueness, account-link, rotation, replay, revocation, and outbox semantics.
+The current in-memory adapters support local execution and CI. They are not production persistence: state is lost on restart and is not shared between replicas. Production Elasticsearch adapters must preserve duplicate, provider-subject uniqueness, account-link, challenge reservation, attempt increment, one-time completion, rotation, replay, revocation, and outbox semantics.
 
 ## Configuration
 
@@ -127,6 +142,15 @@ Identity:Providers:Apple:Issuer
 Identity:Providers:Apple:DiscoveryEndpoint
 Identity:Providers:Apple:ClockSkewSeconds
 Identity:Providers:Apple:RequireNonce
+Identity:Providers:Phone:Enabled
+Identity:Providers:Phone:Adapter
+Identity:Providers:Phone:CodeLength
+Identity:Providers:Phone:ChallengeLifetimeMinutes
+Identity:Providers:Phone:ResendCooldownSeconds
+Identity:Providers:Phone:MaximumAttempts
+Identity:Providers:Phone:StartWindowMinutes
+Identity:Providers:Phone:MaximumStartsPerPhone
+Identity:Providers:Phone:MaximumStartsPerClient
 Identity:Events:Mode
 Identity:Events:Exchange
 Identity:Events:ConnectionString
@@ -136,7 +160,7 @@ Identity:Events:DispatchIntervalMilliseconds
 Identity:Events:MaximumRetryDelaySeconds
 ```
 
-Keys, RabbitMQ credentials, and provider configuration belong in environment variables or a secret manager. Enabled providers require allowed client IDs and the provider identifier HMAC key. Apple readiness additionally requires HTTPS metadata endpoints and nonce validation.
+Keys, RabbitMQ credentials, provider credentials, and provider configuration belong in environment variables or a secret manager. Phone readiness fails when the feature is enabled while the adapter remains disabled or policy values are unsafe.
 
 ## Runtime and verification
 
@@ -153,15 +177,15 @@ OpenAPI is available in Development and Testing:
 /openapi/v1.json
 ```
 
-Automated tests cover email registration/sign-in, Google and Apple provider authentication, explicit linking, refresh rotation, replay-family revocation, expiry, logout, current-user context, hash-only secret storage, shared event envelopes, safe lifecycle events, outbox retry, OpenAPI, and architecture boundaries.
+Automated tests cover email registration/sign-in, Google and Apple authentication, phone challenge and confirmation, rate limits, lockout, client binding, provider-link hashing, explicit linking, session rotation, replay-family revocation, expiry, logout, current-user context, safe lifecycle events, outbox retry, OpenAPI, and architecture boundaries.
 
 ## Boundaries
 
 - Deterministic server logic is authoritative.
-- Google and Apple validation are isolated behind application abstractions.
+- Provider validation and delivery are isolated behind application abstractions.
 - Public contracts expose no storage implementation fields.
 - Other services never read Identity Service indices directly.
 - RabbitMQ is an integration transport, not the identity source of truth.
-- API Gateway routes provider requests but does not own provider validation or provider links.
-- Profile data from providers belongs to Profile Service, not Identity authentication truth.
+- API Gateway routes and applies perimeter controls but does not own provider validation, challenges, or provider links.
+- Profile data belongs to Profile Service, not Identity authentication truth.
 - LLM and OCR are outside the authentication trust boundary.
