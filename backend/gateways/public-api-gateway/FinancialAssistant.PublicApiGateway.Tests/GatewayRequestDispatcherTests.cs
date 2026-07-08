@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -130,6 +131,41 @@ public sealed class GatewayRequestDispatcherTests
         Assert.DoesNotContain("auth-service", responseBody, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task ActiveRoute_WhenResponseBodyStalls_AppliesDestinationTimeoutAndReturns504()
+    {
+        var handler = new RecordingHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StallingContent()
+            });
+        var dispatcher = CreateDispatcher(
+            handler,
+            new GatewayDestinationDefinition
+            {
+                DestinationKey = "auth-service",
+                BaseAddress = "http://identity.internal",
+                Enabled = true,
+                RequestTimeoutSeconds = 1
+            });
+        var context = CreateContext(HttpMethods.Get, "/auth/v1/session");
+        var route = CreateRoute(GatewayRouteStatuses.Active, "auth-service");
+        var stopwatch = Stopwatch.StartNew();
+
+        await dispatcher.DispatchAsync(context, route);
+        stopwatch.Stop();
+        var body = await ReadResponseBodyAsync(context);
+        var problem = JsonSerializer.Deserialize<GatewayProblem>(body, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+
+        Assert.Equal(StatusCodes.Status504GatewayTimeout, context.Response.StatusCode);
+        Assert.NotNull(problem);
+        Assert.Equal("destination_timeout", problem.Code);
+        Assert.Equal("test-correlation-id", problem.CorrelationId);
+        Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(5));
+        Assert.DoesNotContain("identity.internal", body, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("auth-service", body, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static GatewayRequestDispatcher CreateDispatcher(
         HttpMessageHandler handler,
         params GatewayDestinationDefinition[] destinations)
@@ -232,6 +268,28 @@ public sealed class GatewayRequestDispatcherTests
             }
 
             return responseFactory(request);
+        }
+    }
+
+    private sealed class StallingContent : HttpContent
+    {
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+        {
+            throw new InvalidOperationException("Response body copy must receive the destination cancellation token.");
+        }
+
+        protected override async Task SerializeToStreamAsync(
+            Stream stream,
+            TransportContext? context,
+            CancellationToken cancellationToken)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+        }
+
+        protected override bool TryComputeLength(out long length)
+        {
+            length = 0;
+            return false;
         }
     }
 }
