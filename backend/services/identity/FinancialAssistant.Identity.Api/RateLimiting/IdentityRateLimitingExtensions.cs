@@ -7,6 +7,7 @@ using System.Threading.RateLimiting;
 using FinancialAssistant.Identity.Contracts.Auth;
 using FinancialAssistant.Identity.Infrastructure.Configuration;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 
 namespace FinancialAssistant.Identity.Api.RateLimiting;
 
@@ -19,21 +20,35 @@ internal static class IdentityRateLimitingExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var options = configuration
-            .GetSection($"{IdentityServiceOptions.SectionName}:RateLimiting")
-            .Get<IdentityRateLimitingOptions>() ?? new IdentityRateLimitingOptions();
-        Validate(options);
-
+        _ = configuration;
         services.AddRateLimiter(rateLimiterOptions =>
         {
             rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             rateLimiterOptions.OnRejected = WriteRejectedAsync;
-            AddPolicy(rateLimiterOptions, IdentityRateLimitPolicies.Registration, options.Registration, options);
-            AddPolicy(rateLimiterOptions, IdentityRateLimitPolicies.SignIn, options.SignIn, options);
-            AddPolicy(rateLimiterOptions, IdentityRateLimitPolicies.ProviderSignIn, options.ProviderSignIn, options);
-            AddPolicy(rateLimiterOptions, IdentityRateLimitPolicies.PhoneStart, options.PhoneStart, options);
-            AddPolicy(rateLimiterOptions, IdentityRateLimitPolicies.PhoneConfirm, options.PhoneConfirm, options);
-            AddPolicy(rateLimiterOptions, IdentityRateLimitPolicies.Session, options.Session, options);
+            AddPolicy(
+                rateLimiterOptions,
+                IdentityRateLimitPolicies.Registration,
+                options => options.Registration);
+            AddPolicy(
+                rateLimiterOptions,
+                IdentityRateLimitPolicies.SignIn,
+                options => options.SignIn);
+            AddPolicy(
+                rateLimiterOptions,
+                IdentityRateLimitPolicies.ProviderSignIn,
+                options => options.ProviderSignIn);
+            AddPolicy(
+                rateLimiterOptions,
+                IdentityRateLimitPolicies.PhoneStart,
+                options => options.PhoneStart);
+            AddPolicy(
+                rateLimiterOptions,
+                IdentityRateLimitPolicies.PhoneConfirm,
+                options => options.PhoneConfirm);
+            AddPolicy(
+                rateLimiterOptions,
+                IdentityRateLimitPolicies.Session,
+                options => options.Session);
         });
 
         return services;
@@ -42,21 +57,29 @@ internal static class IdentityRateLimitingExtensions
     private static void AddPolicy(
         RateLimiterOptions rateLimiterOptions,
         string policyName,
-        IdentityFixedWindowPolicyOptions policy,
-        IdentityRateLimitingOptions options)
+        Func<IdentityRateLimitingOptions, IdentityFixedWindowPolicyOptions> selectPolicy)
     {
         rateLimiterOptions.AddPolicy(
             policyName,
-            context => RateLimitPartition.GetFixedWindowLimiter(
-                CreatePartitionKey(context, policyName, options),
-                _ => new FixedWindowRateLimiterOptions
-                {
-                    AutoReplenishment = true,
-                    PermitLimit = options.Enabled ? policy.PermitLimit : int.MaxValue,
-                    QueueLimit = 0,
-                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                    Window = TimeSpan.FromSeconds(options.Enabled ? policy.WindowSeconds : 1)
-                }));
+            context =>
+            {
+                var options = context.RequestServices
+                    .GetRequiredService<IOptions<IdentityServiceOptions>>()
+                    .Value
+                    .RateLimiting;
+                var policy = selectPolicy(options);
+                Validate(policy);
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    CreatePartitionKey(context, policyName, options),
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        AutoReplenishment = true,
+                        PermitLimit = options.Enabled ? policy.PermitLimit : int.MaxValue,
+                        QueueLimit = 0,
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        Window = TimeSpan.FromSeconds(options.Enabled ? policy.WindowSeconds : 1)
+                    });
+            });
     }
 
     private static string CreatePartitionKey(
@@ -121,22 +144,11 @@ internal static class IdentityRateLimitingExtensions
             cancellationToken);
     }
 
-    private static void Validate(IdentityRateLimitingOptions options)
+    private static void Validate(IdentityFixedWindowPolicyOptions policy)
     {
-        foreach (var policy in new[]
+        if (policy.PermitLimit < 1 || policy.WindowSeconds < 1)
         {
-            options.Registration,
-            options.SignIn,
-            options.ProviderSignIn,
-            options.PhoneStart,
-            options.PhoneConfirm,
-            options.Session
-        })
-        {
-            if (policy.PermitLimit < 1 || policy.WindowSeconds < 1)
-            {
-                throw new InvalidOperationException("Identity rate limit configuration is invalid.");
-            }
+            throw new InvalidOperationException("Identity rate limit configuration is invalid.");
         }
     }
 }
