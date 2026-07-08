@@ -50,7 +50,7 @@ public sealed class CorrelationMiddleware
             ["RequestMethod"] = context.Request.Method
         });
 
-        logger.LogInformation("Gateway request started.");
+        GatewayOperationalLog.RequestStarted(logger);
 
         try
         {
@@ -59,8 +59,8 @@ public sealed class CorrelationMiddleware
         finally
         {
             stopwatch.Stop();
-            logger.LogInformation(
-                "Gateway request completed with status code {StatusCode} in {ElapsedMilliseconds} ms.",
+            GatewayOperationalLog.RequestCompleted(
+                logger,
                 context.Response.StatusCode,
                 stopwatch.Elapsed.TotalMilliseconds);
         }
