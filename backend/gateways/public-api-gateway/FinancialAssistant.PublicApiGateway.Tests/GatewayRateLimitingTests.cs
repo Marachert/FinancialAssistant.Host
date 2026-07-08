@@ -1,8 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using FinancialAssistant.PublicApiGateway.RateLimiting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace FinancialAssistant.PublicApiGateway.Tests;
 
@@ -43,7 +45,7 @@ public sealed class GatewayRateLimitingTests
     }
 
     [Fact]
-    public async Task ClientInstanceHeader_CreatesIndependentPartitions()
+    public async Task ChangingClientInstanceHeader_DoesNotResetIpWidePartition()
     {
         await using var factory = CreateFactory(new Dictionary<string, string?>
         {
@@ -51,15 +53,39 @@ public sealed class GatewayRateLimitingTests
             ["Gateway:RateLimiting:Policies:identity-sign-in:WindowSeconds"] = "120"
         });
         using var firstClient = CreateClient(factory, "synthetic-client-partition-a");
-        using var secondClient = CreateClient(factory, "synthetic-client-partition-b");
+        using var spoofedClient = CreateClient(factory, "synthetic-client-partition-b");
 
         using var first = await firstClient.PostAsync("/auth/v1/sign-in", null);
-        using var throttled = await firstClient.PostAsync("/auth/v1/sign-in", null);
-        using var independent = await secondClient.PostAsync("/auth/v1/sign-in", null);
+        using var throttled = await spoofedClient.PostAsync("/auth/v1/sign-in", null);
 
         Assert.NotEqual(HttpStatusCode.TooManyRequests, first.StatusCode);
         Assert.Equal(HttpStatusCode.TooManyRequests, throttled.StatusCode);
-        Assert.NotEqual(HttpStatusCode.TooManyRequests, independent.StatusCode);
+    }
+
+    [Fact]
+    public async Task PartitionCache_IsBoundedAndOverflowDoesNotCreateFreshBuckets()
+    {
+        var options = Options.Create(
+            new GatewayRateLimitOptions
+            {
+                MaximumPartitionCount = 1,
+                PartitionIdleExpirationSeconds = 60
+            });
+        using var limiter = new GatewayRateLimiter(options);
+        var policy = new GatewayRateLimitPolicyOptions
+        {
+            PermitLimit = 1,
+            WindowSeconds = 120
+        };
+
+        var cached = await limiter.AcquireAsync("general", "general:cached", policy, CancellationToken.None);
+        var overflowFirst = await limiter.AcquireAsync("general", "general:overflow-a", policy, CancellationToken.None);
+        var overflowSecond = await limiter.AcquireAsync("general", "general:overflow-b", policy, CancellationToken.None);
+
+        Assert.True(cached.IsAcquired);
+        Assert.True(overflowFirst.IsAcquired);
+        Assert.False(overflowSecond.IsAcquired);
+        Assert.InRange(limiter.CachedPartitionCount, 0, 1);
     }
 
     [Fact]
