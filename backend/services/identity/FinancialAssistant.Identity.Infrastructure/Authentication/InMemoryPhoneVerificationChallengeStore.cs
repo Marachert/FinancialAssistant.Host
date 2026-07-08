@@ -39,8 +39,8 @@ public sealed class InMemoryPhoneVerificationChallengeStore : IPhoneVerification
                         false,
                         ToRetrySeconds(retryAt - now)));
                 }
-                else if (active.Status is PhoneVerificationChallengeStatus.Active
-                    or PhoneVerificationChallengeStatus.Cancelled
+                else if ((active.Status is PhoneVerificationChallengeStatus.Active
+                    or PhoneVerificationChallengeStatus.Cancelled)
                     && active.ResendAvailableAtUtc > now)
                 {
                     return Task.FromResult(new PhoneVerificationReservationResult(
