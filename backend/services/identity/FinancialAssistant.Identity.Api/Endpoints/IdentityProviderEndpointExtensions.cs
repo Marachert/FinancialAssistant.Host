@@ -1,3 +1,4 @@
+using FinancialAssistant.Identity.Api.RateLimiting;
 using FinancialAssistant.Identity.Contracts.Auth;
 
 namespace FinancialAssistant.Identity.Api.Endpoints;
@@ -17,7 +18,9 @@ internal static partial class IdentityProviderEndpointExtensions
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status400BadRequest, ProblemJson)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status401Unauthorized, ProblemJson)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status409Conflict, ProblemJson)
-            .Produces<IdentityApiErrorResponse>(StatusCodes.Status503ServiceUnavailable, ProblemJson);
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status429TooManyRequests, ProblemJson)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status503ServiceUnavailable, ProblemJson)
+            .RequireRateLimiting(IdentityRateLimitPolicies.ProviderSignIn);
 
         group.MapPost(IdentityApiRoutes.AppleSignInRelative, AppleSignInAsync)
             .WithName("Identity_AppleSignIn_v1")
@@ -28,7 +31,9 @@ internal static partial class IdentityProviderEndpointExtensions
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status400BadRequest, ProblemJson)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status401Unauthorized, ProblemJson)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status409Conflict, ProblemJson)
-            .Produces<IdentityApiErrorResponse>(StatusCodes.Status503ServiceUnavailable, ProblemJson);
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status429TooManyRequests, ProblemJson)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status503ServiceUnavailable, ProblemJson)
+            .RequireRateLimiting(IdentityRateLimitPolicies.ProviderSignIn);
 
         group.MapPost(IdentityApiRoutes.PhoneVerificationStartRelative, PhoneVerificationStartAsync)
             .WithName("Identity_PhoneVerificationStart_v1")
@@ -38,7 +43,8 @@ internal static partial class IdentityProviderEndpointExtensions
             .Produces<PhoneVerificationStartResponse>(StatusCodes.Status202Accepted)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status400BadRequest, ProblemJson)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status429TooManyRequests, ProblemJson)
-            .Produces<IdentityApiErrorResponse>(StatusCodes.Status503ServiceUnavailable, ProblemJson);
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status503ServiceUnavailable, ProblemJson)
+            .RequireRateLimiting(IdentityRateLimitPolicies.PhoneStart);
 
         group.MapPost(IdentityApiRoutes.PhoneVerificationConfirmRelative, PhoneVerificationConfirmAsync)
             .WithName("Identity_PhoneVerificationConfirm_v1")
@@ -48,7 +54,9 @@ internal static partial class IdentityProviderEndpointExtensions
             .Produces<AuthSessionResponse>(StatusCodes.Status200OK)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status400BadRequest, ProblemJson)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status401Unauthorized, ProblemJson)
-            .Produces<IdentityApiErrorResponse>(StatusCodes.Status503ServiceUnavailable, ProblemJson);
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status429TooManyRequests, ProblemJson)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status503ServiceUnavailable, ProblemJson)
+            .RequireRateLimiting(IdentityRateLimitPolicies.PhoneConfirm);
 
         return group;
     }

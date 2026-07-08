@@ -1,3 +1,4 @@
+using FinancialAssistant.Identity.Api.RateLimiting;
 using FinancialAssistant.Identity.Contracts.Auth;
 using Microsoft.OpenApi.Models;
 
@@ -15,7 +16,9 @@ internal static partial class IdentitySessionEndpointExtensions
             .Accepts<RefreshSessionRequest>("application/json")
             .Produces<AuthSessionResponse>(StatusCodes.Status200OK)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status400BadRequest, ProblemJson)
-            .Produces<IdentityApiErrorResponse>(StatusCodes.Status401Unauthorized, ProblemJson);
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status401Unauthorized, ProblemJson)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status429TooManyRequests, ProblemJson)
+            .RequireRateLimiting(IdentityRateLimitPolicies.Session);
 
         group.MapPost(IdentityApiRoutes.LogoutRelative, LogoutAsync)
             .WithName("Identity_Logout_v1")
@@ -24,16 +27,20 @@ internal static partial class IdentitySessionEndpointExtensions
             .Produces(StatusCodes.Status204NoContent)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status400BadRequest, ProblemJson)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status401Unauthorized, ProblemJson)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status429TooManyRequests, ProblemJson)
             .WithBearerSecurityContract()
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireRateLimiting(IdentityRateLimitPolicies.Session);
 
         group.MapGet(IdentityApiRoutes.CurrentUserRelative, CurrentAsync)
             .WithName("Identity_CurrentUser_v1")
             .WithSummary("Get the current authenticated identity context")
             .Produces<CurrentUserContextResponse>(StatusCodes.Status200OK)
             .Produces<IdentityApiErrorResponse>(StatusCodes.Status401Unauthorized, ProblemJson)
+            .Produces<IdentityApiErrorResponse>(StatusCodes.Status429TooManyRequests, ProblemJson)
             .WithBearerSecurityContract()
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireRateLimiting(IdentityRateLimitPolicies.Session);
 
         return group;
     }
