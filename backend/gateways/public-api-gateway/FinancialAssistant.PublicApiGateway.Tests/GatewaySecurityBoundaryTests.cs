@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -18,6 +17,7 @@ public sealed class GatewaySecurityBoundaryTests
     private const string SigningKey = "synthetic-gateway-signing-key-with-at-least-32-bytes";
     private const string Issuer = "financial-assistant-identity";
     private const string Audience = "financial-assistant-clients";
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     [Fact]
     public async Task PublicAllowlist_AllowsExactMethodAndPathWithoutAccessToken()
@@ -100,7 +100,7 @@ public sealed class GatewaySecurityBoundaryTests
         Assert.NotNull(userContext);
         Assert.Equal("user-123", userContext.UserId);
         Assert.Equal("session-456", userContext.SessionId);
-        Assert.Equal(["user"], userContext.Roles);
+        Assert.Equal(new[] { "user" }, userContext.Roles);
     }
 
     [Fact]
@@ -173,18 +173,13 @@ public sealed class GatewaySecurityBoundaryTests
     [Fact]
     public void EnforceMode_WithShortSigningKey_FailsConfigurationValidation()
     {
-        var options = CreateOptions() with
-        {
-            AccessTokenSigningKey = "too-short"
-        };
+        var options = CreateOptions(signingKey: "too-short");
 
         var exception = Assert.Throws<InvalidOperationException>(() =>
             new GatewayAccessTokenValidator(Options.Create(options)));
 
         Assert.Contains("at least 32", exception.Message, StringComparison.Ordinal);
     }
-
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private static GatewaySecurityBoundary CreateBoundary(GatewaySecurityOptions options)
     {
@@ -197,12 +192,13 @@ public sealed class GatewaySecurityBoundaryTests
 
     private static GatewaySecurityOptions CreateOptions(
         GatewayPublicEndpointDefinition[]? publicEndpoints = null,
-        int clockSkewSeconds = 30) =>
+        int clockSkewSeconds = 30,
+        string signingKey = SigningKey) =>
         new()
         {
             Mode = GatewaySecurityModes.Enforce,
             AuthenticationHeaderName = "Authorization",
-            AccessTokenSigningKey = SigningKey,
+            AccessTokenSigningKey = signingKey,
             AccessTokenIssuer = Issuer,
             AccessTokenAudience = Audience,
             ClockSkewSeconds = clockSkewSeconds,
