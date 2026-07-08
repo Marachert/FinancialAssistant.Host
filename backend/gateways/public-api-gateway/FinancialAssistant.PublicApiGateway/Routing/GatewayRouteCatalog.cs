@@ -135,7 +135,7 @@ public sealed class GatewayRouteCatalog
     private static void ValidatePattern(string pattern, string routeKey, bool isCatchAll)
     {
         if (string.IsNullOrWhiteSpace(pattern)
-            || !pattern.StartsWith('/', StringComparison.Ordinal)
+            || !pattern.StartsWith("/", StringComparison.Ordinal)
             || pattern.StartsWith("/health", StringComparison.OrdinalIgnoreCase)
             || pattern.StartsWith("/gateway", StringComparison.OrdinalIgnoreCase))
         {
