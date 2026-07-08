@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FinancialAssistant.PublicApiGateway.Observability;
 using FinancialAssistant.PublicApiGateway.Routing;
 using Microsoft.Extensions.Options;
@@ -6,17 +7,22 @@ namespace FinancialAssistant.PublicApiGateway.Security;
 
 public sealed class GatewaySecurityBoundary
 {
+    private const string ProblemJson = "application/problem+json";
     private const string GatewayAccessPolicyHeader = "X-Gateway-Access-Policy";
     private const string GatewaySecurityModeHeader = "X-Gateway-Security-Mode";
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly GatewaySecurityOptions options;
+    private readonly GatewayAccessTokenValidator accessTokenValidator;
     private readonly ILogger<GatewaySecurityBoundary> logger;
 
     public GatewaySecurityBoundary(
         IOptions<GatewaySecurityOptions> options,
+        GatewayAccessTokenValidator accessTokenValidator,
         ILogger<GatewaySecurityBoundary> logger)
     {
         this.options = options.Value;
+        this.accessTokenValidator = accessTokenValidator;
         this.logger = logger;
     }
 
@@ -31,41 +37,67 @@ public sealed class GatewaySecurityBoundary
                 "Gateway security boundary evaluated route {RouteKey} with access policy {AccessPolicy} in placeholder mode.",
                 route.RouteKey,
                 accessPolicy);
-
             return true;
         }
 
-        if (string.Equals(accessPolicy, GatewayAccessPolicies.Public, StringComparison.OrdinalIgnoreCase))
+        if (accessTokenValidator.IsPublicEndpoint(context.Request)
+            || string.Equals(accessPolicy, GatewayAccessPolicies.Public, StringComparison.OrdinalIgnoreCase))
         {
+            logger.LogDebug("Gateway allowed public request for route {RouteKey}.", route.RouteKey);
             return true;
         }
 
-        if (!HasAuthenticationHeader(context))
+        var validation = accessTokenValidator.Validate(context.Request.Headers);
+        if (validation.Status != GatewayAccessTokenStatus.Valid || validation.UserContext is null)
         {
-            await WriteSecurityProblemAsync(
-                context,
-                StatusCodes.Status401Unauthorized,
-                "unauthorized",
-                route,
-                accessPolicy,
-                "Authentication is required for this route.");
+            var error = validation.Status switch
+            {
+                GatewayAccessTokenStatus.Missing => new SecurityError(
+                    StatusCodes.Status401Unauthorized,
+                    "authentication_required",
+                    "Authentication is required.",
+                    "A valid session is required for this request."),
+                GatewayAccessTokenStatus.Expired => new SecurityError(
+                    StatusCodes.Status401Unauthorized,
+                    "session_expired",
+                    "The session has expired.",
+                    "Sign in again or refresh the session."),
+                _ => new SecurityError(
+                    StatusCodes.Status401Unauthorized,
+                    "session_invalid",
+                    "The session is invalid.",
+                    "A valid session is required for this request.")
+            };
 
+            logger.LogWarning(
+                "Gateway rejected request for route {RouteKey}. AuthenticationResult: {AuthenticationResult}.",
+                route.RouteKey,
+                validation.Status);
+            await WriteSecurityProblemAsync(context, error, includeBearerChallenge: true);
             return false;
         }
 
-        if (IsAdminPolicy(accessPolicy) && !HasAdminPlaceholderScope(context))
+        context.Items[GatewayUserContext.ContextItemKey] = validation.UserContext;
+
+        if (string.Equals(accessPolicy, GatewayAccessPolicies.Admin, StringComparison.OrdinalIgnoreCase)
+            && !validation.UserContext.IsInRole(options.AdminRole))
         {
+            logger.LogWarning("Gateway rejected non-admin session for route {RouteKey}.", route.RouteKey);
             await WriteSecurityProblemAsync(
                 context,
-                StatusCodes.Status403Forbidden,
-                "forbidden",
-                route,
-                accessPolicy,
-                "Admin access is required for this route.");
-
+                new SecurityError(
+                    StatusCodes.Status403Forbidden,
+                    "forbidden",
+                    "Access is forbidden.",
+                    "The current session does not have permission to access this resource."),
+                includeBearerChallenge: false);
             return false;
         }
 
+        logger.LogDebug(
+            "Gateway authorized route {RouteKey} with access policy {AccessPolicy}.",
+            route.RouteKey,
+            accessPolicy);
         return true;
     }
 
@@ -80,47 +112,44 @@ public sealed class GatewaySecurityBoundary
         context.Response.Headers[GatewaySecurityModeHeader] = options.Mode;
     }
 
-    private bool HasAuthenticationHeader(HttpContext context)
-    {
-        var headerName = string.IsNullOrWhiteSpace(options.AuthenticationHeaderName)
-            ? "Authorization"
-            : options.AuthenticationHeaderName;
-
-        return context.Request.Headers.TryGetValue(headerName, out var values)
-            && values.Any(value => !string.IsNullOrWhiteSpace(value));
-    }
-
-    private bool HasAdminPlaceholderScope(HttpContext context)
-    {
-        var headerName = string.IsNullOrWhiteSpace(options.AdminScopeHeaderName)
-            ? "X-Gateway-Admin-Scope"
-            : options.AdminScopeHeaderName;
-
-        return context.Request.Headers.TryGetValue(headerName, out var values)
-            && values.Any(value => IsAdminPolicy(value));
-    }
-
-    private static bool IsAdminPolicy(string? value)
-    {
-        return string.Equals(value, GatewayAccessPolicies.Admin, StringComparison.OrdinalIgnoreCase);
-    }
-
     private static async Task WriteSecurityProblemAsync(
         HttpContext context,
-        int statusCode,
-        string status,
-        GatewayRouteDefinition route,
-        string accessPolicy,
-        string message)
+        SecurityError error,
+        bool includeBearerChallenge)
     {
-        context.Response.StatusCode = statusCode;
-        await context.Response.WriteAsJsonAsync(new
+        if (context.Response.HasStarted)
         {
-            status,
-            routeKey = route.RouteKey,
-            accessPolicy,
-            correlationId = CorrelationHeaders.GetCorrelationId(context),
-            message
-        });
+            return;
+        }
+
+        context.Response.StatusCode = error.StatusCode;
+        context.Response.ContentType = ProblemJson;
+        context.Response.Headers.CacheControl = "no-store";
+        if (includeBearerChallenge)
+        {
+            context.Response.Headers.WWWAuthenticate = "Bearer";
+        }
+
+        var response = new
+        {
+            type = $"https://errors.financial-assistant.app/gateway/{error.Code.Replace('_', '-')}",
+            title = error.Title,
+            status = error.StatusCode,
+            code = error.Code,
+            detail = error.Detail,
+            correlationId = CorrelationHeaders.GetCorrelationId(context)
+        };
+
+        await JsonSerializer.SerializeAsync(
+            context.Response.Body,
+            response,
+            JsonOptions,
+            context.RequestAborted);
     }
+
+    private sealed record SecurityError(
+        int StatusCode,
+        string Code,
+        string Title,
+        string Detail);
 }
