@@ -30,12 +30,14 @@ public sealed class GatewayExceptionMiddleware
         catch (Exception exception)
         {
             logger.LogError(
-                "Unhandled gateway request failure. FailureType: {FailureType}.",
-                exception.GetType().Name);
+                "Unhandled gateway request failure. FailureType: {FailureType}. ResponseStarted: {ResponseStarted}.",
+                exception.GetType().Name,
+                context.Response.HasStarted);
 
             if (context.Response.HasStarted)
             {
-                throw;
+                context.Abort();
+                return;
             }
 
             context.Response.Clear();
