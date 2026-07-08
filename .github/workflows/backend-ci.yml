@@ -17,6 +17,8 @@ on:
       - 'Directory.Build.props'
       - 'Directory.Packages.props'
       - '.editorconfig'
+      - 'docs/engineering/gateway-identity-validation-checklist.md'
+      - 'docs/engineering/gateway-identity-validation-checklist.json'
       - '.github/workflows/backend-ci.yml'
   push:
     branches:
@@ -34,6 +36,8 @@ on:
       - 'Directory.Build.props'
       - 'Directory.Packages.props'
       - '.editorconfig'
+      - 'docs/engineering/gateway-identity-validation-checklist.md'
+      - 'docs/engineering/gateway-identity-validation-checklist.json'
       - '.github/workflows/backend-ci.yml'
   workflow_dispatch:
 

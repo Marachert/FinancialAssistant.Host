@@ -9,6 +9,8 @@ docs/engineering/gateway-route-groups-and-destinations.md
 docs/engineering/api-gateway-routing-foundation.md
 docs/engineering/api-gateway-verification-checklist.md
 docs/engineering/safe-operational-log-policy.md
+docs/engineering/gateway-identity-validation-checklist.md
+docs/engineering/gateway-identity-validation-checklist.json
 ```
 
 ## Responsibility
@@ -105,6 +107,14 @@ Never log raw request or response bodies, query values, headers, passwords, toke
 
 The complete policy and review checklist are in `docs/engineering/safe-operational-log-policy.md`.
 
+## Gateway and Identity validation gate
+
+FIN-83 defines a shared release gate for route, account, session, provider, and throttling behavior. The Markdown checklist explains the expected and negative scenarios. The JSON contract provides stable check IDs and maps every automated item to an existing test method.
+
+`GatewayIdentityValidationChecklistTests` runs with the backend suite and fails when a required domain, negative case, source file, test-method reference, or Markdown check ID is missing.
+
+The Gateway entries validate only perimeter responsibilities. Account, provider, challenge, and session truth remains owned by Identity Service.
+
 ## Local run
 
 ```bash
@@ -129,7 +139,7 @@ Default route calls return safe `501 route_not_active` responses until a route i
 dotnet test backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway.Tests/FinancialAssistant.PublicApiGateway.Tests.csproj --configuration Release
 ```
 
-Coverage includes startup/configuration validation, sanitized route descriptors, correlation behavior, route security hooks, rate limiting, safe placeholder/destination failures, active downstream dispatch, and operational log event-contract enforcement.
+Coverage includes startup/configuration validation, sanitized route descriptors, correlation behavior, route security hooks, rate limiting, safe placeholder/destination failures, active downstream dispatch, operational log event-contract enforcement, and the cross-service FIN-83 validation checklist contract.
 
 ## Boundary rules
 

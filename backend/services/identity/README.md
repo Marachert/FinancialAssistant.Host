@@ -15,6 +15,8 @@ docs/engineering/google-sign-in-backend-validation.md
 docs/engineering/apple-sign-in-backend-validation.md
 docs/engineering/phone-verification-authentication.md
 docs/engineering/safe-operational-log-policy.md
+docs/engineering/gateway-identity-validation-checklist.md
+docs/engineering/gateway-identity-validation-checklist.json
 ```
 
 ## Responsibility
@@ -106,6 +108,16 @@ Exception objects are not passed to the logging provider. Only `exception.GetTyp
 
 The complete allowlist, prohibited data list, examples, and code-review checklist are in `docs/engineering/safe-operational-log-policy.md`.
 
+## Gateway and Identity validation gate
+
+FIN-83 defines the shared pre-epic validation gate for route, account, session, provider, and throttling behavior.
+
+The Markdown checklist contains expected outcomes, negative cases, verification commands, and the service boundary for every check. The JSON contract provides stable IDs and maps each enforced item to existing Gateway or Identity test methods.
+
+`GatewayIdentityValidationChecklistTests` validates the contract during the standard backend test run. It fails when a required domain, negative case, evidence source file, referenced test method, or Markdown check ID is removed without an intentional checklist update.
+
+External Google, Apple, and phone provider availability remains an environment verification concern. Provider-neutral test adapters validate Identity orchestration and failure behavior but do not replace production issuer, audience, discovery, credential, HMAC-key, or delivery-provider checks.
+
 ## Storage boundary
 
 Application services depend on:
@@ -188,7 +200,7 @@ OpenAPI is available in Development and Testing:
 /openapi/v1.json
 ```
 
-Automated tests cover email registration/sign-in, Google and Apple authentication, phone challenge and confirmation, rate limits, lockout, client binding, provider-link hashing, explicit linking, session rotation, replay-family revocation, expiry, logout, current-user context, safe lifecycle events, outbox retry, OpenAPI, architecture boundaries, and operational log event-contract enforcement.
+Automated tests cover email registration/sign-in, Google and Apple authentication, phone challenge and confirmation, rate limits, lockout, client binding, provider-link hashing, explicit linking, session rotation, replay-family revocation, expiry, logout, current-user context, safe lifecycle events, outbox retry, OpenAPI, architecture boundaries, operational log event-contract enforcement, and the machine-readable FIN-83 Gateway/Identity validation checklist.
 
 ## Boundaries
 
