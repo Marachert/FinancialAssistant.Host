@@ -80,7 +80,7 @@ public sealed class IdentityRateLimitingTests
     }
 
     [Fact]
-    public async Task ClientInstanceHeader_CreatesIndependentIdentityPartitions()
+    public async Task ChangingClientInstanceHeader_DoesNotResetIdentityIpPartition()
     {
         await using var factory = CreateFactory(new Dictionary<string, string?>
         {
@@ -88,19 +88,17 @@ public sealed class IdentityRateLimitingTests
             ["Identity:RateLimiting:SignIn:WindowSeconds"] = "120"
         });
         using var firstClient = CreateClient(factory, "synthetic-identity-partition-a");
-        using var secondClient = CreateClient(factory, "synthetic-identity-partition-b");
+        using var spoofedClient = CreateClient(factory, "synthetic-identity-partition-b");
         var request = new SignInRequest(
             "synthetic-unknown@example.invalid",
             "Synthetic-Password-Not-A-Secret-123!",
             new IdentityClientContext("synthetic-client-body-c", "ios", "0.0-test"));
 
         using var first = await firstClient.PostAsJsonAsync(IdentityApiRoutes.SignIn, request);
-        using var throttled = await firstClient.PostAsJsonAsync(IdentityApiRoutes.SignIn, request);
-        using var independent = await secondClient.PostAsJsonAsync(IdentityApiRoutes.SignIn, request);
+        using var throttled = await spoofedClient.PostAsJsonAsync(IdentityApiRoutes.SignIn, request);
 
         Assert.NotEqual(HttpStatusCode.TooManyRequests, first.StatusCode);
         Assert.Equal(HttpStatusCode.TooManyRequests, throttled.StatusCode);
-        Assert.NotEqual(HttpStatusCode.TooManyRequests, independent.StatusCode);
     }
 
     [Fact]
