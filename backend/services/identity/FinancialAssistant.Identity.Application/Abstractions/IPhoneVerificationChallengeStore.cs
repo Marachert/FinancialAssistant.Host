@@ -9,7 +9,7 @@ public interface IPhoneVerificationChallengeStore
         PhoneVerificationPolicy policy,
         CancellationToken cancellationToken = default);
 
-    Task ActivateAsync(
+    Task<bool> TryActivateAsync(
         string verificationId,
         string providerReference,
         CancellationToken cancellationToken = default);
