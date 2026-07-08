@@ -2,17 +2,11 @@
 
 ## Purpose
 
-This checklist verifies the Public API Gateway foundation implemented under FIN-15.
+Use this checklist to verify the Public API Gateway routing foundation and FIN-71 route/destination configuration.
 
-Use synthetic values only. Do not use real access tokens, user data, financial data, receipts, OCR output, AI prompts, or production destination addresses.
+Use synthetic data only. Never use production access tokens, personal data, financial input, receipts, OCR output, AI prompts, or production destination addresses.
 
-## Automated coverage
-
-Test project:
-
-```text
-backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway.Tests/
-```
+## Automated verification
 
 Run:
 
@@ -20,22 +14,28 @@ Run:
 dotnet test backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway.Tests/FinancialAssistant.PublicApiGateway.Tests.csproj --configuration Release
 ```
 
-Automated checks:
+Automated checks cover:
 
-- gateway host starts through `WebApplicationFactory`;
-- `/health` returns HTTP 200 and healthy status;
-- `/gateway/routes` exposes the expected configured route groups;
-- `/health/ready` confirms route and destination configuration is loaded;
-- a missing correlation id is generated and returned in both supported headers;
-- a supplied correlation id is returned unchanged in headers and payload;
-- an incoming W3C `traceparent` trace id is visible through gateway diagnostics;
-- a placeholder route returns HTTP 501 with safe route ownership metadata;
-- route access-policy headers are emitted in placeholder mode;
-- the gateway assembly has no direct Elasticsearch client reference.
+* gateway startup and `/health`;
+* configured public route count and ownership;
+* sanitized `/gateway/routes` output;
+* absence of internal destination keys in public route metadata;
+* readiness route/destination counts;
+* correlation generation and propagation;
+* W3C trace-context handling;
+* gateway access-policy headers;
+* route and destination configuration validation;
+* duplicate route and unsafe destination rejection;
+* explicit HTTP method requirements;
+* active request forwarding of method, path, query, body, and correlation headers;
+* trusted overwrite of `X-Gateway-Route-Key`;
+* safe placeholder `501 route_not_active` responses;
+* safe missing/disabled destination `503 destination_unavailable` responses;
+* safe transport-failure responses without request or internal-host leakage;
+* rate limiting and health exclusions;
+* absence of direct Elasticsearch client references.
 
 ## Build and formatting
-
-From the repository root:
 
 ```bash
 dotnet restore backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj
@@ -43,16 +43,16 @@ dotnet build backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGat
 dotnet format backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj --verify-no-changes --verbosity diagnostic
 ```
 
-Expected:
+Verify:
 
-- restore succeeds;
-- build succeeds with no errors;
-- format verification reports no changes;
-- GitHub Actions detects the test project through `<IsTestProject>true</IsTestProject>`;
-- CI test step runs instead of being skipped;
-- a TRX test result artifact is uploaded.
+* restore succeeds;
+* Release build succeeds;
+* format verification reports no changes;
+* CI detects the test project;
+* test execution is not skipped;
+* TRX results are uploaded.
 
-## Manual endpoint verification
+## Manual diagnostics
 
 Run the gateway:
 
@@ -60,9 +60,7 @@ Run the gateway:
 dotnet run --project backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj
 ```
 
-The local URL may differ depending on ASP.NET Core settings.
-
-### Health and diagnostics
+Check:
 
 ```bash
 curl -i http://localhost:5000/health
@@ -70,73 +68,35 @@ curl -i http://localhost:5000/health/live
 curl -i http://localhost:5000/health/ready
 curl -i http://localhost:5000/gateway/info
 curl -i http://localhost:5000/gateway/status
-```
-
-Verify:
-
-- responses are successful;
-- correlation response headers are present;
-- diagnostics contain technical summaries only;
-- no destination address, user data, financial data, receipt data, OCR output, or AI content is exposed.
-
-### Route map
-
-```bash
 curl -i http://localhost:5000/gateway/routes
 ```
 
-Verify route groups and intended owners:
-
-- `/auth` -> Auth Service;
-- `/users/me` -> Profile Service;
-- `/categories` -> Category Service;
-- `/transactions/intake` -> Transaction Intake Service;
-- `/transactions/drafts/{id}/confirm` -> Transaction Intake Service;
-- `/receipts` -> Receipt File Intake Service;
-- `/analytics` -> Analytics Service;
-- `/score` -> Financial Score Service;
-- `/recommendations` -> Recommendation Service;
-- `/notifications` -> Notification Service;
-- `/admin/monitoring` -> Monitoring Admin Service.
-
-### Correlation generation
-
-```bash
-curl -i http://localhost:5000/health/live
-```
-
 Verify:
 
-- `correlationId` is present;
-- `X-Correlation-Id` is present;
-- both values match;
-- generated value is a GUID.
+* health and diagnostic endpoints respond;
+* correlation headers are present;
+* diagnostics contain technical summaries only;
+* route metadata includes public patterns, owners, policies, status, and methods;
+* route metadata excludes `internalDestination` and all base addresses;
+* no secrets, tokens, personal data, financial data, receipt content, OCR output, or AI content is exposed.
 
-### Correlation propagation
+## Route groups
 
-```bash
-curl -i -H "correlationId: fin-265-synthetic-correlation" http://localhost:5000/gateway/info
-```
+Confirm the public map contains:
 
-Verify the same synthetic value appears in:
+* `/auth` -> Identity/Auth Service;
+* `/users/me` -> Profile Service;
+* `/categories` -> Category Service;
+* `/transactions/intake` -> Transaction Intake Service;
+* `/transactions/drafts/{id}/confirm` -> Transaction Intake Service;
+* `/receipts` -> Receipt File Intake Service;
+* `/analytics` -> Analytics Service;
+* `/score` -> Financial Score Service;
+* `/recommendations` -> Recommendation Service;
+* `/notifications` -> Notification Service;
+* `/admin/monitoring` -> Monitoring Admin Service.
 
-- `correlationId` response header;
-- `X-Correlation-Id` response header;
-- response payload.
-
-### Trace context
-
-```bash
-curl -i -H "traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01" http://localhost:5000/gateway/info
-```
-
-Verify the diagnostic `traceId` is:
-
-```text
-4bf92f3577b34da6a3ce929d0e0e4736
-```
-
-### Placeholder route
+## Placeholder route
 
 ```bash
 curl -i http://localhost:5000/categories
@@ -144,24 +104,71 @@ curl -i http://localhost:5000/categories
 
 Verify:
 
-- HTTP status is 501;
-- route key is `categories`;
-- service owner is `Category Service`;
-- access policy is `authenticated`;
-- `X-Gateway-Access-Policy` is `authenticated`;
-- `X-Gateway-Security-Mode` is `placeholder`;
-- response contains no domain data.
+* HTTP status is 501;
+* response code is `route_not_active`;
+* `X-Gateway-Access-Policy` is `authenticated`;
+* `X-Gateway-Security-Mode` is `placeholder`;
+* response contains a correlation identifier;
+* response does not contain `category-service`, an internal hostname, service implementation metadata, or domain data.
 
-## Architecture boundary verification
+## Active route with unavailable destination
 
-The gateway must not reference or initialize Elasticsearch clients.
+In a test-only configuration, set a route to `active` while leaving its destination missing or disabled.
 
-Automated assembly-reference checks cover the known .NET Elasticsearch client package names. During review, also confirm:
+Verify:
 
-- no Elasticsearch client package is added to the gateway project;
-- no Elasticsearch connection configuration is added to gateway settings;
-- no gateway component reads or writes service-owned indices;
-- storage access remains behind owning service APIs.
+* HTTP status is 503;
+* response code is `destination_unavailable`;
+* response is `application/problem+json`;
+* `Cache-Control` is `no-store`;
+* response contains a correlation identifier;
+* response does not expose the destination key, internal host, base address, request body, or credentials.
+
+## Active dispatch
+
+In a test-only configuration, activate a route and point it to a synthetic local HTTP handler.
+
+Verify:
+
+* HTTP method is preserved;
+* path and query string are preserved;
+* request body is preserved;
+* hop-by-hop headers are removed;
+* `X-Gateway-Route-Key` is overwritten with the configured route key;
+* correlation headers are forwarded;
+* downstream status, allowed headers, and body are returned;
+* timeout configuration is applied.
+
+## Configuration review
+
+Routes must use:
+
+* unique lower-case kebab-case keys;
+* valid non-diagnostic public paths;
+* valid catch-all patterns;
+* explicit methods;
+* known access policies;
+* `placeholder` or `active` status;
+* an owning service and destination key.
+
+Destinations must use:
+
+* unique lower-case kebab-case keys;
+* HTTP/HTTPS absolute addresses;
+* no user-info, query, or fragment in base addresses;
+* a base address when enabled;
+* timeouts from 1 to 300 seconds.
+
+## Architecture boundaries
+
+Confirm:
+
+* no Elasticsearch package or connection belongs to the gateway;
+* no gateway code reads or writes service-owned indices;
+* no financial calculations or business validation are implemented in routing;
+* no OCR/LLM call occurs during ordinary proxy dispatch;
+* RabbitMQ domain-event handling remains in owning services;
+* public errors do not expose internal configuration.
 
 ## Review result template
 
@@ -171,13 +178,16 @@ Reviewer:
 Branch/commit:
 CI run:
 Restore: PASS/FAIL
-Build: PASS/FAIL
+Release build: PASS/FAIL
 Format: PASS/FAIL
 Automated tests: PASS/FAIL
-Health endpoints: PASS/FAIL
-Route map: PASS/FAIL
-Correlation: PASS/FAIL
-Trace context: PASS/FAIL
+Route configuration validation: PASS/FAIL
+Destination configuration validation: PASS/FAIL
+Sanitized route catalog: PASS/FAIL
+Placeholder failure: PASS/FAIL
+Unavailable destination failure: PASS/FAIL
+Active dispatch: PASS/FAIL
+Correlation/trace propagation: PASS/FAIL
 Storage boundary: PASS/FAIL
 Sensitive-data exposure check: PASS/FAIL
 Notes:
@@ -185,8 +195,7 @@ Notes:
 
 ## Related documents
 
-- `docs/engineering/api-gateway-routing-foundation.md`
-- gateway-local `README.md`
-- Jira FIN-15
-- Jira FIN-265
-- Jira FIN-266
+* `docs/engineering/gateway-route-groups-and-destinations.md`
+* `docs/engineering/api-gateway-routing-foundation.md`
+* gateway-local `README.md`
+* Jira FIN-71
