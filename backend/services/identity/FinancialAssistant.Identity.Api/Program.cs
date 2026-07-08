@@ -1,4 +1,5 @@
 using FinancialAssistant.Identity.Api.Endpoints;
+using FinancialAssistant.Identity.Api.RateLimiting;
 using FinancialAssistant.Identity.Application;
 using FinancialAssistant.Identity.Infrastructure;
 using FinancialAssistant.Identity.Infrastructure.Configuration;
@@ -33,6 +34,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddIdentityApplication();
 builder.Services.AddIdentityInfrastructure(builder.Configuration);
+builder.Services.AddIdentityRateLimiting(builder.Configuration);
 builder.Services
     .AddHealthChecks()
     .AddCheck(
@@ -52,6 +54,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
         options.SwaggerEndpoint("/openapi/v1.json", "Financial Assistant Identity API v1"));
 }
 
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -78,7 +81,8 @@ app.MapGet(
         status = "running",
         environment = environment.EnvironmentName,
         storageProvider = options.Value.Storage.Provider,
-        eventPublishingMode = options.Value.Events.Mode
+        eventPublishingMode = options.Value.Events.Mode,
+        rateLimitingEnabled = options.Value.RateLimiting.Enabled
     }));
 
 app.MapIdentityContractEndpoints();
