@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Extensions.Options;
 
 namespace FinancialAssistant.PublicApiGateway.Observability;
@@ -24,21 +25,29 @@ public sealed class CorrelationMiddleware
         var correlationId = ResolveCorrelationId(context.Request.Headers, options);
         context.Items[CorrelationHeaders.ContextItemKey] = correlationId;
 
+        var activity = Activity.Current;
+        var traceId = activity?.TraceId.ToString() ?? context.TraceIdentifier;
+        activity?.SetTag("correlation.id", correlationId);
+        activity?.SetTag("http.request.method", context.Request.Method);
+        activity?.AddBaggage(CorrelationHeaders.CorrelationId, correlationId);
+
+        var stopwatch = Stopwatch.StartNew();
         context.Response.OnStarting(() =>
         {
+            stopwatch.Stop();
             context.Response.Headers[options.PrimaryHeaderName] = correlationId;
             context.Response.Headers[options.CompatibilityHeaderName] = correlationId;
+            context.Response.Headers[options.TraceIdHeaderName] = traceId;
+            context.Response.Headers[options.RequestDurationHeaderName] =
+                $"gateway;dur={stopwatch.Elapsed.TotalMilliseconds.ToString("0.###", CultureInfo.InvariantCulture)}";
             return Task.CompletedTask;
         });
-
-        var activity = Activity.Current;
-        activity?.SetTag("correlation.id", correlationId);
-        activity?.AddBaggage(CorrelationHeaders.CorrelationId, correlationId);
 
         using var scope = logger.BeginScope(new Dictionary<string, object?>
         {
             ["CorrelationId"] = correlationId,
-            ["TraceId"] = activity?.TraceId.ToString() ?? context.TraceIdentifier
+            ["TraceId"] = traceId,
+            ["RequestMethod"] = context.Request.Method
         });
 
         logger.LogInformation("Gateway request started.");
@@ -49,7 +58,11 @@ public sealed class CorrelationMiddleware
         }
         finally
         {
-            logger.LogInformation("Gateway request completed with status code {StatusCode}.", context.Response.StatusCode);
+            stopwatch.Stop();
+            logger.LogInformation(
+                "Gateway request completed with status code {StatusCode} in {ElapsedMilliseconds} ms.",
+                context.Response.StatusCode,
+                stopwatch.Elapsed.TotalMilliseconds);
         }
     }
 

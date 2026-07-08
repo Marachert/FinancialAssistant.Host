@@ -27,6 +27,7 @@ builder.Services
 var app = builder.Build();
 
 app.UseMiddleware<CorrelationMiddleware>();
+app.UseMiddleware<GatewayExceptionMiddleware>();
 app.UseMiddleware<GatewayRateLimitMiddleware>();
 
 app.MapGet("/", () => Results.Redirect("/health"));
