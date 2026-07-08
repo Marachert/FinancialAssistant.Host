@@ -17,6 +17,7 @@ builder.Services.Configure<GatewayDestinationMapOptions>(builder.Configuration.G
 builder.Services.AddSingleton<GatewayDiagnosticsClock>();
 builder.Services.AddSingleton<GatewayRouteCatalog>();
 builder.Services.AddSingleton<GatewayDestinationCatalog>();
+builder.Services.AddSingleton<GatewayAccessTokenValidator>();
 builder.Services.AddSingleton<GatewaySecurityBoundary>();
 builder.Services.AddSingleton<GatewayRateLimitCatalog>();
 builder.Services.AddSingleton<GatewayRateLimitPartitioner>();
@@ -25,6 +26,8 @@ builder.Services
     .AddHttpClient<GatewayRequestDispatcher>(client => client.Timeout = Timeout.InfiniteTimeSpan);
 
 var app = builder.Build();
+
+_ = app.Services.GetRequiredService<GatewayAccessTokenValidator>();
 
 app.UseMiddleware<CorrelationMiddleware>();
 app.UseMiddleware<GatewayExceptionMiddleware>();
@@ -49,6 +52,7 @@ app.MapGet(
             environment = environment.EnvironmentName,
             routeCount = routeCatalog.Routes.Count,
             securityMode = securityOptions.Value.Mode,
+            publicEndpointCount = securityOptions.Value.PublicEndpoints.Length,
             rateLimitingEnabled = rateLimitCatalog.Enabled,
             rateLimitPolicyCount = rateLimitCatalog.PolicyCount,
             correlationId = CorrelationHeaders.GetCorrelationId(context),
