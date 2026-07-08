@@ -91,9 +91,12 @@ public sealed class GatewayRateLimitCatalog
             return;
         }
 
-        if (policies.Count == 0 || !policies.ContainsKey(options.DefaultPolicy))
+        if (policies.Count == 0
+            || !policies.ContainsKey(options.DefaultPolicy)
+            || options.MaximumPartitionCount < 1
+            || options.PartitionIdleExpirationSeconds < 1)
         {
-            throw new InvalidOperationException("Gateway rate limiting requires a configured default policy.");
+            throw new InvalidOperationException("Gateway rate limiting requires valid default and partition-cache configuration.");
         }
 
         foreach (var (name, policy) in policies)
