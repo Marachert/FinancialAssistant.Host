@@ -7,6 +7,7 @@ public static class GatewayRouteEndpointExtensions
     public static WebApplication MapGatewayRouteMap(this WebApplication app)
     {
         var routeCatalog = app.Services.GetRequiredService<GatewayRouteCatalog>();
+        _ = app.Services.GetRequiredService<GatewayDestinationCatalog>();
 
         app.MapGet("/gateway/routes", () => Results.Ok(new
         {
