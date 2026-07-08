@@ -30,6 +30,7 @@ public sealed class GatewayRateLimitMiddleware
 
         var partitionKey = partitioner.CreatePartitionKey(context, decision);
         var lease = await limiter.AcquireAsync(
+            decision.PolicyName,
             partitionKey,
             decision.Policy,
             context.RequestAborted);
