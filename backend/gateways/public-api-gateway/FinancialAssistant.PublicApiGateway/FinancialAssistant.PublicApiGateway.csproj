@@ -6,4 +6,8 @@
     <RootNamespace>FinancialAssistant.PublicApiGateway</RootNamespace>
     <AssemblyName>FinancialAssistant.PublicApiGateway</AssemblyName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.28" />
+  </ItemGroup>
 </Project>
