@@ -8,6 +8,7 @@ public sealed class IdentityServiceOptions
     public IdentityStorageOptions Storage { get; set; } = new();
     public IdentityAuthenticationOptions Authentication { get; set; } = new();
     public IdentityProviderOptions Providers { get; set; } = new();
+    public IdentityRateLimitingOptions RateLimiting { get; set; } = new();
     public IdentityEventPublishingOptions Events { get; set; } = new();
 }
 
@@ -79,6 +80,34 @@ public sealed class PhoneVerificationOptions
     public int StartWindowMinutes { get; set; } = 60;
     public int MaximumStartsPerPhone { get; set; } = 5;
     public int MaximumStartsPerClient { get; set; } = 10;
+}
+
+public sealed class IdentityRateLimitingOptions
+{
+    public bool Enabled { get; set; } = true;
+    public string ClientInstanceHeaderName { get; set; } = "X-Client-Instance-Id";
+    public IdentityFixedWindowPolicyOptions Registration { get; set; } = new(5, 600);
+    public IdentityFixedWindowPolicyOptions SignIn { get; set; } = new(10, 300);
+    public IdentityFixedWindowPolicyOptions ProviderSignIn { get; set; } = new(10, 300);
+    public IdentityFixedWindowPolicyOptions PhoneStart { get; set; } = new(5, 60);
+    public IdentityFixedWindowPolicyOptions PhoneConfirm { get; set; } = new(20, 300);
+    public IdentityFixedWindowPolicyOptions Session { get; set; } = new(60, 60);
+}
+
+public sealed class IdentityFixedWindowPolicyOptions
+{
+    public IdentityFixedWindowPolicyOptions()
+    {
+    }
+
+    public IdentityFixedWindowPolicyOptions(int permitLimit, int windowSeconds)
+    {
+        PermitLimit = permitLimit;
+        WindowSeconds = windowSeconds;
+    }
+
+    public int PermitLimit { get; set; }
+    public int WindowSeconds { get; set; }
 }
 
 public sealed class IdentityEventPublishingOptions
