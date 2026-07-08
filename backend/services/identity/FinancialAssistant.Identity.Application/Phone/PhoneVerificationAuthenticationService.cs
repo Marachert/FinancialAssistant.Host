@@ -95,10 +95,16 @@ public sealed partial class PhoneVerificationAuthenticationService : IPhoneVerif
                 : ProviderUnavailableStart();
         }
 
-        await challengeStore.ActivateAsync(
+        var activated = await challengeStore.TryActivateAsync(
             challenge.Id,
             dispatch.ProviderReference,
+            clock.UtcNow,
             cancellationToken);
+        if (!activated)
+        {
+            return ProviderUnavailableStart();
+        }
+
         return IdentityOperationResult<PhoneVerificationStartResponse>.Success(
             new PhoneVerificationStartResponse(
                 challenge.Id,
