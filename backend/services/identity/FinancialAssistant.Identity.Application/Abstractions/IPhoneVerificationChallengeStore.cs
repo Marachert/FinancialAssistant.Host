@@ -12,6 +12,7 @@ public interface IPhoneVerificationChallengeStore
     Task<bool> TryActivateAsync(
         string verificationId,
         string providerReference,
+        DateTimeOffset activatedAtUtc,
         CancellationToken cancellationToken = default);
 
     Task CancelAsync(
