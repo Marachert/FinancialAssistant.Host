@@ -21,7 +21,8 @@ builder.Services.AddSingleton<GatewaySecurityBoundary>();
 builder.Services.AddSingleton<GatewayRateLimitCatalog>();
 builder.Services.AddSingleton<GatewayRateLimitPartitioner>();
 builder.Services.AddSingleton<GatewayRateLimiter>();
-builder.Services.AddHttpClient<GatewayRequestDispatcher>();
+builder.Services
+    .AddHttpClient<GatewayRequestDispatcher>(client => client.Timeout = Timeout.InfiniteTimeSpan);
 
 var app = builder.Build();
 
