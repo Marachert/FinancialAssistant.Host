@@ -60,8 +60,8 @@ public sealed class GatewayRequestDispatcher
             || !destination.Enabled
             || !destinationCatalog.TryGetBaseAddress(route.InternalDestination, out var baseAddress))
         {
-            logger.LogWarning(
-                "Gateway destination is unavailable for route {RouteKey} and destination {DestinationKey}.",
+            GatewayOperationalLog.DestinationUnavailable(
+                logger,
                 route.RouteKey,
                 route.InternalDestination);
             await WriteProblemAsync(
@@ -88,14 +88,15 @@ public sealed class GatewayRequestDispatcher
         }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
         {
-            logger.LogInformation("Gateway request was cancelled for route {RouteKey}.", route.RouteKey);
+            GatewayOperationalLog.DispatchCancelled(logger, route.RouteKey);
         }
         catch (OperationCanceledException)
         {
-            logger.LogWarning(
-                "Gateway destination timed out for route {RouteKey} and destination {DestinationKey}.",
+            GatewayOperationalLog.DestinationTimedOut(
+                logger,
                 route.RouteKey,
-                route.InternalDestination);
+                route.InternalDestination,
+                destination.RequestTimeoutSeconds);
             await WriteProblemAsync(
                 context,
                 StatusCodes.Status504GatewayTimeout,
@@ -105,8 +106,8 @@ public sealed class GatewayRequestDispatcher
         }
         catch (HttpRequestException exception)
         {
-            logger.LogWarning(
-                "Gateway destination call failed for route {RouteKey} and destination {DestinationKey}. FailureType: {FailureType}.",
+            GatewayOperationalLog.DestinationCallFailed(
+                logger,
                 route.RouteKey,
                 route.InternalDestination,
                 exception.GetType().Name);
