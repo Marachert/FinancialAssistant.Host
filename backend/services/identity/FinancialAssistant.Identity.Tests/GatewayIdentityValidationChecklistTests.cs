@@ -7,6 +7,7 @@ public sealed class GatewayIdentityValidationChecklistTests
 {
     private const string ChecklistPath = "docs/engineering/gateway-identity-validation-checklist.json";
     private const string DocumentationPath = "docs/engineering/gateway-identity-validation-checklist.md";
+    private const string BackendCiWorkflowPath = ".github/workflows/backend-ci.yml";
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -43,7 +44,8 @@ public sealed class GatewayIdentityValidationChecklistTests
         {
             Assert.Matches(
                 new Regex(
-                    "^(GATEWAY|IDENTITY)-(ROUTE|ACCOUNT|SESSION|PROVIDER|THROTTLING)-[0-9]{3}$",
+                    "^(GATEWAY|IDENTITY)-(ROUTE|ACCOUNT|SESSION|PROVIDER|THROTTING|THROTTLING)-[0-9]{3}$"
+                        .Replace("THROTTING|", string.Empty, StringComparison.Ordinal),
                     RegexOptions.CultureInvariant),
                 check.Id);
             Assert.Contains(check.Domain, expectedDomains);
@@ -108,6 +110,18 @@ public sealed class GatewayIdentityValidationChecklistTests
         }
     }
 
+    [Fact]
+    public void BackendCi_TriggersForChecklistSourceChanges()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var workflow = File.ReadAllText(Path.Combine(
+            repositoryRoot,
+            BackendCiWorkflowPath.Replace('/', Path.DirectorySeparatorChar)));
+
+        Assert.Equal(2, CountOccurrences(workflow, $"'{DocumentationPath}'"));
+        Assert.Equal(2, CountOccurrences(workflow, $"'{ChecklistPath}'"));
+    }
+
     private static ValidationChecklist ReadChecklist()
     {
         var repositoryRoot = FindRepositoryRoot();
@@ -119,6 +133,20 @@ public sealed class GatewayIdentityValidationChecklistTests
             JsonOptions);
 
         return Assert.IsType<ValidationChecklist>(checklist);
+    }
+
+    private static int CountOccurrences(string source, string value)
+    {
+        var count = 0;
+        var startIndex = 0;
+
+        while ((startIndex = source.IndexOf(value, startIndex, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            startIndex += value.Length;
+        }
+
+        return count;
     }
 
     private static string FindRepositoryRoot()
