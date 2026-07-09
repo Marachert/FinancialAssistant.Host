@@ -5,68 +5,10 @@ on:
     branches:
       - main
       - develop
-    paths:
-      - 'backend/**'
-      - 'shared/**'
-      - 'tests/**'
-      - 'mobile/**'
-      - 'web-admin/**'
-      - 'infra/docker-compose/**'
-      - 'README.md'
-      - 'docs/README.md'
-      - 'docs/architecture/**'
-      - 'docs/api/**'
-      - 'docs/events/**'
-      - 'docs/security/**'
-      - 'docs/delivery/**'
-      - 'docs/engineering/**'
-      - 'docs/engineering/gateway-identity-validation-checklist.md'
-      - 'docs/engineering/gateway-identity-validation-checklist.json'
-      - '*.sln'
-      - '*.csproj'
-      - '**/*.sln'
-      - '**/*.csproj'
-      - 'global.json'
-      - 'Directory.Build.props'
-      - 'Directory.Packages.props'
-      - '.gitignore'
-      - '.gitattributes'
-      - '.editorconfig'
-      - 'LICENSE'
-      - '.github/workflows/backend-ci.yml'
   push:
     branches:
       - main
       - develop
-    paths:
-      - 'backend/**'
-      - 'shared/**'
-      - 'tests/**'
-      - 'mobile/**'
-      - 'web-admin/**'
-      - 'infra/docker-compose/**'
-      - 'README.md'
-      - 'docs/README.md'
-      - 'docs/architecture/**'
-      - 'docs/api/**'
-      - 'docs/events/**'
-      - 'docs/security/**'
-      - 'docs/delivery/**'
-      - 'docs/engineering/**'
-      - 'docs/engineering/gateway-identity-validation-checklist.md'
-      - 'docs/engineering/gateway-identity-validation-checklist.json'
-      - '*.sln'
-      - '*.csproj'
-      - '**/*.sln'
-      - '**/*.csproj'
-      - 'global.json'
-      - 'Directory.Build.props'
-      - 'Directory.Packages.props'
-      - '.gitignore'
-      - '.gitattributes'
-      - '.editorconfig'
-      - 'LICENSE'
-      - '.github/workflows/backend-ci.yml'
   workflow_dispatch:
 
 permissions:
