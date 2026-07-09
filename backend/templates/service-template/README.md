@@ -2,7 +2,7 @@
 
 This folder contains the reusable Clean Architecture baseline for new Financial Assistant backend services.
 
-FIN-51 establishes the five project boundaries and dependency direction. FIN-52 adds the mandatory liveness/readiness health endpoints, local-development OpenAPI, JSON structured logging, correlation identifier middleware, and validated typed configuration.
+FIN-51 establishes the five project boundaries and dependency direction. FIN-52 adds the mandatory liveness and readiness health endpoints, local-development OpenAPI, JSON structured logging, correlation identifier middleware, and validated typed configuration.
 
 ## Projects
 
