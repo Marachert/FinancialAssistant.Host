@@ -29,29 +29,15 @@ public sealed class NonBackendSourceLayoutTests
     }
 
     [Fact]
-    public void BackendCi_TriggersForEveryNonBackendBoundary()
+    public void BackendCi_AlwaysRunsForEveryNonBackendBoundary()
     {
         var repositoryRoot = FindRepositoryRoot();
         var workflowPath = ToRepositoryPath(repositoryRoot, ".github/workflows/backend-ci.yml");
         Assert.True(File.Exists(workflowPath), "Backend CI workflow is missing.");
 
         var workflow = File.ReadAllText(workflowPath);
-        var requiredPathFilters = new[]
-        {
-            "'mobile/**'",
-            "'web-admin/**'",
-            "'infra/docker-compose/**'",
-            "'docs/architecture/**'",
-            "'docs/api/**'",
-            "'docs/events/**'",
-            "'docs/security/**'",
-            "'docs/delivery/**'"
-        };
 
-        foreach (var pathFilter in requiredPathFilters)
-        {
-            Assert.Equal(2, CountOccurrences(workflow, pathFilter));
-        }
+        AssertBackendCiAlwaysRunsForMainAndDevelop(workflow);
     }
 
     [Fact]
@@ -123,18 +109,15 @@ public sealed class NonBackendSourceLayoutTests
         }
     }
 
-    private static int CountOccurrences(string value, string searchValue)
+    private static void AssertBackendCiAlwaysRunsForMainAndDevelop(string workflow)
     {
-        var count = 0;
-        var startIndex = 0;
+        var normalizedWorkflow = workflow.Replace("\r\n", "\n", StringComparison.Ordinal);
 
-        while ((startIndex = value.IndexOf(searchValue, startIndex, StringComparison.Ordinal)) >= 0)
-        {
-            count++;
-            startIndex += searchValue.Length;
-        }
-
-        return count;
+        Assert.Contains("pull_request:", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.Contains("push:", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.Contains("pull_request:\n    branches:\n      - main\n      - develop", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.Contains("push:\n    branches:\n      - main\n      - develop", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("paths:", normalizedWorkflow, StringComparison.Ordinal);
     }
 
     private static string ToRepositoryPath(string repositoryRoot, string path) =>

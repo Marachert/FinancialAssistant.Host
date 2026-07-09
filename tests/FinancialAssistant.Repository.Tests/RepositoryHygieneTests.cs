@@ -58,22 +58,12 @@ public sealed class RepositoryHygieneTests
     }
 
     [Fact]
-    public void BackendCi_TriggersForRepositoryHygieneChanges()
+    public void BackendCi_AlwaysRunsForRepositoryHygieneChanges()
     {
         var repositoryRoot = FindRepositoryRoot();
         var workflow = ReadRequiredFile(repositoryRoot, ".github/workflows/backend-ci.yml");
-        var requiredFilters = new[]
-        {
-            "'.gitignore'",
-            "'.gitattributes'",
-            "'.editorconfig'",
-            "'LICENSE'"
-        };
 
-        foreach (var filter in requiredFilters)
-        {
-            Assert.Equal(2, CountOccurrences(workflow, filter));
-        }
+        AssertBackendCiAlwaysRunsForMainAndDevelop(workflow);
     }
 
     [Fact]
@@ -205,18 +195,15 @@ public sealed class RepositoryHygieneTests
         return output.Split('\0', StringSplitOptions.RemoveEmptyEntries);
     }
 
-    private static int CountOccurrences(string value, string searchValue)
+    private static void AssertBackendCiAlwaysRunsForMainAndDevelop(string workflow)
     {
-        var count = 0;
-        var startIndex = 0;
+        var normalizedWorkflow = workflow.Replace("\r\n", "\n", StringComparison.Ordinal);
 
-        while ((startIndex = value.IndexOf(searchValue, startIndex, StringComparison.Ordinal)) >= 0)
-        {
-            count++;
-            startIndex += searchValue.Length;
-        }
-
-        return count;
+        Assert.Contains("pull_request:", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.Contains("push:", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.Contains("pull_request:\n    branches:\n      - main\n      - develop", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.Contains("push:\n    branches:\n      - main\n      - develop", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("paths:", normalizedWorkflow, StringComparison.Ordinal);
     }
 
     private static string ToRepositoryPath(string repositoryRoot, string path) =>
