@@ -1,86 +1,106 @@
-# CI quality gates
+# CI Quality Gates
 
-This document captures the initial CI baseline for FIN-13.
+This document defines the current Backend CI baseline and pull request quality gates for Financial Assistant.
 
-Implemented/documented scope:
-
-- FIN-251 — CI scope and repository quality gates;
-- FIN-252 — .NET restore/build/test workflow;
-- FIN-253 — formatting and linting baseline;
-- FIN-254 — test reporting and CI diagnostics;
-- FIN-255 — PR quality gate and branch protection expectations;
-- FIN-256 — contributor CI workflow documentation;
-- FIN-258 — first .NET 8 API Gateway project skeleton.
-
-## Related documentation
-
-Contributor workflow guide:
+Related documentation:
 
 ```text
+README.md
+docs/delivery/developer-onboarding.md
 docs/engineering/contributing.md
-```
-
-CI workflow file:
-
-```text
 .github/workflows/backend-ci.yml
 ```
 
-## Required checks
+## Required jobs
 
-| Check | Purpose |
+| Job | Purpose |
 | --- | --- |
-| `ci-dotnet-build-test` | Restore and build backend/shared .NET code when a .NET target exists; run tests when a test project exists |
-| `ci-dotnet-format` | Verify formatting with `dotnet format --verify-no-changes` when a .NET target exists |
+| `ci-dotnet-build-test` | Restore and build the selected .NET target, run test projects, and upload TRX results |
+| `ci-dotnet-format` | Verify repository formatting with `dotnet format --verify-no-changes` |
 
 ## CI triggers
 
-The backend CI workflow runs on:
+Backend CI runs on:
 
 - pull requests targeting `main` or `develop`;
 - pushes to `main` or `develop`;
 - manual `workflow_dispatch`.
 
-The workflow is scoped to backend/shared/test code and repository-level .NET build files.
+Path filters cover:
+
+- backend, shared, and test code;
+- mobile and web-admin source boundaries;
+- local Docker Compose infrastructure;
+- root and documentation indexes;
+- architecture, API, event, security, delivery, and engineering documentation;
+- solution/project and central build files;
+- `.gitignore`, `.gitattributes`, `.editorconfig`, and `LICENSE`;
+- the workflow file itself.
+
+Documentation entry-point changes intentionally run repository tests so commands, links, paths, and ownership rules cannot drift silently.
 
 ## .NET target detection
 
-Before running restore/build/format, the workflow looks for a .NET target in this order:
+The workflow selects a target in this order:
 
 1. root-level `*.sln`;
 2. `backend/**/*.sln`;
 3. `backend/**/*.csproj`;
-4. any repository `*.sln` or `*.csproj`, excluding `bin/`, `obj/`, and `.git/`.
+4. any repository `.sln` or `.csproj`, excluding generated directories.
 
-If no `.sln` or `.csproj` file exists, the workflow emits a GitHub notice and skips the .NET commands successfully. This keeps infrastructure/documentation PRs from failing before backend code is introduced.
+The canonical target is:
 
-Once a backend solution or project is added, restore/build/format become enforcing checks automatically.
+```text
+FinancialAssistant.Backend.sln
+```
 
 ## Test project detection
 
-`dotnet test` runs only when the workflow finds a project with:
+The workflow runs `dotnet test` when at least one project contains:
 
 ```xml
 <IsTestProject>true</IsTestProject>
 ```
 
-This lets production projects, such as the first API Gateway host, enter the repository before test projects exist. After test projects are added, CI runs tests automatically.
+The root solution includes repository tests that enforce source layout, shared ownership, documentation onboarding, CI path filters, and tracked-file hygiene.
 
-## PR quality gate policy
+## Commands executed by CI
 
-Every code or infrastructure change should go through a pull request. Direct commits to `main` should be avoided except for emergency repository administration.
+Equivalent local commands:
 
-A pull request is considered merge-ready only when all applicable requirements are true:
+```bash
+dotnet --info
+dotnet restore FinancialAssistant.Backend.sln
+dotnet build FinancialAssistant.Backend.sln --no-restore --configuration Release
+dotnet test FinancialAssistant.Backend.sln --no-build --configuration Release --logger trx --results-directory TestResults
+dotnet format FinancialAssistant.Backend.sln --verify-no-changes --verbosity diagnostic
+```
 
-- the PR has a clear summary and scope;
-- the PR references the related Jira issue when applicable;
-- `ci-dotnet-build-test` succeeds;
-- `ci-dotnet-format` succeeds;
-- changed documentation is updated when behavior, commands, or developer workflow changes;
-- no secrets, production configuration values, real receipts, raw OCR text, AI prompts/responses, personal data, or real financial data are added;
-- failing or skipped checks are understood and documented before merge.
+## Pull request quality gate
 
-During the platform-foundation stage, `dotnet test` may be skipped when no test project exists yet. After test projects are introduced, skipped tests should be investigated.
+A pull request is merge-ready only when:
+
+- the scope matches the related Jira issue;
+- the PR body explains the change and verification;
+- `ci-dotnet-build-test` succeeds on the final head;
+- `ci-dotnet-format` succeeds on the final head;
+- architecture, API, event, security, delivery, and onboarding documentation is updated where behavior changes;
+- no secrets, generated binaries, real receipts, raw OCR text, real LLM content, personal data, or real financial data are introduced;
+- all actionable review comments are processed;
+- unresolved review threads are zero.
+
+## Review processing gate
+
+For every actionable review comment:
+
+1. validate the finding;
+2. implement the smallest correct fix;
+3. add regression coverage where practical;
+4. wait for the updated CI pipeline;
+5. reply in the original thread with commit and CI evidence;
+6. mark useful feedback positively when requested;
+7. resolve the thread only after the final pipeline is green;
+8. re-check review threads, submissions, and conversation comments before merge.
 
 ## Branch protection expectation
 
@@ -91,119 +111,70 @@ main
 develop
 ```
 
-Initial `main` branch protection should require:
+Recommended `main` rules:
 
-- pull request before merge;
-- status checks to pass before merge;
-- required status checks:
-  - `ci-dotnet-build-test`;
-  - `ci-dotnet-format`;
-- conversation resolution before merge, if enabled;
-- linear history or squash merge, if the team chooses that workflow;
+- require a pull request before merge;
+- require `ci-dotnet-build-test` and `ci-dotnet-format`;
+- require conversation resolution when supported;
 - block force pushes;
-- block branch deletion.
+- block branch deletion;
+- use squash or linear-history behavior according to the repository owner workflow.
 
-Recommended `develop` branch protection can be slightly lighter during PoC:
+Branch protection is a GitHub repository setting and is not created by the workflow YAML itself.
 
-- pull request before merge;
-- status checks to pass before merge;
-- required status checks:
-  - `ci-dotnet-build-test`;
-  - `ci-dotnet-format`.
+## Test reporting and diagnostics
 
-Repository setting limitation:
-
-Branch protection is a GitHub repository setting. It is not implemented by the CI workflow file itself. If the available automation tool cannot modify branch protection settings, this document is the source of truth until an admin configures the rules in GitHub repository settings.
-
-## Recommended merge behavior
-
-Preferred default for the PoC stage:
-
-- small PRs;
-- squash merge for feature branches;
-- merge only after CI is green;
-- avoid mixing unrelated Jira issues in one PR;
-- avoid committing generated local files such as `.env`, Docker volumes, logs, and test result folders.
-
-Do not block the first PoC with heavy enterprise controls such as mandatory multi-review approvals, paid quality tools, or deployment gates unless the team explicitly decides to add them later.
-
-## Local reproduction commands
-
-Run these from the repository root after a .NET solution or project exists:
-
-```bash
-dotnet --info
-dotnet restore
-dotnet build --no-restore --configuration Release
-dotnet format --verify-no-changes --verbosity diagnostic
-```
-
-If the API Gateway project is the selected target, use the explicit project path:
-
-```bash
-dotnet restore backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj
-dotnet build backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj --no-restore --configuration Release
-dotnet format backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj --verify-no-changes --verbosity diagnostic
-```
-
-When a test project exists, run:
-
-```bash
-dotnet test <test-project-or-solution> --configuration Release --logger trx --results-directory TestResults
-```
-
-## Test reporting
-
-The workflow writes TRX test results to:
+Test results are written to:
 
 ```text
 TestResults/
 ```
 
-The workflow uploads test results as an artifact named:
+The workflow uploads:
 
 ```text
 dotnet-test-results
 ```
 
-The artifact upload runs with `if: always()` so results are available even when tests fail. If tests are skipped because no test project exists yet, no artifact is expected.
+Build failures upload:
+
+```text
+dotnet-build-diagnostics
+```
+
+These artifacts must contain only synthetic, privacy-safe information.
 
 ## Failure guide
 
 | Failed step | Likely cause | Developer action |
 | --- | --- | --- |
-| Detect .NET solution or project | unexpected shell or path issue | inspect workflow output and repository paths |
-| Detect .NET test project | test project marker is missing or path detection issue | inspect test `.csproj` files |
-| Setup .NET SDK | SDK version mismatch or CI provider issue | verify `global.json` and workflow SDK version |
-| Restore solution | broken package reference, missing source, invalid solution path | run `dotnet restore` locally against the detected target |
-| Build solution | compilation error, analyzer error, project reference issue | run `dotnet build --no-restore --configuration Release` locally |
-| Test solution | failing unit/integration test | run `dotnet test` locally against the detected test target |
-| Verify formatting | formatting differs from repository baseline | run `dotnet format` locally and commit formatting-only changes |
-| Upload test results | missing result files or artifact config issue | verify `TestResults/**/*.trx` path |
-
-For contributor-facing step-by-step troubleshooting, use:
-
-```text
-docs/engineering/contributing.md
-```
+| Detect .NET target | Unexpected repository path or workflow logic | Inspect selected target and path filters |
+| Detect test project | Missing `<IsTestProject>true</IsTestProject>` or detection issue | Inspect test `.csproj` files |
+| Restore solution | Package source/reference or solution issue | Run `dotnet restore FinancialAssistant.Backend.sln` |
+| Build solution | Compiler, analyzer, or project-reference error | Run the Release build locally |
+| Test solution | Unit, integration, repository, or documentation regression | Reproduce the first failing assertion locally |
+| Verify formatting | Source differs from `.editorconfig` | Run `dotnet format FinancialAssistant.Backend.sln` |
+| Upload results | Missing TRX files or artifact path issue | Inspect `TestResults/**/*.trx` |
 
 ## Security and privacy rules
 
-- CI logs must not print secrets, tokens, API keys, or production configuration values.
-- CI artifacts must not contain real receipts, real transaction data, OCR text, AI prompts/responses, or personal data.
-- Test fixtures must be synthetic.
-- Failing test messages must avoid embedding sensitive payloads.
-- CI must not require production credentials.
+CI logs, artifacts, fixtures, and failure messages must not expose:
 
-## Out of scope for this baseline
+- tokens, passwords, API keys, private keys, or production settings;
+- real identities or personal financial data;
+- real receipt content or raw OCR text;
+- real LLM prompts or responses;
+- generated local environment files.
 
-- Deployment pipeline.
-- Production release automation.
-- Mobile app store publishing.
-- Infrastructure provisioning.
-- Kubernetes or cloud deployment.
-- Advanced vulnerability management.
-- Paid external quality tools.
-- Performance testing.
-- End-to-end mobile or web UI automation.
-- Frontend/mobile linting.
+Use synthetic fixtures and sanitized identifiers.
+
+## Current out-of-scope items
+
+Dedicated Jira tasks should introduce these when justified:
+
+- production deployment and release automation;
+- mobile app store delivery;
+- cloud/Kubernetes provisioning;
+- complete dependency and vulnerability management;
+- frontend/mobile linting and end-to-end automation;
+- performance, resilience, and disaster-recovery testing.
