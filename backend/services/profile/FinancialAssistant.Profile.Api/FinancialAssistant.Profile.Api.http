@@ -1,0 +1,6 @@
+@FinancialAssistant.Profile.Api_HostAddress = http://localhost:5102
+
+GET {{FinancialAssistant.Profile.Api_HostAddress}}/profile/info
+Accept: application/json
+
+###
