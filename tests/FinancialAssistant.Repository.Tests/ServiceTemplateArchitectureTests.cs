@@ -71,7 +71,9 @@ public sealed class ServiceTemplateArchitectureTests
         foreach (var (projectName, expected) in expectedReferences)
         {
             var actual = ReadProjectReferences(GetProjectPath(repositoryRoot, projectName));
-            Assert.Equal(expected.Order(StringComparer.Ordinal), actual.Order(StringComparer.Ordinal));
+            Assert.Equal(
+                expected.OrderBy(value => value, StringComparer.Ordinal).ToArray(),
+                actual.OrderBy(value => value, StringComparer.Ordinal).ToArray());
         }
     }
 
@@ -133,7 +135,7 @@ public sealed class ServiceTemplateArchitectureTests
             "Domain -> no project references",
             "Contracts -> no project references",
             "dotnet build backend/templates/service-template/FinancialAssistant.ServiceTemplate.sln",
-            "backend deterministic",
+            "deterministic financial invariants",
             "LLM or OCR output",
             "FIN-52",
             "liveness and readiness health endpoints"
