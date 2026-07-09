@@ -1,0 +1,33 @@
+# Safe commands for the autonomous delivery workflow.
+# Keep destructive operations forbidden even when approval_policy is never.
+
+allow git status
+allow git diff
+allow git fetch
+allow git checkout
+allow git switch
+allow git branch
+allow git add
+allow git commit
+allow git push origin codex/*
+allow gh auth status
+allow gh pr view
+allow gh pr checks
+allow gh pr create
+allow gh pr comment
+allow gh pr review
+allow gh pr merge
+allow dotnet restore
+allow dotnet build
+allow dotnet test
+allow dotnet format
+allow docker compose config
+allow pwsh tools/delivery/*
+
+forbidden git push --force
+forbidden git push origin main
+forbidden git reset --hard
+forbidden git clean -fdx
+forbidden gh repo delete
+forbidden rm -rf /
+forbidden Remove-Item -Recurse -Force /
