@@ -95,9 +95,10 @@ public sealed class ServiceTemplateCrossCuttingTests(
     public void CrossCuttingSource_ContainsLoggingOptionsAndHealthBoundaries()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var program = ReadRequiredFile(
-            repositoryRoot,
-            "backend/templates/service-template/ServiceTemplate.Api/Program.cs");
+        var program = NormalizeLineEndings(
+            ReadRequiredFile(
+                repositoryRoot,
+                "backend/templates/service-template/ServiceTemplate.Api/Program.cs"));
         var middleware = ReadRequiredFile(
             repositoryRoot,
             "backend/templates/service-template/ServiceTemplate.Api/Middleware/CorrelationIdMiddleware.cs");
@@ -135,6 +136,21 @@ public sealed class ServiceTemplateCrossCuttingTests(
         Assert.Contains("\"Name\": \"FinancialAssistant.ServiceTemplate\"", appSettings, StringComparison.Ordinal);
         Assert.Contains("\"Version\": \"1.0.0\"", appSettings, StringComparison.Ordinal);
     }
+
+    [Theory]
+    [InlineData("MapHealthChecks(\r\n    \"/health/live\"")]
+    [InlineData("MapHealthChecks(\r    \"/health/live\"")]
+    [InlineData("MapHealthChecks(\n    \"/health/live\"")]
+    public void NormalizeLineEndings_MakesSourceAssertionsPlatformIndependent(string source)
+    {
+        Assert.Equal(
+            "MapHealthChecks(\n    \"/health/live\"",
+            NormalizeLineEndings(source));
+    }
+
+    private static string NormalizeLineEndings(string value) =>
+        value.Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Replace('\r', '\n');
 
     private static string ReadRequiredFile(string repositoryRoot, string path)
     {
