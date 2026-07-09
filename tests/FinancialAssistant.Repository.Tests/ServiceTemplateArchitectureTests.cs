@@ -92,6 +92,30 @@ public sealed class ServiceTemplateArchitectureTests
     }
 
     [Fact]
+    public void ServiceTemplate_PackageBaselineIsExplicitAndLayered()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var expectedPackages = new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.Ordinal)
+        {
+            ["ServiceTemplate.Api"] = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["Microsoft.AspNetCore.OpenApi"] = "8.0.28",
+                ["Swashbuckle.AspNetCore"] = "6.6.2"
+            },
+            ["ServiceTemplate.Application"] = new Dictionary<string, string>(StringComparer.Ordinal),
+            ["ServiceTemplate.Domain"] = new Dictionary<string, string>(StringComparer.Ordinal),
+            ["ServiceTemplate.Infrastructure"] = new Dictionary<string, string>(StringComparer.Ordinal),
+            ["ServiceTemplate.Contracts"] = new Dictionary<string, string>(StringComparer.Ordinal)
+        };
+
+        foreach (var (projectName, expected) in expectedPackages)
+        {
+            var actual = ReadPackageReferences(GetProjectPath(repositoryRoot, projectName));
+            Assert.Equal(expected, actual);
+        }
+    }
+
+    [Fact]
     public void ServiceTemplate_IsBuiltByStandaloneAndRootSolutions()
     {
         var repositoryRoot = FindRepositoryRoot();
@@ -129,6 +153,12 @@ public sealed class ServiceTemplateArchitectureTests
         var readme = File.ReadAllText(readmePath);
         var requiredPhrases = new[]
         {
+            "FIN-50",
+            "Dependency and package conventions",
+            "Microsoft.AspNetCore.OpenApi",
+            "Swashbuckle.AspNetCore",
+            "provider SDKs belong in Infrastructure",
+            "FinancialAssistant.<Capability>.<Layer>",
             "Api -> Application",
             "Infrastructure -> Application",
             "Application -> Domain",
@@ -155,6 +185,23 @@ public sealed class ServiceTemplateArchitectureTests
             .Where(include => !string.IsNullOrWhiteSpace(include))
             .Select(include => Path.GetFileNameWithoutExtension(include!))
             .ToArray();
+    }
+
+    private static IReadOnlyDictionary<string, string> ReadPackageReferences(string projectPath)
+    {
+        var document = XDocument.Load(projectPath);
+        return FindElements(document, "PackageReference")
+            .Select(
+                element => new
+                {
+                    Include = element.Attribute("Include")?.Value,
+                    Version = element.Attribute("Version")?.Value
+                })
+            .Where(package => !string.IsNullOrWhiteSpace(package.Include))
+            .ToDictionary(
+                package => package.Include!,
+                package => package.Version ?? string.Empty,
+                StringComparer.Ordinal);
     }
 
     private static IEnumerable<XElement> FindElements(XDocument document, string localName) =>
