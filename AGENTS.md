@@ -95,3 +95,59 @@ Never commit or expose tokens, passwords, API keys, certificates, `.env` files, 
 ## Completion
 
 A task is complete only after the PR is actually merged, post-merge evidence is recorded, Jira is Done, parent status is evaluated, and the next unfinished leaf-ticket is identified or no work remains.
+
+
+## Local Windows and PowerShell execution policy
+
+When running in the local Windows project environment, prefer PowerShell 7 (`pwsh`) for repository automation.
+
+### PowerShell-first rules
+
+- Prefer repository-owned PowerShell scripts over ad hoc shell commands.
+- Before implementing a workflow manually, check whether an appropriate script already exists under `tools/`.
+- Use `pwsh`, not Windows PowerShell 5.1, `cmd.exe`, Git Bash, or WSL, unless the task explicitly requires another shell.
+- Git, GitHub CLI, .NET, Jira, and Confluence commands should normally be launched from PowerShell.
+- For repeated or multi-step operations, create or extend a reusable `.ps1` script instead of composing a long one-off command.
+- Keep scripts non-interactive so they can run unattended.
+- Invoke scripts using this form where practical:
+
+  `pwsh -NoProfile -NonInteractive -File <script-path> <arguments>`
+
+- Scripts must:
+  - set `$ErrorActionPreference = "Stop"`;
+  - validate required arguments and environment variables before mutation;
+  - return a non-zero exit code on failure;
+  - use explicit repository-relative or resolved absolute paths;
+  - quote paths and arguments safely;
+  - avoid printing credentials, tokens, authorization headers, or sensitive financial data;
+  - be idempotent where practical;
+  - perform fresh state reads before mutations;
+  - verify the resulting state after mutations;
+  - clean up temporary files in a `finally` block.
+
+### Preferred repository automation
+
+Use or extend repository scripts for:
+
+- Jira reads, transitions, comments, and evidence updates;
+- Confluence reads and evidence updates;
+- GitHub PR state restoration, review processing, CI polling, and merge-gate checks;
+- local restore, build, test, and format verification;
+- delivery-lock acquisition, stale-lock detection, and release;
+- branch and repository-state validation.
+
+Direct commands are acceptable for simple read-only inspection, such as:
+
+- `git status`
+- `git diff`
+- `gh pr view`
+- `dotnet --info`
+
+Do not create a new script for a single trivial read-only command.
+
+### Script ownership
+
+- Delivery automation scripts belong under `tools/delivery/`.
+- General developer scripts belong under `tools/scripts/`.
+- Add tests for scripts that implement critical delivery, security, merge, or credential-handling behavior.
+- Update documentation when adding a new operator-facing script.
