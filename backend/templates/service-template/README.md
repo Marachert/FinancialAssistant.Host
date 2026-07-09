@@ -4,6 +4,8 @@ This folder contains the reusable Clean Architecture baseline for new Financial 
 
 FIN-51 establishes the five project boundaries and dependency direction. FIN-52 adds the mandatory liveness and readiness health endpoints, local-development OpenAPI, JSON structured logging, correlation identifier middleware, and validated typed configuration.
 
+FIN-50 defines the dependency, package, and naming conventions that every service generated from this template must keep.
+
 ## Projects
 
 ```text
@@ -52,6 +54,38 @@ Forbidden examples:
 - Contracts referencing service implementation projects;
 - shared business repositories or cross-service Elasticsearch document models;
 - LLM or OCR output becoming authoritative financial state.
+
+## Dependency and package conventions
+
+Every service generated from this template starts with a small, explicit package baseline. Add packages only when the service needs them, keep versions pinned in project files or repository-approved central package management, and document new provider dependencies in the service README.
+
+Template package baseline:
+
+| Layer | Package baseline | Allowed additions |
+| --- | --- | --- |
+| `Api` | `Microsoft.AspNetCore.OpenApi`, `Swashbuckle.AspNetCore` | ASP.NET Core host, health, OpenAPI, configuration, authentication/authorization integration, rate limiting, and privacy-safe observability packages |
+| `Application` | none | validation and mediator/use-case orchestration packages that do not depend on infrastructure or transport implementations |
+| `Domain` | none | none by default; domain code should stay deterministic and dependency-light |
+| `Infrastructure` | none | service-owned Elasticsearch, RabbitMQ, Redis, MinIO, OCR, LLM, notification-provider, persistence, and adapter packages |
+| `Contracts` | none | none by default; contracts should stay stable DTOs and event models without provider SDK types |
+| Tests | repository or service test projects | xUnit, ASP.NET Core test host, assertion helpers, testcontainers, and synthetic-data utilities |
+
+Package rules:
+
+- provider SDKs belong in Infrastructure, never Domain, Contracts, or Application;
+- transport concerns belong in Api or Contracts, not Domain;
+- validation rules that protect use cases belong in Application; final financial decisions remain deterministic domain logic;
+- health checks and logging packages must not log secrets, real personal data, receipts, OCR text, LLM prompts/responses, or financial payloads;
+- Elasticsearch indices, RabbitMQ queues/events, object storage buckets, and provider clients must be service-owned;
+- preview packages, floating versions, and transitive package assumptions require an explicit delivery note before adoption.
+
+Naming rules:
+
+- copied services use `backend/services/<service-name>/FinancialAssistant.<Capability>.<Layer>/`;
+- project filenames, assembly names, and root namespaces use `FinancialAssistant.<Capability>.<Layer>`;
+- capability names are singular PascalCase product capabilities such as `Identity`, `Transactions`, `Notifications`, or `Analytics`;
+- layer names stay exactly `Api`, `Application`, `Domain`, `Infrastructure`, and `Contracts`;
+- test projects use `FinancialAssistant.<Capability>.Tests` and reference only the service surface needed for verification.
 
 ## Build the template
 
