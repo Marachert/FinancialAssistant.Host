@@ -31,6 +31,97 @@ $headers = @{
     'Content-Type' = 'application/json'
 }
 
+function Test-IsTlsTransportFailure {
+    param([System.Exception]$Exception)
+
+    $current = $Exception
+    while ($null -ne $current) {
+        if ($current -is [System.Net.Http.HttpRequestException] -and
+            $current.Message -like '*SSL connection could not be established*') {
+            return $true
+        }
+
+        if ($current -is [System.Security.Authentication.AuthenticationException]) {
+            return $true
+        }
+
+        if ($current.Message -like '*SEC_E_NO_CREDENTIALS*' -or
+            $current.Message -like '*No credentials are available in the security package*') {
+            return $true
+        }
+
+        $current = $current.InnerException
+    }
+
+    return $false
+}
+
+function Get-GitCurlPath {
+    $gitExecPath = (& git --exec-path 2>$null)
+    if (-not [string]::IsNullOrWhiteSpace($gitExecPath)) {
+        $mingwPath = Split-Path -Parent (Split-Path -Parent $gitExecPath)
+        $gitCurlPath = Join-Path $mingwPath 'bin/curl.exe'
+        if (Test-Path -LiteralPath $gitCurlPath) {
+            return $gitCurlPath
+        }
+    }
+
+    $defaultGitCurlPath = 'C:\Program Files\Git\mingw64\bin\curl.exe'
+    if (Test-Path -LiteralPath $defaultGitCurlPath) {
+        return $defaultGitCurlPath
+    }
+
+    throw 'Git bundled curl.exe was not found for TLS fallback.'
+}
+
+function Invoke-CurlRequest {
+    param(
+        [Parameter(Mandatory = $true)][string]$Method,
+        [Parameter(Mandatory = $true)][string]$Uri,
+        [object]$Body
+    )
+
+    $curlPath = Get-GitCurlPath
+    $arguments = @(
+        '--fail-with-body',
+        '--silent',
+        '--show-error',
+        '--request', $Method.ToUpperInvariant(),
+        '--url', $Uri,
+        '--header', "Authorization: Basic $auth",
+        '--header', 'Accept: application/json',
+        '--header', 'Content-Type: application/json'
+    )
+
+    $temporaryBodyPath = $null
+    try {
+        if ($null -ne $Body) {
+            $temporaryBodyPath = [System.IO.Path]::GetTempFileName()
+            $Body |
+                ConvertTo-Json -Depth 20 |
+                Set-Content -LiteralPath $temporaryBodyPath -Encoding UTF8NoBOM
+            $arguments += @('--data-binary', "@$temporaryBodyPath")
+        }
+
+        $response = & $curlPath @arguments
+        if ($LASTEXITCODE -ne 0) {
+            throw "Git bundled curl.exe request failed with exit code $LASTEXITCODE."
+        }
+
+        $responseText = $response -join [Environment]::NewLine
+        if ([string]::IsNullOrWhiteSpace($responseText)) {
+            return $null
+        }
+
+        return $responseText | ConvertFrom-Json
+    }
+    finally {
+        if ($null -ne $temporaryBodyPath -and (Test-Path -LiteralPath $temporaryBodyPath)) {
+            Remove-Item -LiteralPath $temporaryBodyPath -Force
+        }
+    }
+}
+
 function Invoke-JiraRequest {
     param(
         [Parameter(Mandatory = $true)][string]$Method,
@@ -48,7 +139,17 @@ function Invoke-JiraRequest {
         $parameters.Body = $Body | ConvertTo-Json -Depth 20
     }
 
-    Invoke-RestMethod @parameters
+    try {
+        Invoke-RestMethod @parameters
+    }
+    catch {
+        if (Test-IsTlsTransportFailure -Exception $_.Exception) {
+            Invoke-CurlRequest -Method $Method -Uri $parameters.Uri -Body $Body
+            return
+        }
+
+        throw
+    }
 }
 
 switch ($Action) {
