@@ -33,7 +33,7 @@ $headers = @{
 
 switch ($Action) {
     'get-page' {
-        Invoke-RestMethod -Method Get -Uri "$baseUrl/wiki/api/v2/pages/$PageId?body-format=storage" -Headers $headers |
+        Invoke-RestMethod -Method Get -Uri "$baseUrl/wiki/api/v2/pages/${PageId}?body-format=storage" -Headers $headers |
             ConvertTo-Json -Depth 20
     }
     'add-footer-comment' {
