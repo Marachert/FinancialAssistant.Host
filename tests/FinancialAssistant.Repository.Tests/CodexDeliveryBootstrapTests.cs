@@ -54,13 +54,50 @@ public sealed class CodexDeliveryBootstrapTests
             Assert.Contains(rule, agents, StringComparison.OrdinalIgnoreCase);
         }
 
-        Assert.Contains("Before every mutation, perform a fresh read", workflow, StringComparison.Ordinal);
-        Assert.Contains(".codex-runtime/delivery.lock", workflow, StringComparison.Ordinal);
-        Assert.Contains("force-push", security, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("CHANGES_REQUESTED", skill, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("forbidden git push origin main", rules, StringComparison.Ordinal);
-        Assert.Contains("forbidden git push --force", rules, StringComparison.Ordinal);
-        Assert.Contains(".codex-runtime/", gitIgnore, StringComparison.Ordinal);
+        Assert.Contains(
+            "Before every mutation, perform a fresh read",
+            workflow,
+            StringComparison.Ordinal);
+
+        Assert.Contains(
+            ".codex-runtime/delivery.lock",
+            workflow,
+            StringComparison.Ordinal);
+
+        Assert.Contains(
+            "force-push",
+            security,
+            StringComparison.OrdinalIgnoreCase);
+
+        Assert.Contains(
+            "CHANGES_REQUESTED",
+            skill,
+            StringComparison.OrdinalIgnoreCase);
+
+        Assert.Contains(
+            "prefix_rule(",
+            rules,
+            StringComparison.Ordinal);
+
+        Assert.Contains(
+            "decision = \"forbidden\"",
+            rules,
+            StringComparison.Ordinal);
+
+        Assert.DoesNotContain(
+            "allow git",
+            rules,
+            StringComparison.OrdinalIgnoreCase);
+
+        Assert.DoesNotContain(
+            "forbidden git",
+            rules,
+            StringComparison.OrdinalIgnoreCase);
+
+        Assert.Contains(
+            ".codex-runtime/",
+            gitIgnore,
+            StringComparison.Ordinal);
     }
 
     [Fact]
@@ -72,32 +109,65 @@ public sealed class CodexDeliveryBootstrapTests
 
         foreach (var script in new[] { jira, confluence })
         {
-            Assert.Contains("ATLASSIAN_SITE_URL", script, StringComparison.Ordinal);
-            Assert.Contains("ATLASSIAN_EMAIL", script, StringComparison.Ordinal);
-            Assert.Contains("ATLASSIAN_API_TOKEN", script, StringComparison.Ordinal);
-            Assert.Contains("Required environment variable", script, StringComparison.Ordinal);
-            Assert.DoesNotContain("marachert@gmail.com", script, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(
+                "ATLASSIAN_SITE_URL",
+                script,
+                StringComparison.Ordinal);
+
+            Assert.Contains(
+                "ATLASSIAN_EMAIL",
+                script,
+                StringComparison.Ordinal);
+
+            Assert.Contains(
+                "ATLASSIAN_API_TOKEN",
+                script,
+                StringComparison.Ordinal);
+
+            Assert.Contains(
+                "Required environment variable",
+                script,
+                StringComparison.Ordinal);
+
+            Assert.DoesNotContain(
+                "marachert@gmail.com",
+                script,
+                StringComparison.OrdinalIgnoreCase);
         }
     }
 
     private static string ReadRequiredFile(string repositoryRoot, string path)
     {
         var fullPath = ToRepositoryPath(repositoryRoot, path);
-        Assert.True(File.Exists(fullPath), $"Required file '{path}' is missing.");
+
+        Assert.True(
+            File.Exists(fullPath),
+            $"Required file '{path}' is missing.");
+
         return File.ReadAllText(fullPath);
     }
 
     private static string ToRepositoryPath(string repositoryRoot, string path) =>
-        Path.Combine(repositoryRoot, path.Replace('/', Path.DirectorySeparatorChar));
+        Path.Combine(
+            repositoryRoot,
+            path.Replace('/', Path.DirectorySeparatorChar));
 
     private static string FindRepositoryRoot()
     {
-        foreach (var startPath in new[] { Directory.GetCurrentDirectory(), AppContext.BaseDirectory })
+        foreach (var startPath in new[]
+                 {
+                     Directory.GetCurrentDirectory(),
+                     AppContext.BaseDirectory
+                 })
         {
             var directory = new DirectoryInfo(startPath);
+
             while (directory is not null)
             {
-                if (File.Exists(Path.Combine(directory.FullName, "FinancialAssistant.Backend.sln")))
+                if (File.Exists(
+                        Path.Combine(
+                            directory.FullName,
+                            "FinancialAssistant.Backend.sln")))
                 {
                     return directory.FullName;
                 }
@@ -107,6 +177,7 @@ public sealed class CodexDeliveryBootstrapTests
         }
 
         throw new DirectoryNotFoundException(
-            "Could not locate the repository root containing FinancialAssistant.Backend.sln.");
+            "Could not locate the repository root containing " +
+            "FinancialAssistant.Backend.sln.");
     }
 }
