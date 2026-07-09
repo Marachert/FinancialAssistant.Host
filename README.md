@@ -72,14 +72,26 @@ The gateway is the public REST boundary. It must not own domain business logic o
 ```text
 backend/shared/building-blocks/
 backend/shared/contracts/
+backend/shared/elasticsearch/
+backend/shared/testing/
 ```
 
 Rules:
 
 - shared building blocks are technical utilities only;
-- shared contracts contain stable cross-service contracts;
+- shared contracts contain stable versioned cross-service contracts;
+- shared Elasticsearch code contains low-level technical helpers, never shared business repositories or service-owned documents;
+- shared testing contains deterministic helpers and synthetic fixtures, never production dependencies or real user/financial data;
 - no shared business repository is allowed;
 - services must not read another service-owned Elasticsearch index directly.
+
+The complete shared-source ownership rules are documented in:
+
+```text
+backend/shared/README.md
+```
+
+The canonical gateway root is `backend/gateways/`. Do not create a parallel `backend/gateway/` directory.
 
 ## Local startup flow
 
