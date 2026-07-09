@@ -93,22 +93,12 @@ public sealed class DeveloperOnboardingDocumentationTests
     }
 
     [Fact]
-    public void BackendCi_TriggersForOnboardingDocumentationChanges()
+    public void BackendCi_AlwaysRunsForOnboardingDocumentationChanges()
     {
         var repositoryRoot = FindRepositoryRoot();
         var workflow = ReadRequiredFile(repositoryRoot, ".github/workflows/backend-ci.yml");
-        var requiredPathFilters = new[]
-        {
-            "'README.md'",
-            "'docs/README.md'",
-            "'docs/delivery/**'",
-            "'docs/engineering/**'"
-        };
 
-        foreach (var pathFilter in requiredPathFilters)
-        {
-            Assert.Equal(2, CountOccurrences(workflow, pathFilter));
-        }
+        AssertBackendCiAlwaysRunsForMainAndDevelop(workflow);
     }
 
     [Fact]
@@ -142,18 +132,15 @@ public sealed class DeveloperOnboardingDocumentationTests
         return File.ReadAllText(fullPath);
     }
 
-    private static int CountOccurrences(string value, string searchValue)
+    private static void AssertBackendCiAlwaysRunsForMainAndDevelop(string workflow)
     {
-        var count = 0;
-        var startIndex = 0;
+        var normalizedWorkflow = workflow.Replace("\r\n", "\n", StringComparison.Ordinal);
 
-        while ((startIndex = value.IndexOf(searchValue, startIndex, StringComparison.Ordinal)) >= 0)
-        {
-            count++;
-            startIndex += searchValue.Length;
-        }
-
-        return count;
+        Assert.Contains("pull_request:", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.Contains("push:", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.Contains("pull_request:\n    branches:\n      - main\n      - develop", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.Contains("push:\n    branches:\n      - main\n      - develop", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("paths:", normalizedWorkflow, StringComparison.Ordinal);
     }
 
     private static string ToRepositoryPath(string repositoryRoot, string path) =>

@@ -110,15 +110,14 @@ public sealed class GatewayIdentityValidationChecklistTests
     }
 
     [Fact]
-    public void BackendCi_TriggersForChecklistSourceChanges()
+    public void BackendCi_AlwaysRunsForChecklistSourceChanges()
     {
         var repositoryRoot = FindRepositoryRoot();
         var workflow = File.ReadAllText(Path.Combine(
             repositoryRoot,
             BackendCiWorkflowPath.Replace('/', Path.DirectorySeparatorChar)));
 
-        Assert.Equal(2, CountOccurrences(workflow, $"'{DocumentationPath}'"));
-        Assert.Equal(2, CountOccurrences(workflow, $"'{ChecklistPath}'"));
+        AssertBackendCiAlwaysRunsForMainAndDevelop(workflow);
     }
 
     private static ValidationChecklist ReadChecklist()
@@ -134,18 +133,15 @@ public sealed class GatewayIdentityValidationChecklistTests
         return Assert.IsType<ValidationChecklist>(checklist);
     }
 
-    private static int CountOccurrences(string source, string value)
+    private static void AssertBackendCiAlwaysRunsForMainAndDevelop(string workflow)
     {
-        var count = 0;
-        var startIndex = 0;
+        var normalizedWorkflow = workflow.Replace("\r\n", "\n", StringComparison.Ordinal);
 
-        while ((startIndex = source.IndexOf(value, startIndex, StringComparison.Ordinal)) >= 0)
-        {
-            count++;
-            startIndex += value.Length;
-        }
-
-        return count;
+        Assert.Contains("pull_request:", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.Contains("push:", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.Contains("pull_request:\n    branches:\n      - main\n      - develop", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.Contains("push:\n    branches:\n      - main\n      - develop", normalizedWorkflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("paths:", normalizedWorkflow, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()
