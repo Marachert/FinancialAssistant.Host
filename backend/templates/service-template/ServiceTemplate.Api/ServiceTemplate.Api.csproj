@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.28" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../ServiceTemplate.Application/ServiceTemplate.Application.csproj" />
     <ProjectReference Include="../ServiceTemplate.Contracts/ServiceTemplate.Contracts.csproj" />
     <ProjectReference Include="../ServiceTemplate.Infrastructure/ServiceTemplate.Infrastructure.csproj" />
