@@ -106,7 +106,7 @@ When running in the local Windows project environment, prefer PowerShell 7 (`pws
 - Prefer repository-owned PowerShell scripts over ad hoc shell commands.
 - Before implementing a workflow manually, check whether an appropriate script already exists under `tools/`.
 - Use `pwsh`, not Windows PowerShell 5.1, `cmd.exe`, Git Bash, or WSL, unless the task explicitly requires another shell.
-- Git, GitHub CLI, .NET, Jira, and Confluence commands should normally be launched from PowerShell.
+- .NET and repository maintenance commands should normally be launched from PowerShell.
 - For repeated or multi-step operations, create or extend a reusable `.ps1` script instead of composing a long one-off command.
 - Keep scripts non-interactive so they can run unattended.
 - Invoke scripts using this form where practical:
@@ -129,18 +129,17 @@ When running in the local Windows project environment, prefer PowerShell 7 (`pws
 
 Use or extend repository scripts for:
 
-- Jira reads, transitions, comments, and evidence updates;
-- Confluence reads and evidence updates;
-- GitHub PR state restoration, review processing, CI polling, and merge-gate checks;
 - local restore, build, test, and format verification;
 - delivery-lock acquisition, stale-lock detection, and release;
-- branch and repository-state validation.
+- branch and repository-state validation;
+- project bootstrap and environment validation;
+- repeatable code-generation and repository-maintenance operations;
+- local development setup and diagnostics.
 
 Direct commands are acceptable for simple read-only inspection, such as:
 
 - `git status`
 - `git diff`
-- `gh pr view`
 - `dotnet --info`
 
 Do not create a new script for a single trivial read-only command.
