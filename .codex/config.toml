@@ -1,0 +1,26 @@
+# Project-scoped Codex defaults. The repository must be trusted in Desktop Codex.
+# Credentials are intentionally not stored here.
+
+approval_policy = "never"
+model_reasoning_effort = "high"
+default_permissions = "financial-assistant-delivery"
+
+[permissions.financial-assistant-delivery]
+description = "Financial Assistant repository delivery automation"
+extends = ":workspace"
+
+[permissions.financial-assistant-delivery.filesystem]
+":minimal" = "read"
+
+[permissions.financial-assistant-delivery.filesystem.":workspace_roots"]
+"." = "write"
+
+[permissions.financial-assistant-delivery.network]
+enabled = true
+
+[permissions.financial-assistant-delivery.network.domains]
+"github.com" = "allow"
+"api.github.com" = "allow"
+"uploads.github.com" = "allow"
+"api.atlassian.com" = "allow"
+"marachert.atlassian.net" = "allow"
