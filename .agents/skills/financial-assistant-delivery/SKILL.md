@@ -30,7 +30,7 @@ For each valid finding:
 - reply in the original thread with fixing commit, tests, and CI run;
 - resolve only after green CI.
 
-Repeat and perform a final recheck. Run every merge-gate condition from `AGENTS.md`.
+Repeat and perform a final recheck. Run every merge-gate condition from `AGENTS.md`. A `CHANGES_REQUESTED` review is blocking until it is resolved or dismissed by an authorized reviewer.
 
 When the gate passes:
 
