@@ -29,6 +29,35 @@ public sealed class NonBackendSourceLayoutTests
     }
 
     [Fact]
+    public void BackendCi_TriggersForEveryNonBackendBoundary()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var workflowPath = ToRepositoryPath(repositoryRoot, ".github/workflows/backend-ci.yml");
+        Assert.True(File.Exists(workflowPath), "Backend CI workflow is missing.");
+
+        var workflow = File.ReadAllText(workflowPath);
+        var requiredPathFilters = new[]
+        {
+            "'mobile/**'",
+            "'web-admin/**'",
+            "'infra/docker-compose/**'",
+            "'docs/architecture/**'",
+            "'docs/api/**'",
+            "'docs/events/**'",
+            "'docs/security/**'",
+            "'docs/delivery/**'"
+        };
+
+        foreach (var pathFilter in requiredPathFilters)
+        {
+            Assert.Equal(
+                2,
+                CountOccurrences(workflow, pathFilter),
+                ignoreCase: false);
+        }
+    }
+
+    [Fact]
     public void NonBackendSourceLayout_DocumentsClientAndDeliveryBoundaries()
     {
         var repositoryRoot = FindRepositoryRoot();
@@ -95,6 +124,20 @@ public sealed class NonBackendSourceLayoutTests
                 Assert.Contains(requiredPhrase, content, StringComparison.OrdinalIgnoreCase);
             }
         }
+    }
+
+    private static int CountOccurrences(string value, string searchValue)
+    {
+        var count = 0;
+        var startIndex = 0;
+
+        while ((startIndex = value.IndexOf(searchValue, startIndex, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            startIndex += searchValue.Length;
+        }
+
+        return count;
     }
 
     private static string ToRepositoryPath(string repositoryRoot, string path) =>
