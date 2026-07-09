@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FinancialAssistant.ServiceTemplate.Infrastructure</RootNamespace>
+    <AssemblyName>FinancialAssistant.ServiceTemplate.Infrastructure</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../ServiceTemplate.Application/ServiceTemplate.Application.csproj" />
+    <ProjectReference Include="../ServiceTemplate.Contracts/ServiceTemplate.Contracts.csproj" />
+    <ProjectReference Include="../ServiceTemplate.Domain/ServiceTemplate.Domain.csproj" />
+  </ItemGroup>
+</Project>
