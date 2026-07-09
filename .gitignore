@@ -132,6 +132,9 @@ infra/docker-compose/data/
 infra/docker-compose/volumes/
 infra/docker-compose/.env
 
+# Codex local automation state
+.codex-runtime/
+
 # Temporary files and archives
 tmp/
 temp/
