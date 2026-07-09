@@ -30,6 +30,12 @@ $RECYCLE.BIN/
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
 [Aa]rtifacts/
 [Bb]uild[Rr]esults/
 [Tt]est[Rr]esult*/
@@ -111,6 +117,11 @@ secrets.json
 *.pfx
 *.p12
 *.key
+*.pem
+!*.example.pem
+!*.pem.example
+!**/*.example.pem
+!**/*.pem.example
 *.mobileprovision
 
 # Docker and local infrastructure state
