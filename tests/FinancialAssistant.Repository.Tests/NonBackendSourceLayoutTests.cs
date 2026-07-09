@@ -50,7 +50,7 @@ public sealed class NonBackendSourceLayoutTests
             [
                 "local infrastructure baseline",
                 "Each backend service must own only its own Elasticsearch indices",
-                "Do not commit .env"
+                "Do not commit `.env`"
             ],
             ["docs/architecture/README.md"] =
             [
