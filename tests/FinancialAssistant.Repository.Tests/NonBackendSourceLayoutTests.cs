@@ -50,10 +50,7 @@ public sealed class NonBackendSourceLayoutTests
 
         foreach (var pathFilter in requiredPathFilters)
         {
-            Assert.Equal(
-                2,
-                CountOccurrences(workflow, pathFilter),
-                ignoreCase: false);
+            Assert.Equal(2, CountOccurrences(workflow, pathFilter));
         }
     }
 
