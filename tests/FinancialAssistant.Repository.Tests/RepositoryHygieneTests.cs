@@ -15,6 +15,12 @@ public sealed class RepositoryHygieneTests
         {
             "[Bb]in/",
             "[Oo]bj/",
+            "x64/",
+            "x86/",
+            "[Ww][Ii][Nn]32/",
+            "[Aa][Rr][Mm]/",
+            "[Aa][Rr][Mm]64/",
+            "bld/",
             "node_modules/",
             ".expo/",
             "mobile/**/android/.gradle/",
@@ -22,6 +28,9 @@ public sealed class RepositoryHygieneTests
             ".vs/",
             ".idea/",
             ".env.*",
+            "*.pem",
+            "!*.example.pem",
+            "!*.pem.example",
             "docker-compose.override.yml",
             "*.nupkg",
             "*.apk"
@@ -132,7 +141,8 @@ public sealed class RepositoryHygieneTests
             ".jks",
             ".pfx",
             ".p12",
-            ".key"
+            ".key",
+            ".pem"
         };
 
         foreach (var path in trackedFiles)
@@ -155,7 +165,15 @@ public sealed class RepositoryHygieneTests
                 fileName.StartsWith("appsettings.", StringComparison.OrdinalIgnoreCase) &&
                 fileName.EndsWith(".Local.json", StringComparison.OrdinalIgnoreCase),
                 $"Tracked local application settings are not allowed: {path}");
-            Assert.DoesNotContain(Path.GetExtension(fileName), bannedExtensions);
+
+            var extension = Path.GetExtension(fileName);
+            var isAllowedPemTemplate =
+                fileName.EndsWith(".example.pem", StringComparison.OrdinalIgnoreCase) ||
+                fileName.EndsWith(".pem.example", StringComparison.OrdinalIgnoreCase);
+
+            Assert.False(
+                bannedExtensions.Contains(extension) && !isAllowedPemTemplate,
+                $"Tracked generated or private credential artifact is not allowed: {path}");
         }
     }
 
