@@ -35,3 +35,9 @@ An actual alias change publishes `category.updated.v1` with user ID, category ID
 The current in-memory store and publisher are development adapters. Production adapters must be environment-configured, owned by Category Service, and preserve atomic version updates. RabbitMQ publication must use an outbox or equivalent reliable handoff when durable persistence is introduced.
 
 No service may read Category tables or search indices directly. Consumers use Category API contracts or versioned events.
+
+## Gateway authentication
+
+All category and registration-event endpoints fail closed unless `X-Gateway-Authentication` matches the environment-provided `Category__Gateway__SharedSecret`. The service validates that configuration at startup and compares a fixed-size digest in constant time. User routes additionally require the trusted `X-Gateway-User-Id` established by the authenticated gateway.
+
+Deployment must keep the service on an internal network, strip client attempts to supply either trusted header at the public gateway, and inject the configured authentication value only after gateway authentication succeeds. Health and service-information endpoints do not expose catalog data and remain available for platform probes.

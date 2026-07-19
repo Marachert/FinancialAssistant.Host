@@ -1,6 +1,13 @@
 @FinancialAssistant.Category.Api_HostAddress = http://localhost:5103
+@GatewayAuthentication = replace-with-local-gateway-secret
 
 GET {{FinancialAssistant.Category.Api_HostAddress}}/category/info
 Accept: application/json
+
+###
+
+GET {{FinancialAssistant.Category.Api_HostAddress}}/categories
+X-Gateway-Authentication: {{GatewayAuthentication}}
+X-Gateway-User-Id: synthetic-user
 
 ###

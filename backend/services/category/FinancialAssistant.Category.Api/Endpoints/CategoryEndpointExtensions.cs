@@ -1,3 +1,4 @@
+using FinancialAssistant.Category.Api.Security;
 using FinancialAssistant.Category.Application.Categories;
 using FinancialAssistant.Category.Contracts;
 
@@ -13,8 +14,14 @@ public static class CategoryEndpointExtensions
                     HttpContext httpContext,
                     UserRegisteredCategoryEvent integrationEvent,
                     ICategoryService categoryService,
+                    CategoryGatewayAuthenticator gatewayAuthenticator,
                     CancellationToken cancellationToken) =>
                 {
+                    if (!gatewayAuthenticator.IsAuthenticated(httpContext))
+                    {
+                        return MissingGatewayAuthentication(httpContext);
+                    }
+
                     try
                     {
                         var categories = await categoryService.SeedDefaultsAsync(
@@ -37,8 +44,14 @@ public static class CategoryEndpointExtensions
                     HttpContext httpContext,
                     string? query,
                     ICategoryService categoryService,
+                    CategoryGatewayAuthenticator gatewayAuthenticator,
                     CancellationToken cancellationToken) =>
                 {
+                    if (!gatewayAuthenticator.IsAuthenticated(httpContext))
+                    {
+                        return MissingGatewayAuthentication(httpContext);
+                    }
+
                     var userId = GetGatewayUserId(httpContext);
                     if (userId is null)
                     {
@@ -73,8 +86,14 @@ public static class CategoryEndpointExtensions
                     string categoryId,
                     UpdateCategoryAliasesRequest request,
                     ICategoryService categoryService,
+                    CategoryGatewayAuthenticator gatewayAuthenticator,
                     CancellationToken cancellationToken) =>
                 {
+                    if (!gatewayAuthenticator.IsAuthenticated(httpContext))
+                    {
+                        return MissingGatewayAuthentication(httpContext);
+                    }
+
                     var userId = GetGatewayUserId(httpContext);
                     if (userId is null)
                     {
@@ -115,6 +134,13 @@ public static class CategoryEndpointExtensions
         var value = httpContext.Request.Headers[CategoryGatewayHeaders.UserId].FirstOrDefault();
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
+
+    private static IResult MissingGatewayAuthentication(HttpContext httpContext) =>
+        Results.Problem(
+            title: "Trusted gateway authentication is required.",
+            detail: "Category requests are accepted only from an authenticated gateway or internal publisher.",
+            statusCode: StatusCodes.Status401Unauthorized,
+            extensions: ErrorExtensions("trusted_gateway_authentication_required", httpContext));
 
     private static IResult MissingGatewayUser(HttpContext httpContext) =>
         Results.Problem(

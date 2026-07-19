@@ -1,4 +1,5 @@
 using FinancialAssistant.Category.Api.Endpoints;
+using FinancialAssistant.Category.Api.Security;
 using FinancialAssistant.Category.Application;
 using FinancialAssistant.Category.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -21,6 +22,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddCategoryApplication();
 builder.Services.AddCategoryInfrastructure();
+builder.Services.AddSingleton<CategoryGatewayAuthenticator>();
 builder.Services
     .AddHealthChecks()
     .AddCheck(
@@ -29,6 +31,8 @@ builder.Services
         tags: new[] { "live", "ready" });
 
 var app = builder.Build();
+
+_ = app.Services.GetRequiredService<CategoryGatewayAuthenticator>();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {

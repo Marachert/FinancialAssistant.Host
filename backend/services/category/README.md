@@ -31,7 +31,9 @@ GET  /health/live
 GET  /health/ready
 ```
 
-Public routes require the trusted `X-Gateway-User-Id` header. Search is deterministic: exact matches precede prefix matches, which precede substring matches; ties use stable taxonomy order.
+Category endpoints require both `X-Gateway-Authentication` and, for user requests, `X-Gateway-User-Id`. The authentication value is compared against `Category__Gateway__SharedSecret`, which must be supplied through environment-backed configuration and contain at least 32 characters. The service fails to start when this secret is absent or invalid. The gateway must strip caller-provided trusted headers before adding its own values; never store the secret in source control.
+
+Search is deterministic: exact matches precede prefix matches, which precede substring matches; ties use stable taxonomy order.
 
 ## Current adapters
 

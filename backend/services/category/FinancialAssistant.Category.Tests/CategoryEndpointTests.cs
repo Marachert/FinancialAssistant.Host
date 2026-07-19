@@ -142,7 +142,11 @@ public sealed class CategoryEndpointTests : IClassFixture<CategoryContractWebApp
     [Fact]
     public async Task Categories_WithoutGatewayUserContext_ReturnUnauthorized()
     {
-        var response = await client.GetAsync(CategoryApiRoutes.Categories);
+        using var request = new HttpRequestMessage(HttpMethod.Get, CategoryApiRoutes.Categories);
+        request.Headers.TryAddWithoutValidation(
+            CategoryGatewayHeaders.Authentication,
+            CategoryContractWebApplicationFactory.GatewaySecret);
+        var response = await client.SendAsync(request);
         var problem = await response.Content.ReadFromJsonAsync<CategoryApiErrorResponse>();
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -150,17 +154,34 @@ public sealed class CategoryEndpointTests : IClassFixture<CategoryContractWebApp
         Assert.Equal("authentication_required", problem.Code);
     }
 
+    [Fact]
+    public async Task Categories_WithForgedUserHeaderButNoGatewayAuthentication_ReturnUnauthorized()
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, CategoryApiRoutes.Categories);
+        request.Headers.TryAddWithoutValidation(CategoryGatewayHeaders.UserId, "synthetic-forged-user");
+
+        var response = await client.SendAsync(request);
+        var problem = await response.Content.ReadFromJsonAsync<CategoryApiErrorResponse>();
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.NotNull(problem);
+        Assert.Equal("trusted_gateway_authentication_required", problem.Code);
+    }
+
     private async Task<IReadOnlyList<CategoryResponse>> SeedDefaultsAsync(
         string userId,
         DateTimeOffset? occurredAt = null)
     {
-        var response = await client.PostAsJsonAsync(
+        using var request = CreateUserRequest(
+            HttpMethod.Post,
             CategoryApiRoutes.UserRegisteredEvent,
+            userId,
             new UserRegisteredCategoryEvent(
                 userId,
                 occurredAt ?? DateTimeOffset.UtcNow,
                 "synthetic-registration-correlation",
                 "synthetic-registration-causation"));
+        var response = await client.SendAsync(request);
         var categories = await response.Content.ReadFromJsonAsync<CategoryResponse[]>();
 
         Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
@@ -186,6 +207,9 @@ public sealed class CategoryEndpointTests : IClassFixture<CategoryContractWebApp
         object? body = null)
     {
         var request = new HttpRequestMessage(method, route);
+        request.Headers.TryAddWithoutValidation(
+            CategoryGatewayHeaders.Authentication,
+            CategoryContractWebApplicationFactory.GatewaySecret);
         request.Headers.TryAddWithoutValidation(CategoryGatewayHeaders.UserId, userId);
         if (body is not null)
         {
