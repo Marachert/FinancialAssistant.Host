@@ -80,7 +80,16 @@ public sealed record UserProfilePreferences
         }
 
         var normalized = timeZone.Trim();
-        _ = TimeZoneInfo.FindSystemTimeZoneById(normalized);
+        try
+        {
+            _ = TimeZoneInfo.FindSystemTimeZoneById(normalized);
+        }
+        catch (Exception exception)
+            when (exception is TimeZoneNotFoundException or InvalidTimeZoneException)
+        {
+            throw new ArgumentException("Time zone is invalid.", nameof(timeZone), exception);
+        }
+
         return normalized;
     }
 
