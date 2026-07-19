@@ -121,7 +121,7 @@ public sealed class TransactionConfirmationService : ITransactionConfirmationSer
             stored.IntegrationEvent.UserId,
             stored.IntegrationEvent.DraftId,
             stored.IntegrationEvent.EventId,
-            cancellationToken);
+            CancellationToken.None);
     }
 
     private static void EnsureConfirmable(TransactionDraft draft)
