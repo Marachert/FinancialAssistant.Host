@@ -10,8 +10,10 @@ public static class DependencyInjection
     {
         services.AddSingleton<ITransactionIntakeClock, SystemTransactionIntakeClock>();
         services.AddSingleton<ITransactionDraftIdGenerator, GuidTransactionDraftIdGenerator>();
+        services.AddSingleton<ITransactionConfirmationIdGenerator, GuidTransactionConfirmationIdGenerator>();
         services.AddSingleton<TransactionDraftValidator>();
         services.AddSingleton<ITransactionIntakeService, TransactionIntakeService>();
+        services.AddSingleton<ITransactionConfirmationService, TransactionConfirmationService>();
         return services;
     }
 }
