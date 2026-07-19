@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FinancialAssistant.Category.Application</RootNamespace>
+    <AssemblyName>FinancialAssistant.Category.Application</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.Category.Contracts/FinancialAssistant.Category.Contracts.csproj" />
+    <ProjectReference Include="../FinancialAssistant.Category.Domain/FinancialAssistant.Category.Domain.csproj" />
+  </ItemGroup>
+</Project>
