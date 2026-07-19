@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FinancialAssistant.Category.Api</RootNamespace>
+    <AssemblyName>FinancialAssistant.Category.Api</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.28" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.Category.Application/FinancialAssistant.Category.Application.csproj" />
+    <ProjectReference Include="../FinancialAssistant.Category.Contracts/FinancialAssistant.Category.Contracts.csproj" />
+    <ProjectReference Include="../FinancialAssistant.Category.Infrastructure/FinancialAssistant.Category.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

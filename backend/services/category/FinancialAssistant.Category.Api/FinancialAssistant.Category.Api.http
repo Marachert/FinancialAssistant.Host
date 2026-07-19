@@ -1,0 +1,6 @@
+@FinancialAssistant.Category.Api_HostAddress = http://localhost:5103
+
+GET {{FinancialAssistant.Category.Api_HostAddress}}/category/info
+Accept: application/json
+
+###
