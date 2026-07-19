@@ -97,7 +97,14 @@ public sealed class ProfileEndpointTests : IClassFixture<ProfileContractWebAppli
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
         Assert.NotNull(problem);
+        Assert.Equal("Authentication is required.", problem.Title);
+        Assert.Equal(
+            "Profile requests must be forwarded with a trusted gateway user context.",
+            problem.Detail);
+        Assert.Equal((int)HttpStatusCode.Unauthorized, problem.Status);
         Assert.Equal("authentication_required", problem.Code);
+        Assert.False(string.IsNullOrWhiteSpace(problem.Type));
+        Assert.False(string.IsNullOrWhiteSpace(problem.TraceId));
     }
 
     [Fact]
@@ -124,7 +131,45 @@ public sealed class ProfileEndpointTests : IClassFixture<ProfileContractWebAppli
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.NotNull(problem);
+        Assert.Equal("Profile preferences are invalid.", problem.Title);
+        Assert.Contains("Currency code", problem.Detail, StringComparison.Ordinal);
+        Assert.Equal((int)HttpStatusCode.BadRequest, problem.Status);
         Assert.Equal("invalid_preferences", problem.Code);
+        Assert.False(string.IsNullOrWhiteSpace(problem.Type));
+        Assert.False(string.IsNullOrWhiteSpace(problem.TraceId));
+    }
+
+    [Fact]
+    public async Task InvalidTimeZone_ReturnsValidationProblem()
+    {
+        await CreateProfileAsync("synthetic-user-time-zone");
+
+        using var updateRequest = new HttpRequestMessage(
+            HttpMethod.Put,
+            ProfileApiRoutes.CurrentProfilePreferences)
+        {
+            Content = JsonContent.Create(
+                new UpdateUserPreferencesRequest(
+                    "en-US",
+                    "synthetic/not-a-time-zone",
+                    "USD",
+                    "standard",
+                    false))
+        };
+        updateRequest.Headers.TryAddWithoutValidation(
+            ProfileGatewayHeaders.UserId,
+            "synthetic-user-time-zone");
+
+        var response = await client.SendAsync(updateRequest);
+        var problem = await response.Content.ReadFromJsonAsync<ProfileApiErrorResponse>();
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.NotNull(problem);
+        Assert.Equal("Profile preferences are invalid.", problem.Title);
+        Assert.Contains("Time zone is invalid.", problem.Detail, StringComparison.Ordinal);
+        Assert.Equal((int)HttpStatusCode.BadRequest, problem.Status);
+        Assert.Equal("invalid_preferences", problem.Code);
+        Assert.False(string.IsNullOrWhiteSpace(problem.TraceId));
     }
 
     private async Task CreateProfileAsync(string userId)
