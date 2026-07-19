@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FinancialAssistant.TransactionIntake.Infrastructure</RootNamespace>
+    <AssemblyName>FinancialAssistant.TransactionIntake.Infrastructure</AssemblyName>
+    <!-- The long Windows project path makes the optional RAR state-file replacement unreliable. -->
+    <DisableRarCache>true</DisableRarCache>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.TransactionIntake.Application/FinancialAssistant.TransactionIntake.Application.csproj" />
+    <ProjectReference Include="../FinancialAssistant.TransactionIntake.Domain/FinancialAssistant.TransactionIntake.Domain.csproj" />
+  </ItemGroup>
+</Project>

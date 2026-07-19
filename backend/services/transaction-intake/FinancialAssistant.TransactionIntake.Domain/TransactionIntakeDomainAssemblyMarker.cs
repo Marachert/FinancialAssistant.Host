@@ -1,0 +1,3 @@
+namespace FinancialAssistant.TransactionIntake.Domain;
+
+public sealed class TransactionIntakeDomainAssemblyMarker;
