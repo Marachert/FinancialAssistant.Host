@@ -1,3 +1,5 @@
+using FinancialAssistant.Expense.Infrastructure;
+using FinancialAssistant.Income.Infrastructure;
 using FinancialAssistant.TransactionIntake.Api.Endpoints;
 using FinancialAssistant.TransactionIntake.Api.Security;
 using FinancialAssistant.TransactionIntake.Application;
@@ -21,6 +23,8 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 builder.Services.AddTransactionIntakeApplication();
+builder.Services.AddIncomeInfrastructure();
+builder.Services.AddExpenseInfrastructure();
 builder.Services.AddTransactionIntakeInfrastructure();
 builder.Services.AddSingleton<TransactionIntakeGatewayAuthenticator>();
 builder.Services

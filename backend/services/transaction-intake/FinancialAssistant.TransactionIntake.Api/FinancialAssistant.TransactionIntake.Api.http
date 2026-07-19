@@ -1,5 +1,6 @@
 @HostAddress = http://localhost:5104
 @GatewayAuthentication = replace-with-local-gateway-secret
+@draftId = replace-with-created-draft-id
 
 POST {{HostAddress}}/api/v1/transactions/intake
 Content-Type: application/json
@@ -10,5 +11,11 @@ Idempotency-Key: synthetic-intake-0001
 {
   "input": "Spent $12.50 at Coffee Shop today"
 }
+
+###
+
+POST {{HostAddress}}/api/v1/transactions/drafts/{{draftId}}/confirm
+X-Gateway-Authentication: {{GatewayAuthentication}}
+X-Gateway-User-Id: synthetic-user
 
 ###

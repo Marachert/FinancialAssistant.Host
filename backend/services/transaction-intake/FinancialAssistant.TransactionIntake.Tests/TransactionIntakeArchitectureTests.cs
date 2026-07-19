@@ -1,4 +1,5 @@
 using System.Reflection;
+using FinancialAssistant.TransactionIntake.Contracts;
 using FinancialAssistant.TransactionIntake.Domain;
 using FinancialAssistant.TransactionIntake.Domain.Drafts;
 
@@ -31,5 +32,19 @@ public sealed class TransactionIntakeArchitectureTests
         Assert.DoesNotContain(properties, name => name.Contains("Raw", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(properties, name => name.Contains("InputText", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(properties, name => name.Contains("IdempotencyKey", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void ConfirmedEvent_DoesNotExposeParserOrIdempotencyMaterial()
+    {
+        var properties = typeof(TransactionConfirmedIntegrationEvent)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Select(property => property.Name)
+            .ToArray();
+
+        Assert.DoesNotContain(properties, name => name.Contains("Input", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(properties, name => name.Contains("Idempotency", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(properties, name => name.Contains("Confidence", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(properties, name => name.Contains("Ambiguit", StringComparison.OrdinalIgnoreCase));
     }
 }

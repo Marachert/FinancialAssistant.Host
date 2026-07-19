@@ -13,6 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../expense/FinancialAssistant.Expense.Infrastructure/FinancialAssistant.Expense.Infrastructure.csproj" />
+    <ProjectReference Include="../../income/FinancialAssistant.Income.Infrastructure/FinancialAssistant.Income.Infrastructure.csproj" />
     <ProjectReference Include="../FinancialAssistant.TransactionIntake.Application/FinancialAssistant.TransactionIntake.Application.csproj" />
     <ProjectReference Include="../FinancialAssistant.TransactionIntake.Contracts/FinancialAssistant.TransactionIntake.Contracts.csproj" />
     <ProjectReference Include="../FinancialAssistant.TransactionIntake.Infrastructure/FinancialAssistant.TransactionIntake.Infrastructure.csproj" />

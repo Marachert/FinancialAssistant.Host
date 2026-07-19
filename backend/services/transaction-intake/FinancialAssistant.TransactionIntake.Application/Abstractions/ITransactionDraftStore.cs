@@ -9,6 +9,11 @@ public interface ITransactionDraftStore
         string idempotencyKey,
         CancellationToken cancellationToken);
 
+    Task<TransactionDraft?> GetByIdAsync(
+        string userId,
+        string draftId,
+        CancellationToken cancellationToken);
+
     Task<TransactionDraftStoreResult> StoreIfMissingAsync(
         string userId,
         string idempotencyKey,
