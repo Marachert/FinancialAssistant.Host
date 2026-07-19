@@ -12,6 +12,8 @@ namespace FinancialAssistant.PublicApiGateway.Tests;
 
 public sealed class GatewayRequestDispatcherTests
 {
+    private const string SyntheticDownstreamSecret = "synthetic-gateway-downstream-secret-2026";
+
     [Fact]
     public async Task ActiveRoute_ForwardsMethodPathQueryBodyAndGatewayHeaders()
     {
@@ -166,6 +168,58 @@ public sealed class GatewayRequestDispatcherTests
         Assert.DoesNotContain("auth-service", body, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task ProtectedDestination_StripsClientCredentialAndInjectsGatewayCredential()
+    {
+        var handler = new RecordingHandler(_ => new HttpResponseMessage(HttpStatusCode.NoContent));
+        var destination = new GatewayDestinationDefinition
+        {
+            DestinationKey = "transaction-intake-service",
+            BaseAddress = "http://transaction-intake.internal",
+            Enabled = true,
+            RequiresGatewayAuthentication = true
+        };
+        var dispatcher = CreateAuthenticatedDispatcher(handler, destination, SyntheticDownstreamSecret);
+        var context = CreateContext(HttpMethods.Post, "/transactions/intake", body: "{}");
+        context.Request.Headers[GatewayDownstreamAuthenticationOptions.HeaderName] = "spoofed-client-secret";
+
+        await dispatcher.DispatchAsync(
+            context,
+            CreateRoute(GatewayRouteStatuses.Active, destination.DestinationKey));
+
+        Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
+        Assert.Equal(
+            SyntheticDownstreamSecret,
+            handler.GetHeader(GatewayDownstreamAuthenticationOptions.HeaderName));
+        Assert.Equal("http://transaction-intake.internal/transactions/intake", handler.RequestUri?.ToString());
+    }
+
+    [Fact]
+    public async Task ProtectedDestination_WithoutGatewayCredentialFailsClosed()
+    {
+        var handler = new RecordingHandler(_ => throw new InvalidOperationException("Handler must not be called."));
+        var destination = new GatewayDestinationDefinition
+        {
+            DestinationKey = "transaction-intake-service",
+            BaseAddress = "http://transaction-intake.internal",
+            Enabled = true,
+            RequiresGatewayAuthentication = true
+        };
+        var dispatcher = CreateAuthenticatedDispatcher(handler, destination, string.Empty);
+        var context = CreateContext(HttpMethods.Post, "/transactions/intake", body: "{}");
+
+        await dispatcher.DispatchAsync(
+            context,
+            CreateRoute(GatewayRouteStatuses.Active, destination.DestinationKey));
+        var body = await ReadResponseBodyAsync(context);
+        var problem = JsonSerializer.Deserialize<GatewayProblem>(body, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+
+        Assert.Equal(StatusCodes.Status503ServiceUnavailable, context.Response.StatusCode);
+        Assert.NotNull(problem);
+        Assert.Equal("destination_authentication_unavailable", problem.Code);
+        Assert.Equal(0, handler.CallCount);
+    }
+
     private static GatewayRequestDispatcher CreateDispatcher(
         HttpMessageHandler handler,
         params GatewayDestinationDefinition[] destinations)
@@ -179,6 +233,26 @@ public sealed class GatewayRequestDispatcherTests
             new HttpClient(handler),
             catalog,
             NullLogger<GatewayRequestDispatcher>.Instance);
+    }
+
+    private static GatewayRequestDispatcher CreateAuthenticatedDispatcher(
+        HttpMessageHandler handler,
+        GatewayDestinationDefinition destination,
+        string sharedSecret)
+    {
+        var catalog = new GatewayDestinationCatalog(
+            Options.Create(new GatewayDestinationMapOptions
+            {
+                Destinations = [destination]
+            }));
+        return new GatewayRequestDispatcher(
+            new HttpClient(handler),
+            catalog,
+            NullLogger<GatewayRequestDispatcher>.Instance,
+            Options.Create(new GatewayDownstreamAuthenticationOptions
+            {
+                SharedSecret = sharedSecret
+            }));
     }
 
     private static DefaultHttpContext CreateContext(

@@ -1,0 +1,14 @@
+@HostAddress = http://localhost:5104
+@GatewayAuthentication = replace-with-local-gateway-secret
+
+POST {{HostAddress}}/api/v1/transactions/intake
+Content-Type: application/json
+X-Gateway-Authentication: {{GatewayAuthentication}}
+X-Gateway-User-Id: synthetic-user
+Idempotency-Key: synthetic-intake-0001
+
+{
+  "input": "Spent $12.50 at Coffee Shop today"
+}
+
+###

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FinancialAssistant.TransactionIntake.Application</RootNamespace>
+    <AssemblyName>FinancialAssistant.TransactionIntake.Application</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.TransactionIntake.Contracts/FinancialAssistant.TransactionIntake.Contracts.csproj" />
+    <ProjectReference Include="../FinancialAssistant.TransactionIntake.Domain/FinancialAssistant.TransactionIntake.Domain.csproj" />
+  </ItemGroup>
+</Project>

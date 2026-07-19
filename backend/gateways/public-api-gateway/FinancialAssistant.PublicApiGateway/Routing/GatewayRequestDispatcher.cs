@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FinancialAssistant.PublicApiGateway.Observability;
 using FinancialAssistant.PublicApiGateway.Security;
+using Microsoft.Extensions.Options;
 
 namespace FinancialAssistant.PublicApiGateway.Routing;
 
@@ -23,6 +24,7 @@ public sealed class GatewayRequestDispatcher
     private static readonly HashSet<string> ClientControlledGatewayHeaders = new(StringComparer.OrdinalIgnoreCase)
     {
         "X-Gateway-Route-Key",
+        GatewayDownstreamAuthenticationOptions.HeaderName,
         GatewayUserContextHeaders.UserId,
         GatewayUserContextHeaders.SessionId,
         GatewayUserContextHeaders.Roles,
@@ -31,16 +33,20 @@ public sealed class GatewayRequestDispatcher
 
     private readonly HttpClient httpClient;
     private readonly GatewayDestinationCatalog destinationCatalog;
+    private readonly GatewayDownstreamAuthenticationOptions downstreamAuthentication;
     private readonly ILogger<GatewayRequestDispatcher> logger;
 
     public GatewayRequestDispatcher(
         HttpClient httpClient,
         GatewayDestinationCatalog destinationCatalog,
-        ILogger<GatewayRequestDispatcher> logger)
+        ILogger<GatewayRequestDispatcher> logger,
+        IOptions<GatewayDownstreamAuthenticationOptions>? downstreamAuthenticationOptions = null)
     {
         this.httpClient = httpClient;
         this.destinationCatalog = destinationCatalog;
         this.logger = logger;
+        downstreamAuthentication = downstreamAuthenticationOptions?.Value
+            ?? new GatewayDownstreamAuthenticationOptions();
     }
 
     public async Task DispatchAsync(HttpContext context, GatewayRouteDefinition route)
@@ -73,8 +79,24 @@ public sealed class GatewayRequestDispatcher
             return;
         }
 
+        var downstreamSecret = ResolveDownstreamSecret(destination);
+        if (destination.RequiresGatewayAuthentication && downstreamSecret is null)
+        {
+            GatewayOperationalLog.DestinationUnavailable(
+                logger,
+                route.RouteKey,
+                route.InternalDestination);
+            await WriteProblemAsync(
+                context,
+                StatusCodes.Status503ServiceUnavailable,
+                "destination_authentication_unavailable",
+                "Service is temporarily unavailable.",
+                "The requested service authentication is not configured.");
+            return;
+        }
+
         var targetUri = BuildTargetUri(baseAddress, context.Request.Path, context.Request.QueryString);
-        using var requestMessage = CreateRequestMessage(context, targetUri, route);
+        using var requestMessage = CreateRequestMessage(context, targetUri, route, downstreamSecret);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
         timeout.CancelAfter(TimeSpan.FromSeconds(destination.RequestTimeoutSeconds));
 
@@ -123,7 +145,8 @@ public sealed class GatewayRequestDispatcher
     private static HttpRequestMessage CreateRequestMessage(
         HttpContext context,
         Uri targetUri,
-        GatewayRouteDefinition route)
+        GatewayRouteDefinition route,
+        string? downstreamSecret)
     {
         var requestMessage = new HttpRequestMessage(new HttpMethod(context.Request.Method), targetUri);
 
@@ -146,17 +169,26 @@ public sealed class GatewayRequestDispatcher
             requestMessage.Content = new StreamContent(context.Request.Body);
         }
 
-        AddGatewayHeaders(context, requestMessage, route);
+        AddGatewayHeaders(context, requestMessage, route, downstreamSecret);
         return requestMessage;
     }
 
     private static void AddGatewayHeaders(
         HttpContext context,
         HttpRequestMessage requestMessage,
-        GatewayRouteDefinition route)
+        GatewayRouteDefinition route,
+        string? downstreamSecret)
     {
         requestMessage.Headers.Remove("X-Gateway-Route-Key");
         requestMessage.Headers.TryAddWithoutValidation("X-Gateway-Route-Key", route.RouteKey);
+
+        requestMessage.Headers.Remove(GatewayDownstreamAuthenticationOptions.HeaderName);
+        if (downstreamSecret is not null)
+        {
+            requestMessage.Headers.TryAddWithoutValidation(
+                GatewayDownstreamAuthenticationOptions.HeaderName,
+                downstreamSecret);
+        }
 
         requestMessage.Headers.Remove(GatewayUserContextHeaders.UserId);
         requestMessage.Headers.Remove(GatewayUserContextHeaders.SessionId);
@@ -193,6 +225,17 @@ public sealed class GatewayRequestDispatcher
         return request.Headers.TryGetValue("Transfer-Encoding", out var transferEncoding)
             && transferEncoding.Any(value =>
                 string.Equals(value, "chunked", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private string? ResolveDownstreamSecret(GatewayDestinationDefinition destination)
+    {
+        if (!destination.RequiresGatewayAuthentication)
+        {
+            return null;
+        }
+
+        var value = downstreamAuthentication.SharedSecret;
+        return string.IsNullOrWhiteSpace(value) || value.Length < 32 ? null : value;
     }
 
     private static Uri BuildTargetUri(Uri baseAddress, PathString path, QueryString query)

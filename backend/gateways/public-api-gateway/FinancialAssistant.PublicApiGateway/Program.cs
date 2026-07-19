@@ -14,6 +14,8 @@ builder.Services.Configure<GatewaySecurityOptions>(builder.Configuration.GetSect
 builder.Services.Configure<GatewayRateLimitOptions>(builder.Configuration.GetSection("Gateway:RateLimiting"));
 builder.Services.Configure<GatewayRouteMapOptions>(builder.Configuration.GetSection("Gateway:RouteMap"));
 builder.Services.Configure<GatewayDestinationMapOptions>(builder.Configuration.GetSection("Gateway:DestinationMap"));
+builder.Services.Configure<GatewayDownstreamAuthenticationOptions>(
+    builder.Configuration.GetSection("Gateway:DownstreamAuthentication"));
 builder.Services.AddSingleton<GatewayDiagnosticsClock>();
 builder.Services.AddSingleton<GatewayRouteCatalog>();
 builder.Services.AddSingleton<GatewayDestinationCatalog>();

@@ -8,5 +8,7 @@ public sealed class GatewayDestinationDefinition
 
     public bool Enabled { get; init; }
 
+    public bool RequiresGatewayAuthentication { get; init; }
+
     public int RequestTimeoutSeconds { get; init; } = 30;
 }
