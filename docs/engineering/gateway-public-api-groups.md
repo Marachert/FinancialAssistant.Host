@@ -211,6 +211,8 @@ The gateway applies perimeter authentication and intake rate limits, then forwar
 
 The gateway never calculates amounts, selects categories, validates merchant or date rules, creates transaction entities, or treats LLM output as transaction truth.
 
+Protected internal destinations set `RequiresGatewayAuthentication`. The gateway strips caller-provided `X-Gateway-Authentication` and injects the environment-backed `Gateway__DownstreamAuthentication__SharedSecret`; the destination uses the matching service-specific secret. Dispatch fails closed when a protected destination is enabled without a valid 32-character credential.
+
 ## Receipt API group
 
 ### Public prefix

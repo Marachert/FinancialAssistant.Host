@@ -40,4 +40,30 @@ public sealed class TransactionDraftValidatorTests
         Assert.Contains("merchant", draft.Ambiguities);
         Assert.Contains("date", draft.Ambiguities);
     }
+
+    [Fact]
+    public void Validate_RejectsPositiveAmountThatRoundsToZero()
+    {
+        var validator = new TransactionDraftValidator();
+        var createdAt = new DateTimeOffset(2026, 7, 19, 12, 0, 0, TimeSpan.Zero);
+        var candidate = new ParsedTransactionCandidate(
+            "expense",
+            0.001m,
+            "USD",
+            "expense.food",
+            "Synthetic Merchant",
+            new DateOnly(2026, 7, 19),
+            0.99m);
+
+        var draft = validator.Validate(
+            "draft_synthetic_subcent",
+            "synthetic-validator-user",
+            "SYNTHETICFINGERPRINT",
+            candidate,
+            createdAt);
+
+        Assert.Null(draft.Amount);
+        Assert.Contains("amount", draft.Ambiguities);
+        Assert.True(draft.RequiresReview);
+    }
 }

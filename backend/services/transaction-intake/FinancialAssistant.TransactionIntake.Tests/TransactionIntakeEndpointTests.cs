@@ -39,6 +39,23 @@ public sealed class TransactionIntakeEndpointTests : IClassFixture<TransactionIn
     }
 
     [Fact]
+    public async Task GatewayForwardedIntakePath_UsesTheSameDraftContract()
+    {
+        using var request = CreateRequest(
+            "synthetic-intake-gateway-path-0001",
+            "Received 50 USD salary today",
+            route: TransactionIntakeApiRoutes.GatewayIntake);
+
+        var response = await client.SendAsync(request);
+        var draft = await response.Content.ReadFromJsonAsync<TransactionDraftResponse>();
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.NotNull(draft);
+        Assert.Equal("income", draft.Type);
+        Assert.Equal("income.salary", draft.CategoryId);
+    }
+
+    [Fact]
     public async Task Intake_ReplaysStoredDraftForSameUserKeyAndNormalizedInput()
     {
         const string key = "synthetic-intake-replay-0001";
@@ -191,9 +208,10 @@ public sealed class TransactionIntakeEndpointTests : IClassFixture<TransactionIn
     private static HttpRequestMessage CreateRequest(
         string? idempotencyKey,
         string input,
-        string userId = "synthetic-intake-user")
+        string userId = "synthetic-intake-user",
+        string route = TransactionIntakeApiRoutes.Intake)
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, TransactionIntakeApiRoutes.Intake)
+        var request = new HttpRequestMessage(HttpMethod.Post, route)
         {
             Content = JsonContent.Create(new TransactionIntakeRequest(input))
         };

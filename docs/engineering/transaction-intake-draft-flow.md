@@ -6,7 +6,7 @@ FIN-21 implements the first half of the core single-input workflow. An authentic
 
 ## Request boundary
 
-`POST /api/v1/transactions/intake` requires trusted gateway authentication, a gateway-established user ID, and an opaque 8-to-128 character `Idempotency-Key`. Input is whitespace-normalized and limited to 2,000 characters. The key must not contain identity, device, merchant, amount, or other financial data.
+`POST /api/v1/transactions/intake` is the canonical service route. `POST /transactions/intake` reaches the same handler and matches the existing gateway's unchanged forwarding path. Both require trusted gateway authentication, a gateway-established user ID, and an opaque 8-to-128 character `Idempotency-Key`. Input is whitespace-normalized and limited to 2,000 characters. The key must not contain identity, device, merchant, amount, or other financial data.
 
 The service stores a SHA-256 fingerprint of normalized input with the user-scoped idempotency key and draft. It does not store raw input in the idempotency record. Repeating the same key and normalized input returns the original draft. Reusing the key for different input returns `409 idempotency_key_conflict`.
 
@@ -32,4 +32,4 @@ Production adapters must be environment-selected, preserve the application inter
 
 ## Security
 
-The service fails startup unless `TransactionIntake__Gateway__SharedSecret` contains at least 32 characters. Protected endpoints compare a fixed-size digest in constant time before trusting `X-Gateway-User-Id`. Deployment must keep the listener on an internal network and the public gateway must strip caller-supplied trusted headers before injecting its own values.
+The service fails startup unless `TransactionIntake__Gateway__SharedSecret` contains at least 32 characters. Protected endpoints compare a fixed-size digest in constant time before trusting `X-Gateway-User-Id`. The gateway uses the matching `Gateway__DownstreamAuthentication__SharedSecret`, strips caller-supplied `X-Gateway-Authentication`, and injects its credential only for destinations marked `RequiresGatewayAuthentication`. A protected destination fails closed with 503 when the gateway credential is absent or invalid. Deployment must also keep the service listener on an internal network.

@@ -69,7 +69,14 @@ public sealed partial class TransactionDraftValidator
             return null;
         }
 
-        return decimal.Round(value.Value, 2, MidpointRounding.ToEven);
+        var rounded = decimal.Round(value.Value, 2, MidpointRounding.ToEven);
+        if (rounded <= 0)
+        {
+            ambiguities.Add("amount");
+            return null;
+        }
+
+        return rounded;
     }
 
     private static string? NormalizeCurrency(string? value, ISet<string> ambiguities)
