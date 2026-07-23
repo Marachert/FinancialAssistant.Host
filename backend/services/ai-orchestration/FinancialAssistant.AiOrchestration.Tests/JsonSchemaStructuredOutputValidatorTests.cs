@@ -79,4 +79,18 @@ public sealed class JsonSchemaStructuredOutputValidatorTests
 
         Assert.Throws<InvalidJsonSchemaException>(() => validator.Validate("\"value\"", schema));
     }
+
+    [Theory]
+    [InlineData(
+        """{"type":"object","properties":{"optional":{"type":"string","pattern":"^[a-z]+$"}}}""",
+        "{}")]
+    [InlineData(
+        """{"type":"array","items":{"type":42}}""",
+        "[]")]
+    public void Validate_WhenUnvisitedSchemaBranchIsInvalid_FailsClosed(
+        string schema,
+        string output)
+    {
+        Assert.Throws<InvalidJsonSchemaException>(() => validator.Validate(output, schema));
+    }
 }

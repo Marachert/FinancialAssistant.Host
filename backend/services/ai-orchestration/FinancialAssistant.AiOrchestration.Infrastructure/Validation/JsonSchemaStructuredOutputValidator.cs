@@ -52,6 +52,8 @@ public sealed class JsonSchemaStructuredOutputValidator : IStructuredOutputValid
                 throw new InvalidJsonSchemaException("The registered output JSON schema must be an object.");
             }
 
+            ValidateSchemaNode(schema.RootElement, "$");
+
             JsonDocument output;
             try
             {
@@ -117,16 +119,7 @@ public sealed class JsonSchemaStructuredOutputValidator : IStructuredOutputValid
             return;
         }
 
-        var allowedTypes = typeNode.ValueKind switch
-        {
-            JsonValueKind.String => new[] { typeNode.GetString()! },
-            JsonValueKind.Array => typeNode.EnumerateArray()
-                .Select(type => type.ValueKind == JsonValueKind.String
-                    ? type.GetString()!
-                    : throw new InvalidJsonSchemaException($"Schema type at '{path}' must contain strings."))
-                .ToArray(),
-            _ => throw new InvalidJsonSchemaException($"Schema type at '{path}' must be a string or array."),
-        };
+        var allowedTypes = ReadAllowedTypes(typeNode, path);
 
         if (!allowedTypes.Any(type => MatchesType(value, type)))
         {
@@ -373,6 +366,151 @@ public sealed class JsonSchemaStructuredOutputValidator : IStructuredOutputValid
                 throw new InvalidJsonSchemaException(
                     $"JSON schema keyword '{keyword.Name}' at '{path}' is not supported.");
             }
+        }
+    }
+
+    private static void ValidateSchemaNode(JsonElement schema, string path)
+    {
+        if (schema.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidJsonSchemaException($"Schema at '{path}' must be an object.");
+        }
+
+        ValidateSupportedKeywords(schema, path);
+
+        if (schema.TryGetProperty("type", out var typeNode))
+        {
+            _ = ReadAllowedTypes(typeNode, path);
+        }
+
+        if (schema.TryGetProperty("enum", out var enumNode) &&
+            (enumNode.ValueKind != JsonValueKind.Array || enumNode.GetArrayLength() == 0))
+        {
+            throw new InvalidJsonSchemaException(
+                $"Schema enum at '{path}' must be a non-empty array.");
+        }
+
+        if (schema.TryGetProperty("properties", out var propertiesNode))
+        {
+            if (propertiesNode.ValueKind != JsonValueKind.Object)
+            {
+                throw new InvalidJsonSchemaException(
+                    $"Schema properties at '{path}' must be an object.");
+            }
+
+            foreach (var property in propertiesNode.EnumerateObject())
+            {
+                ValidateSchemaNode(property.Value, $"{path}.properties.{property.Name}");
+            }
+        }
+
+        if (schema.TryGetProperty("required", out var requiredNode))
+        {
+            if (requiredNode.ValueKind != JsonValueKind.Array ||
+                requiredNode.EnumerateArray().Any(item => item.ValueKind != JsonValueKind.String))
+            {
+                throw new InvalidJsonSchemaException(
+                    $"Schema required at '{path}' must be an array of strings.");
+            }
+        }
+
+        if (schema.TryGetProperty("additionalProperties", out var additionalProperties) &&
+            additionalProperties.ValueKind is not JsonValueKind.True and not JsonValueKind.False)
+        {
+            throw new InvalidJsonSchemaException(
+                $"Schema additionalProperties at '{path}' must be a boolean.");
+        }
+
+        if (schema.TryGetProperty("items", out var itemsNode))
+        {
+            ValidateSchemaNode(itemsNode, $"{path}.items");
+        }
+
+        ValidateNonNegativeIntegerKeyword(schema, "minItems", path);
+        ValidateNonNegativeIntegerKeyword(schema, "maxItems", path);
+        ValidateNonNegativeIntegerKeyword(schema, "minLength", path);
+        ValidateNonNegativeIntegerKeyword(schema, "maxLength", path);
+        ValidateNumberKeyword(schema, "minimum", path);
+        ValidateNumberKeyword(schema, "maximum", path);
+        ValidateStringKeyword(schema, "$schema", path);
+        ValidateStringKeyword(schema, "$id", path);
+        ValidateStringKeyword(schema, "title", path);
+        ValidateStringKeyword(schema, "description", path);
+
+        if (schema.TryGetProperty("examples", out var examplesNode) &&
+            examplesNode.ValueKind != JsonValueKind.Array)
+        {
+            throw new InvalidJsonSchemaException(
+                $"Schema examples at '{path}' must be an array.");
+        }
+    }
+
+    private static string[] ReadAllowedTypes(JsonElement typeNode, string path)
+    {
+        var allowedTypes = typeNode.ValueKind switch
+        {
+            JsonValueKind.String => new[] { typeNode.GetString()! },
+            JsonValueKind.Array => typeNode.EnumerateArray()
+                .Select(type => type.ValueKind == JsonValueKind.String
+                    ? type.GetString()!
+                    : throw new InvalidJsonSchemaException(
+                        $"Schema type at '{path}' must contain strings."))
+                .ToArray(),
+            _ => throw new InvalidJsonSchemaException(
+                $"Schema type at '{path}' must be a string or array."),
+        };
+
+        if (allowedTypes.Length == 0)
+        {
+            throw new InvalidJsonSchemaException(
+                $"Schema type at '{path}' must not be an empty array.");
+        }
+
+        foreach (var type in allowedTypes)
+        {
+            _ = type switch
+            {
+                "object" or "array" or "string" or "number" or "integer" or "boolean" or "null" => true,
+                _ => throw new InvalidJsonSchemaException(
+                    $"Unsupported JSON schema type '{type}' at '{path}'."),
+            };
+        }
+
+        return allowedTypes;
+    }
+
+    private static void ValidateNonNegativeIntegerKeyword(
+        JsonElement schema,
+        string keyword,
+        string path)
+    {
+        if (schema.TryGetProperty(keyword, out var value))
+        {
+            _ = ReadNonNegativeInteger(value, keyword, path);
+        }
+    }
+
+    private static void ValidateNumberKeyword(
+        JsonElement schema,
+        string keyword,
+        string path)
+    {
+        if (schema.TryGetProperty(keyword, out var value))
+        {
+            _ = ReadDecimal(value, keyword, path);
+        }
+    }
+
+    private static void ValidateStringKeyword(
+        JsonElement schema,
+        string keyword,
+        string path)
+    {
+        if (schema.TryGetProperty(keyword, out var value) &&
+            value.ValueKind != JsonValueKind.String)
+        {
+            throw new InvalidJsonSchemaException(
+                $"Schema {keyword} at '{path}' must be a string.");
         }
     }
 }
