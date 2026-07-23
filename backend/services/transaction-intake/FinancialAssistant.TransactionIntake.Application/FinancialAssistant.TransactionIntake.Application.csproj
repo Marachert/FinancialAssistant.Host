@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../receipt-processing/FinancialAssistant.ReceiptProcessing.Contracts/FinancialAssistant.ReceiptProcessing.Contracts.csproj" />
     <ProjectReference Include="../FinancialAssistant.TransactionIntake.Contracts/FinancialAssistant.TransactionIntake.Contracts.csproj" />
     <ProjectReference Include="../FinancialAssistant.TransactionIntake.Domain/FinancialAssistant.TransactionIntake.Domain.csproj" />
   </ItemGroup>

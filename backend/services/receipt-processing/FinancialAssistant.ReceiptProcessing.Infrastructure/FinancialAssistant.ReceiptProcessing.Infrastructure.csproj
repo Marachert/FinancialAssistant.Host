@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FinancialAssistant.ReceiptProcessing.Infrastructure</RootNamespace>
+    <AssemblyName>FinancialAssistant.ReceiptProcessing.Infrastructure</AssemblyName>
+    <DisableRarCache>true</DisableRarCache>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.ReceiptProcessing.Application/FinancialAssistant.ReceiptProcessing.Application.csproj" />
+    <ProjectReference Include="../FinancialAssistant.ReceiptProcessing.Contracts/FinancialAssistant.ReceiptProcessing.Contracts.csproj" />
+    <ProjectReference Include="../FinancialAssistant.ReceiptProcessing.Domain/FinancialAssistant.ReceiptProcessing.Domain.csproj" />
+  </ItemGroup>
+</Project>
