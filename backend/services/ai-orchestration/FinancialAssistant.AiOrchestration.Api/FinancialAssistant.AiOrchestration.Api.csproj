@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FinancialAssistant.AiOrchestration.Api</RootNamespace>
+    <AssemblyName>FinancialAssistant.AiOrchestration.Api</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.28" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.AiOrchestration.Application/FinancialAssistant.AiOrchestration.Application.csproj" />
+    <ProjectReference Include="../FinancialAssistant.AiOrchestration.Contracts/FinancialAssistant.AiOrchestration.Contracts.csproj" />
+    <ProjectReference Include="../FinancialAssistant.AiOrchestration.Infrastructure/FinancialAssistant.AiOrchestration.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

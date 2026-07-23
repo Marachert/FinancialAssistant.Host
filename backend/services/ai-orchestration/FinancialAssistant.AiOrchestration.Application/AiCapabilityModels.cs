@@ -1,21 +1,4 @@
-using System.Text.Json;
-
 namespace FinancialAssistant.AiOrchestration.Application;
-
-public sealed record AiCapabilityRequest(
-    string CapabilityName,
-    string PromptName,
-    string Input,
-    int? PromptVersion = null);
-
-public sealed record AiCapabilityResult(
-    string CallId,
-    string CapabilityName,
-    string PromptName,
-    int PromptVersion,
-    string Provider,
-    string Model,
-    JsonElement StructuredOutput);
 
 public sealed record LlmProviderRequest(
     string CapabilityName,

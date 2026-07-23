@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FinancialAssistant.AiOrchestration.Application.Abstractions;
+using FinancialAssistant.AiOrchestration.Contracts;
 using FinancialAssistant.AiOrchestration.Domain;
 
 namespace FinancialAssistant.AiOrchestration.Application;
@@ -107,7 +108,11 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
             prompt.Version,
             route.Provider,
             route.Model,
-            output.RootElement.Clone());
+            output.RootElement.Clone(),
+            new AiSuggestionReview(
+                Confidence: null,
+                Ambiguities: new[] { "unverified_ai_output" },
+                RequiresReview: true));
 
         Task RecordAsync(AiCallStatus status, AiTokenUsage? usage) =>
             metadataStore.AddAsync(
