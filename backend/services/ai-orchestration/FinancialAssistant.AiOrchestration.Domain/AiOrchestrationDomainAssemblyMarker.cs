@@ -1,0 +1,3 @@
+namespace FinancialAssistant.AiOrchestration.Domain;
+
+public sealed class AiOrchestrationDomainAssemblyMarker;
