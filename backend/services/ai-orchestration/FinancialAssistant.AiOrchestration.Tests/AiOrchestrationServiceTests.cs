@@ -1,5 +1,6 @@
 using FinancialAssistant.AiOrchestration.Application;
 using FinancialAssistant.AiOrchestration.Application.Abstractions;
+using FinancialAssistant.AiOrchestration.Contracts;
 using FinancialAssistant.AiOrchestration.Domain;
 using FinancialAssistant.AiOrchestration.Infrastructure.Prompts;
 using FinancialAssistant.AiOrchestration.Infrastructure.Providers;
@@ -36,6 +37,9 @@ public sealed class AiOrchestrationServiceTests
 
         var metadata = Assert.Single(metadataStore.Records);
         Assert.Equal("expense", result.StructuredOutput.GetProperty("type").GetString());
+        Assert.True(result.Review.RequiresReview);
+        Assert.Null(result.Review.Confidence);
+        Assert.Contains("unverified_ai_output", result.Review.Ambiguities);
         Assert.Equal("model-a", provider.LastRequest!.Model);
         Assert.Equal(AiCallStatus.Succeeded, metadata.Status);
         Assert.Equal(22, metadata.TokenUsage!.TotalTokens);

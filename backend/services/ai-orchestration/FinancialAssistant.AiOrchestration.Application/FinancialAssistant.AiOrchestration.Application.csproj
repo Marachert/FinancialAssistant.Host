@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.AiOrchestration.Contracts/FinancialAssistant.AiOrchestration.Contracts.csproj" />
     <ProjectReference Include="../FinancialAssistant.AiOrchestration.Domain/FinancialAssistant.AiOrchestration.Domain.csproj" />
   </ItemGroup>
 </Project>

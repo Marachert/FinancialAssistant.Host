@@ -1,3 +1,5 @@
+using FinancialAssistant.AiOrchestration.Contracts;
+
 namespace FinancialAssistant.AiOrchestration.Application;
 
 public interface IAiOrchestrationService
