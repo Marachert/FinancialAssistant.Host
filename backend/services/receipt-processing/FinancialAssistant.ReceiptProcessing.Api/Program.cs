@@ -1,6 +1,7 @@
 using FinancialAssistant.ReceiptProcessing.Api.Endpoints;
 using FinancialAssistant.ReceiptProcessing.Api.Security;
 using FinancialAssistant.ReceiptProcessing.Application;
+using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
 using FinancialAssistant.ReceiptProcessing.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Features;
@@ -36,6 +37,7 @@ builder.Services
 var app = builder.Build();
 
 _ = app.Services.GetRequiredService<ReceiptGatewayAuthenticator>();
+_ = app.Services.GetRequiredService<IOcrCompletedPublisher>();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {

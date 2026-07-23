@@ -1,4 +1,5 @@
 using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
+using FinancialAssistant.ReceiptProcessing.Infrastructure.Events;
 using FinancialAssistant.TransactionIntake.Application;
 using FinancialAssistant.TransactionIntake.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
@@ -26,6 +27,9 @@ public sealed class ReceiptProcessingWebApplicationFactory : WebApplicationFacto
         {
             services.RemoveAll<IOcrProvider>();
             services.AddSingleton<IOcrProvider, SyntheticOcrProvider>();
+            services.RemoveAll<IOcrCompletedPublisher>();
+            services.AddSingleton<IOcrCompletedPublisher>(provider =>
+                provider.GetRequiredService<InMemoryOcrCompletedPublisher>());
             services.AddTransactionIntakeApplication();
             services.AddTransactionIntakeInfrastructure();
         });

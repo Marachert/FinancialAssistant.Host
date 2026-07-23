@@ -1,6 +1,10 @@
 using FinancialAssistant.ReceiptProcessing.Contracts;
 using FinancialAssistant.ReceiptProcessing.Domain;
+using FinancialAssistant.ReceiptProcessing.Infrastructure;
+using FinancialAssistant.ReceiptProcessing.Infrastructure.Events;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Storage;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FinancialAssistant.ReceiptProcessing.Tests;
 
@@ -66,5 +70,29 @@ public sealed class ReceiptProcessingArchitectureTests
     {
         Assert.Equal("receipt.uploaded.v1", ReceiptUploadedIntegrationEvent.Name);
         Assert.Equal("ocr.completed.v1", OcrCompletedIntegrationEvent.Name);
+    }
+
+    [Fact]
+    public void DefaultInfrastructure_UsesInterserviceOcrCompletionDelivery()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    [HttpOcrCompletedPublisher.BaseAddressConfigurationKey] =
+                        "http://transaction-intake.internal",
+                    [HttpOcrCompletedPublisher.SharedSecretConfigurationKey] =
+                        "synthetic-interservice-secret-value"
+                })
+            .Build();
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<IConfiguration>(configuration);
+        serviceCollection.AddLogging();
+        serviceCollection.AddReceiptProcessingInfrastructure();
+        using var provider = serviceCollection.BuildServiceProvider();
+
+        Assert.IsType<HttpOcrCompletedPublisher>(
+            provider.GetRequiredService<
+                FinancialAssistant.ReceiptProcessing.Application.Abstractions.IOcrCompletedPublisher>());
     }
 }

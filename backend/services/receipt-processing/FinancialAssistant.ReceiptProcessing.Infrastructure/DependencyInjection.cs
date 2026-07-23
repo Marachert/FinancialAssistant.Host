@@ -24,8 +24,13 @@ public static class DependencyInjection
         services.AddSingleton<IReceiptUploadedPublisher>(provider =>
             provider.GetRequiredService<InMemoryReceiptUploadedPublisher>());
         services.AddSingleton<InMemoryOcrCompletedPublisher>();
-        services.AddSingleton<IOcrCompletedPublisher>(provider =>
-            provider.GetRequiredService<InMemoryOcrCompletedPublisher>());
+        services
+            .AddHttpClient(
+                HttpOcrCompletedPublisher.ClientName,
+                client => client.Timeout = TimeSpan.FromSeconds(30))
+            .ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler { AllowAutoRedirect = false });
+        services.AddSingleton<IOcrCompletedPublisher, HttpOcrCompletedPublisher>();
         services.AddSingleton<IOcrCandidateNormalizer, DeterministicReceiptCandidateNormalizer>();
         services.TryAddSingleton<IOcrProvider, DisabledOcrProvider>();
         return services;

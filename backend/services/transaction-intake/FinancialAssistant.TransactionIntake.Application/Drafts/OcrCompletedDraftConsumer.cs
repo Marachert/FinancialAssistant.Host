@@ -41,7 +41,7 @@ public sealed class OcrCompletedDraftConsumer : IOcrCompletedConsumer
         {
             if (!string.Equals(existing.InputFingerprint, fingerprint, StringComparison.Ordinal))
             {
-                throw new InvalidOperationException("OCR completion conflicts with the stored draft.");
+                throw new OcrCompletedDraftConflictException();
             }
 
             return;
@@ -80,7 +80,7 @@ public sealed class OcrCompletedDraftConsumer : IOcrCompletedConsumer
             cancellationToken);
         if (!string.Equals(stored.Stored.InputFingerprint, fingerprint, StringComparison.Ordinal))
         {
-            throw new InvalidOperationException("OCR completion conflicts with the stored draft.");
+            throw new OcrCompletedDraftConflictException();
         }
     }
 
@@ -147,5 +147,13 @@ public sealed class OcrCompletedDraftConsumer : IOcrCompletedConsumer
             .Distinct(StringComparer.Ordinal)
             .OrderBy(value => value, StringComparer.Ordinal)
             .ToArray();
+    }
+}
+
+public sealed class OcrCompletedDraftConflictException : InvalidOperationException
+{
+    public OcrCompletedDraftConflictException()
+        : base("OCR completion conflicts with the stored draft.")
+    {
     }
 }

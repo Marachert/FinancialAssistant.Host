@@ -5,6 +5,7 @@ using FinancialAssistant.ReceiptProcessing.Contracts;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Events;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Storage;
 using FinancialAssistant.TransactionIntake.Application.Abstractions;
+using FinancialAssistant.TransactionIntake.Application.Drafts;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FinancialAssistant.ReceiptProcessing.Tests;
@@ -210,7 +211,7 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
             EventId = "event_synthetic_ocr_conflict",
             Ambiguities = new[] { "different_candidate" }
         };
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<OcrCompletedDraftConflictException>(() =>
             consumer.ConsumeAsync(conflicting, CancellationToken.None));
     }
 
