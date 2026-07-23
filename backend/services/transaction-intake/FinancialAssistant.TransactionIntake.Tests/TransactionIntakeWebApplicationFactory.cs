@@ -7,6 +7,8 @@ namespace FinancialAssistant.TransactionIntake.Tests;
 public sealed class TransactionIntakeWebApplicationFactory : WebApplicationFactory<Program>
 {
     public const string GatewaySecret = "synthetic-transaction-intake-gateway-secret";
+    public const string ReceiptEventSecret =
+        "synthetic-receipt-event-delivery-secret";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -15,7 +17,8 @@ public sealed class TransactionIntakeWebApplicationFactory : WebApplicationFacto
             configuration.AddInMemoryCollection(
                 new Dictionary<string, string?>
                 {
-                    ["TransactionIntake:Gateway:SharedSecret"] = GatewaySecret
+                    ["TransactionIntake:Gateway:SharedSecret"] = GatewaySecret,
+                    ["ReceiptProcessing:Events:SharedSecret"] = ReceiptEventSecret
                 }));
     }
 }

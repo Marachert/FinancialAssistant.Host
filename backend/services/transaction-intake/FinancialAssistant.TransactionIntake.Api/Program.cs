@@ -27,6 +27,7 @@ builder.Services.AddIncomeInfrastructure();
 builder.Services.AddExpenseInfrastructure();
 builder.Services.AddTransactionIntakeInfrastructure();
 builder.Services.AddSingleton<TransactionIntakeGatewayAuthenticator>();
+builder.Services.AddSingleton<ReceiptEventAuthenticator>();
 builder.Services
     .AddHealthChecks()
     .AddCheck(
@@ -37,6 +38,7 @@ builder.Services
 var app = builder.Build();
 
 _ = app.Services.GetRequiredService<TransactionIntakeGatewayAuthenticator>();
+_ = app.Services.GetRequiredService<ReceiptEventAuthenticator>();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {
@@ -69,6 +71,7 @@ app.MapGet("/transaction-intake/info", (IHostEnvironment environment) => Results
 }));
 
 app.MapTransactionIntakeEndpoints();
+app.MapOcrCompletedEventEndpoint();
 
 app.Run();
 

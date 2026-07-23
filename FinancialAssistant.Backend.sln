@@ -86,6 +86,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.AiOrches
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.AiOrchestration.Tests", "backend\services\ai-orchestration\FinancialAssistant.AiOrchestration.Tests\FinancialAssistant.AiOrchestration.Tests.csproj", "{6A7175F9-EE51-4DFE-A65C-1F9CCAFF58C4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.ReceiptProcessing.Api", "backend\services\receipt-processing\FinancialAssistant.ReceiptProcessing.Api\FinancialAssistant.ReceiptProcessing.Api.csproj", "{F4D7FB60-E9B9-4FEC-896D-6CDDE5EE599A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.ReceiptProcessing.Application", "backend\services\receipt-processing\FinancialAssistant.ReceiptProcessing.Application\FinancialAssistant.ReceiptProcessing.Application.csproj", "{5770802F-2307-4693-9955-D41FDB390A96}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.ReceiptProcessing.Contracts", "backend\services\receipt-processing\FinancialAssistant.ReceiptProcessing.Contracts\FinancialAssistant.ReceiptProcessing.Contracts.csproj", "{5625A105-B0D8-413F-AB66-267DD887452B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.ReceiptProcessing.Domain", "backend\services\receipt-processing\FinancialAssistant.ReceiptProcessing.Domain\FinancialAssistant.ReceiptProcessing.Domain.csproj", "{B90E640A-315D-4F4B-A274-294A0F7C4A6B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.ReceiptProcessing.Infrastructure", "backend\services\receipt-processing\FinancialAssistant.ReceiptProcessing.Infrastructure\FinancialAssistant.ReceiptProcessing.Infrastructure.csproj", "{5785ECAA-8269-42D8-97CA-040B01CF31E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.ReceiptProcessing.Tests", "backend\services\receipt-processing\FinancialAssistant.ReceiptProcessing.Tests\FinancialAssistant.ReceiptProcessing.Tests.csproj", "{BF41B5FE-29D9-4840-9B0E-FDC08EAFF29B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -260,5 +272,29 @@ Global
 		{6A7175F9-EE51-4DFE-A65C-1F9CCAFF58C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A7175F9-EE51-4DFE-A65C-1F9CCAFF58C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A7175F9-EE51-4DFE-A65C-1F9CCAFF58C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4D7FB60-E9B9-4FEC-896D-6CDDE5EE599A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4D7FB60-E9B9-4FEC-896D-6CDDE5EE599A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4D7FB60-E9B9-4FEC-896D-6CDDE5EE599A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4D7FB60-E9B9-4FEC-896D-6CDDE5EE599A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5770802F-2307-4693-9955-D41FDB390A96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5770802F-2307-4693-9955-D41FDB390A96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5770802F-2307-4693-9955-D41FDB390A96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5770802F-2307-4693-9955-D41FDB390A96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5625A105-B0D8-413F-AB66-267DD887452B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5625A105-B0D8-413F-AB66-267DD887452B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5625A105-B0D8-413F-AB66-267DD887452B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5625A105-B0D8-413F-AB66-267DD887452B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B90E640A-315D-4F4B-A274-294A0F7C4A6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B90E640A-315D-4F4B-A274-294A0F7C4A6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B90E640A-315D-4F4B-A274-294A0F7C4A6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B90E640A-315D-4F4B-A274-294A0F7C4A6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5785ECAA-8269-42D8-97CA-040B01CF31E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5785ECAA-8269-42D8-97CA-040B01CF31E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5785ECAA-8269-42D8-97CA-040B01CF31E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5785ECAA-8269-42D8-97CA-040B01CF31E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF41B5FE-29D9-4840-9B0E-FDC08EAFF29B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF41B5FE-29D9-4840-9B0E-FDC08EAFF29B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF41B5FE-29D9-4840-9B0E-FDC08EAFF29B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF41B5FE-29D9-4840-9B0E-FDC08EAFF29B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

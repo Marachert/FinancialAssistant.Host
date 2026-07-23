@@ -21,6 +21,8 @@ POST /transactions/drafts/{draftId}/confirm
 
 Both paths use the same handler; `/transactions/intake` matches the existing gateway's unchanged forwarding path. The endpoint requires `X-Gateway-Authentication`, `X-Gateway-User-Id`, and an opaque `Idempotency-Key`. Configure `TransactionIntake__Gateway__SharedSecret` from the environment with at least 32 characters. Configure the gateway with the same environment-provided value in `Gateway__DownstreamAuthentication__SharedSecret`; it strips client attempts to supply this header and injects its own value only for protected destinations. Never place the shared secret, user input, or idempotency values in source control or logs.
 
+Receipt Processing delivers `ocr.completed.v1` to the internal `/internal/events/ocr-completed` endpoint. Configure both services with the same environment-provided `ReceiptProcessing__Events__SharedSecret` of 32 to 256 characters. The endpoint is not routed through the public gateway and rejects requests without the dedicated service credential.
+
 ## Draft behavior
 
 The parser is an interchangeable probabilistic-input boundary. Its output is validated by deterministic backend rules before a draft is returned. Unsupported or invalid values become explicit ambiguities instead of financial facts. Low-confidence drafts remain review-required.
