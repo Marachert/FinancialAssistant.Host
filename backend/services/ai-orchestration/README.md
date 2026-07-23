@@ -19,4 +19,6 @@ FIN-105 adds the shared service baseline:
 
 The baseline does not expose a capability execution endpoint and does not register a provider adapter. Those behaviors are delivered by later provider and capability tasks. The API cannot write confirmed financial records.
 
+FIN-106 defines the provider-neutral natural-language transaction parsing contract. It includes typed draft suggestions, overall and per-field confidence, explicit ambiguities and missing fields, and a user-review explanation. The response always serializes `outputAuthority: "suggestion"` and `requiresReview: true`; deterministic Transaction Intake remains responsible for validation and confirmation.
+
 Runtime provider adapters and durable metadata storage are intentionally separate infrastructure additions. The current adapter is explicitly in-memory and suitable only for this delivery increment.
