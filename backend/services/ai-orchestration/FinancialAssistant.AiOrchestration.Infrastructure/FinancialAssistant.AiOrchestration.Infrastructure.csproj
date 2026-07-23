@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FinancialAssistant.AiOrchestration.Infrastructure</RootNamespace>
+    <AssemblyName>FinancialAssistant.AiOrchestration.Infrastructure</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.AiOrchestration.Application/FinancialAssistant.AiOrchestration.Application.csproj" />
+    <ProjectReference Include="../FinancialAssistant.AiOrchestration.Domain/FinancialAssistant.AiOrchestration.Domain.csproj" />
+  </ItemGroup>
+</Project>
