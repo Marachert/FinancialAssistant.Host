@@ -15,4 +15,6 @@ Configure `ReceiptProcessing__TransactionIntake__BaseAddress` with the internal 
 
 OCR resilience defaults to a 30-second timeout, two total attempts, and a 100-millisecond retry delay. Override these with `ReceiptProcessing__Ocr__RequestTimeoutSeconds` (1-120), `ReceiptProcessing__Ocr__MaximumAttempts` (1-3), and `ReceiptProcessing__Ocr__RetryDelayMilliseconds` (0-5000). Only failures explicitly classified as transient are retried; provider details are mapped to safe application errors.
 
+FIN-114 records privacy-safe OCR audit metadata: the receipt-upload event identifier, bounded provider/model keys, processing duration, confidence, a safe failure category, and a trace identifier. Configure the non-secret identity fields with `ReceiptProcessing__Ocr__ProviderName` and `ReceiptProcessing__Ocr__ModelKey`. The receipt identifier correlates this metadata with the Transaction Intake draft source reference; raw image bytes, extracted text, provider responses, exception messages, and stack traces are excluded.
+
 The receipt-upload transport and storage adapters are development implementations. Production deployment must supply durable object storage, broker-backed receipt-upload delivery, metadata persistence, and an approved OCR provider through the existing interfaces.

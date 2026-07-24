@@ -43,6 +43,7 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
         CancellationToken cancellationToken)
     {
         Validate(integrationEvent);
+        var startedAtUtc = clock.UtcNow.ToUniversalTime();
         var processingLock = processingLocks.GetOrAdd(
             $"{integrationEvent.UserId}\n{integrationEvent.ReceiptId}",
             _ => new SemaphoreSlim(1, 1));
@@ -97,16 +98,27 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
             {
                 throw;
             }
+            catch (OcrProviderException exception)
+            {
+                var failed = CreateMetadata(
+                    integrationEvent,
+                    startedAtUtc,
+                    ReceiptProcessingStatuses.OcrFailed,
+                    confidence: null,
+                    new[] { "ocr_provider_failed" },
+                    exception.ErrorCode);
+                await processingStore.StoreIfMissingAsync(failed, null, CancellationToken.None);
+                return;
+            }
             catch
             {
-                var failed = new ReceiptOcrMetadata(
-                    integrationEvent.ReceiptId,
-                    integrationEvent.UserId,
+                var failed = CreateMetadata(
+                    integrationEvent,
+                    startedAtUtc,
                     ReceiptProcessingStatuses.OcrFailed,
-                    null,
+                    confidence: null,
                     new[] { "ocr_provider_failed" },
-                    clock.UtcNow.ToUniversalTime(),
-                    OcrCompletedPublished: false);
+                    OcrProviderErrorCodes.ProviderFailure);
                 await processingStore.StoreIfMissingAsync(failed, null, CancellationToken.None);
                 return;
             }
@@ -118,14 +130,13 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
             }
             catch
             {
-                var failed = new ReceiptOcrMetadata(
-                    integrationEvent.ReceiptId,
-                    integrationEvent.UserId,
+                var failed = CreateMetadata(
+                    integrationEvent,
+                    startedAtUtc,
                     ReceiptProcessingStatuses.OcrFailed,
-                    null,
+                    confidence: null,
                     new[] { "ocr_output_invalid" },
-                    clock.UtcNow.ToUniversalTime(),
-                    OcrCompletedPublished: false);
+                    "ocr_output_invalid");
                 await processingStore.StoreIfMissingAsync(failed, null, CancellationToken.None);
                 return;
             }
@@ -145,14 +156,14 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
                 candidate.Confidence,
                 candidate.Ambiguities,
                 completedAtUtc);
-            var metadata = new ReceiptOcrMetadata(
-                integrationEvent.ReceiptId,
-                integrationEvent.UserId,
+            var metadata = CreateMetadata(
+                integrationEvent,
+                startedAtUtc,
                 ReceiptProcessingStatuses.OcrCompleted,
                 candidate.Confidence,
                 candidate.Ambiguities,
-                completedAtUtc,
-                OcrCompletedPublished: false);
+                failureCategory: null,
+                completedAtUtc);
             var stored = await processingStore.StoreIfMissingAsync(
                 metadata,
                 completedEvent,
@@ -163,6 +174,37 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
         {
             processingLock.Release();
         }
+    }
+
+    private ReceiptOcrMetadata CreateMetadata(
+        ReceiptUploadedIntegrationEvent integrationEvent,
+        DateTimeOffset startedAtUtc,
+        string status,
+        decimal? confidence,
+        IReadOnlyList<string> ambiguities,
+        string? failureCategory,
+        DateTimeOffset? completedAtUtc = null)
+    {
+        var completed = (completedAtUtc ?? clock.UtcNow).ToUniversalTime();
+        var durationMilliseconds = Math.Max(
+            0,
+            (long)(completed - startedAtUtc).TotalMilliseconds);
+        return new ReceiptOcrMetadata(
+            integrationEvent.ReceiptId,
+            integrationEvent.UserId,
+            status,
+            confidence,
+            ambiguities,
+            new OcrProcessingAuditMetadata(
+                integrationEvent.EventId,
+                ocrProvider.ProviderName,
+                ocrProvider.ModelKey,
+                durationMilliseconds,
+                confidence,
+                failureCategory,
+                integrationEvent.EventId),
+            completed,
+            OcrCompletedPublished: false);
     }
 
     private async Task PublishIfPendingAsync(

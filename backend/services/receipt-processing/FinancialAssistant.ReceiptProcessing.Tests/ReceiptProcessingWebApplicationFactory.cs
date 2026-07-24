@@ -21,7 +21,9 @@ public sealed class ReceiptProcessingWebApplicationFactory : WebApplicationFacto
             configuration.AddInMemoryCollection(
                 new Dictionary<string, string?>
                 {
-                    ["ReceiptProcessing:Gateway:SharedSecret"] = GatewaySecret
+                    ["ReceiptProcessing:Gateway:SharedSecret"] = GatewaySecret,
+                    ["ReceiptProcessing:Ocr:ProviderName"] = "synthetic-ocr",
+                    ["ReceiptProcessing:Ocr:ModelKey"] = "synthetic-v1"
                 }));
         builder.ConfigureServices(services =>
         {

@@ -93,7 +93,7 @@ public sealed class AiOrchestrationArchitectureTests
     }
 
     [Fact]
-    public void MetadataContract_CannotStoreRawPromptsInputsOutputsOrErrors()
+    public void MetadataContract_CannotStoreRawPromptsInputsOutputsOrErrorDetails()
     {
         var properties = typeof(AiCallMetadata).GetProperties().Select(property => property.Name).ToArray();
 
@@ -101,6 +101,12 @@ public sealed class AiOrchestrationArchitectureTests
             name.Contains("Input", StringComparison.OrdinalIgnoreCase) ||
             name.Contains("PromptTemplate", StringComparison.OrdinalIgnoreCase) ||
             name.Contains("Output", StringComparison.OrdinalIgnoreCase) ||
-            name.Contains("Error", StringComparison.OrdinalIgnoreCase));
+            name.Contains("ErrorMessage", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Exception", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("StackTrace", StringComparison.OrdinalIgnoreCase));
+
+        Assert.Contains(nameof(AiCallMetadata.FailureCategory), properties);
+        Assert.Contains(nameof(AiCallMetadata.DurationMilliseconds), properties);
+        Assert.Contains(nameof(AiCallMetadata.TraceId), properties);
     }
 }

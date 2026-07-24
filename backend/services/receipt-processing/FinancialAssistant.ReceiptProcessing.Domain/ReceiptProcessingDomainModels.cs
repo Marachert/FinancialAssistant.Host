@@ -25,7 +25,17 @@ public sealed record ReceiptOcrMetadata(
     string Status,
     decimal? Confidence,
     IReadOnlyList<string> Ambiguities,
+    OcrProcessingAuditMetadata Audit,
     DateTimeOffset CompletedAtUtc,
     bool OcrCompletedPublished);
+
+public sealed record OcrProcessingAuditMetadata(
+    string RequestId,
+    string ProviderName,
+    string ModelKey,
+    long DurationMilliseconds,
+    decimal? Confidence,
+    string? FailureCategory,
+    string TraceId);
 
 public sealed class ReceiptProcessingDomainAssemblyMarker;

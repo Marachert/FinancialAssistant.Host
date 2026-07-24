@@ -42,7 +42,17 @@ public sealed class AiOrchestrationServiceTests
         Assert.Contains("unverified_ai_output", result.Review.Ambiguities);
         Assert.Equal("model-a", provider.LastRequest!.Model);
         Assert.Equal(AiCallStatus.Succeeded, metadata.Status);
+        Assert.Equal("transaction.parse", metadata.CapabilityName);
+        Assert.Equal("transaction.parse", metadata.PromptName);
+        Assert.Equal(1, metadata.PromptVersion);
+        Assert.Equal("synthetic-provider", metadata.Provider);
+        Assert.Equal("model-a", metadata.Model);
         Assert.Equal(22, metadata.TokenUsage!.TotalTokens);
+        Assert.Equal(metadata.CallId, metadata.RequestId);
+        Assert.Equal(metadata.CallId, metadata.TraceId);
+        Assert.Equal(250, metadata.DurationMilliseconds);
+        Assert.Null(metadata.Confidence);
+        Assert.Null(metadata.FailureCategory);
         Assert.DoesNotContain(
             metadata.GetType().GetProperties(),
             property => property.Name.Contains("Input", StringComparison.OrdinalIgnoreCase) ||
@@ -65,6 +75,7 @@ public sealed class AiOrchestrationServiceTests
         var metadata = Assert.Single(metadataStore.Records);
         Assert.Equal(AiCallStatus.ValidationFailed, metadata.Status);
         Assert.Equal(6, metadata.TokenUsage!.TotalTokens);
+        Assert.Equal("structured_output_validation_failed", metadata.FailureCategory);
     }
 
     [Fact]
@@ -86,6 +97,7 @@ public sealed class AiOrchestrationServiceTests
         Assert.DoesNotContain("synthetic provider failure", exception.Message, StringComparison.Ordinal);
         Assert.Equal(AiCallStatus.ProviderFailed, metadata.Status);
         Assert.Null(metadata.TokenUsage);
+        Assert.Equal("provider_failure", metadata.FailureCategory);
         Assert.DoesNotContain(
             metadata.GetType().GetProperties(),
             property => property.Name.Contains("Error", StringComparison.OrdinalIgnoreCase));
@@ -103,7 +115,9 @@ public sealed class AiOrchestrationServiceTests
                 new AiCapabilityRequest("transaction.parse", "transaction.parse", "synthetic input"),
                 CancellationToken.None));
 
-        Assert.Equal(AiCallStatus.ProviderFailed, Assert.Single(metadataStore.Records).Status);
+        var metadata = Assert.Single(metadataStore.Records);
+        Assert.Equal(AiCallStatus.ProviderFailed, metadata.Status);
+        Assert.Equal("invalid_token_usage", metadata.FailureCategory);
     }
 
     [Fact]
@@ -121,6 +135,7 @@ public sealed class AiOrchestrationServiceTests
         var metadata = Assert.Single(metadataStore.Records);
         Assert.Equal(AiCallStatus.ValidationFailed, metadata.Status);
         Assert.Equal(4, metadata.TokenUsage!.TotalTokens);
+        Assert.Equal("structured_output_validation_failed", metadata.FailureCategory);
     }
 
     private static AiOrchestrationService CreateService(
@@ -177,7 +192,11 @@ public sealed class AiOrchestrationServiceTests
 
     private sealed class FixedClock : IAiOrchestrationClock
     {
-        public DateTimeOffset UtcNow => new(2026, 7, 19, 20, 0, 0, TimeSpan.Zero);
+        private int reads;
+
+        public DateTimeOffset UtcNow =>
+            new DateTimeOffset(2026, 7, 19, 20, 0, 0, TimeSpan.Zero)
+                .AddMilliseconds(Interlocked.Increment(ref reads) == 1 ? 0 : 250);
     }
 
     private sealed class FixedCallIdGenerator : IAiCallIdGenerator

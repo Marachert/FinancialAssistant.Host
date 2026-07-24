@@ -1,12 +1,16 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using FinancialAssistant.ReceiptProcessing.Application;
+using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
 using FinancialAssistant.ReceiptProcessing.Contracts;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Events;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Storage;
 using FinancialAssistant.TransactionIntake.Application.Abstractions;
 using FinancialAssistant.TransactionIntake.Application.Drafts;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace FinancialAssistant.ReceiptProcessing.Tests;
 
@@ -60,6 +64,13 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
             item => item.ReceiptId == receipt.ReceiptId);
         Assert.True(storedOcr.OcrCompletedPublished);
         Assert.Equal(0.91m, storedOcr.Confidence);
+        Assert.Equal(storedMetadata.ReceiptUploadedEventId, storedOcr.Audit.RequestId);
+        Assert.Equal("synthetic-ocr", storedOcr.Audit.ProviderName);
+        Assert.Equal("synthetic-v1", storedOcr.Audit.ModelKey);
+        Assert.Equal(0.91m, storedOcr.Audit.Confidence);
+        Assert.Null(storedOcr.Audit.FailureCategory);
+        Assert.Equal(storedOcr.Audit.RequestId, storedOcr.Audit.TraceId);
+        Assert.True(storedOcr.Audit.DurationMilliseconds >= 0);
 
         var receiptEvents = services.GetRequiredService<InMemoryReceiptUploadedPublisher>();
         Assert.Single(
@@ -84,6 +95,9 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
         Assert.Equal(0.91m, storedDraft.Draft.Confidence);
         Assert.True(storedDraft.Draft.RequiresReview);
         Assert.Contains("merchant_uncertain", storedDraft.Draft.Ambiguities);
+        Assert.Equal(
+            storedOcr.ReceiptId,
+            storedDraft.Draft.Suggestion.SourceReferenceId);
     }
 
     [Fact]
@@ -118,6 +132,46 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
         Assert.Single(
             ocrEvents.PublishedEvents,
             item => item.ReceiptId == first.ReceiptId);
+    }
+
+    [Fact]
+    public async Task Upload_WhenOcrProviderFails_StoresSafeObservableAuditMetadata()
+    {
+        using var factory = new ReceiptProcessingWebApplicationFactory()
+            .WithWebHostBuilder(builder =>
+                builder.ConfigureServices(serviceCollection =>
+                {
+                    serviceCollection.RemoveAll<IOcrProviderClient>();
+                    serviceCollection.AddSingleton<IOcrProviderClient, FailingOcrProviderClient>();
+                }));
+        using var failureClient = factory.CreateClient();
+        using var request = CreateUploadRequest(
+            "synthetic-receipt-failure",
+            "receipt-upload-failure-001",
+            SyntheticPng,
+            "image/png");
+
+        var response = await failureClient.SendAsync(request);
+        var receipt = await response.Content.ReadFromJsonAsync<ReceiptResponse>();
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.NotNull(receipt);
+        Assert.Equal("ocr_failed", receipt.Status);
+        var stored = Assert.Single(
+            factory.Services.GetRequiredService<InMemoryOcrProcessingStore>().Records,
+            item => item.ReceiptId == receipt.ReceiptId);
+        Assert.Equal("provider_unavailable", stored.Audit.FailureCategory);
+        Assert.Null(stored.Audit.Confidence);
+        Assert.Equal("synthetic-ocr", stored.Audit.ProviderName);
+        Assert.Equal("synthetic-v1", stored.Audit.ModelKey);
+        Assert.Equal(stored.Audit.RequestId, stored.Audit.TraceId);
+        Assert.True(stored.Audit.DurationMilliseconds >= 0);
+        Assert.DoesNotContain(
+            stored.GetType().GetProperties(),
+            property =>
+                property.Name.Contains("Exception", StringComparison.OrdinalIgnoreCase) ||
+                property.Name.Contains("StackTrace", StringComparison.OrdinalIgnoreCase) ||
+                property.Name.Contains("ProviderResponse", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -242,5 +296,17 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
             ReceiptProcessingWebApplicationFactory.GatewaySecret);
         request.Headers.Add(ReceiptProcessingHeaders.GatewayUserId, userId);
         return request;
+    }
+
+    private sealed class FailingOcrProviderClient : IOcrProviderClient
+    {
+        public Task<OcrExtractionResult> ExtractAsync(
+            ReadOnlyMemory<byte> receiptImage,
+            string contentType,
+            CancellationToken cancellationToken) =>
+            Task.FromException<OcrExtractionResult>(
+                new OcrProviderException(
+                    OcrProviderErrorCodes.ProviderUnavailable,
+                    isTransient: false));
     }
 }
