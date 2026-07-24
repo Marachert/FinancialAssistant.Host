@@ -8,7 +8,7 @@ Prompt templates and JSON schemas are versioned together. Omitting a prompt vers
 
 ## Structured output validation
 
-The foundation validator supports the JSON Schema keywords used by current structured capabilities: `type`, `properties`, `required`, boolean `additionalProperties`, `items`, `enum`, `minItems`, `maxItems`, `minLength`, `maxLength`, `minimum`, and `maximum`. Unsupported validation keywords, unsupported schema types, and malformed registered schemas fail closed.
+The foundation validator supports the JSON Schema keywords used by current structured capabilities: `type`, `properties`, `required`, boolean `additionalProperties`, `items`, `enum`, `minItems`, `maxItems`, `minLength`, `maxLength`, `minimum`, `maximum`, and the enforced `date` format. Unsupported validation keywords, formats, schema types, and malformed registered schemas fail closed.
 
 ## Privacy and financial authority
 

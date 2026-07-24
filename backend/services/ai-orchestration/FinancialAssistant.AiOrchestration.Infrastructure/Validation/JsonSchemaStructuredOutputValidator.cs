@@ -26,6 +26,7 @@ public sealed class JsonSchemaStructuredOutputValidator : IStructuredOutputValid
             "maxItems",
             "minLength",
             "maxLength",
+            "format",
             "minimum",
             "maximum",
         },
@@ -273,6 +274,18 @@ public sealed class JsonSchemaStructuredOutputValidator : IStructuredOutputValid
         {
             errors.Add($"{path}: string is longer than allowed.");
         }
+
+        if (schema.TryGetProperty("format", out var format) &&
+            format.GetString() == "date" &&
+            !DateOnly.TryParseExact(
+                value.GetString(),
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out _))
+        {
+            errors.Add($"{path}: string is not a valid ISO calendar date.");
+        }
     }
 
     private static void ValidateNumber(
@@ -436,6 +449,7 @@ public sealed class JsonSchemaStructuredOutputValidator : IStructuredOutputValid
         ValidateStringKeyword(schema, "$id", path);
         ValidateStringKeyword(schema, "title", path);
         ValidateStringKeyword(schema, "description", path);
+        ValidateFormatKeyword(schema, path);
 
         if (schema.TryGetProperty("examples", out var examplesNode) &&
             examplesNode.ValueKind != JsonValueKind.Array)
@@ -511,6 +525,20 @@ public sealed class JsonSchemaStructuredOutputValidator : IStructuredOutputValid
         {
             throw new InvalidJsonSchemaException(
                 $"Schema {keyword} at '{path}' must be a string.");
+        }
+    }
+
+    private static void ValidateFormatKeyword(JsonElement schema, string path)
+    {
+        if (!schema.TryGetProperty("format", out var value))
+        {
+            return;
+        }
+
+        if (value.ValueKind != JsonValueKind.String || value.GetString() != "date")
+        {
+            throw new InvalidJsonSchemaException(
+                $"Schema format at '{path}' must be the supported value 'date'.");
         }
     }
 }
