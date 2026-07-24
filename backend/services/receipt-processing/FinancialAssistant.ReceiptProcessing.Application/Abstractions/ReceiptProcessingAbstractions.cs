@@ -112,6 +112,20 @@ public sealed record OcrExtractionResult(
     decimal Confidence,
     IReadOnlyList<string> Ambiguities);
 
+public sealed record ReceiptLineItemCandidate(
+    string Description,
+    decimal? Quantity,
+    decimal? UnitPrice,
+    decimal? TotalAmount,
+    string? Currency,
+    decimal Confidence,
+    IReadOnlyList<string> Ambiguities);
+
+public static class ReceiptCandidateAuthority
+{
+    public const string Suggestion = "suggestion";
+}
+
 public sealed record NormalizedReceiptCandidate(
     string? TransactionType,
     decimal? Amount,
@@ -119,5 +133,12 @@ public sealed record NormalizedReceiptCandidate(
     string? CategoryId,
     string? Merchant,
     DateOnly? Date,
+    decimal? TaxAmount,
+    IReadOnlyList<ReceiptLineItemCandidate> LineItems,
     decimal Confidence,
-    IReadOnlyList<string> Ambiguities);
+    IReadOnlyList<string> Ambiguities)
+{
+    public string OutputAuthority => ReceiptCandidateAuthority.Suggestion;
+
+    public bool RequiresReview => true;
+}

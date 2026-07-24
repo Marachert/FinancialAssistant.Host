@@ -18,6 +18,12 @@ Original filenames, raw images, raw OCR text, object-store keys, and provider er
 
 Runtime settings use `ReceiptProcessing__Ocr__RequestTimeoutSeconds`, `ReceiptProcessing__Ocr__MaximumAttempts`, and `ReceiptProcessing__Ocr__RetryDelayMilliseconds`. Defaults are 30 seconds, two total attempts, and 100 milliseconds. Invalid or out-of-range values fail service construction.
 
+## Candidate normalization
+
+The deterministic normalizer first canonicalizes line endings and horizontal whitespace, then extracts only labeled merchant, total, tax, and line-item values plus valid ISO calendar dates. A single unlabeled monetary value remains supported for minimal provider adapters. Conflicting totals, currencies, dates, merchants, or taxes do not win by order; the affected field remains empty and a stable ambiguity code is emitted.
+
+Line items are bounded to 100 placeholders. Each placeholder can carry description, quantity, unit price, total, currency, confidence, and explicit missing/invalid/mismatch codes. These values remain review suggestions. The candidate model has no raw-text property, and neither raw text nor line-item descriptions are persisted by the current OCR metadata store or integration event.
+
 `ocr.completed.v1` contains normalized candidate fields required for draft creation. The event does not confirm a transaction. Transaction Intake applies deterministic validation and requires user review whenever fields are missing, ambiguous, or low confidence.
 
 Both event consumers tolerate duplicate delivery. Publication state is marked with a non-request cancellation token only after downstream processing succeeds, allowing safe retry after interrupted requests.
