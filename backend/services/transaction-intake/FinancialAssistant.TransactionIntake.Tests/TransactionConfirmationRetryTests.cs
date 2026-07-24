@@ -36,6 +36,7 @@ public sealed class TransactionConfirmationRetryTests
             0.95m,
             Array.Empty<string>(),
             RequiresReview: false,
+            CreateSuggestionMetadata(),
             clock.UtcNow);
         await draftStore.StoreIfMissingAsync(
             userId,
@@ -171,5 +172,15 @@ public sealed class TransactionConfirmationRetryTests
             0.95m,
             Array.Empty<string>(),
             RequiresReview: false,
+            CreateSuggestionMetadata(),
             createdAtUtc);
+
+    private static TransactionDraftSuggestionMetadata CreateSuggestionMetadata() =>
+        new(
+            TransactionDraftSuggestionSources.AiNaturalLanguage,
+            SourceReferenceId: null,
+            Confidence: 0.95m,
+            Ambiguities: Array.Empty<string>(),
+            MissingFields: Array.Empty<string>(),
+            ReviewMessage: "Review the suggested transaction before confirming.");
 }

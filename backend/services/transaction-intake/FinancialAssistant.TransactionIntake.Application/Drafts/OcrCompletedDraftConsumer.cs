@@ -56,22 +56,17 @@ public sealed class OcrCompletedDraftConsumer : IOcrCompletedConsumer
             integrationEvent.Date,
             integrationEvent.Confidence);
         var createdAtUtc = clock.UtcNow.ToUniversalTime();
-        var validatedDraft = validator.Validate(
+        var draft = validator.Validate(
             idGenerator.Create(),
             integrationEvent.UserId,
             fingerprint,
             candidate,
-            createdAtUtc);
-        var ambiguities = validatedDraft.Ambiguities
-            .Concat(NormalizeAmbiguities(integrationEvent.Ambiguities))
-            .Distinct(StringComparer.Ordinal)
-            .OrderBy(value => value, StringComparer.Ordinal)
-            .ToArray();
-        var draft = validatedDraft with
-        {
-            Ambiguities = ambiguities,
-            RequiresReview = ambiguities.Length > 0
-        };
+            createdAtUtc,
+            new TransactionDraftSuggestionContext(
+                TransactionDraftSuggestionSources.ReceiptOcr,
+                integrationEvent.ReceiptId,
+                NormalizeAmbiguities(integrationEvent.Ambiguities),
+                MissingFields: Array.Empty<string>()));
         var stored = await store.StoreIfMissingAsync(
             integrationEvent.UserId,
             idempotencyKey,

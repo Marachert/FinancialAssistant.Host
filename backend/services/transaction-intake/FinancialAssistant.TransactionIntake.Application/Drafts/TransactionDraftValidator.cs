@@ -15,10 +15,20 @@ public sealed partial class TransactionDraftValidator
         string userId,
         string inputFingerprint,
         ParsedTransactionCandidate candidate,
-        DateTimeOffset createdAtUtc)
+        DateTimeOffset createdAtUtc,
+        TransactionDraftSuggestionContext? suggestionContext = null)
     {
         ArgumentNullException.ThrowIfNull(candidate);
 
+        suggestionContext ??= TransactionDraftSuggestionContext.AiNaturalLanguage;
+        var source = NormalizeSource(suggestionContext.Source);
+        var sourceReferenceId = NormalizeSourceReferenceId(suggestionContext.SourceReferenceId);
+        var sourceAmbiguities = NormalizeCodes(
+            suggestionContext.Ambiguities,
+            nameof(suggestionContext.Ambiguities));
+        var sourceMissingFields = NormalizeCodes(
+            suggestionContext.MissingFields,
+            nameof(suggestionContext.MissingFields));
         var ambiguities = new SortedSet<string>(StringComparer.Ordinal);
         var type = NormalizeType(candidate.Type, ambiguities);
         var amount = NormalizeAmount(candidate.Amount, ambiguities);
@@ -33,6 +43,23 @@ public sealed partial class TransactionDraftValidator
             ambiguities.Add("low_confidence");
         }
 
+        ambiguities.UnionWith(sourceAmbiguities);
+        var missingFields = new SortedSet<string>(sourceMissingFields, StringComparer.Ordinal);
+        AddMissingFields(type, amount, currency, categoryId, date, ambiguities, missingFields);
+        var requiresReview = ambiguities.Count > 0 || missingFields.Count > 0;
+        var reviewMessage = NormalizeReviewMessage(
+            suggestionContext.ReviewMessage,
+            confidence,
+            ambiguities.Count,
+            missingFields.Count);
+        var suggestion = new TransactionDraftSuggestionMetadata(
+            source,
+            sourceReferenceId,
+            confidence,
+            ambiguities.ToArray(),
+            missingFields.ToArray(),
+            reviewMessage);
+
         return new TransactionDraft(
             draftId,
             userId,
@@ -45,8 +72,132 @@ public sealed partial class TransactionDraftValidator
             date,
             confidence,
             ambiguities.ToArray(),
-            ambiguities.Count > 0,
+            requiresReview,
+            suggestion,
             createdAtUtc);
+    }
+
+    private static string NormalizeSource(string source)
+    {
+        var normalized = source?.Trim().ToLowerInvariant();
+        return normalized is
+            TransactionDraftSuggestionSources.AiNaturalLanguage or
+            TransactionDraftSuggestionSources.ReceiptOcr
+            ? normalized
+            : throw new ArgumentException("Suggestion source is invalid.", nameof(source));
+    }
+
+    private static string? NormalizeSourceReferenceId(string? sourceReferenceId)
+    {
+        var normalized = sourceReferenceId?.Trim();
+        if (normalized?.Length > 100)
+        {
+            throw new ArgumentException(
+                "Suggestion source reference cannot exceed 100 characters.",
+                nameof(sourceReferenceId));
+        }
+
+        return string.IsNullOrEmpty(normalized) ? null : normalized;
+    }
+
+    private static string[] NormalizeCodes(
+        IReadOnlyList<string> values,
+        string parameterName)
+    {
+        if (values is null || values.Count > 50)
+        {
+            throw new ArgumentException("Suggestion metadata is invalid.", parameterName);
+        }
+
+        var normalized = values
+            .Select(value => value?.Trim().ToLowerInvariant())
+            .ToArray();
+        if (normalized.Any(value =>
+                string.IsNullOrWhiteSpace(value) ||
+                value.Length > 64 ||
+                value.Any(character =>
+                    !(char.IsLower(character) || char.IsDigit(character) || character == '_'))))
+        {
+            throw new ArgumentException("Suggestion metadata is invalid.", parameterName);
+        }
+
+        return normalized
+            .Cast<string>()
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(value => value, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static void AddMissingFields(
+        string type,
+        decimal? amount,
+        string? currency,
+        string? categoryId,
+        DateOnly? date,
+        IReadOnlySet<string> ambiguities,
+        ISet<string> missingFields)
+    {
+        AddMissingField(type == TransactionTypes.Unknown, "type", missingFields);
+        AddMissingField(amount is null, "amount", missingFields);
+        AddMissingField(currency is null, "currency", missingFields);
+        AddMissingField(
+            type != TransactionTypes.Transfer && categoryId is null,
+            "category",
+            missingFields);
+        AddMissingField(date is null, "date", missingFields);
+        AddMissingField(ambiguities.Contains("merchant"), "merchant", missingFields);
+    }
+
+    private static void AddMissingField(
+        bool isMissing,
+        string field,
+        ISet<string> missingFields)
+    {
+        if (isMissing)
+        {
+            missingFields.Add(field);
+        }
+    }
+
+    private static string NormalizeReviewMessage(
+        string? reviewMessage,
+        decimal confidence,
+        int ambiguityCount,
+        int missingFieldCount)
+    {
+        var normalized = string.IsNullOrWhiteSpace(reviewMessage)
+            ? null
+            : string.Join(
+                ' ',
+                reviewMessage.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        if (normalized?.Length > 280)
+        {
+            throw new ArgumentException(
+                "Suggestion review message cannot exceed 280 characters.",
+                nameof(reviewMessage));
+        }
+
+        if (normalized is not null)
+        {
+            return normalized;
+        }
+
+        if (confidence < 0.75m)
+        {
+            return "Confidence is low. Review the suggested fields before confirming.";
+        }
+
+        if (missingFieldCount > 0)
+        {
+            return "Complete the missing fields and review the suggestion before confirming.";
+        }
+
+        if (ambiguityCount > 0)
+        {
+            return "Resolve the ambiguous fields and review the suggestion before confirming.";
+        }
+
+        return "Review the suggested transaction before confirming.";
     }
 
     private static string NormalizeType(string? value, ISet<string> ambiguities)

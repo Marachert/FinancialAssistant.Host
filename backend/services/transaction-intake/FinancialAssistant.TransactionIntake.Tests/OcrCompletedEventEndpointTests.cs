@@ -46,6 +46,15 @@ public sealed class OcrCompletedEventEndpointTests :
         Assert.Equal(42.10m, stored.Draft.Amount);
         Assert.True(stored.Draft.RequiresReview);
         Assert.Contains("merchant_uncertain", stored.Draft.Ambiguities);
+        Assert.Equal("receipt_ocr", stored.Draft.Suggestion.Source);
+        Assert.Equal(integrationEvent.ReceiptId, stored.Draft.Suggestion.SourceReferenceId);
+        Assert.Equal("suggestion", stored.Draft.Suggestion.OutputAuthority);
+        Assert.Equal(stored.Draft.Confidence, stored.Draft.Suggestion.Confidence);
+        Assert.Equal(stored.Draft.Ambiguities, stored.Draft.Suggestion.Ambiguities);
+        Assert.Empty(stored.Draft.Suggestion.MissingFields);
+        Assert.Equal(
+            "Resolve the ambiguous fields and review the suggestion before confirming.",
+            stored.Draft.Suggestion.ReviewMessage);
     }
 
     [Fact]

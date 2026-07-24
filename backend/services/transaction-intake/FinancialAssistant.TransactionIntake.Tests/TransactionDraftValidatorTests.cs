@@ -66,4 +66,41 @@ public sealed class TransactionDraftValidatorTests
         Assert.Contains("amount", draft.Ambiguities);
         Assert.True(draft.RequiresReview);
     }
+
+    [Fact]
+    public void Validate_PreservesSourceSuggestionMetadata()
+    {
+        var validator = new TransactionDraftValidator();
+        var candidate = new ParsedTransactionCandidate(
+            "expense",
+            10,
+            "USD",
+            "expense.other",
+            null,
+            new DateOnly(2026, 7, 19),
+            0.82m);
+        var context = new TransactionDraftSuggestionContext(
+            TransactionDraftSuggestionSources.AiNaturalLanguage,
+            "call_synthetic_113",
+            new[] { "merchant_uncertain" },
+            new[] { "merchant" },
+            "Please review the merchant.");
+
+        var draft = validator.Validate(
+            "draft_synthetic_metadata",
+            "synthetic-validator-user",
+            "SYNTHETICFINGERPRINT",
+            candidate,
+            new DateTimeOffset(2026, 7, 19, 12, 0, 0, TimeSpan.Zero),
+            context);
+
+        Assert.True(draft.RequiresReview);
+        Assert.Equal("ai_natural_language", draft.Suggestion.Source);
+        Assert.Equal("call_synthetic_113", draft.Suggestion.SourceReferenceId);
+        Assert.Equal("suggestion", draft.Suggestion.OutputAuthority);
+        Assert.Equal(0.82m, draft.Suggestion.Confidence);
+        Assert.Contains("merchant_uncertain", draft.Suggestion.Ambiguities);
+        Assert.Contains("merchant", draft.Suggestion.MissingFields);
+        Assert.Equal("Please review the merchant.", draft.Suggestion.ReviewMessage);
+    }
 }

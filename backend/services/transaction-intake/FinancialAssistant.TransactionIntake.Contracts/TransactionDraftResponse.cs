@@ -12,4 +12,14 @@ public sealed record TransactionDraftResponse(
     decimal Confidence,
     IReadOnlyList<string> Ambiguities,
     bool RequiresReview,
+    TransactionDraftSuggestionMetadataResponse Suggestion,
     DateTimeOffset CreatedAtUtc);
+
+public sealed record TransactionDraftSuggestionMetadataResponse(
+    string Source,
+    string? SourceReferenceId,
+    string OutputAuthority,
+    decimal Confidence,
+    IReadOnlyList<string> Ambiguities,
+    IReadOnlyList<string> MissingFields,
+    string ReviewMessage);

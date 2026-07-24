@@ -60,7 +60,8 @@ public sealed partial class TransactionIntakeService : ITransactionIntakeService
             normalizedUserId,
             fingerprint,
             candidate,
-            createdAtUtc);
+            createdAtUtc,
+            TransactionDraftSuggestionContext.AiNaturalLanguage);
         var stored = await store.StoreIfMissingAsync(
             normalizedUserId,
             normalizedKey,
@@ -133,6 +134,14 @@ public sealed partial class TransactionIntakeService : ITransactionIntakeService
             draft.Confidence,
             draft.Ambiguities,
             draft.RequiresReview,
+            new TransactionDraftSuggestionMetadataResponse(
+                draft.Suggestion.Source,
+                draft.Suggestion.SourceReferenceId,
+                draft.Suggestion.OutputAuthority,
+                draft.Suggestion.Confidence,
+                draft.Suggestion.Ambiguities,
+                draft.Suggestion.MissingFields,
+                draft.Suggestion.ReviewMessage),
             draft.CreatedAtUtc);
 
     [GeneratedRegex("^[A-Za-z0-9._~-]{8,128}$", RegexOptions.CultureInvariant)]

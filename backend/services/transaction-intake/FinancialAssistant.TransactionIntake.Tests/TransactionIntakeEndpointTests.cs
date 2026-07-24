@@ -36,6 +36,15 @@ public sealed class TransactionIntakeEndpointTests : IClassFixture<TransactionIn
         Assert.InRange(draft.Confidence, 0.75m, 1m);
         Assert.Empty(draft.Ambiguities);
         Assert.False(draft.RequiresReview);
+        Assert.Equal("ai_natural_language", draft.Suggestion.Source);
+        Assert.Null(draft.Suggestion.SourceReferenceId);
+        Assert.Equal("suggestion", draft.Suggestion.OutputAuthority);
+        Assert.Equal(draft.Confidence, draft.Suggestion.Confidence);
+        Assert.Empty(draft.Suggestion.Ambiguities);
+        Assert.Empty(draft.Suggestion.MissingFields);
+        Assert.Equal(
+            "Review the suggested transaction before confirming.",
+            draft.Suggestion.ReviewMessage);
     }
 
     [Fact]
@@ -141,6 +150,14 @@ public sealed class TransactionIntakeEndpointTests : IClassFixture<TransactionIn
         Assert.True(draft.RequiresReview);
         Assert.Contains("type", draft.Ambiguities);
         Assert.Contains("low_confidence", draft.Ambiguities);
+        Assert.Equal("ai_natural_language", draft.Suggestion.Source);
+        Assert.Equal(draft.Ambiguities, draft.Suggestion.Ambiguities);
+        Assert.Contains("type", draft.Suggestion.MissingFields);
+        Assert.Contains("amount", draft.Suggestion.MissingFields);
+        Assert.Contains("currency", draft.Suggestion.MissingFields);
+        Assert.Contains("category", draft.Suggestion.MissingFields);
+        Assert.Contains("date", draft.Suggestion.MissingFields);
+        Assert.StartsWith("Confidence is low.", draft.Suggestion.ReviewMessage);
     }
 
     [Theory]
