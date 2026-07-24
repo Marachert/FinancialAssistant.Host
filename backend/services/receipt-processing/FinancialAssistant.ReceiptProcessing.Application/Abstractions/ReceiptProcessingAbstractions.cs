@@ -72,6 +72,10 @@ public interface IOcrCompletedPublisher
 
 public interface IOcrProvider
 {
+    string ProviderName { get; }
+
+    string ModelKey { get; }
+
     Task<OcrExtractionResult> ExtractAsync(
         Stream receiptImage,
         string contentType,

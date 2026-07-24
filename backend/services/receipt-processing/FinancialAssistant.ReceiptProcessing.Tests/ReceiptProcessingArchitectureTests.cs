@@ -38,6 +38,7 @@ public sealed class ReceiptProcessingArchitectureTests
             typeof(OcrCompletedIntegrationEvent),
             typeof(ReceiptFileMetadata),
             typeof(ReceiptOcrMetadata),
+            typeof(OcrProcessingAuditMetadata),
             typeof(NormalizedReceiptCandidate),
             typeof(ReceiptLineItemCandidate)
         };
@@ -59,6 +60,14 @@ public sealed class ReceiptProcessingArchitectureTests
                 property => forbidden.Any(value =>
                     property.Contains(value, StringComparison.OrdinalIgnoreCase)));
         }
+
+        var auditProperties = typeof(OcrProcessingAuditMetadata)
+            .GetProperties()
+            .Select(property => property.Name)
+            .ToArray();
+        Assert.Contains(nameof(OcrProcessingAuditMetadata.FailureCategory), auditProperties);
+        Assert.Contains(nameof(OcrProcessingAuditMetadata.DurationMilliseconds), auditProperties);
+        Assert.Contains(nameof(OcrProcessingAuditMetadata.TraceId), auditProperties);
     }
 
     [Fact]

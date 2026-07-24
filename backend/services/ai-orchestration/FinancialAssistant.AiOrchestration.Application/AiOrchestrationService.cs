@@ -63,17 +63,20 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            await RecordAsync(AiCallStatus.Cancelled, null);
+            await RecordAsync(AiCallStatus.Cancelled, null, "cancelled");
             throw;
         }
-        catch (LlmProviderException)
+        catch (LlmProviderException exception)
         {
-            await RecordAsync(AiCallStatus.ProviderFailed, null);
+            await RecordAsync(
+                AiCallStatus.ProviderFailed,
+                null,
+                NormalizeProviderFailureCategory(exception.Code));
             throw;
         }
         catch
         {
-            await RecordAsync(AiCallStatus.ProviderFailed, null);
+            await RecordAsync(AiCallStatus.ProviderFailed, null, "provider_failure");
             throw new LlmProviderException(
                 route.Provider,
                 "provider_failure",
@@ -82,7 +85,7 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
 
         if (response.InputTokens < 0 || response.OutputTokens < 0)
         {
-            await RecordAsync(AiCallStatus.ProviderFailed, null);
+            await RecordAsync(AiCallStatus.ProviderFailed, null, "invalid_token_usage");
             throw new InvalidOperationException("LLM providers must return non-negative token usage.");
         }
 
@@ -96,18 +99,24 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
         }
         catch
         {
-            await RecordAsync(AiCallStatus.ValidationFailed, tokenUsage);
+            await RecordAsync(
+                AiCallStatus.ValidationFailed,
+                tokenUsage,
+                "structured_output_validation_failed");
             throw;
         }
 
         if (!validation.IsValid)
         {
-            await RecordAsync(AiCallStatus.ValidationFailed, tokenUsage);
+            await RecordAsync(
+                AiCallStatus.ValidationFailed,
+                tokenUsage,
+                "structured_output_validation_failed");
             throw new StructuredOutputValidationException(validation.Errors);
         }
 
         using var output = JsonDocument.Parse(response.StructuredOutputJson);
-        await RecordAsync(AiCallStatus.Succeeded, tokenUsage);
+        await RecordAsync(AiCallStatus.Succeeded, tokenUsage, failureCategory: null);
 
         return new AiCapabilityResult(
             callId,
@@ -122,7 +131,10 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
                 Ambiguities: new[] { "unverified_ai_output" },
                 RequiresReview: true));
 
-        Task RecordAsync(AiCallStatus status, AiTokenUsage? usage) =>
+        Task RecordAsync(
+            AiCallStatus status,
+            AiTokenUsage? usage,
+            string? failureCategory) =>
             metadataStore.AddAsync(
                 new AiCallMetadata(
                     callId,
@@ -133,10 +145,21 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
                     route.Model,
                     status,
                     usage,
+                    Confidence: null,
+                    failureCategory,
                     startedAtUtc,
                     clock.UtcNow),
                 CancellationToken.None);
     }
+
+    private static string NormalizeProviderFailureCategory(string code) =>
+        code is
+            "invalid_provider_response" or
+            "provider_failure" or
+            "provider_timeout" or
+            "provider_unavailable"
+            ? code
+            : "provider_failure";
 
     private static void EnsureRequired(string value, string parameterName)
     {

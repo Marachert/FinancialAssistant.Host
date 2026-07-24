@@ -24,5 +24,15 @@ public sealed record AiCallMetadata(
     string Model,
     AiCallStatus Status,
     AiTokenUsage? TokenUsage,
+    decimal? Confidence,
+    string? FailureCategory,
     DateTimeOffset StartedAtUtc,
-    DateTimeOffset CompletedAtUtc);
+    DateTimeOffset CompletedAtUtc)
+{
+    public string RequestId => CallId;
+
+    public string TraceId => CallId;
+
+    public long DurationMilliseconds =>
+        Math.Max(0, (long)(CompletedAtUtc - StartedAtUtc).TotalMilliseconds);
+}

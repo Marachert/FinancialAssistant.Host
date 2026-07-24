@@ -19,6 +19,10 @@ public sealed class ResilientOcrProvider : IOcrProvider
         this.options = options;
     }
 
+    public string ProviderName => options.ProviderName;
+
+    public string ModelKey => options.ModelKey;
+
     public async Task<OcrExtractionResult> ExtractAsync(
         Stream receiptImage,
         string contentType,

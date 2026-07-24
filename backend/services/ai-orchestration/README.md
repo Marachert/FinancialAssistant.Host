@@ -25,4 +25,6 @@ FIN-107 registers version 1 of the `transaction.parse` prompt and fail-closed re
 
 FIN-108 completes the provider client boundary with reusable per-attempt timeout and transient retry behavior, safe provider error mapping, and environment-bound non-secret endpoint/model/resilience settings. Provider-specific adapters still remain separate and must obtain credentials from an approved secret source.
 
+FIN-114 extends safe call metadata with request/trace correlation, processing duration, nullable confidence, and bounded failure categories. Metadata may include provider/model keys, prompt identity/version, status, token counts, and timestamps, but never raw input, prompt templates, model output, exception messages, or stack traces.
+
 Runtime provider adapters and durable metadata storage are intentionally separate infrastructure additions. The current adapter is explicitly in-memory and suitable only for this delivery increment.

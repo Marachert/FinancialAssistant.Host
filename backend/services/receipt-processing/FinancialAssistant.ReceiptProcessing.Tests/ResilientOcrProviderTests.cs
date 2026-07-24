@@ -128,7 +128,9 @@ public sealed class ResilientOcrProviderTests
                 {
                     ["ReceiptProcessing:Ocr:RequestTimeoutSeconds"] = "45",
                     ["ReceiptProcessing:Ocr:MaximumAttempts"] = "3",
-                    ["ReceiptProcessing:Ocr:RetryDelayMilliseconds"] = "250"
+                    ["ReceiptProcessing:Ocr:RetryDelayMilliseconds"] = "250",
+                    ["ReceiptProcessing:Ocr:ProviderName"] = "synthetic-ocr",
+                    ["ReceiptProcessing:Ocr:ModelKey"] = "synthetic-v2"
                 })
             .Build();
 
@@ -137,6 +139,8 @@ public sealed class ResilientOcrProviderTests
         Assert.Equal(TimeSpan.FromSeconds(45), options.RequestTimeout);
         Assert.Equal(3, options.MaximumAttempts);
         Assert.Equal(TimeSpan.FromMilliseconds(250), options.RetryDelay);
+        Assert.Equal("synthetic-ocr", options.ProviderName);
+        Assert.Equal("synthetic-v2", options.ModelKey);
     }
 
     [Theory]
@@ -144,6 +148,8 @@ public sealed class ResilientOcrProviderTests
     [InlineData("MaximumAttempts", "4")]
     [InlineData("RetryDelayMilliseconds", "5001")]
     [InlineData("MaximumAttempts", "not-a-number")]
+    [InlineData("ProviderName", "unsafe provider")]
+    [InlineData("ModelKey", "model/key")]
     public void FromConfiguration_RejectsInvalidResilienceSettings(
         string settingName,
         string value)
