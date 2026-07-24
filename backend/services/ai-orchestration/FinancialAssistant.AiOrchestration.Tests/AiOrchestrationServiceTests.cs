@@ -76,12 +76,14 @@ public sealed class AiOrchestrationServiceTests
         var metadataStore = new InMemoryAiCallMetadataStore();
         var service = CreateService(provider, metadataStore);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        var exception = await Assert.ThrowsAsync<LlmProviderException>(() =>
             service.ExecuteAsync(
                 new AiCapabilityRequest("transaction.parse", "transaction.parse", "synthetic input"),
                 CancellationToken.None));
 
         var metadata = Assert.Single(metadataStore.Records);
+        Assert.Equal("provider_failure", exception.Code);
+        Assert.DoesNotContain("synthetic provider failure", exception.Message, StringComparison.Ordinal);
         Assert.Equal(AiCallStatus.ProviderFailed, metadata.Status);
         Assert.Null(metadata.TokenUsage);
         Assert.DoesNotContain(

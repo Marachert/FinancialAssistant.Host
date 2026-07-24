@@ -23,4 +23,6 @@ FIN-106 defines the provider-neutral natural-language transaction parsing contra
 
 FIN-107 registers version 1 of the `transaction.parse` prompt and fail-closed response schema. The template minimizes personal data, treats input as untrusted, requires explicit confidence and ambiguity output, and rejects authority fields. Its policy permits one bounded retry for transient or schema-invalid results, then requires manual review without retaining provider output.
 
+FIN-108 completes the provider client boundary with reusable per-attempt timeout and transient retry behavior, safe provider error mapping, and environment-bound non-secret endpoint/model/resilience settings. Provider-specific adapters still remain separate and must obtain credentials from an approved secret source.
+
 Runtime provider adapters and durable metadata storage are intentionally separate infrastructure additions. The current adapter is explicitly in-memory and suitable only for this delivery increment.

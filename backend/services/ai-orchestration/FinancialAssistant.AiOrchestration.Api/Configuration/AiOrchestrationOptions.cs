@@ -1,3 +1,6 @@
+using FinancialAssistant.AiOrchestration.Domain;
+using FinancialAssistant.AiOrchestration.Infrastructure.Providers;
+
 namespace FinancialAssistant.AiOrchestration.Api.Configuration;
 
 public sealed class AiOrchestrationOptions
@@ -11,10 +14,10 @@ public sealed class AiOrchestrationOptions
 
     public string OutputAuthority { get; init; } = SuggestionAuthority;
 
-    public AiProviderPlaceholderOptions Provider { get; init; } = new();
+    public AiProviderClientOptions Provider { get; init; } = new();
 }
 
-public sealed class AiProviderPlaceholderOptions
+public sealed class AiProviderClientOptions
 {
     public string Name { get; init; } = string.Empty;
 
@@ -22,8 +25,50 @@ public sealed class AiProviderPlaceholderOptions
 
     public string Endpoint { get; init; } = string.Empty;
 
+    public int RequestTimeoutSeconds { get; init; } = 30;
+
+    public int MaximumAttempts { get; init; } = 2;
+
+    public int RetryDelayMilliseconds { get; init; } = 200;
+
+    public bool HasAnyProviderIdentity =>
+        !string.IsNullOrWhiteSpace(Name) ||
+        !string.IsNullOrWhiteSpace(Model) ||
+        !string.IsNullOrWhiteSpace(Endpoint);
+
     public bool IsConfigured =>
         !string.IsNullOrWhiteSpace(Name) &&
         !string.IsNullOrWhiteSpace(Model) &&
-        Uri.TryCreate(Endpoint, UriKind.Absolute, out _);
+        Uri.TryCreate(Endpoint, UriKind.Absolute, out var endpoint) &&
+        endpoint.Scheme == Uri.UriSchemeHttps;
+
+    public bool HasValidResilienceSettings =>
+        RequestTimeoutSeconds is >= 1 and <= 120 &&
+        MaximumAttempts is >= 1 and <= 3 &&
+        RetryDelayMilliseconds is >= 0 and <= 5000;
+
+    public AiModelRoute CreateRoute(string capabilityName)
+    {
+        if (!IsConfigured)
+        {
+            throw new InvalidOperationException(
+                "Provider name, model, and HTTPS endpoint must be configured first.");
+        }
+
+        return new AiModelRoute(capabilityName, Name, Model);
+    }
+
+    public LlmProviderResilienceOptions CreateResilienceOptions()
+    {
+        if (!HasValidResilienceSettings)
+        {
+            throw new InvalidOperationException(
+                "Provider timeout and retry settings are outside the allowed range.");
+        }
+
+        return new LlmProviderResilienceOptions(
+            TimeSpan.FromSeconds(RequestTimeoutSeconds),
+            MaximumAttempts,
+            TimeSpan.FromMilliseconds(RetryDelayMilliseconds));
+    }
 }
