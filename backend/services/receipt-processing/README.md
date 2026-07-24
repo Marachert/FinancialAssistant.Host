@@ -2,6 +2,9 @@
 
 FIN-25 introduces authenticated receipt upload, encrypted object storage, safe metadata, and an OCR-to-draft event pipeline.
 
+The asynchronous job and event responsibilities are defined in
+[`docs/engineering/async-ai-ocr-processing-flow.md`](../../../docs/engineering/async-ai-ocr-processing-flow.md).
+
 - Original filenames and raw receipt bytes are never stored in metadata or returned by the API.
 - The in-memory object adapter encrypts image bytes with an ephemeral AES-256-GCM key.
 - `receipt.uploaded.v1` starts OCR processing through `IReceiptUploadedConsumer`.
