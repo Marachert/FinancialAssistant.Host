@@ -7,6 +7,7 @@ FIN-25 introduces authenticated receipt upload, encrypted object storage, safe m
 - `receipt.uploaded.v1` starts OCR processing through `IReceiptUploadedConsumer`.
 - `IOcrProviderClient` isolates the external OCR adapter. `ResilientOcrProvider` enforces bounded timeout and transient retry settings before returning suggestion data to the application.
 - OCR provider text is transient. Stored OCR state contains only status, confidence, and ambiguity codes.
+- The deterministic normalizer separates raw text from merchant, date, total, currency, optional tax, and bounded line-item placeholder candidates. Multiple totals and other conflicts remain explicit ambiguity codes.
 - `ocr.completed.v1` carries a normalized candidate, not raw OCR text, over an authenticated internal HTTP delivery path; Transaction Intake converts it into a reviewable draft.
 - OCR output is probabilistic and cannot confirm or persist an authoritative income or expense.
 

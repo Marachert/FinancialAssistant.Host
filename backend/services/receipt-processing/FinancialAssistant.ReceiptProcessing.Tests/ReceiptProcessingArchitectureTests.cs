@@ -1,3 +1,4 @@
+using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
 using FinancialAssistant.ReceiptProcessing.Contracts;
 using FinancialAssistant.ReceiptProcessing.Domain;
 using FinancialAssistant.ReceiptProcessing.Infrastructure;
@@ -36,7 +37,9 @@ public sealed class ReceiptProcessingArchitectureTests
             typeof(ReceiptUploadedIntegrationEvent),
             typeof(OcrCompletedIntegrationEvent),
             typeof(ReceiptFileMetadata),
-            typeof(ReceiptOcrMetadata)
+            typeof(ReceiptOcrMetadata),
+            typeof(NormalizedReceiptCandidate),
+            typeof(ReceiptLineItemCandidate)
         };
         var forbidden = new[]
         {
