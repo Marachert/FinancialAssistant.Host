@@ -114,8 +114,8 @@ public sealed record OcrProviderResilienceOptions
         if (string.IsNullOrWhiteSpace(normalized) ||
             normalized.Length > 64 ||
             normalized.Any(character =>
-                !(char.IsLower(character) ||
-                    char.IsDigit(character) ||
+                !(character is >= 'a' and <= 'z' ||
+                    character is >= '0' and <= '9' ||
                     character is '.' or '_' or '-')))
         {
             throw new ArgumentException(

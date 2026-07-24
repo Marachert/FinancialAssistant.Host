@@ -150,6 +150,9 @@ public sealed class ResilientOcrProviderTests
     [InlineData("MaximumAttempts", "not-a-number")]
     [InlineData("ProviderName", "unsafe provider")]
     [InlineData("ModelKey", "model/key")]
+    [InlineData("ProviderName", "ocr-\u00E9")]
+    [InlineData("ModelKey", "\u03BC\u03BF\u03BD\u03C4\u03AD\u03BB\u03BF")]
+    [InlineData("ModelKey", "model-\u0661")]
     public void FromConfiguration_RejectsInvalidResilienceSettings(
         string settingName,
         string value)
