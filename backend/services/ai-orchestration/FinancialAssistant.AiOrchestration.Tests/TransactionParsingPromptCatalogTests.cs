@@ -80,6 +80,19 @@ public sealed class TransactionParsingPromptCatalogTests
         Assert.Empty(result.Errors);
     }
 
+    [Fact]
+    public void OutputSchema_RejectsInvalidCalendarDate()
+    {
+        var result = validator.Validate(
+            ValidSuggestion.Replace("2026-07-24", "2026-99-99", StringComparison.Ordinal),
+            TransactionParsingPromptCatalog.Version1.OutputJsonSchema);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(
+            result.Errors,
+            error => error.Contains("valid ISO calendar date", StringComparison.Ordinal));
+    }
+
     [Theory]
     [InlineData(
         """

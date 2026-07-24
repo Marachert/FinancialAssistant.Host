@@ -27,7 +27,7 @@ The versioned schema accepts only:
 - stable missing-field names;
 - a short, privacy-safe review explanation.
 
-Every object rejects additional properties. Authority fields such as `confirmed`, `persisted`, or `approved` are not part of the schema. AI Orchestration assigns technical call identity, while deterministic Transaction Intake remains responsible for validation and confirmation.
+Every object rejects additional properties, and suggested dates must be real ISO calendar dates. Authority fields such as `confirmed`, `persisted`, or `approved` are not part of the schema. AI Orchestration assigns technical call identity, while deterministic Transaction Intake remains responsible for validation and confirmation.
 
 ## Retry and fallback
 

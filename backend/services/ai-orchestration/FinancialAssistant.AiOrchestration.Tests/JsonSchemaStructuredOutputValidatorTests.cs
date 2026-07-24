@@ -81,6 +81,28 @@ public sealed class JsonSchemaStructuredOutputValidatorTests
     }
 
     [Theory]
+    [InlineData("2024-02-29", true)]
+    [InlineData("2026-02-29", false)]
+    [InlineData("2026-99-99", false)]
+    public void Validate_DateFormat_RequiresIsoCalendarDate(string value, bool expectedValid)
+    {
+        const string schema = """{ "type": "string", "format": "date" }""";
+
+        var result = validator.Validate($"\"{value}\"", schema);
+
+        Assert.Equal(expectedValid, result.IsValid);
+    }
+
+    [Fact]
+    public void Validate_WhenSchemaUsesUnsupportedFormat_FailsClosed()
+    {
+        const string schema = """{ "type": "string", "format": "date-time" }""";
+
+        Assert.Throws<InvalidJsonSchemaException>(() =>
+            validator.Validate("\"2026-07-24T00:00:00Z\"", schema));
+    }
+
+    [Theory]
     [InlineData(
         """{"type":"object","properties":{"optional":{"type":"string","pattern":"^[a-z]+$"}}}""",
         "{}")]

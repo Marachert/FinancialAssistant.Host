@@ -68,7 +68,8 @@ public static class TransactionParsingPromptCatalog
                 "date": {
                   "type": ["string", "null"],
                   "minLength": 10,
-                  "maxLength": 10
+                  "maxLength": 10,
+                  "format": "date"
                 },
                 "merchant": {
                   "type": ["string", "null"],
