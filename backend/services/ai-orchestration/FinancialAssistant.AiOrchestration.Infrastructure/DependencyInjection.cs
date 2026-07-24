@@ -13,6 +13,8 @@ public static class DependencyInjection
     public static IServiceCollection AddAiOrchestrationInfrastructure(this IServiceCollection services)
     {
         services.AddSingleton<IModelRouter, StaticModelRouter>();
+        services.AddSingleton(TransactionParsingPromptCatalog.Version1);
+        services.AddSingleton(TransactionParsingPromptCatalog.ExecutionPolicy);
         services.AddSingleton<IPromptRegistry, InMemoryPromptRegistry>();
         services.AddSingleton<ILlmProviderResolver, RegisteredLlmProviderResolver>();
         services.AddSingleton<IStructuredOutputValidator, JsonSchemaStructuredOutputValidator>();

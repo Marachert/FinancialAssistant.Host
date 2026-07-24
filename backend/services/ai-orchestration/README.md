@@ -21,4 +21,6 @@ The baseline does not expose a capability execution endpoint and does not regist
 
 FIN-106 defines the provider-neutral natural-language transaction parsing contract. It includes typed draft suggestions, overall and per-field confidence, explicit ambiguities and missing fields, and a user-review explanation. The response always serializes `outputAuthority: "suggestion"` and `requiresReview: true`; deterministic Transaction Intake remains responsible for validation and confirmation.
 
+FIN-107 registers version 1 of the `transaction.parse` prompt and fail-closed response schema. The template minimizes personal data, treats input as untrusted, requires explicit confidence and ambiguity output, and rejects authority fields. Its policy permits one bounded retry for transient or schema-invalid results, then requires manual review without retaining provider output.
+
 Runtime provider adapters and durable metadata storage are intentionally separate infrastructure additions. The current adapter is explicitly in-memory and suitable only for this delivery increment.
