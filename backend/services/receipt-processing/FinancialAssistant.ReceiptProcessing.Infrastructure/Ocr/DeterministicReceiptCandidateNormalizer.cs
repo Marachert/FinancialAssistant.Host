@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using FinancialAssistant.ReceiptProcessing.Application;
 using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
 
 namespace FinancialAssistant.ReceiptProcessing.Infrastructure.Ocr;
@@ -110,12 +111,14 @@ public sealed partial class DeterministicReceiptCandidateNormalizer : IOcrCandid
     private static partial Regex MerchantPattern();
 }
 
-public sealed class DisabledOcrProvider : IOcrProvider
+public sealed class DisabledOcrProviderClient : IOcrProviderClient
 {
     public Task<OcrExtractionResult> ExtractAsync(
-        Stream receiptImage,
+        ReadOnlyMemory<byte> receiptImage,
         string contentType,
         CancellationToken cancellationToken) =>
         Task.FromException<OcrExtractionResult>(
-            new InvalidOperationException("OCR provider is not configured."));
+            new OcrProviderException(
+                OcrProviderErrorCodes.ProviderUnavailable,
+                isTransient: false));
 }

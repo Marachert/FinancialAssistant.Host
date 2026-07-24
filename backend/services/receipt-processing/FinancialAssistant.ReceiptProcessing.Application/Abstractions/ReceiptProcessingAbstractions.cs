@@ -78,6 +78,14 @@ public interface IOcrProvider
         CancellationToken cancellationToken);
 }
 
+public interface IOcrProviderClient
+{
+    Task<OcrExtractionResult> ExtractAsync(
+        ReadOnlyMemory<byte> receiptImage,
+        string contentType,
+        CancellationToken cancellationToken);
+}
+
 public interface IOcrCandidateNormalizer
 {
     NormalizedReceiptCandidate Normalize(OcrExtractionResult extraction);

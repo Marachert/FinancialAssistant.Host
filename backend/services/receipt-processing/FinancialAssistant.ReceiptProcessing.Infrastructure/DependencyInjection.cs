@@ -2,6 +2,7 @@ using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Events;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Ocr;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Storage;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -32,7 +33,11 @@ public static class DependencyInjection
                 new HttpClientHandler { AllowAutoRedirect = false });
         services.AddSingleton<IOcrCompletedPublisher, HttpOcrCompletedPublisher>();
         services.AddSingleton<IOcrCandidateNormalizer, DeterministicReceiptCandidateNormalizer>();
-        services.TryAddSingleton<IOcrProvider, DisabledOcrProvider>();
+        services.TryAddSingleton<IOcrProviderClient, DisabledOcrProviderClient>();
+        services.TryAddSingleton(provider =>
+            OcrProviderResilienceOptions.FromConfiguration(
+                provider.GetRequiredService<IConfiguration>()));
+        services.TryAddSingleton<IOcrProvider, ResilientOcrProvider>();
         return services;
     }
 }
