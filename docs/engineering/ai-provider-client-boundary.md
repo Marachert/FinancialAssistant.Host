@@ -27,9 +27,9 @@ Response JSON is still validated against the versioned prompt schema by `AiOrche
 - `AiOrchestration__Provider__MaximumAttempts`
 - `AiOrchestration__Provider__RetryDelayMilliseconds`
 
-Provider name, model, and endpoint must be supplied together, and the endpoint must use HTTPS. Timeout is limited to 1-120 seconds, attempts to 1-3, and retry delay to 0-5000 milliseconds.
+Provider name, model, and endpoint must be supplied together. The endpoint must use HTTPS and cannot contain URI user information, preventing credentials from being embedded in non-secret options. Timeout is limited to 1-120 seconds and retry delay to 0-5000 milliseconds.
 
-When identity settings are valid, the API composition root registers the `transaction.parse` model route from them. `AiProviderClientOptions.CreateResilienceOptions` produces the validated runtime settings used to wrap a provider-specific adapter.
+When identity settings are valid, the API composition root registers the `transaction.parse` model route from them. `AiProviderClientOptions.CreateResilienceOptions` produces the validated runtime settings used to wrap a provider-specific adapter. Its attempt ceiling is derived from the registered transaction prompt policy, currently two total attempts, so environment configuration cannot exceed the approved retry budget.
 
 Credentials are intentionally absent from `AiProviderClientOptions`. A provider adapter must obtain credentials from its approved environment or secret-store integration without logging or adding them to application configuration files.
 

@@ -14,7 +14,7 @@ public sealed class AiProviderClientOptionsTests
             Model = "model-a",
             Endpoint = "https://provider.invalid/v1",
             RequestTimeoutSeconds = 45,
-            MaximumAttempts = 3,
+            MaximumAttempts = 2,
             RetryDelayMilliseconds = 500,
         };
 
@@ -25,23 +25,38 @@ public sealed class AiProviderClientOptionsTests
         Assert.Equal("synthetic-provider", route.Provider);
         Assert.Equal("model-a", route.Model);
         Assert.Equal(TimeSpan.FromSeconds(45), resilience.RequestTimeout);
-        Assert.Equal(3, resilience.MaximumAttempts);
+        Assert.Equal(
+            TransactionParsingPromptCatalog.ExecutionPolicy.MaximumAttempts,
+            resilience.MaximumAttempts);
         Assert.Equal(TimeSpan.FromMilliseconds(500), resilience.RetryDelay);
     }
 
     [Fact]
-    public void PartialOrInsecureProviderIdentity_CannotCreateRoute()
+    public void CredentialBearingProviderEndpoint_CannotCreateRoute()
     {
         var options = new AiProviderClientOptions
         {
             Name = "synthetic-provider",
             Model = "model-a",
-            Endpoint = "http://provider.invalid/v1",
+            Endpoint = "https://api-key:secret@provider.invalid/v1",
         };
 
         Assert.True(options.HasAnyProviderIdentity);
         Assert.False(options.IsConfigured);
         Assert.Throws<InvalidOperationException>(() =>
             options.CreateRoute(TransactionParsingPromptCatalog.PromptName));
+    }
+
+    [Fact]
+    public void AttemptsAbovePromptPolicy_CannotCreateResilienceSettings()
+    {
+        var options = new AiProviderClientOptions
+        {
+            MaximumAttempts =
+                TransactionParsingPromptCatalog.ExecutionPolicy.MaximumAttempts + 1,
+        };
+
+        Assert.False(options.HasValidResilienceSettings);
+        Assert.Throws<InvalidOperationException>(options.CreateResilienceOptions);
     }
 }

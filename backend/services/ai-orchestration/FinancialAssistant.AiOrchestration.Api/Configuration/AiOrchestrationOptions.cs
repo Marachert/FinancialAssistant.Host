@@ -1,4 +1,5 @@
 using FinancialAssistant.AiOrchestration.Domain;
+using FinancialAssistant.AiOrchestration.Infrastructure.Prompts;
 using FinancialAssistant.AiOrchestration.Infrastructure.Providers;
 
 namespace FinancialAssistant.AiOrchestration.Api.Configuration;
@@ -27,7 +28,8 @@ public sealed class AiProviderClientOptions
 
     public int RequestTimeoutSeconds { get; init; } = 30;
 
-    public int MaximumAttempts { get; init; } = 2;
+    public int MaximumAttempts { get; init; } =
+        TransactionParsingPromptCatalog.ExecutionPolicy.MaximumAttempts;
 
     public int RetryDelayMilliseconds { get; init; } = 200;
 
@@ -40,11 +42,13 @@ public sealed class AiProviderClientOptions
         !string.IsNullOrWhiteSpace(Name) &&
         !string.IsNullOrWhiteSpace(Model) &&
         Uri.TryCreate(Endpoint, UriKind.Absolute, out var endpoint) &&
-        endpoint.Scheme == Uri.UriSchemeHttps;
+        endpoint.Scheme == Uri.UriSchemeHttps &&
+        string.IsNullOrEmpty(endpoint.UserInfo);
 
     public bool HasValidResilienceSettings =>
         RequestTimeoutSeconds is >= 1 and <= 120 &&
-        MaximumAttempts is >= 1 and <= 3 &&
+        MaximumAttempts >= 1 &&
+        MaximumAttempts <= TransactionParsingPromptCatalog.ExecutionPolicy.MaximumAttempts &&
         RetryDelayMilliseconds is >= 0 and <= 5000;
 
     public AiModelRoute CreateRoute(string capabilityName)
