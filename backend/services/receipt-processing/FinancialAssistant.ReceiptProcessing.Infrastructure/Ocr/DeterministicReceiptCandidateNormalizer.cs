@@ -131,7 +131,6 @@ public sealed partial class DeterministicReceiptCandidateNormalizer : IOcrCandid
             .Select(match => TryParseMoney(match, out var candidate) ? candidate : null)
             .Where(candidate => candidate is not null)
             .Cast<MoneyCandidate>()
-            .Distinct()
             .ToList();
 
     private static bool TryParseMoney(Match match, out MoneyCandidate? candidate)

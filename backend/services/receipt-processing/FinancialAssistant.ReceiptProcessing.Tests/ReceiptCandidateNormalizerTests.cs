@@ -78,6 +78,27 @@ public sealed class ReceiptCandidateNormalizerTests
     }
 
     [Fact]
+    public void Normalize_RepeatedUnlabeledAmountsRemainAmbiguous()
+    {
+        var normalizer = new DeterministicReceiptCandidateNormalizer();
+        var extraction = new OcrExtractionResult(
+            """
+            item: Coffee | total: 5.00 USD
+            item: Snack | total: 5.00 USD
+            date: 2026-07-20
+            """,
+            0.88m,
+            Array.Empty<string>());
+
+        var candidate = normalizer.Normalize(extraction);
+
+        Assert.Null(candidate.Amount);
+        Assert.Equal("USD", candidate.Currency);
+        Assert.Contains("total_ambiguous", candidate.Ambiguities);
+        Assert.Contains("amount", candidate.Ambiguities);
+    }
+
+    [Fact]
     public void Normalize_RejectsImpossibleCalendarDateAsCandidate()
     {
         var normalizer = new DeterministicReceiptCandidateNormalizer();
