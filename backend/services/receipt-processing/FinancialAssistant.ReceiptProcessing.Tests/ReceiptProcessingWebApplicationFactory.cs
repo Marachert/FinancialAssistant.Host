@@ -25,8 +25,8 @@ public sealed class ReceiptProcessingWebApplicationFactory : WebApplicationFacto
                 }));
         builder.ConfigureServices(services =>
         {
-            services.RemoveAll<IOcrProvider>();
-            services.AddSingleton<IOcrProvider, SyntheticOcrProvider>();
+            services.RemoveAll<IOcrProviderClient>();
+            services.AddSingleton<IOcrProviderClient, SyntheticOcrProviderClient>();
             services.RemoveAll<IOcrCompletedPublisher>();
             services.AddSingleton<IOcrCompletedPublisher>(provider =>
                 provider.GetRequiredService<InMemoryOcrCompletedPublisher>());
@@ -35,10 +35,10 @@ public sealed class ReceiptProcessingWebApplicationFactory : WebApplicationFacto
         });
     }
 
-    private sealed class SyntheticOcrProvider : IOcrProvider
+    private sealed class SyntheticOcrProviderClient : IOcrProviderClient
     {
         public Task<OcrExtractionResult> ExtractAsync(
-            Stream receiptImage,
+            ReadOnlyMemory<byte> receiptImage,
             string contentType,
             CancellationToken cancellationToken)
         {

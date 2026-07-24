@@ -2,7 +2,9 @@ using FinancialAssistant.ReceiptProcessing.Contracts;
 using FinancialAssistant.ReceiptProcessing.Domain;
 using FinancialAssistant.ReceiptProcessing.Infrastructure;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Events;
+using FinancialAssistant.ReceiptProcessing.Infrastructure.Ocr;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Storage;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -94,5 +96,40 @@ public sealed class ReceiptProcessingArchitectureTests
         Assert.IsType<HttpOcrCompletedPublisher>(
             provider.GetRequiredService<
                 FinancialAssistant.ReceiptProcessing.Application.Abstractions.IOcrCompletedPublisher>());
+    }
+
+    [Fact]
+    public void DefaultInfrastructure_DecoratesTheProviderClientWithBoundedResilience()
+    {
+        var configuration = new ConfigurationBuilder().Build();
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<IConfiguration>(configuration);
+        serviceCollection.AddLogging();
+        serviceCollection.AddReceiptProcessingInfrastructure();
+        using var provider = serviceCollection.BuildServiceProvider();
+
+        Assert.IsType<DisabledOcrProviderClient>(
+            provider.GetRequiredService<
+                FinancialAssistant.ReceiptProcessing.Application.Abstractions.IOcrProviderClient>());
+        Assert.IsType<ResilientOcrProvider>(
+            provider.GetRequiredService<
+                FinancialAssistant.ReceiptProcessing.Application.Abstractions.IOcrProvider>());
+    }
+
+    [Fact]
+    public void Startup_RejectsInvalidOcrResilienceSettings()
+    {
+        using var factory = new ReceiptProcessingWebApplicationFactory()
+            .WithWebHostBuilder(builder =>
+                builder.ConfigureAppConfiguration((_, configuration) =>
+                    configuration.AddInMemoryCollection(
+                        new Dictionary<string, string?>
+                        {
+                            ["ReceiptProcessing:Ocr:RequestTimeoutSeconds"] = "0"
+                        })));
+
+        var exception = Assert.ThrowsAny<Exception>(() => factory.CreateClient());
+
+        Assert.Contains("Request timeout", exception.ToString(), StringComparison.Ordinal);
     }
 }

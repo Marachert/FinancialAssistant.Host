@@ -38,6 +38,7 @@ var app = builder.Build();
 
 _ = app.Services.GetRequiredService<ReceiptGatewayAuthenticator>();
 _ = app.Services.GetRequiredService<IOcrCompletedPublisher>();
+_ = app.Services.GetRequiredService<IOcrProvider>();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {
