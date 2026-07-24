@@ -6,6 +6,7 @@ Canonical engineering documentation:
 
 ```text
 docs/engineering/transaction-intake-draft-flow.md
+docs/engineering/async-ai-ocr-processing-flow.md
 ```
 
 ## Responsibility
