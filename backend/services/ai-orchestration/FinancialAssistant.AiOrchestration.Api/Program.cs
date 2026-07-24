@@ -4,6 +4,7 @@ using FinancialAssistant.AiOrchestration.Api.Middleware;
 using FinancialAssistant.AiOrchestration.Application;
 using FinancialAssistant.AiOrchestration.Contracts;
 using FinancialAssistant.AiOrchestration.Infrastructure;
+using FinancialAssistant.AiOrchestration.Infrastructure.Prompts;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
@@ -46,7 +47,25 @@ builder.Services
             AiOrchestrationOptions.SuggestionAuthority,
             StringComparison.Ordinal),
         "AI output authority must remain suggestion-only.")
+    .Validate(
+        options =>
+            !options.Provider.HasAnyProviderIdentity ||
+            options.Provider.IsConfigured,
+        "AI provider name, model, and HTTPS endpoint must be configured together.")
+    .Validate(
+        options => options.Provider.HasValidResilienceSettings,
+        "AI provider timeout and retry settings are outside the allowed range.")
     .ValidateOnStart();
+
+var configuredProvider = builder.Configuration
+    .GetSection($"{AiOrchestrationOptions.SectionName}:Provider")
+    .Get<AiProviderClientOptions>() ?? new AiProviderClientOptions();
+if (configuredProvider.IsConfigured)
+{
+    builder.Services.AddSingleton(
+        configuredProvider.CreateRoute(TransactionParsingPromptCatalog.PromptName));
+}
+
 builder.Services.AddAiOrchestrationApplication();
 builder.Services.AddAiOrchestrationInfrastructure();
 builder.Services

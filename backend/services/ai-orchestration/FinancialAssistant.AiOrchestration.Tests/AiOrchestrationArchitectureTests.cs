@@ -68,9 +68,9 @@ public sealed class AiOrchestrationArchitectureTests
     }
 
     [Fact]
-    public void ProviderPlaceholders_CannotHoldCredentials()
+    public void ProviderConfiguration_CannotHoldCredentials()
     {
-        var properties = typeof(AiProviderPlaceholderOptions)
+        var properties = typeof(AiProviderClientOptions)
             .GetProperties()
             .Select(property => property.Name)
             .ToArray();
@@ -80,6 +80,10 @@ public sealed class AiOrchestrationArchitectureTests
             name.Contains("Secret", StringComparison.OrdinalIgnoreCase) ||
             name.Contains("Password", StringComparison.OrdinalIgnoreCase) ||
             name.Contains("Token", StringComparison.OrdinalIgnoreCase));
+
+        Assert.Contains(nameof(AiProviderClientOptions.RequestTimeoutSeconds), properties);
+        Assert.Contains(nameof(AiProviderClientOptions.MaximumAttempts), properties);
+        Assert.Contains(nameof(AiProviderClientOptions.RetryDelayMilliseconds), properties);
     }
 
     [Fact]

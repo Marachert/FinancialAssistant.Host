@@ -66,10 +66,18 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
             await RecordAsync(AiCallStatus.Cancelled, null);
             throw;
         }
-        catch
+        catch (LlmProviderException)
         {
             await RecordAsync(AiCallStatus.ProviderFailed, null);
             throw;
+        }
+        catch
+        {
+            await RecordAsync(AiCallStatus.ProviderFailed, null);
+            throw new LlmProviderException(
+                route.Provider,
+                "provider_failure",
+                isTransient: false);
         }
 
         if (response.InputTokens < 0 || response.OutputTokens < 0)

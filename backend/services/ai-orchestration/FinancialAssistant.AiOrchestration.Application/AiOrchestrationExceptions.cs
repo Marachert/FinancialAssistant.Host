@@ -16,6 +16,36 @@ public sealed class LlmProviderNotConfiguredException : InvalidOperationExceptio
     }
 }
 
+public sealed class LlmProviderException : InvalidOperationException
+{
+    public LlmProviderException(
+        string providerName,
+        string code,
+        bool isTransient)
+        : base($"LLM provider '{providerName}' could not complete the request.")
+    {
+        if (string.IsNullOrWhiteSpace(providerName))
+        {
+            throw new ArgumentException("Value is required.", nameof(providerName));
+        }
+
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            throw new ArgumentException("Value is required.", nameof(code));
+        }
+
+        ProviderName = providerName;
+        Code = code;
+        IsTransient = isTransient;
+    }
+
+    public string ProviderName { get; }
+
+    public string Code { get; }
+
+    public bool IsTransient { get; }
+}
+
 public sealed class PromptNotFoundException : InvalidOperationException
 {
     public PromptNotFoundException(string promptName, int? version)
