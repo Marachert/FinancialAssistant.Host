@@ -4,6 +4,7 @@ using FinancialAssistant.ReceiptProcessing.Infrastructure;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Events;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Ocr;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Storage;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -113,5 +114,22 @@ public sealed class ReceiptProcessingArchitectureTests
         Assert.IsType<ResilientOcrProvider>(
             provider.GetRequiredService<
                 FinancialAssistant.ReceiptProcessing.Application.Abstractions.IOcrProvider>());
+    }
+
+    [Fact]
+    public void Startup_RejectsInvalidOcrResilienceSettings()
+    {
+        using var factory = new ReceiptProcessingWebApplicationFactory()
+            .WithWebHostBuilder(builder =>
+                builder.ConfigureAppConfiguration((_, configuration) =>
+                    configuration.AddInMemoryCollection(
+                        new Dictionary<string, string?>
+                        {
+                            ["ReceiptProcessing:Ocr:RequestTimeoutSeconds"] = "0"
+                        })));
+
+        var exception = Assert.ThrowsAny<Exception>(() => factory.CreateClient());
+
+        Assert.Contains("Request timeout", exception.ToString(), StringComparison.Ordinal);
     }
 }

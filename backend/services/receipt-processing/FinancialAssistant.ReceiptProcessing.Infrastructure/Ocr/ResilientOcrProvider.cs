@@ -117,7 +117,7 @@ public sealed class ResilientOcrProvider : IOcrProvider
             ObserveFailure(providerTask);
             throw;
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (timeout.IsCancellationRequested)
         {
             ObserveFailure(providerTask);
             return ProviderAttemptResult.Failed(

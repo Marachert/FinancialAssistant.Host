@@ -80,6 +80,26 @@ public sealed class ResilientOcrProviderTests
     }
 
     [Fact]
+    public async Task ExtractAsync_DoesNotRetryClientOriginatedCancellation()
+    {
+        using var providerCancellation = new CancellationTokenSource();
+        providerCancellation.Cancel();
+        var client = new RecordingClient((_, _, _, _) =>
+            Task.FromCanceled<OcrExtractionResult>(providerCancellation.Token));
+        var provider = CreateProvider(client, maximumAttempts: 3);
+
+        var exception = await Assert.ThrowsAsync<OcrProviderException>(() =>
+            provider.ExtractAsync(
+                new MemoryStream(SyntheticReceipt),
+                "image/png",
+                CancellationToken.None));
+
+        Assert.Equal(OcrProviderErrorCodes.ProviderFailure, exception.ErrorCode);
+        Assert.False(exception.IsTransient);
+        Assert.Equal(1, client.Attempts);
+    }
+
+    [Fact]
     public async Task ExtractAsync_PreservesCallerCancellationWithoutRetry()
     {
         var client = new RecordingClient(async (_, _, _, cancellationToken) =>
