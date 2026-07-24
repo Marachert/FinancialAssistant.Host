@@ -13,6 +13,7 @@ public sealed record TransactionDraft(
     decimal Confidence,
     IReadOnlyList<string> Ambiguities,
     bool RequiresReview,
+    TransactionDraftSuggestionMetadata Suggestion,
     DateTimeOffset CreatedAtUtc)
 {
     public const string Status = "draft";
