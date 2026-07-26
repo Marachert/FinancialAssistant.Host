@@ -35,7 +35,10 @@ public sealed class ReceiptProcessingArchitectureTests
         var contractTypes = new[]
         {
             typeof(ReceiptUploadedIntegrationEvent),
+            typeof(OcrExtractionJobCommand),
             typeof(OcrCompletedIntegrationEvent),
+            typeof(OcrExtractionFailedIntegrationEvent),
+            typeof(OcrExtractionStatusUpdatedIntegrationEvent),
             typeof(ReceiptFileMetadata),
             typeof(ReceiptOcrMetadata),
             typeof(OcrProcessingAuditMetadata),
@@ -83,7 +86,17 @@ public sealed class ReceiptProcessingArchitectureTests
     public void EventNames_AreStableAndVersioned()
     {
         Assert.Equal("receipt.uploaded.v1", ReceiptUploadedIntegrationEvent.Name);
+        Assert.Equal("ocr.extraction.requested.v1", OcrExtractionJobCommand.Name);
         Assert.Equal("ocr.completed.v1", OcrCompletedIntegrationEvent.Name);
+        Assert.Equal("ocr.extraction-failed.v1", OcrExtractionFailedIntegrationEvent.Name);
+        Assert.Equal(
+            "ocr.extraction-status-updated.v1",
+            OcrExtractionStatusUpdatedIntegrationEvent.Name);
+
+        Assert.Equal("queued", OcrExtractionJobStatuses.Queued);
+        Assert.Equal("processing", OcrExtractionJobStatuses.Processing);
+        Assert.Equal("suggestion_ready", OcrExtractionJobStatuses.SuggestionReady);
+        Assert.Equal("failed", OcrExtractionJobStatuses.Failed);
     }
 
     [Fact]

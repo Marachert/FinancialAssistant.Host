@@ -47,4 +47,24 @@ public sealed class TransactionIntakeArchitectureTests
         Assert.DoesNotContain(properties, name => name.Contains("Confidence", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(properties, name => name.Contains("Ambiguit", StringComparison.OrdinalIgnoreCase));
     }
+
+    [Fact]
+    public void DraftCreatedEvent_IsVersionedAndCarriesOnlyAnOpaquePayloadReference()
+    {
+        Assert.Equal(
+            "transaction.draft-created.v1",
+            TransactionDraftCreatedIntegrationEvent.Name);
+
+        var properties = typeof(TransactionDraftCreatedIntegrationEvent)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Select(property => property.Name)
+            .ToArray();
+
+        Assert.Contains(nameof(TransactionDraftCreatedIntegrationEvent.SourcePayloadReferenceId), properties);
+        Assert.DoesNotContain(properties, name =>
+            name.Equals("Input", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("InputText", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Prompt", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Confirmed", StringComparison.OrdinalIgnoreCase));
+    }
 }

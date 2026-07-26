@@ -109,4 +109,41 @@ public sealed class AiOrchestrationArchitectureTests
         Assert.Contains(nameof(AiCallMetadata.DurationMilliseconds), properties);
         Assert.Contains(nameof(AiCallMetadata.TraceId), properties);
     }
+
+    [Fact]
+    public void AsyncParsingContracts_AreVersionedAndSuggestionOnly()
+    {
+        Assert.Equal("ai.parsing.requested.v1", AiParsingJobCommand.Name);
+        Assert.Equal("ai.suggestion-ready.v1", AiSuggestionReadyIntegrationEvent.Name);
+        Assert.Equal("ai.parsing-failed.v1", AiParsingFailedIntegrationEvent.Name);
+        Assert.Equal(
+            "ai.parsing-status-updated.v1",
+            AiParsingStatusUpdatedIntegrationEvent.Name);
+
+        Assert.Equal("queued", AiParsingJobStatuses.Queued);
+        Assert.Equal("processing", AiParsingJobStatuses.Processing);
+        Assert.Equal("suggestion_ready", AiParsingJobStatuses.SuggestionReady);
+        Assert.Equal("failed", AiParsingJobStatuses.Failed);
+
+        var contractTypes = new[]
+        {
+            typeof(AiParsingJobCommand),
+            typeof(AiSuggestionReadyIntegrationEvent),
+            typeof(AiParsingFailedIntegrationEvent),
+            typeof(AiParsingStatusUpdatedIntegrationEvent)
+        };
+        foreach (var contractType in contractTypes)
+        {
+            var properties = contractType
+                .GetProperties()
+                .Select(property => property.Name)
+                .ToArray();
+            Assert.DoesNotContain(properties, name =>
+                name.Equals("Input", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("Prompt", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("Output", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("Confirmed", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("ErrorMessage", StringComparison.OrdinalIgnoreCase));
+        }
+    }
 }

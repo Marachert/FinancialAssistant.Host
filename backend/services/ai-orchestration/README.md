@@ -2,6 +2,9 @@
 
 The AI Orchestration Service owns all LLM provider integration boundaries. Other services request a named capability through `IAiOrchestrationService`; they do not reference provider SDKs.
 
+The asynchronous job and event responsibilities are defined in
+[`docs/engineering/async-ai-ocr-processing-flow.md`](../../../docs/engineering/async-ai-ocr-processing-flow.md).
+
 The FIN-24 foundation includes:
 
 - `ILlmProvider` and provider resolution by stable provider name;
