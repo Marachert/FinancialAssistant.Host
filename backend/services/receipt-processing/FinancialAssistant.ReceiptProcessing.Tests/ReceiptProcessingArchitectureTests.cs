@@ -100,6 +100,74 @@ public sealed class ReceiptProcessingArchitectureTests
     }
 
     [Fact]
+    public void OcrRetryPolicy_IsBoundedAndClassifiesFailuresSafely()
+    {
+        Assert.Equal(3, OcrExtractionJobRetryPolicy.MaximumAttempts);
+        Assert.Equal(
+            TimeSpan.FromSeconds(30),
+            OcrExtractionJobRetryPolicy.GetBackoffBeforeAttempt(2));
+        Assert.Equal(
+            TimeSpan.FromMinutes(2),
+            OcrExtractionJobRetryPolicy.GetBackoffBeforeAttempt(3));
+
+        Assert.True(OcrExtractionJobRetryPolicy.ShouldRetry(
+            OcrExtractionFailureCategories.ProviderUnavailable,
+            failedAttempt: 1));
+        Assert.True(OcrExtractionJobRetryPolicy.ShouldRetry(
+            OcrExtractionFailureCategories.TransportFailure,
+            failedAttempt: 2));
+        Assert.False(OcrExtractionJobRetryPolicy.ShouldRetry(
+            OcrExtractionFailureCategories.InvalidReceiptContent,
+            failedAttempt: 1));
+        Assert.False(OcrExtractionJobRetryPolicy.ShouldRetry(
+            OcrExtractionFailureCategories.ProviderTimeout,
+            failedAttempt: OcrExtractionJobRetryPolicy.MaximumAttempts));
+        Assert.False(OcrExtractionJobRetryPolicy.ShouldRetry(
+            "unknown_failure",
+            failedAttempt: 1));
+    }
+
+    [Fact]
+    public void OcrFailureEvents_AreVersionedSafeAndNonAuthoritative()
+    {
+        Assert.Equal(
+            "ocr.extraction-retry-scheduled.v1",
+            OcrExtractionRetryScheduledIntegrationEvent.Name);
+        Assert.Equal(
+            "ocr.extraction-permanently-failed.v1",
+            OcrExtractionPermanentlyFailedIntegrationEvent.Name);
+
+        var contractTypes = new[]
+        {
+            typeof(OcrExtractionRetryScheduledIntegrationEvent),
+            typeof(OcrExtractionPermanentlyFailedIntegrationEvent)
+        };
+        foreach (var contractType in contractTypes)
+        {
+            var properties = contractType
+                .GetProperties()
+                .Select(property => property.Name)
+                .ToArray();
+
+            Assert.Contains("FailureCategory", properties);
+            Assert.Contains("UserMessageCode", properties);
+            Assert.Contains("ProviderName", properties);
+            Assert.Contains("ModelKey", properties);
+            Assert.Contains("TraceId", properties);
+            Assert.DoesNotContain(properties, name =>
+                name.Contains("Raw", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("ExtractedText", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("ImageContent", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("FileName", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("ObjectKey", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("ProviderError", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("Confirmed", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("Exception", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("StackTrace", StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    [Fact]
     public void DefaultInfrastructure_UsesInterserviceOcrCompletionDelivery()
     {
         var configuration = new ConfigurationBuilder()

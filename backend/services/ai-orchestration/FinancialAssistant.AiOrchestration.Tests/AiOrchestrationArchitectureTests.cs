@@ -146,4 +146,69 @@ public sealed class AiOrchestrationArchitectureTests
                 name.Contains("ErrorMessage", StringComparison.OrdinalIgnoreCase));
         }
     }
+
+    [Fact]
+    public void AsyncParsingRetryPolicy_IsBoundedAndClassifiesFailuresSafely()
+    {
+        Assert.Equal(3, AiParsingJobRetryPolicy.MaximumAttempts);
+        Assert.Equal(
+            TimeSpan.FromSeconds(30),
+            AiParsingJobRetryPolicy.GetBackoffBeforeAttempt(2));
+        Assert.Equal(
+            TimeSpan.FromMinutes(2),
+            AiParsingJobRetryPolicy.GetBackoffBeforeAttempt(3));
+
+        Assert.True(AiParsingJobRetryPolicy.ShouldRetry(
+            AiParsingFailureCategories.ProviderTimeout,
+            failedAttempt: 1));
+        Assert.True(AiParsingJobRetryPolicy.ShouldRetry(
+            AiParsingFailureCategories.RateLimited,
+            failedAttempt: 2));
+        Assert.False(AiParsingJobRetryPolicy.ShouldRetry(
+            AiParsingFailureCategories.InvalidProviderResponse,
+            failedAttempt: 1));
+        Assert.False(AiParsingJobRetryPolicy.ShouldRetry(
+            AiParsingFailureCategories.ProviderTimeout,
+            failedAttempt: AiParsingJobRetryPolicy.MaximumAttempts));
+        Assert.False(AiParsingJobRetryPolicy.ShouldRetry(
+            "unknown_failure",
+            failedAttempt: 1));
+    }
+
+    [Fact]
+    public void AsyncParsingFailureEvents_AreVersionedSafeAndNonAuthoritative()
+    {
+        Assert.Equal(
+            "ai.parsing-retry-scheduled.v1",
+            AiParsingRetryScheduledIntegrationEvent.Name);
+        Assert.Equal(
+            "ai.parsing-permanently-failed.v1",
+            AiParsingPermanentlyFailedIntegrationEvent.Name);
+
+        var contractTypes = new[]
+        {
+            typeof(AiParsingRetryScheduledIntegrationEvent),
+            typeof(AiParsingPermanentlyFailedIntegrationEvent)
+        };
+        foreach (var contractType in contractTypes)
+        {
+            var properties = contractType
+                .GetProperties()
+                .Select(property => property.Name)
+                .ToArray();
+
+            Assert.Contains("FailureCategory", properties);
+            Assert.Contains("UserMessageCode", properties);
+            Assert.Contains("ProviderName", properties);
+            Assert.Contains("ModelKey", properties);
+            Assert.Contains("TraceId", properties);
+            Assert.DoesNotContain(properties, name =>
+                name.Contains("Prompt", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("Output", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("Confirmed", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("ErrorMessage", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("Exception", StringComparison.OrdinalIgnoreCase) ||
+                name.Contains("StackTrace", StringComparison.OrdinalIgnoreCase));
+        }
+    }
 }
