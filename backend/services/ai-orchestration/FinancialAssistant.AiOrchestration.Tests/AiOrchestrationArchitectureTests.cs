@@ -160,18 +160,27 @@ public sealed class AiOrchestrationArchitectureTests
 
         Assert.True(AiParsingJobRetryPolicy.ShouldRetry(
             AiParsingFailureCategories.ProviderTimeout,
+            isTransient: true,
             failedAttempt: 1));
         Assert.True(AiParsingJobRetryPolicy.ShouldRetry(
             AiParsingFailureCategories.RateLimited,
+            isTransient: true,
             failedAttempt: 2));
         Assert.False(AiParsingJobRetryPolicy.ShouldRetry(
             AiParsingFailureCategories.InvalidProviderResponse,
+            isTransient: false,
             failedAttempt: 1));
         Assert.False(AiParsingJobRetryPolicy.ShouldRetry(
             AiParsingFailureCategories.ProviderTimeout,
+            isTransient: true,
             failedAttempt: AiParsingJobRetryPolicy.MaximumAttempts));
         Assert.False(AiParsingJobRetryPolicy.ShouldRetry(
             "unknown_failure",
+            isTransient: true,
+            failedAttempt: 1));
+        Assert.False(AiParsingJobRetryPolicy.ShouldRetry(
+            AiParsingFailureCategories.ProviderUnavailable,
+            isTransient: false,
             failedAttempt: 1));
     }
 

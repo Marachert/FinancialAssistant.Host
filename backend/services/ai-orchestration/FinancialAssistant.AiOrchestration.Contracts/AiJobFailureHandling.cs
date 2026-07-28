@@ -31,7 +31,11 @@ public static class AiParsingJobRetryPolicy
 {
     public const int MaximumAttempts = 3;
 
-    public static bool ShouldRetry(string failureCategory, int failedAttempt) =>
+    public static bool ShouldRetry(
+        string failureCategory,
+        bool isTransient,
+        int failedAttempt) =>
+        isTransient &&
         failedAttempt is >= 1 and < MaximumAttempts &&
         AiParsingFailureCategories.IsRetryable(failureCategory);
 

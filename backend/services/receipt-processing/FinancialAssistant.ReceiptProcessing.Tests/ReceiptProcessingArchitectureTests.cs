@@ -112,18 +112,27 @@ public sealed class ReceiptProcessingArchitectureTests
 
         Assert.True(OcrExtractionJobRetryPolicy.ShouldRetry(
             OcrExtractionFailureCategories.ProviderUnavailable,
+            isTransient: true,
             failedAttempt: 1));
         Assert.True(OcrExtractionJobRetryPolicy.ShouldRetry(
             OcrExtractionFailureCategories.TransportFailure,
+            isTransient: true,
             failedAttempt: 2));
         Assert.False(OcrExtractionJobRetryPolicy.ShouldRetry(
             OcrExtractionFailureCategories.InvalidReceiptContent,
+            isTransient: false,
             failedAttempt: 1));
         Assert.False(OcrExtractionJobRetryPolicy.ShouldRetry(
             OcrExtractionFailureCategories.ProviderTimeout,
+            isTransient: true,
             failedAttempt: OcrExtractionJobRetryPolicy.MaximumAttempts));
         Assert.False(OcrExtractionJobRetryPolicy.ShouldRetry(
             "unknown_failure",
+            isTransient: true,
+            failedAttempt: 1));
+        Assert.False(OcrExtractionJobRetryPolicy.ShouldRetry(
+            OcrExtractionFailureCategories.ProviderUnavailable,
+            isTransient: false,
             failedAttempt: 1));
     }
 

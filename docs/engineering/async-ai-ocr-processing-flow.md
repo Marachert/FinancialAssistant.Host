@@ -61,10 +61,13 @@ Provider-call retries and asynchronous job retries are separate layers:
 - broker scheduling may add up to 20 percent positive jitter, but may not shorten the base
   delay or exceed the three-attempt limit.
 
-Transient categories are `provider_timeout`, `provider_unavailable`, `rate_limited`, and
-`transport_failure`. Permanent categories include invalid input, invalid or unsafe provider
-output, disabled providers, and unclassified provider failures. Unknown categories fail
-closed and are never retried automatically.
+Potentially transient categories are `provider_timeout`, `provider_unavailable`,
+`rate_limited`, and `transport_failure`. A job is retried only when its category is in that
+allowlist and the provider boundary marks the concrete failure transient. Permanent
+categories include invalid input, invalid or unsafe provider output, `provider_disabled`,
+and unclassified provider failures. Disabled provider adapters must emit
+`provider_disabled`, never `provider_unavailable`. Unknown categories and failures marked
+non-transient fail closed and are never retried automatically.
 
 For a retryable failure with attempts remaining, the worker publishes the existing failed
 event, a failed status update, and then one retry-scheduled event:
