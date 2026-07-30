@@ -14,6 +14,13 @@
     "fail",
     "not_applicable"
   ],
+  "notApplicableEvidenceRequirements": [
+    "capability scope",
+    "rationale",
+    "approver",
+    "decision date",
+    "compensating controls or explicit none"
+  ],
   "requiredDomains": [
     "data_minimization",
     "provider_data_handling",

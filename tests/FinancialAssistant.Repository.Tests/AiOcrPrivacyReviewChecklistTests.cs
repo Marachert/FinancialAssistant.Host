@@ -38,6 +38,16 @@ public sealed class AiOcrPrivacyReviewChecklistTests
         Assert.Equal(
             new[] { "fail", "not_applicable", "pass" },
             checklist.DecisionValues.Order(StringComparer.Ordinal).ToArray());
+        Assert.Equal(
+            new[]
+            {
+                "approver",
+                "capability scope",
+                "compensating controls or explicit none",
+                "decision date",
+                "rationale"
+            },
+            checklist.NotApplicableEvidenceRequirements.Order(StringComparer.Ordinal).ToArray());
         Assert.NotEmpty(checklist.Owners);
         Assert.Equal(
             expectedDomains,
@@ -114,6 +124,10 @@ public sealed class AiOcrPrivacyReviewChecklistTests
         Assert.Contains(ChecklistPath, documentation, StringComparison.Ordinal);
         Assert.Contains("FIN-124", documentation, StringComparison.Ordinal);
         Assert.Contains("Any unresolved `fail`", documentation, StringComparison.Ordinal);
+        Assert.Contains(
+            "missing substitute evidence for `not_applicable`",
+            documentation,
+            StringComparison.Ordinal);
         Assert.Contains("opaque references", documentation, StringComparison.OrdinalIgnoreCase);
 
         foreach (var check in checklist.Checks)
@@ -181,6 +195,7 @@ public sealed class AiOcrPrivacyReviewChecklistTests
         string ReleaseReadinessIssueKey,
         string RawInputStoragePolicy,
         string[] DecisionValues,
+        string[] NotApplicableEvidenceRequirements,
         string[] RequiredDomains,
         PrivacyCheck[] Checks);
 

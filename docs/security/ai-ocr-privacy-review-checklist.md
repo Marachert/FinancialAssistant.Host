@@ -44,11 +44,15 @@ For every stable check below, record one decision:
 
 - `pass`: evidence demonstrates the expected behavior;
 - `fail`: the provider or implementation is blocked;
-- `not_applicable`: the reviewer records a rationale and approver.
+- `not_applicable`: the check genuinely does not apply to the named capability and
+  the reviewer records the capability scope, rationale, approver, decision date, and
+  compensating controls or an explicit statement that none are needed. This record
+  is the substitute evidence for the check.
 
-Any unresolved `fail`, unanswered provider question, missing required evidence, or
-unknown retention/training behavior blocks production enablement. A later duplicate
-or replacement provider inherits no approval automatically.
+Any unresolved `fail`, unanswered provider question, missing required evidence for
+a `pass`, missing substitute evidence for `not_applicable`, or unknown
+retention/training behavior blocks production enablement. A later duplicate or
+replacement provider inherits no approval automatically.
 
 ## Input Minimization
 
