@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-07-30T17:49:00+03:00
+Last updated: 2026-07-30T18:16:21+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-57 closure is **50.0%**:
-**98 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-59 closure is **50.5%**:
+**99 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,11 +13,13 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-57 - P2.T8 Configure CI pipeline skeleton for backend
-- originating implementation commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/b366363778bccfbac9e7743adbffc015ec845e8e
-- previous readiness: 97 / 196, or 49.5%
-- current readiness: 98 / 196, or 50.0%
+- FIN-59 - Define Elasticsearch naming and alias conventions
+- delivery PR:
+  https://github.com/Marachert/FinancialAssistant.Host/pull/69
+- merge commit:
+  https://github.com/Marachert/FinancialAssistant.Host/commit/ea087ad05fe3a44e27f878b4d83fb7a3d5b005d3
+- previous readiness: 98 / 196, or 50.0%
+- current readiness: 99 / 196, or 50.5%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
@@ -26,12 +28,15 @@ denominator.
 
 Current delivery:
 
-- FIN-57 is Done after stale Jira state recovery; current `main` retains the
-  pull-request-triggered .NET 8 restore, Release build, test/TRX, and format
-  workflow
-- CI and contributor documentation define equivalent local commands, failure
-  troubleshooting, required checks, and branch-protection recommendations
-- Backend CI #224 verifies the current pipeline successfully on delivered code
+- FIN-59 is Done after PR 69 merged the canonical service-owned Elasticsearch
+  namespace, physical index, template, and stable read/write alias conventions
+- schema-version and generation migration semantics require a write-safe
+  strategy and one atomic read/write alias cutover
+- repository regression tests cover ownership, naming grammar, lifecycle rules,
+  all eight required synthetic service examples, and documentation discovery
+- Backend CI #232 passed restore, Release build, tests, and format on the final
+  FIN-59 head
+- parent FIN-58 remains In Progress because FIN-60 is still To Do
 
 ## Epic Progress
 
@@ -39,7 +44,7 @@ Current delivery:
 | --- | --- | ---: | ---: | ---: |
 | FIN-1 | P0 Product clarification and release scope | 3 | 3 | 100.0% |
 | FIN-5 | P1 Architecture definition and technical governance | 17 | 17 | 100.0% |
-| FIN-10 | P2 Repository, DevOps, and local platform foundation | 27 | 36 | 75.0% |
+| FIN-10 | P2 Repository, DevOps, and local platform foundation | 28 | 36 | 77.8% |
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 4 | 22 | 18.2% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
@@ -47,7 +52,7 @@ Current delivery:
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **98** | **196** | **50.0%** |
+| **Total** | **Canonical POC leaf scope** | **99** | **196** | **50.5%** |
 
 ## First-User-Test Gates
 
@@ -101,3 +106,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-07-30T17:34:05+03:00 | FIN-54 | Recovered delivered work and closed Jira | 49.0% | +0.5 pp |
 | 2026-07-30T17:41:07+03:00 | FIN-55 | Recovered delivered work and closed Jira | 49.5% | +0.5 pp |
 | 2026-07-30T17:49:00+03:00 | FIN-57 | Recovered delivered CI baseline and closed Jira | 50.0% | +0.5 pp |
+| 2026-07-30T18:16:21+03:00 | FIN-59 | Closure delivered by PR 69 | 50.5% | +0.5 pp |
