@@ -20,11 +20,21 @@ public sealed class AiOrchestrationOptions
 
 public sealed class AiProviderClientOptions
 {
+    public const string DisabledMode = "disabled";
+    public const string SandboxMode = "sandbox";
+    public const string ProductionMode = "production";
+
+    public bool Enabled { get; init; }
+
+    public string Mode { get; init; } = DisabledMode;
+
     public string Name { get; init; } = string.Empty;
 
     public string Model { get; init; } = string.Empty;
 
     public string Endpoint { get; init; } = string.Empty;
+
+    public string CredentialEnvironmentVariable { get; init; } = string.Empty;
 
     public int RequestTimeoutSeconds { get; init; } = 30;
 
@@ -39,11 +49,21 @@ public sealed class AiProviderClientOptions
         !string.IsNullOrWhiteSpace(Endpoint);
 
     public bool IsConfigured =>
-        !string.IsNullOrWhiteSpace(Name) &&
-        !string.IsNullOrWhiteSpace(Model) &&
+        Enabled &&
+        IsEnabledMode(Mode) &&
+        IsSafeIdentifier(Name) &&
+        IsSafeIdentifier(Model) &&
         Uri.TryCreate(Endpoint, UriKind.Absolute, out var endpoint) &&
         endpoint.Scheme == Uri.UriSchemeHttps &&
-        string.IsNullOrEmpty(endpoint.UserInfo);
+        string.IsNullOrEmpty(endpoint.UserInfo) &&
+        IsSafeEnvironmentVariableName(CredentialEnvironmentVariable);
+
+    public bool IsValidConfiguration =>
+        IsConfigured ||
+        (!Enabled &&
+         string.Equals(Mode, DisabledMode, StringComparison.Ordinal) &&
+         !HasAnyProviderIdentity &&
+         string.IsNullOrWhiteSpace(CredentialEnvironmentVariable));
 
     public bool HasValidResilienceSettings =>
         RequestTimeoutSeconds is >= 1 and <= 120 &&
@@ -56,7 +76,7 @@ public sealed class AiProviderClientOptions
         if (!IsConfigured)
         {
             throw new InvalidOperationException(
-                "Provider name, model, and HTTPS endpoint must be configured first.");
+                "The AI provider must be enabled with a valid mode, identity, HTTPS endpoint, and credential reference.");
         }
 
         return new AiModelRoute(capabilityName, Name, Model);
@@ -75,4 +95,25 @@ public sealed class AiProviderClientOptions
             MaximumAttempts,
             TimeSpan.FromMilliseconds(RetryDelayMilliseconds));
     }
+
+    private static bool IsEnabledMode(string mode) =>
+        string.Equals(mode, SandboxMode, StringComparison.Ordinal) ||
+        string.Equals(mode, ProductionMode, StringComparison.Ordinal);
+
+    private static bool IsSafeIdentifier(string value) =>
+        !string.IsNullOrWhiteSpace(value) &&
+        value.Length <= 64 &&
+        value.All(character =>
+            character is >= 'a' and <= 'z' ||
+            character is >= '0' and <= '9' ||
+            character is '.' or '_' or '-');
+
+    private static bool IsSafeEnvironmentVariableName(string value) =>
+        !string.IsNullOrWhiteSpace(value) &&
+        value.Length <= 128 &&
+        value[0] is >= 'A' and <= 'Z' &&
+        value.All(character =>
+            character is >= 'A' and <= 'Z' ||
+            character is >= '0' and <= '9' ||
+            character == '_');
 }

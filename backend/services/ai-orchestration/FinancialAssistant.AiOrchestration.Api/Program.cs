@@ -2,6 +2,7 @@ using FinancialAssistant.AiOrchestration.Api.Configuration;
 using FinancialAssistant.AiOrchestration.Api.Health;
 using FinancialAssistant.AiOrchestration.Api.Middleware;
 using FinancialAssistant.AiOrchestration.Application;
+using FinancialAssistant.AiOrchestration.Application.Abstractions;
 using FinancialAssistant.AiOrchestration.Contracts;
 using FinancialAssistant.AiOrchestration.Infrastructure;
 using FinancialAssistant.AiOrchestration.Infrastructure.Prompts;
@@ -48,10 +49,8 @@ builder.Services
             StringComparison.Ordinal),
         "AI output authority must remain suggestion-only.")
     .Validate(
-        options =>
-            !options.Provider.HasAnyProviderIdentity ||
-            options.Provider.IsConfigured,
-        "AI provider name, model, and HTTPS endpoint must be configured together.")
+        options => options.Provider.IsValidConfiguration,
+        "The AI provider must either be disabled with empty placeholders or enabled with a valid mode, identity, HTTPS endpoint, and credential environment-variable reference.")
     .Validate(
         options => options.Provider.HasValidResilienceSettings,
         "AI provider timeout and retry settings are outside the allowed range.")
@@ -79,6 +78,21 @@ builder.Services
         tags: new[] { "ready" });
 
 var app = builder.Build();
+
+var runtimeProviderOptions = app.Services
+    .GetRequiredService<IOptions<AiOrchestrationOptions>>()
+    .Value
+    .Provider;
+if (runtimeProviderOptions.Enabled &&
+    !app.Services.GetServices<ILlmProvider>().Any(provider =>
+        string.Equals(
+            provider.Name,
+            runtimeProviderOptions.Name,
+            StringComparison.OrdinalIgnoreCase)))
+{
+    throw new InvalidOperationException(
+        "The configured AI provider adapter is not registered.");
+}
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 

@@ -2,8 +2,10 @@ using System.Diagnostics;
 using FinancialAssistant.ReceiptProcessing.Application;
 using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
 using FinancialAssistant.ReceiptProcessing.Contracts;
+using FinancialAssistant.ReceiptProcessing.Infrastructure;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Ocr;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FinancialAssistant.ReceiptProcessing.Tests;
 
@@ -151,11 +153,16 @@ public sealed class ResilientOcrProviderTests
             .AddInMemoryCollection(
                 new Dictionary<string, string?>
                 {
+                    ["ReceiptProcessing:Ocr:Enabled"] = "true",
+                    ["ReceiptProcessing:Ocr:Mode"] = "sandbox",
                     ["ReceiptProcessing:Ocr:RequestTimeoutSeconds"] = "45",
                     ["ReceiptProcessing:Ocr:MaximumAttempts"] = "3",
                     ["ReceiptProcessing:Ocr:RetryDelayMilliseconds"] = "250",
                     ["ReceiptProcessing:Ocr:ProviderName"] = "synthetic-ocr",
-                    ["ReceiptProcessing:Ocr:ModelKey"] = "synthetic-v2"
+                    ["ReceiptProcessing:Ocr:ModelKey"] = "synthetic-v2",
+                    ["ReceiptProcessing:Ocr:Endpoint"] = "https://ocr.invalid/v2",
+                    ["ReceiptProcessing:Ocr:CredentialEnvironmentVariable"] =
+                        "FINANCIAL_ASSISTANT_TEST_OCR_CREDENTIAL"
                 })
             .Build();
 
@@ -166,6 +173,12 @@ public sealed class ResilientOcrProviderTests
         Assert.Equal(TimeSpan.FromMilliseconds(250), options.RetryDelay);
         Assert.Equal("synthetic-ocr", options.ProviderName);
         Assert.Equal("synthetic-v2", options.ModelKey);
+        Assert.True(options.Enabled);
+        Assert.Equal(OcrProviderResilienceOptions.SandboxMode, options.Mode);
+        Assert.Equal("https://ocr.invalid/v2", options.Endpoint);
+        Assert.Equal(
+            "FINANCIAL_ASSISTANT_TEST_OCR_CREDENTIAL",
+            options.CredentialEnvironmentVariable);
     }
 
     [Theory]
@@ -178,6 +191,7 @@ public sealed class ResilientOcrProviderTests
     [InlineData("ProviderName", "ocr-\u00E9")]
     [InlineData("ModelKey", "\u03BC\u03BF\u03BD\u03C4\u03AD\u03BB\u03BF")]
     [InlineData("ModelKey", "model-\u0661")]
+    [InlineData("Enabled", "not-a-boolean")]
     public void FromConfiguration_RejectsInvalidResilienceSettings(
         string settingName,
         string value)
@@ -192,6 +206,99 @@ public sealed class ResilientOcrProviderTests
 
         Assert.ThrowsAny<Exception>(() =>
             OcrProviderResilienceOptions.FromConfiguration(configuration));
+    }
+
+    [Fact]
+    public void FromConfiguration_UsesSafeDisabledLocalDefaults()
+    {
+        var configuration = new ConfigurationBuilder().Build();
+
+        var options = OcrProviderResilienceOptions.FromConfiguration(configuration);
+
+        Assert.False(options.Enabled);
+        Assert.Equal(OcrProviderResilienceOptions.DisabledMode, options.Mode);
+        Assert.Equal(OcrProviderResilienceOptions.DefaultProviderName, options.ProviderName);
+        Assert.Equal(OcrProviderResilienceOptions.DefaultModelKey, options.ModelKey);
+        Assert.Empty(options.Endpoint);
+        Assert.Empty(options.CredentialEnvironmentVariable);
+    }
+
+    [Theory]
+    [InlineData("Mode", "disabled")]
+    [InlineData("Endpoint", "http://ocr.invalid")]
+    [InlineData("CredentialEnvironmentVariable", "unsafe-key")]
+    public void FromConfiguration_RejectsIncompleteEnabledProviderSettings(
+        string settingName,
+        string value)
+    {
+        var settings = new Dictionary<string, string?>
+        {
+            ["ReceiptProcessing:Ocr:Enabled"] = "true",
+            ["ReceiptProcessing:Ocr:Mode"] = "production",
+            ["ReceiptProcessing:Ocr:ProviderName"] = "synthetic-ocr",
+            ["ReceiptProcessing:Ocr:ModelKey"] = "synthetic-v1",
+            ["ReceiptProcessing:Ocr:Endpoint"] = "https://ocr.invalid/v1",
+            ["ReceiptProcessing:Ocr:CredentialEnvironmentVariable"] =
+                "FINANCIAL_ASSISTANT_TEST_OCR_CREDENTIAL",
+            [$"ReceiptProcessing:Ocr:{settingName}"] = value
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(settings)
+            .Build();
+
+        Assert.Throws<InvalidOperationException>(() =>
+            OcrProviderResilienceOptions.FromConfiguration(configuration));
+    }
+
+    [Fact]
+    public async Task DisabledConfiguration_UsesDisabledClientWithoutCallingRegisteredAdapter()
+    {
+        var adapter = new RecordingClient((_, _, _, _) =>
+            Task.FromResult(CreateExtraction()));
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+        services.AddSingleton<IOcrProviderClient>(adapter);
+        services.AddReceiptProcessingInfrastructure();
+        using var provider = services.BuildServiceProvider();
+        var ocrProvider = provider.GetRequiredService<IOcrProvider>();
+
+        var exception = await Assert.ThrowsAsync<OcrProviderException>(() =>
+            ocrProvider.ExtractAsync(
+                new MemoryStream(SyntheticReceipt),
+                "image/png",
+                CancellationToken.None));
+
+        Assert.Equal(OcrProviderErrorCodes.ProviderDisabled, exception.ErrorCode);
+        Assert.Equal(0, adapter.Attempts);
+    }
+
+    [Fact]
+    public void EnabledConfiguration_WithoutRegisteredAdapterFailsResolution()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["ReceiptProcessing:Ocr:Enabled"] = "true",
+                    ["ReceiptProcessing:Ocr:Mode"] = "production",
+                    ["ReceiptProcessing:Ocr:ProviderName"] = "synthetic-ocr",
+                    ["ReceiptProcessing:Ocr:ModelKey"] = "synthetic-v1",
+                    ["ReceiptProcessing:Ocr:Endpoint"] = "https://ocr.invalid/v1",
+                    ["ReceiptProcessing:Ocr:CredentialEnvironmentVariable"] =
+                        "FINANCIAL_ASSISTANT_TEST_OCR_CREDENTIAL"
+                })
+            .Build();
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddReceiptProcessingInfrastructure();
+        using var provider = services.BuildServiceProvider();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            provider.GetRequiredService<IOcrProvider>());
+
+        Assert.Equal(
+            "The configured OCR provider adapter is not registered.",
+            exception.Message);
     }
 
     private static ResilientOcrProvider CreateProvider(

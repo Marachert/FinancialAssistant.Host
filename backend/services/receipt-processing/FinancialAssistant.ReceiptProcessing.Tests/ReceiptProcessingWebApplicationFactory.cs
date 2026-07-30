@@ -22,8 +22,13 @@ public sealed class ReceiptProcessingWebApplicationFactory : WebApplicationFacto
                 new Dictionary<string, string?>
                 {
                     ["ReceiptProcessing:Gateway:SharedSecret"] = GatewaySecret,
+                    ["ReceiptProcessing:Ocr:Enabled"] = "true",
+                    ["ReceiptProcessing:Ocr:Mode"] = "sandbox",
                     ["ReceiptProcessing:Ocr:ProviderName"] = "synthetic-ocr",
-                    ["ReceiptProcessing:Ocr:ModelKey"] = "synthetic-v1"
+                    ["ReceiptProcessing:Ocr:ModelKey"] = "synthetic-v1",
+                    ["ReceiptProcessing:Ocr:Endpoint"] = "https://ocr.invalid/v1",
+                    ["ReceiptProcessing:Ocr:CredentialEnvironmentVariable"] =
+                        "FINANCIAL_ASSISTANT_TEST_OCR_CREDENTIAL"
                 }));
         builder.ConfigureServices(services =>
         {

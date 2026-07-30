@@ -30,4 +30,6 @@ FIN-108 completes the provider client boundary with reusable per-attempt timeout
 
 FIN-114 extends safe call metadata with request/trace correlation, processing duration, nullable confidence, and bounded failure categories. Metadata may include provider/model keys, prompt identity/version, status, token counts, and timestamps, but never raw input, prompt templates, model output, exception messages, or stack traces.
 
+FIN-118 adds the [shared provider configuration baseline](../../../docs/engineering/ai-ocr-provider-configuration.md). The provider is disabled by default; enabled sandbox or production configuration requires a safe provider/model identity, HTTPS endpoint, bounded resilience values, a credential environment-variable reference, and a matching registered adapter. Credential values are never stored in source configuration.
+
 Runtime provider adapters and durable metadata storage are intentionally separate infrastructure additions. The current adapter is explicitly in-memory and suitable only for this delivery increment.
