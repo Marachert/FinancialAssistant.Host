@@ -84,6 +84,8 @@ public interface IOcrProvider
 
 public interface IOcrProviderClient
 {
+    string Name { get; }
+
     Task<OcrExtractionResult> ExtractAsync(
         ReadOnlyMemory<byte> receiptImage,
         string contentType,

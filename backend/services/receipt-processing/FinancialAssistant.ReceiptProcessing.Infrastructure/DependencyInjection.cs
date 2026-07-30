@@ -37,7 +37,31 @@ public static class DependencyInjection
         services.TryAddSingleton(provider =>
             OcrProviderResilienceOptions.FromConfiguration(
                 provider.GetRequiredService<IConfiguration>()));
-        services.TryAddSingleton<IOcrProvider, ResilientOcrProvider>();
+        services.TryAddSingleton<IOcrProvider>(provider =>
+        {
+            var options = provider.GetRequiredService<OcrProviderResilienceOptions>();
+            if (!options.Enabled)
+            {
+                return new ResilientOcrProvider(
+                    new DisabledOcrProviderClient(),
+                    options);
+            }
+
+            var matchingClients = provider
+                .GetServices<IOcrProviderClient>()
+                .Where(client => string.Equals(
+                    client.Name,
+                    options.ProviderName,
+                    StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            if (matchingClients.Length != 1)
+            {
+                throw new InvalidOperationException(
+                    "Exactly one OCR provider adapter matching the configured provider name must be registered.");
+            }
+
+            return new ResilientOcrProvider(matchingClients[0], options);
+        });
         return services;
     }
 }

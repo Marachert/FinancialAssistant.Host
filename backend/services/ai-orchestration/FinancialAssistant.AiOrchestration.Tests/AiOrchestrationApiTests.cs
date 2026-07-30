@@ -1,9 +1,13 @@
 using System.Net;
 using System.Net.Http.Json;
 using FinancialAssistant.AiOrchestration.Api.Middleware;
+using FinancialAssistant.AiOrchestration.Application;
+using FinancialAssistant.AiOrchestration.Application.Abstractions;
 using FinancialAssistant.AiOrchestration.Contracts;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FinancialAssistant.AiOrchestration.Tests;
 
@@ -50,6 +54,67 @@ public sealed class AiOrchestrationApiTests :
         Assert.Equal(
             "synthetic-correlation-105",
             response.Headers.GetValues(CorrelationIdMiddleware.HeaderName).Single());
+    }
+
+    [Fact]
+    public void EnabledProviderWithoutMatchingAdapter_FailsStartup()
+    {
+        using var factory = new AiOrchestrationWebApplicationFactory()
+            .WithWebHostBuilder(builder =>
+                builder.ConfigureAppConfiguration((_, configuration) =>
+                    configuration.AddInMemoryCollection(
+                        CreateEnabledProviderConfiguration())));
+
+        var exception = Assert.Throws<InvalidOperationException>(factory.CreateClient);
+
+        Assert.Equal(
+            "The configured AI provider adapter is not registered.",
+            exception.Message);
+    }
+
+    [Fact]
+    public async Task EnabledProviderWithMatchingAdapter_ReportsConfigured()
+    {
+        using var factory = new AiOrchestrationWebApplicationFactory()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureAppConfiguration((_, configuration) =>
+                    configuration.AddInMemoryCollection(
+                        CreateEnabledProviderConfiguration()));
+                builder.ConfigureServices(services =>
+                    services.AddSingleton<ILlmProvider, SyntheticLlmProvider>());
+            });
+        using var configuredClient = factory.CreateClient();
+
+        using var response = await configuredClient.GetAsync("/service/info");
+        var info = await response.Content
+            .ReadFromJsonAsync<AiOrchestrationServiceInfoResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(info);
+        Assert.True(info.ProviderConfigured);
+    }
+
+    private static Dictionary<string, string?> CreateEnabledProviderConfiguration() =>
+        new()
+        {
+            ["AiOrchestration:Provider:Enabled"] = "true",
+            ["AiOrchestration:Provider:Mode"] = "sandbox",
+            ["AiOrchestration:Provider:Name"] = "synthetic-provider",
+            ["AiOrchestration:Provider:Model"] = "synthetic-model",
+            ["AiOrchestration:Provider:Endpoint"] = "https://ai.invalid/v1",
+            ["AiOrchestration:Provider:CredentialEnvironmentVariable"] =
+                "FINANCIAL_ASSISTANT_TEST_AI_CREDENTIAL"
+        };
+
+    private sealed class SyntheticLlmProvider : ILlmProvider
+    {
+        public string Name => "synthetic-provider";
+
+        public Task<LlmProviderResponse> CompleteAsync(
+            LlmProviderRequest request,
+            CancellationToken cancellationToken) =>
+            throw new NotSupportedException("No provider call is needed by this test.");
     }
 }
 

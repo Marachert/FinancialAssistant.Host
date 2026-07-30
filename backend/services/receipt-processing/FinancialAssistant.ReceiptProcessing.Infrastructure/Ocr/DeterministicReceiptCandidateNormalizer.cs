@@ -371,6 +371,8 @@ public sealed partial class DeterministicReceiptCandidateNormalizer : IOcrCandid
 
 public sealed class DisabledOcrProviderClient : IOcrProviderClient
 {
+    public string Name => OcrProviderResilienceOptions.DisabledMode;
+
     public Task<OcrExtractionResult> ExtractAsync(
         ReadOnlyMemory<byte> receiptImage,
         string contentType,

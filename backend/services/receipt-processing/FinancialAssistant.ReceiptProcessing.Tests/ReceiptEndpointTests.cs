@@ -300,6 +300,8 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
 
     private sealed class FailingOcrProviderClient : IOcrProviderClient
     {
+        public string Name => "synthetic-ocr";
+
         public Task<OcrExtractionResult> ExtractAsync(
             ReadOnlyMemory<byte> receiptImage,
             string contentType,

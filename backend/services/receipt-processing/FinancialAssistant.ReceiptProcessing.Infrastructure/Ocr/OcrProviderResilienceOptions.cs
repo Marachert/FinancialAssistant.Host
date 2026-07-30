@@ -5,6 +5,9 @@ namespace FinancialAssistant.ReceiptProcessing.Infrastructure.Ocr;
 public sealed record OcrProviderResilienceOptions
 {
     public const string ConfigurationSection = "ReceiptProcessing:Ocr";
+    public const string DisabledMode = "disabled";
+    public const string SandboxMode = "sandbox";
+    public const string ProductionMode = "production";
 
     public const int DefaultRequestTimeoutSeconds = 30;
 
@@ -21,7 +24,11 @@ public sealed record OcrProviderResilienceOptions
         int maximumAttempts,
         TimeSpan retryDelay,
         string providerName = DefaultProviderName,
-        string modelKey = DefaultModelKey)
+        string modelKey = DefaultModelKey,
+        bool enabled = false,
+        string mode = DisabledMode,
+        string endpoint = "",
+        string credentialEnvironmentVariable = "")
     {
         if (requestTimeout <= TimeSpan.Zero || requestTimeout > TimeSpan.FromMinutes(2))
         {
@@ -46,6 +53,12 @@ public sealed record OcrProviderResilienceOptions
 
         ProviderName = NormalizeIdentity(providerName, nameof(providerName));
         ModelKey = NormalizeIdentity(modelKey, nameof(modelKey));
+        Enabled = enabled;
+        Mode = mode?.Trim() ?? string.Empty;
+        Endpoint = endpoint?.Trim() ?? string.Empty;
+        CredentialEnvironmentVariable =
+            credentialEnvironmentVariable?.Trim() ?? string.Empty;
+        ValidateProviderConfiguration();
         RequestTimeout = requestTimeout;
         MaximumAttempts = maximumAttempts;
         RetryDelay = retryDelay;
@@ -60,6 +73,14 @@ public sealed record OcrProviderResilienceOptions
     public string ProviderName { get; }
 
     public string ModelKey { get; }
+
+    public bool Enabled { get; }
+
+    public string Mode { get; }
+
+    public string Endpoint { get; }
+
+    public string CredentialEnvironmentVariable { get; }
 
     public static OcrProviderResilienceOptions FromConfiguration(
         IConfiguration configuration)
@@ -78,13 +99,19 @@ public sealed record OcrProviderResilienceOptions
             configuration,
             "RetryDelayMilliseconds",
             DefaultRetryDelayMilliseconds);
+        var enabled = ReadBoolean(configuration, "Enabled", defaultValue: false);
 
         return new OcrProviderResilienceOptions(
             TimeSpan.FromSeconds(timeoutSeconds),
             maximumAttempts,
             TimeSpan.FromMilliseconds(retryDelayMilliseconds),
             configuration[$"{ConfigurationSection}:ProviderName"] ?? DefaultProviderName,
-            configuration[$"{ConfigurationSection}:ModelKey"] ?? DefaultModelKey);
+            configuration[$"{ConfigurationSection}:ModelKey"] ?? DefaultModelKey,
+            enabled,
+            configuration[$"{ConfigurationSection}:Mode"] ?? DisabledMode,
+            configuration[$"{ConfigurationSection}:Endpoint"] ?? string.Empty,
+            configuration[$"{ConfigurationSection}:CredentialEnvironmentVariable"] ??
+            string.Empty);
     }
 
     private static int ReadInteger(
@@ -108,6 +135,27 @@ public sealed record OcrProviderResilienceOptions
         return parsed;
     }
 
+    private static bool ReadBoolean(
+        IConfiguration configuration,
+        string settingName,
+        bool defaultValue)
+    {
+        var key = $"{ConfigurationSection}:{settingName}";
+        var value = configuration[key];
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return defaultValue;
+        }
+
+        if (!bool.TryParse(value, out var parsed))
+        {
+            throw new InvalidOperationException(
+                $"Configuration setting '{key}' must be a boolean.");
+        }
+
+        return parsed;
+    }
+
     private static string NormalizeIdentity(string value, string parameterName)
     {
         var normalized = value?.Trim().ToLowerInvariant();
@@ -125,4 +173,44 @@ public sealed record OcrProviderResilienceOptions
 
         return normalized;
     }
+
+    private void ValidateProviderConfiguration()
+    {
+        if (!Enabled)
+        {
+            if (!string.Equals(Mode, DisabledMode, StringComparison.Ordinal) ||
+                ProviderName != DefaultProviderName ||
+                ModelKey != DefaultModelKey ||
+                Endpoint.Length > 0 ||
+                CredentialEnvironmentVariable.Length > 0)
+            {
+                throw new InvalidOperationException(
+                    "Disabled OCR provider settings must use empty local placeholders.");
+            }
+
+            return;
+        }
+
+        if (!(string.Equals(Mode, SandboxMode, StringComparison.Ordinal) ||
+              string.Equals(Mode, ProductionMode, StringComparison.Ordinal)) ||
+            ProviderName == DefaultProviderName ||
+            ModelKey == DefaultModelKey ||
+            !Uri.TryCreate(Endpoint, UriKind.Absolute, out var endpoint) ||
+            endpoint.Scheme != Uri.UriSchemeHttps ||
+            !string.IsNullOrEmpty(endpoint.UserInfo) ||
+            !IsSafeEnvironmentVariableName(CredentialEnvironmentVariable))
+        {
+            throw new InvalidOperationException(
+                "Enabled OCR provider settings require a valid mode, identity, HTTPS endpoint, and credential environment-variable reference.");
+        }
+    }
+
+    private static bool IsSafeEnvironmentVariableName(string value) =>
+        !string.IsNullOrWhiteSpace(value) &&
+        value.Length <= 128 &&
+        value[0] is >= 'A' and <= 'Z' &&
+        value.All(character =>
+            character is >= 'A' and <= 'Z' ||
+            character is >= '0' and <= '9' ||
+            character == '_');
 }
