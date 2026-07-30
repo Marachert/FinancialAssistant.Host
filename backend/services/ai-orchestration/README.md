@@ -34,4 +34,6 @@ FIN-118 adds the [shared provider configuration baseline](../../../docs/engineer
 
 FIN-121 adds the [AI and OCR usage cost-control baseline](../../../docs/engineering/ai-ocr-usage-cost-controls.md). AI requests are bounded by per-user daily and character limits before an external call. Safe metadata records token counts, request characters, logical provider units, and UTC billing month without storing the usage subject, prompt, input, or output. The in-memory daily limiter is for a single-instance PoC and must be replaced before production scaling.
 
+FIN-123 adds the [AI and OCR integration test plan](../../../docs/engineering/ai-ocr-integration-test-plan.md). The provider-free pull-request lane covers structured parsing, malformed output, low-confidence suggestions, provider resilience, suggestion authority, and privacy-safe metadata with generated synthetic fixtures. Provider-specific sandbox contract results are separate FIN-124 release evidence.
+
 Runtime provider adapters and durable metadata storage are intentionally separate infrastructure additions. The current adapter is explicitly in-memory and suitable only for this delivery increment.
