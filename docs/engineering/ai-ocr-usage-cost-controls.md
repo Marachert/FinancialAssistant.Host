@@ -136,3 +136,8 @@ Before production or horizontal scaling:
 - verify warning and blocking alerts;
 - restrict aggregate usage views to the authenticated admin role;
 - complete privacy, cost, fallback, monitoring, and support review.
+
+The [FIN-124 AI and OCR release-readiness checklist](ai-ocr-release-readiness-checklist.md)
+binds these limits, the approved provider budget, billing reconciliation, admin
+visibility, fallback, monitoring, and support evidence to the exact public-release
+deployment.

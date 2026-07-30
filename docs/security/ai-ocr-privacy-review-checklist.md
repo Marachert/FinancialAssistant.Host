@@ -211,3 +211,7 @@ checklist. FIN-124 must confirm that:
 
 A code review may verify implementation evidence, but it cannot waive an unresolved
 privacy or provider-contract decision.
+
+Record the final provider, consent, cost, fallback, monitoring, support, and
+release-commit decisions in the
+[FIN-124 AI and OCR release-readiness checklist](../engineering/ai-ocr-release-readiness-checklist.md).

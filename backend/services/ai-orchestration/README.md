@@ -36,4 +36,6 @@ FIN-121 adds the [AI and OCR usage cost-control baseline](../../../docs/engineer
 
 FIN-123 adds the [AI and OCR integration test plan](../../../docs/engineering/ai-ocr-integration-test-plan.md). The provider-free pull-request lane covers structured parsing, malformed output, low-confidence suggestions, provider resilience, suggestion authority, and privacy-safe metadata with generated synthetic fixtures. Provider-specific sandbox contract results are separate FIN-124 release evidence.
 
+FIN-124 adds the [AI and OCR release-readiness checklist](../../../docs/engineering/ai-ocr-release-readiness-checklist.md). Public release remains blocked until provider configuration, privacy and consent, cost, fallback, integration, monitoring, and support evidence all match the exact release commit and deployment identity.
+
 Runtime provider adapters and durable metadata storage are intentionally separate infrastructure additions. The current adapter is explicitly in-memory and suitable only for this delivery increment.

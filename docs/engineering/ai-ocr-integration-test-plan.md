@@ -231,3 +231,6 @@ The linked inputs are the
 [privacy review checklist](../security/ai-ocr-privacy-review-checklist.md),
 [provider configuration baseline](ai-ocr-provider-configuration.md), and
 [usage cost controls](ai-ocr-usage-cost-controls.md).
+
+Record the final decisions and matching release identity in the
+[FIN-124 AI and OCR release-readiness checklist](ai-ocr-release-readiness-checklist.md).
