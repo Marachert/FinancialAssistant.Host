@@ -74,6 +74,8 @@ public sealed class ElasticsearchBootstrapTests
             "$writeAlias = \"$prefix-write\"",
             "is_write_index = $true",
             "Test-ElasticsearchResource",
+            "$parsedUri.IsLoopback",
+            "loopback-only local endpoint",
             "targets an unexpected physical index",
             "-Path \"_aliases\"",
             "-Path \"_index_template/$templateName\"",
@@ -86,6 +88,14 @@ public sealed class ElasticsearchBootstrapTests
         {
             Assert.Contains(phrase, bootstrap, StringComparison.Ordinal);
         }
+
+        var aliasPreflight = bootstrap.IndexOf(
+            "targets an unexpected physical index",
+            StringComparison.Ordinal);
+        var templateMutation = bootstrap.IndexOf(
+            "Invoke-ElasticsearchJson -Method Put -Path \"_index_template/$templateName\"",
+            StringComparison.Ordinal);
+        Assert.True(aliasPreflight >= 0 && aliasPreflight < templateMutation);
 
         Assert.DoesNotContain("Remove-Item", bootstrap, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("-Method Delete", bootstrap, StringComparison.OrdinalIgnoreCase);
