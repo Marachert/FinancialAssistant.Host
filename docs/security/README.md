@@ -25,3 +25,8 @@ Security controls must be enforced by backend and infrastructure components. Cli
 LLM and OCR providers receive only the minimum approved data. Their output remains untrusted until backend schema and business validation completes.
 
 Operational documentation must use sanitized examples and must not expose internal credentials, raw financial records, receipt content, OCR text, or LLM prompts/responses.
+
+## Review checklists
+
+- [AI and OCR privacy review checklist](ai-ocr-privacy-review-checklist.md)
+- [AI and OCR privacy review checklist contract](ai-ocr-privacy-review-checklist.json)
