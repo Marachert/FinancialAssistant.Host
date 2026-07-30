@@ -204,7 +204,8 @@
         {
           "path": "backend/services/receipt-processing/FinancialAssistant.ReceiptProcessing.Tests/EncryptedReceiptObjectStoreTests.cs",
           "tests": [
-            "Store_RoundTripsContentOnlyThroughAuthenticatedDecryption"
+            "Store_RoundTripsContentOnlyThroughAuthenticatedDecryption",
+            "Store_EncryptsAndRejectsTamperedCiphertext"
           ]
         }
       ],

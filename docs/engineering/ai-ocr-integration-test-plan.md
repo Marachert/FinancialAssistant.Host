@@ -112,6 +112,7 @@ Use `SYN-OCR-SINGLE-TOTAL-001` through Receipt Processing with a mocked
 `IOcrProviderClient`.
 
 - generated image bytes are encrypted at rest;
+- tampered stored ciphertext fails authenticated decryption;
 - request size and daily quota pass before object decryption;
 - the mock receives the expected bytes and content type;
 - raw image and OCR text are absent from stored audit metadata;
