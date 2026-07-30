@@ -12,7 +12,7 @@ public sealed class ElasticsearchNamingDocumentationTests
             repositoryRoot,
             "docs/engineering/elasticsearch-index-naming.md");
 
-        var normalizedGuide = NormalizeWhitespace(guide);
+        var normalizedGuide = NormalizeDocumentation(guide);
 
         var requiredPhrases = new[]
         {
@@ -76,8 +76,12 @@ public sealed class ElasticsearchNamingDocumentationTests
             StringComparison.Ordinal);
     }
 
-    private static string NormalizeWhitespace(string value) =>
-        string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+    private static string NormalizeDocumentation(string value) =>
+        string.Join(
+            ' ',
+            value
+                .Replace("`", string.Empty, StringComparison.Ordinal)
+                .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
     private static string ReadRequiredFile(string repositoryRoot, string path)
     {
