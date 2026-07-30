@@ -5,6 +5,7 @@ public enum AiCallStatus
     Succeeded,
     ValidationFailed,
     ProviderFailed,
+    CostControlRejected,
     Cancelled,
 }
 
@@ -14,6 +15,11 @@ public sealed record AiTokenUsage(
 {
     public long TotalTokens => (long)InputTokens + OutputTokens;
 }
+
+public sealed record AiProviderUsageMetadata(
+    long RequestCharacters,
+    int ProviderRequestUnits,
+    string BillingMonth);
 
 public sealed record AiCallMetadata(
     string CallId,
@@ -27,7 +33,8 @@ public sealed record AiCallMetadata(
     decimal? Confidence,
     string? FailureCategory,
     DateTimeOffset StartedAtUtc,
-    DateTimeOffset CompletedAtUtc)
+    DateTimeOffset CompletedAtUtc,
+    AiProviderUsageMetadata ProviderUsage)
 {
     public string RequestId => CallId;
 

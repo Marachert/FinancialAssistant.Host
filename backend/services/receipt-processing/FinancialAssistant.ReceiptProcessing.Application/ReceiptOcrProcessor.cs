@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
 using FinancialAssistant.ReceiptProcessing.Contracts;
 using FinancialAssistant.ReceiptProcessing.Domain;
@@ -15,6 +16,8 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
     private readonly IOcrCompletedPublisher publisher;
     private readonly IReceiptProcessingClock clock;
     private readonly IReceiptProcessingIdGenerator idGenerator;
+    private readonly OcrUsageCostControlPolicy usagePolicy;
+    private readonly IOcrUsageLimiter usageLimiter;
     private readonly ConcurrentDictionary<string, SemaphoreSlim> processingLocks =
         new(StringComparer.Ordinal);
 
@@ -26,7 +29,9 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
         IOcrCandidateNormalizer normalizer,
         IOcrCompletedPublisher publisher,
         IReceiptProcessingClock clock,
-        IReceiptProcessingIdGenerator idGenerator)
+        IReceiptProcessingIdGenerator idGenerator,
+        OcrUsageCostControlPolicy usagePolicy,
+        IOcrUsageLimiter usageLimiter)
     {
         this.objectStore = objectStore;
         this.receiptMetadataStore = receiptMetadataStore;
@@ -36,6 +41,8 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
         this.publisher = publisher;
         this.clock = clock;
         this.idGenerator = idGenerator;
+        this.usagePolicy = usagePolicy;
+        this.usageLimiter = usageLimiter;
     }
 
     public async Task ConsumeAsync(
@@ -78,6 +85,42 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
                 return;
             }
 
+            if (ocrProvider.IsExternalEnabled &&
+                receiptMetadata.SizeBytes > usagePolicy.MaximumProviderRequestBytes)
+            {
+                var failed = CreateMetadata(
+                    integrationEvent,
+                    startedAtUtc,
+                    ReceiptProcessingStatuses.OcrFailed,
+                    confidence: null,
+                    new[] { "ocr_provider_request_too_large" },
+                    "provider_request_too_large",
+                    receiptMetadata.SizeBytes,
+                    providerRequestUnits: 0);
+                await processingStore.StoreIfMissingAsync(failed, null, CancellationToken.None);
+                return;
+            }
+
+            if (ocrProvider.IsExternalEnabled &&
+                !usageLimiter.TryAcquire(
+                    integrationEvent.UserId,
+                    ocrProvider.ProviderName,
+                    DateOnly.FromDateTime(startedAtUtc.UtcDateTime),
+                    usagePolicy.PerUserDailyRequestLimit))
+            {
+                var failed = CreateMetadata(
+                    integrationEvent,
+                    startedAtUtc,
+                    ReceiptProcessingStatuses.OcrFailed,
+                    confidence: null,
+                    new[] { "ocr_daily_usage_limit_exceeded" },
+                    "daily_usage_limit_exceeded",
+                    receiptMetadata.SizeBytes,
+                    providerRequestUnits: 0);
+                await processingStore.StoreIfMissingAsync(failed, null, CancellationToken.None);
+                return;
+            }
+
             await using var image = await objectStore.OpenReadAsync(
                 integrationEvent.ReceiptId,
                 cancellationToken);
@@ -86,6 +129,7 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
                 throw new InvalidOperationException("Receipt image storage is inconsistent.");
             }
 
+            var providerRequestUnits = ocrProvider.IsExternalEnabled ? 1 : 0;
             OcrExtractionResult extraction;
             try
             {
@@ -106,7 +150,9 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
                     ReceiptProcessingStatuses.OcrFailed,
                     confidence: null,
                     new[] { "ocr_provider_failed" },
-                    exception.ErrorCode);
+                    exception.ErrorCode,
+                    receiptMetadata.SizeBytes,
+                    providerRequestUnits);
                 await processingStore.StoreIfMissingAsync(failed, null, CancellationToken.None);
                 return;
             }
@@ -118,7 +164,9 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
                     ReceiptProcessingStatuses.OcrFailed,
                     confidence: null,
                     new[] { "ocr_provider_failed" },
-                    OcrProviderErrorCodes.ProviderFailure);
+                    OcrProviderErrorCodes.ProviderFailure,
+                    receiptMetadata.SizeBytes,
+                    providerRequestUnits);
                 await processingStore.StoreIfMissingAsync(failed, null, CancellationToken.None);
                 return;
             }
@@ -136,7 +184,9 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
                     ReceiptProcessingStatuses.OcrFailed,
                     confidence: null,
                     new[] { "ocr_output_invalid" },
-                    "ocr_output_invalid");
+                    "ocr_output_invalid",
+                    receiptMetadata.SizeBytes,
+                    providerRequestUnits);
                 await processingStore.StoreIfMissingAsync(failed, null, CancellationToken.None);
                 return;
             }
@@ -163,6 +213,8 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
                 candidate.Confidence,
                 candidate.Ambiguities,
                 failureCategory: null,
+                receiptMetadata.SizeBytes,
+                providerRequestUnits,
                 completedAtUtc);
             var stored = await processingStore.StoreIfMissingAsync(
                 metadata,
@@ -183,6 +235,8 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
         decimal? confidence,
         IReadOnlyList<string> ambiguities,
         string? failureCategory,
+        long requestBytes,
+        int providerRequestUnits,
         DateTimeOffset? completedAtUtc = null)
     {
         var completed = (completedAtUtc ?? clock.UtcNow).ToUniversalTime();
@@ -202,7 +256,11 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
                 durationMilliseconds,
                 confidence,
                 failureCategory,
-                integrationEvent.EventId),
+                integrationEvent.EventId,
+                new OcrProviderUsageMetadata(
+                    requestBytes,
+                    providerRequestUnits,
+                    startedAtUtc.ToString("yyyy-MM", CultureInfo.InvariantCulture))),
             completed,
             OcrCompletedPublished: false);
     }

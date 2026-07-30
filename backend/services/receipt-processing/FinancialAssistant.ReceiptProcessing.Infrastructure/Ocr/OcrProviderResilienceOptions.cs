@@ -1,3 +1,6 @@
+using System.Globalization;
+using FinancialAssistant.ReceiptProcessing.Application;
+using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
 using Microsoft.Extensions.Configuration;
 
 namespace FinancialAssistant.ReceiptProcessing.Infrastructure.Ocr;
@@ -19,6 +22,13 @@ public sealed record OcrProviderResilienceOptions
 
     public const string DefaultModelKey = "unconfigured";
 
+    public const int DefaultPerUserDailyRequestLimit = 10;
+
+    public const long DefaultMaximumProviderRequestBytes =
+        ReceiptProcessingService.MaximumReceiptSizeBytes;
+
+    public const decimal DefaultMonthlyBudgetAlertUsd = 25m;
+
     public OcrProviderResilienceOptions(
         TimeSpan requestTimeout,
         int maximumAttempts,
@@ -28,7 +38,11 @@ public sealed record OcrProviderResilienceOptions
         bool enabled = false,
         string mode = DisabledMode,
         string endpoint = "",
-        string credentialEnvironmentVariable = "")
+        string credentialEnvironmentVariable = "",
+        int perUserDailyRequestLimit = DefaultPerUserDailyRequestLimit,
+        long maximumProviderRequestBytes = DefaultMaximumProviderRequestBytes,
+        decimal monthlyBudgetAlertUsd = DefaultMonthlyBudgetAlertUsd,
+        bool adminVisibilityEnabled = true)
     {
         if (requestTimeout <= TimeSpan.Zero || requestTimeout > TimeSpan.FromMinutes(2))
         {
@@ -59,6 +73,11 @@ public sealed record OcrProviderResilienceOptions
         CredentialEnvironmentVariable =
             credentialEnvironmentVariable?.Trim() ?? string.Empty;
         ValidateProviderConfiguration();
+        UsageCostControlPolicy = new OcrUsageCostControlPolicy(
+            perUserDailyRequestLimit,
+            maximumProviderRequestBytes,
+            monthlyBudgetAlertUsd,
+            adminVisibilityEnabled);
         RequestTimeout = requestTimeout;
         MaximumAttempts = maximumAttempts;
         RetryDelay = retryDelay;
@@ -82,6 +101,8 @@ public sealed record OcrProviderResilienceOptions
 
     public string CredentialEnvironmentVariable { get; }
 
+    public OcrUsageCostControlPolicy UsageCostControlPolicy { get; }
+
     public static OcrProviderResilienceOptions FromConfiguration(
         IConfiguration configuration)
     {
@@ -100,6 +121,22 @@ public sealed record OcrProviderResilienceOptions
             "RetryDelayMilliseconds",
             DefaultRetryDelayMilliseconds);
         var enabled = ReadBoolean(configuration, "Enabled", defaultValue: false);
+        var perUserDailyRequestLimit = ReadInteger(
+            configuration,
+            "UsageCostControls:PerUserDailyRequestLimit",
+            DefaultPerUserDailyRequestLimit);
+        var maximumProviderRequestBytes = ReadLong(
+            configuration,
+            "UsageCostControls:MaximumProviderRequestBytes",
+            DefaultMaximumProviderRequestBytes);
+        var monthlyBudgetAlertUsd = ReadDecimal(
+            configuration,
+            "UsageCostControls:MonthlyBudgetAlertUsd",
+            DefaultMonthlyBudgetAlertUsd);
+        var adminVisibilityEnabled = ReadBoolean(
+            configuration,
+            "UsageCostControls:AdminVisibilityEnabled",
+            defaultValue: true);
 
         return new OcrProviderResilienceOptions(
             TimeSpan.FromSeconds(timeoutSeconds),
@@ -111,7 +148,11 @@ public sealed record OcrProviderResilienceOptions
             configuration[$"{ConfigurationSection}:Mode"] ?? DisabledMode,
             configuration[$"{ConfigurationSection}:Endpoint"] ?? string.Empty,
             configuration[$"{ConfigurationSection}:CredentialEnvironmentVariable"] ??
-            string.Empty);
+            string.Empty,
+            perUserDailyRequestLimit,
+            maximumProviderRequestBytes,
+            monthlyBudgetAlertUsd,
+            adminVisibilityEnabled);
     }
 
     private static int ReadInteger(
@@ -151,6 +192,48 @@ public sealed record OcrProviderResilienceOptions
         {
             throw new InvalidOperationException(
                 $"Configuration setting '{key}' must be a boolean.");
+        }
+
+        return parsed;
+    }
+
+    private static long ReadLong(
+        IConfiguration configuration,
+        string settingName,
+        long defaultValue)
+    {
+        var key = $"{ConfigurationSection}:{settingName}";
+        var value = configuration[key];
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return defaultValue;
+        }
+
+        if (!long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
+        {
+            throw new InvalidOperationException(
+                $"Configuration setting '{key}' must be an integer.");
+        }
+
+        return parsed;
+    }
+
+    private static decimal ReadDecimal(
+        IConfiguration configuration,
+        string settingName,
+        decimal defaultValue)
+    {
+        var key = $"{ConfigurationSection}:{settingName}";
+        var value = configuration[key];
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return defaultValue;
+        }
+
+        if (!decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed))
+        {
+            throw new InvalidOperationException(
+                $"Configuration setting '{key}' must be a decimal number.");
         }
 
         return parsed;

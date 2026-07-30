@@ -9,6 +9,7 @@ using FinancialAssistant.ReceiptProcessing.Infrastructure.Storage;
 using FinancialAssistant.TransactionIntake.Application.Abstractions;
 using FinancialAssistant.TransactionIntake.Application.Drafts;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -71,6 +72,13 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
         Assert.Null(storedOcr.Audit.FailureCategory);
         Assert.Equal(storedOcr.Audit.RequestId, storedOcr.Audit.TraceId);
         Assert.True(storedOcr.Audit.DurationMilliseconds >= 0);
+        Assert.Equal(SyntheticPng.Length, storedOcr.Audit.ProviderUsage.RequestBytes);
+        Assert.Equal(1, storedOcr.Audit.ProviderUsage.ProviderRequestUnits);
+        Assert.Equal(
+            storedOcr.CompletedAtUtc.ToString(
+                "yyyy-MM",
+                System.Globalization.CultureInfo.InvariantCulture),
+            storedOcr.Audit.ProviderUsage.BillingMonth);
 
         var receiptEvents = services.GetRequiredService<InMemoryReceiptUploadedPublisher>();
         Assert.Single(
@@ -172,6 +180,143 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
                 property.Name.Contains("Exception", StringComparison.OrdinalIgnoreCase) ||
                 property.Name.Contains("StackTrace", StringComparison.OrdinalIgnoreCase) ||
                 property.Name.Contains("ProviderResponse", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task Upload_WhenDailyOcrLimitIsReached_DoesNotCallProviderAgain()
+    {
+        var provider = new CountingOcrProviderClient();
+        using var factory = new ReceiptProcessingWebApplicationFactory()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureAppConfiguration((_, configuration) =>
+                    configuration.AddInMemoryCollection(
+                        new Dictionary<string, string?>
+                        {
+                            ["ReceiptProcessing:Ocr:UsageCostControls:PerUserDailyRequestLimit"] =
+                                "1"
+                        }));
+                builder.ConfigureServices(serviceCollection =>
+                {
+                    serviceCollection.RemoveAll<IOcrProviderClient>();
+                    serviceCollection.AddSingleton<IOcrProviderClient>(provider);
+                    serviceCollection.RemoveAll<IReceiptObjectStore>();
+                    serviceCollection.AddSingleton<CountingReceiptObjectStore>();
+                    serviceCollection.AddSingleton<IReceiptObjectStore>(services =>
+                        services.GetRequiredService<CountingReceiptObjectStore>());
+                });
+            });
+        using var limitedClient = factory.CreateClient();
+        const string userId = "synthetic-daily-limit-user";
+        using var firstRequest = CreateUploadRequest(
+            userId,
+            "daily-limit-upload-001",
+            SyntheticPng,
+            "image/png");
+        using var secondRequest = CreateUploadRequest(
+            userId,
+            "daily-limit-upload-002",
+            SyntheticPng,
+            "image/png");
+
+        using var firstResponse = await limitedClient.SendAsync(firstRequest);
+        using var secondResponse = await limitedClient.SendAsync(secondRequest);
+        var secondReceipt = await secondResponse.Content.ReadFromJsonAsync<ReceiptResponse>();
+
+        Assert.Equal(HttpStatusCode.Created, firstResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, secondResponse.StatusCode);
+        Assert.NotNull(secondReceipt);
+        Assert.Equal("ocr_failed", secondReceipt.Status);
+        Assert.Equal(1, provider.Attempts);
+        var objectStore = factory.Services
+            .GetRequiredService<CountingReceiptObjectStore>();
+        Assert.Equal(1, objectStore.OpenReadAttempts);
+        var stored = factory.Services.GetRequiredService<InMemoryOcrProcessingStore>();
+        var rejected = Assert.Single(
+            stored.Records,
+            item => item.ReceiptId == secondReceipt.ReceiptId);
+        Assert.Equal("daily_usage_limit_exceeded", rejected.Audit.FailureCategory);
+        Assert.Equal(0, rejected.Audit.ProviderUsage.ProviderRequestUnits);
+    }
+
+    [Fact]
+    public async Task Upload_WhenReceiptExceedsOcrProviderSizeLimit_DoesNotCallProvider()
+    {
+        var provider = new CountingOcrProviderClient();
+        using var factory = new ReceiptProcessingWebApplicationFactory()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureAppConfiguration((_, configuration) =>
+                    configuration.AddInMemoryCollection(
+                        new Dictionary<string, string?>
+                        {
+                            ["ReceiptProcessing:Ocr:UsageCostControls:MaximumProviderRequestBytes"] =
+                                "8"
+                        }));
+                builder.ConfigureServices(serviceCollection =>
+                {
+                    serviceCollection.RemoveAll<IOcrProviderClient>();
+                    serviceCollection.AddSingleton<IOcrProviderClient>(provider);
+                });
+            });
+        using var limitedClient = factory.CreateClient();
+        using var request = CreateUploadRequest(
+            "synthetic-size-limit-user",
+            "size-limit-upload-001",
+            SyntheticPng,
+            "image/png");
+
+        using var response = await limitedClient.SendAsync(request);
+        var receipt = await response.Content.ReadFromJsonAsync<ReceiptResponse>();
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.NotNull(receipt);
+        Assert.Equal("ocr_failed", receipt.Status);
+        Assert.Equal(0, provider.Attempts);
+        var stored = factory.Services.GetRequiredService<InMemoryOcrProcessingStore>();
+        var rejected = Assert.Single(
+            stored.Records,
+            item => item.ReceiptId == receipt.ReceiptId);
+        Assert.Equal("provider_request_too_large", rejected.Audit.FailureCategory);
+        Assert.Equal(SyntheticPng.Length, rejected.Audit.ProviderUsage.RequestBytes);
+        Assert.Equal(0, rejected.Audit.ProviderUsage.ProviderRequestUnits);
+    }
+
+    [Fact]
+    public async Task Upload_WhenOcrProviderIsDisabled_RecordsZeroExternalUsage()
+    {
+        using var factory = new ReceiptProcessingWebApplicationFactory()
+            .WithWebHostBuilder(builder =>
+                builder.ConfigureAppConfiguration((_, configuration) =>
+                    configuration.AddInMemoryCollection(
+                        new Dictionary<string, string?>
+                        {
+                            ["ReceiptProcessing:Ocr:Enabled"] = "false",
+                            ["ReceiptProcessing:Ocr:Mode"] = "disabled",
+                            ["ReceiptProcessing:Ocr:ProviderName"] = "unconfigured",
+                            ["ReceiptProcessing:Ocr:ModelKey"] = "unconfigured",
+                            ["ReceiptProcessing:Ocr:Endpoint"] = "",
+                            ["ReceiptProcessing:Ocr:CredentialEnvironmentVariable"] = ""
+                        })));
+        using var disabledClient = factory.CreateClient();
+        using var request = CreateUploadRequest(
+            "synthetic-disabled-provider-user",
+            "disabled-provider-upload-001",
+            SyntheticPng,
+            "image/png");
+
+        using var response = await disabledClient.SendAsync(request);
+        var receipt = await response.Content.ReadFromJsonAsync<ReceiptResponse>();
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.NotNull(receipt);
+        Assert.Equal("ocr_failed", receipt.Status);
+        var stored = factory.Services.GetRequiredService<InMemoryOcrProcessingStore>();
+        var disabled = Assert.Single(
+            stored.Records,
+            item => item.ReceiptId == receipt.ReceiptId);
+        Assert.Equal(OcrProviderErrorCodes.ProviderDisabled, disabled.Audit.FailureCategory);
+        Assert.Equal(0, disabled.Audit.ProviderUsage.ProviderRequestUnits);
     }
 
     [Fact]
@@ -310,5 +455,46 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
                 new OcrProviderException(
                     OcrProviderErrorCodes.ProviderUnavailable,
                     isTransient: false));
+    }
+
+    private sealed class CountingOcrProviderClient : IOcrProviderClient
+    {
+        public string Name => "synthetic-ocr";
+
+        public int Attempts { get; private set; }
+
+        public Task<OcrExtractionResult> ExtractAsync(
+            ReadOnlyMemory<byte> receiptImage,
+            string contentType,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Attempts++;
+            return Task.FromResult(
+                new OcrExtractionResult(
+                    "10.00 USD 2026-07-30 merchant: Synthetic Market",
+                    0.9m,
+                    Array.Empty<string>()));
+        }
+    }
+
+    private sealed class CountingReceiptObjectStore(
+        EncryptedInMemoryReceiptObjectStore inner) : IReceiptObjectStore
+    {
+        public int OpenReadAttempts { get; private set; }
+
+        public Task StoreAsync(
+            string receiptId,
+            ReadOnlyMemory<byte> content,
+            CancellationToken cancellationToken) =>
+            inner.StoreAsync(receiptId, content, cancellationToken);
+
+        public Task<Stream?> OpenReadAsync(
+            string receiptId,
+            CancellationToken cancellationToken)
+        {
+            OpenReadAttempts++;
+            return inner.OpenReadAsync(receiptId, cancellationToken);
+        }
     }
 }

@@ -39,6 +39,8 @@ When the gate passes:
 - record actual merge commit, `merged_at`, final head, final CI, and review state;
 - update Jira and Confluence;
 - transition the leaf to Done;
+- recalculate `docs/agent/POC_PROGRESS.md`, excluding exact duplicates, and report
+  the percentage-point change plus first-user-test gate status;
 - evaluate and close eligible parents;
 - refresh `main` before selecting the next issue.
 

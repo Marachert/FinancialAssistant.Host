@@ -32,4 +32,6 @@ FIN-114 extends safe call metadata with request/trace correlation, processing du
 
 FIN-118 adds the [shared provider configuration baseline](../../../docs/engineering/ai-ocr-provider-configuration.md). The provider is disabled by default; enabled sandbox or production configuration requires a safe provider/model identity, HTTPS endpoint, bounded resilience values, a credential environment-variable reference, and a matching registered adapter. Credential values are never stored in source configuration.
 
+FIN-121 adds the [AI and OCR usage cost-control baseline](../../../docs/engineering/ai-ocr-usage-cost-controls.md). AI requests are bounded by per-user daily and character limits before an external call. Safe metadata records token counts, request characters, logical provider units, and UTC billing month without storing the usage subject, prompt, input, or output. The in-memory daily limiter is for a single-instance PoC and must be replaced before production scaling.
+
 Runtime provider adapters and durable metadata storage are intentionally separate infrastructure additions. The current adapter is explicitly in-memory and suitable only for this delivery increment.

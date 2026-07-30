@@ -3,6 +3,7 @@ using FinancialAssistant.AiOrchestration.Infrastructure.Prompts;
 using FinancialAssistant.AiOrchestration.Infrastructure.Providers;
 using FinancialAssistant.AiOrchestration.Infrastructure.Routing;
 using FinancialAssistant.AiOrchestration.Infrastructure.Storage;
+using FinancialAssistant.AiOrchestration.Infrastructure.Usage;
 using FinancialAssistant.AiOrchestration.Infrastructure.Validation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,6 +22,7 @@ public static class DependencyInjection
         services.AddSingleton<InMemoryAiCallMetadataStore>();
         services.AddSingleton<IAiCallMetadataStore>(provider =>
             provider.GetRequiredService<InMemoryAiCallMetadataStore>());
+        services.AddSingleton<IAiUsageLimiter, InMemoryAiUsageLimiter>();
         return services;
     }
 }

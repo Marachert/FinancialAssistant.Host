@@ -23,6 +23,8 @@ public sealed class ResilientOcrProvider : IOcrProvider
 
     public string ModelKey => options.ModelKey;
 
+    public bool IsExternalEnabled => options.Enabled;
+
     public async Task<OcrExtractionResult> ExtractAsync(
         Stream receiptImage,
         string contentType,
