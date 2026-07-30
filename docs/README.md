@@ -23,6 +23,12 @@ docs/engineering/contributing.md
 docs/engineering/ci.md
 ```
 
+Platform storage conventions:
+
+```text
+docs/engineering/elasticsearch-index-naming.md
+```
+
 ## Canonical folders
 
 ```text
