@@ -1,0 +1,53 @@
+{
+  "index_patterns": [
+    "fa-local-identity-accounts-v1-*"
+  ],
+  "priority": 100,
+  "version": 1,
+  "_meta": {
+    "owner": "identity",
+    "entity": "accounts",
+    "schemaVersion": 1,
+    "jira": "FIN-60"
+  },
+  "template": {
+    "settings": {
+      "index": {
+        "number_of_shards": 1,
+        "number_of_replicas": 0
+      }
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "_source": {
+        "enabled": true
+      },
+      "properties": {
+        "id": {
+          "type": "keyword"
+        },
+        "status": {
+          "type": "keyword"
+        },
+        "roles": {
+          "type": "keyword"
+        },
+        "createdAtUtc": {
+          "type": "date",
+          "format": "strict_date_time"
+        },
+        "updatedAtUtc": {
+          "type": "date",
+          "format": "strict_date_time"
+        },
+        "deletedAtUtc": {
+          "type": "date",
+          "format": "strict_date_time"
+        },
+        "schemaVersion": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}
