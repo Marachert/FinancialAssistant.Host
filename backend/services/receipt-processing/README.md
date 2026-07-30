@@ -24,4 +24,6 @@ FIN-118 adds the [shared provider configuration baseline](../../../docs/engineer
 
 FIN-121 adds the [AI and OCR usage cost-control baseline](../../../docs/engineering/ai-ocr-usage-cost-controls.md). OCR requests are bounded by per-user daily and provider-byte limits before the encrypted receipt is opened for an external call. Audit metadata records request bytes, logical provider units, and UTC billing month; disabled and rejected requests consume zero external units. The in-memory daily limiter is restricted to a single-instance PoC.
 
+FIN-123 adds the [AI and OCR integration test plan](../../../docs/engineering/ai-ocr-integration-test-plan.md). Generated synthetic fixtures cover encrypted receipt handling, mocked OCR extraction, deterministic normalization, authenticated draft suggestion delivery, quota and media rejection, and safe provider failure behavior. Real receipts and captured provider payloads are prohibited.
+
 The receipt-upload transport and storage adapters are development implementations. Production deployment must supply durable object storage, broker-backed receipt-upload delivery, metadata persistence, and an approved OCR provider through the existing interfaces.

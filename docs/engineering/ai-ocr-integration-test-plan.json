@@ -1,0 +1,327 @@
+{
+  "schemaVersion": 1,
+  "planId": "ai-ocr-integration-test-plan-v1",
+  "jiraIssueKey": "FIN-123",
+  "releaseReadinessIssueKey": "FIN-124",
+  "fixturePolicy": "generated_synthetic_only_no_real_or_provider_captured_data",
+  "providerExecutionPolicy": "mocked_by_default_approved_sandbox_contract_runs_only",
+  "requiredDomains": [
+    "ai_parsing_contract",
+    "malformed_provider_response",
+    "low_confidence_suggestion",
+    "ocr_extraction_fixture",
+    "receipt_normalization",
+    "draft_suggestion_update",
+    "provider_failure"
+  ],
+  "fixtures": [
+    {
+      "id": "SYN-AI-EXPENSE-001",
+      "kind": "ai_request_and_structured_suggestion",
+      "provenance": "generated_for_fin_123",
+      "syntheticOnly": true,
+      "purpose": "Valid expense suggestion with explicit review and ambiguity fields."
+    },
+    {
+      "id": "SYN-AI-MALFORMED-001",
+      "kind": "ai_malformed_structured_output",
+      "provenance": "generated_for_fin_123",
+      "syntheticOnly": true,
+      "purpose": "Invalid JSON, invalid schema, unsupported keyword, and impossible date variants."
+    },
+    {
+      "id": "SYN-AI-LOW-CONFIDENCE-001",
+      "kind": "ai_low_confidence_suggestion",
+      "provenance": "generated_for_fin_123",
+      "syntheticOnly": true,
+      "purpose": "Low-confidence suggestion that remains reviewable and non-authoritative."
+    },
+    {
+      "id": "SYN-OCR-SINGLE-TOTAL-001",
+      "kind": "generated_receipt_and_ocr_text",
+      "provenance": "generated_for_fin_123",
+      "syntheticOnly": true,
+      "purpose": "Generated image signature and labeled OCR text with one total."
+    },
+    {
+      "id": "SYN-OCR-AMBIGUOUS-TOTAL-001",
+      "kind": "generated_ocr_text",
+      "provenance": "generated_for_fin_123",
+      "syntheticOnly": true,
+      "purpose": "Multiple totals, missing fields, and mismatched line-item variants."
+    },
+    {
+      "id": "SYN-DRAFT-UPDATE-001",
+      "kind": "normalized_ocr_completed_event",
+      "provenance": "generated_for_fin_123",
+      "syntheticOnly": true,
+      "purpose": "Suggestion-only OCR event used for authenticated idempotent draft creation."
+    },
+    {
+      "id": "SYN-PROVIDER-FAILURE-001",
+      "kind": "provider_failure_sequence",
+      "provenance": "generated_for_fin_123",
+      "syntheticOnly": true,
+      "purpose": "Transient, permanent, timeout, cancellation, disabled, and unknown failure variants."
+    }
+  ],
+  "testCases": [
+    {
+      "id": "AI-OCR-IT-001",
+      "domain": "ai_parsing_contract",
+      "level": "service_contract",
+      "fixtureIds": [
+        "SYN-AI-EXPENSE-001"
+      ],
+      "assertions": [
+        "valid structured suggestions satisfy the registered schema",
+        "ambiguities and missing fields remain explicit",
+        "output authority is suggestion and user review is required",
+        "no confirmed financial state is accepted"
+      ],
+      "negativeCases": [
+        "authority fields are rejected",
+        "invalid confidence and calendar dates are rejected"
+      ],
+      "existingEvidence": [
+        {
+          "path": "backend/services/ai-orchestration/FinancialAssistant.AiOrchestration.Tests/NaturalLanguageTransactionContractTests.cs",
+          "tests": [
+            "ExpenseExample_RepresentsAmbiguityAndMissingFieldsExplicitly",
+            "ParseResponse_CannotCarryAuthoritativeFinancialState"
+          ]
+        },
+        {
+          "path": "backend/services/ai-orchestration/FinancialAssistant.AiOrchestration.Tests/TransactionParsingPromptCatalogTests.cs",
+          "tests": [
+            "OutputSchema_AcceptsSuggestionWithExplicitAmbiguity",
+            "OutputSchema_RejectsAuthorityOrInvalidConfidence"
+          ]
+        }
+      ],
+      "releaseGate": "required"
+    },
+    {
+      "id": "AI-OCR-IT-002",
+      "domain": "malformed_provider_response",
+      "level": "service_integration",
+      "fixtureIds": [
+        "SYN-AI-MALFORMED-001"
+      ],
+      "assertions": [
+        "malformed or schema-invalid output never reaches a caller as a suggestion",
+        "validation failure metadata contains only safe categories",
+        "unsupported schema behavior fails closed"
+      ],
+      "negativeCases": [
+        "invalid JSON",
+        "invalid registered schema",
+        "unsupported schema keyword or format",
+        "impossible calendar date"
+      ],
+      "existingEvidence": [
+        {
+          "path": "backend/services/ai-orchestration/FinancialAssistant.AiOrchestration.Tests/JsonSchemaStructuredOutputValidatorTests.cs",
+          "tests": [
+            "Validate_WhenOutputViolatesSchema_ReturnsErrors",
+            "Validate_WhenRegisteredSchemaIsMalformed_Throws",
+            "Validate_WhenSchemaUsesUnsupportedKeyword_FailsClosed"
+          ]
+        },
+        {
+          "path": "backend/services/ai-orchestration/FinancialAssistant.AiOrchestration.Tests/AiOrchestrationServiceTests.cs",
+          "tests": [
+            "Execute_WhenOutputFailsSchema_RecordsFailureAndDoesNotReturnOutput",
+            "Execute_WhenRegisteredSchemaIsInvalid_RecordsValidationFailure"
+          ]
+        }
+      ],
+      "releaseGate": "required"
+    },
+    {
+      "id": "AI-OCR-IT-003",
+      "domain": "low_confidence_suggestion",
+      "level": "service_contract",
+      "fixtureIds": [
+        "SYN-AI-LOW-CONFIDENCE-001"
+      ],
+      "assertions": [
+        "low confidence remains visible on suggestion fields",
+        "missing and ambiguous fields are preserved for review",
+        "low confidence never confirms or mutates an authoritative financial record"
+      ],
+      "negativeCases": [
+        "confidence below zero",
+        "confidence above one",
+        "attempted confirmed authority"
+      ],
+      "existingEvidence": [
+        {
+          "path": "backend/services/ai-orchestration/FinancialAssistant.AiOrchestration.Tests/NaturalLanguageTransactionContractTests.cs",
+          "tests": [
+            "ExpenseExample_RepresentsAmbiguityAndMissingFieldsExplicitly",
+            "IncomeExample_ContainsEverySuggestedFieldWithoutBecomingConfirmed"
+          ]
+        },
+        {
+          "path": "backend/services/ai-orchestration/FinancialAssistant.AiOrchestration.Tests/TransactionParsingPromptCatalogTests.cs",
+          "tests": [
+            "OutputSchema_RejectsAuthorityOrInvalidConfidence"
+          ]
+        }
+      ],
+      "releaseGate": "required"
+    },
+    {
+      "id": "AI-OCR-IT-004",
+      "domain": "ocr_extraction_fixture",
+      "level": "service_integration",
+      "fixtureIds": [
+        "SYN-OCR-SINGLE-TOTAL-001"
+      ],
+      "assertions": [
+        "a generated receipt is stored encrypted and opened only after policy checks",
+        "the mocked OCR boundary receives expected bytes and content type",
+        "raw image and OCR text do not enter stored audit metadata",
+        "the result remains a reviewable suggestion"
+      ],
+      "negativeCases": [
+        "spoofed image signature",
+        "oversized provider request",
+        "daily quota exhausted",
+        "provider disabled"
+      ],
+      "existingEvidence": [
+        {
+          "path": "backend/services/receipt-processing/FinancialAssistant.ReceiptProcessing.Tests/ReceiptEndpointTests.cs",
+          "tests": [
+            "Upload_StoresSafeMetadataRunsOcrAndCreatesReviewableDraft",
+            "Upload_WhenDailyOcrLimitIsReached_DoesNotCallProviderAgain",
+            "Upload_WhenReceiptExceedsOcrProviderSizeLimit_DoesNotCallProvider",
+            "Upload_WithSpoofedImageSignature_ReturnsUnsupportedMediaType"
+          ]
+        },
+        {
+          "path": "backend/services/receipt-processing/FinancialAssistant.ReceiptProcessing.Tests/EncryptedReceiptObjectStoreTests.cs",
+          "tests": [
+            "Store_RoundTripsContentOnlyThroughAuthenticatedDecryption",
+            "Store_EncryptsAndRejectsTamperedCiphertext"
+          ]
+        }
+      ],
+      "releaseGate": "required"
+    },
+    {
+      "id": "AI-OCR-IT-005",
+      "domain": "receipt_normalization",
+      "level": "deterministic_contract",
+      "fixtureIds": [
+        "SYN-OCR-SINGLE-TOTAL-001",
+        "SYN-OCR-AMBIGUOUS-TOTAL-001"
+      ],
+      "assertions": [
+        "labeled candidates are normalized deterministically",
+        "multiple totals remain explicit ambiguity",
+        "missing or mismatched line-item fields remain placeholders",
+        "unlabeled raw OCR text is not copied into candidate fields"
+      ],
+      "negativeCases": [
+        "multiple totals",
+        "repeated unlabeled amounts",
+        "impossible calendar date",
+        "mismatched line item"
+      ],
+      "existingEvidence": [
+        {
+          "path": "backend/services/receipt-processing/FinancialAssistant.ReceiptProcessing.Tests/ReceiptCandidateNormalizerTests.cs",
+          "tests": [
+            "Normalize_ExtractsLabeledReceiptCandidatesAndLineItemPlaceholders",
+            "Normalize_RepresentsMultipleTotalsAsExplicitAmbiguity",
+            "Normalize_RejectsImpossibleCalendarDateAsCandidate",
+            "Normalize_DoesNotCopyUnlabeledRawTextIntoCandidateFields"
+          ]
+        }
+      ],
+      "releaseGate": "required"
+    },
+    {
+      "id": "AI-OCR-IT-006",
+      "domain": "draft_suggestion_update",
+      "level": "cross_service_contract",
+      "fixtureIds": [
+        "SYN-DRAFT-UPDATE-001"
+      ],
+      "assertions": [
+        "authenticated ocr.completed delivery creates one reviewable draft",
+        "same event delivery is idempotent",
+        "conflicting redelivery is rejected",
+        "draft source uses opaque receipt correlation without raw OCR text"
+      ],
+      "negativeCases": [
+        "missing internal authentication",
+        "conflicting redelivery",
+        "mismatched user ownership"
+      ],
+      "existingEvidence": [
+        {
+          "path": "backend/services/transaction-intake/FinancialAssistant.TransactionIntake.Tests/OcrCompletedEventEndpointTests.cs",
+          "tests": [
+            "EventEndpoint_AuthenticatesCreatesDraftAndIsIdempotent",
+            "EventEndpoint_RejectsConflictingRedelivery"
+          ]
+        },
+        {
+          "path": "backend/services/receipt-processing/FinancialAssistant.ReceiptProcessing.Tests/OcrBoundaryTests.cs",
+          "tests": [
+            "ReceiptUploadedConsumer_RejectsEventWithMismatchedOwnership"
+          ]
+        }
+      ],
+      "releaseGate": "required"
+    },
+    {
+      "id": "AI-OCR-IT-007",
+      "domain": "provider_failure",
+      "level": "provider_boundary",
+      "fixtureIds": [
+        "SYN-PROVIDER-FAILURE-001"
+      ],
+      "assertions": [
+        "only explicit transient failures retry within configured bounds",
+        "timeouts are enforced when adapters ignore cancellation",
+        "caller cancellation is preserved without retry",
+        "unknown provider details map to safe failure categories",
+        "disabled providers make no external call and confirm no financial record"
+      ],
+      "negativeCases": [
+        "transient exhaustion",
+        "permanent failure",
+        "timeout",
+        "caller cancellation",
+        "unknown exception",
+        "disabled provider"
+      ],
+      "existingEvidence": [
+        {
+          "path": "backend/services/ai-orchestration/FinancialAssistant.AiOrchestration.Tests/ResilientLlmProviderTests.cs",
+          "tests": [
+            "Complete_WhenTransientFailureOccurs_RetriesAndReturnsResponse",
+            "Complete_WhenAdapterIgnoresCancellation_StillEnforcesTimeout",
+            "Complete_WhenProviderThrowsUnknownError_MapsSafeFailureWithoutRetry",
+            "Complete_WhenCallerCancels_DoesNotMapOrRetry"
+          ]
+        },
+        {
+          "path": "backend/services/receipt-processing/FinancialAssistant.ReceiptProcessing.Tests/ResilientOcrProviderTests.cs",
+          "tests": [
+            "ExtractAsync_RetriesAnExplicitTransientFailure",
+            "ExtractAsync_MapsUnknownFailureWithoutLeakingProviderDetails",
+            "ExtractAsync_DisabledProviderFailsPermanentlyWithoutJobRetry",
+            "ExtractAsync_PreservesCallerCancellationWithoutRetry"
+          ]
+        }
+      ],
+      "releaseGate": "required"
+    }
+  ]
+}

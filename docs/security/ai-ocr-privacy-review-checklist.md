@@ -201,6 +201,8 @@ Reviewers must confirm:
 The completed review is an input to Jira `FIN-124`, the AI and OCR release-readiness
 checklist. FIN-124 must confirm that:
 
+- the [AI and OCR integration test plan](../engineering/ai-ocr-integration-test-plan.md)
+  passes on the release commit with generated synthetic fixtures;
 - every enabled provider and capability has a current review;
 - all decisions are `pass` or approved `not_applicable`;
 - privacy policy and consent dependencies are complete;

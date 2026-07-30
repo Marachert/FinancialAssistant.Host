@@ -123,7 +123,7 @@ route registration then stops, and OCR resolves the disabled client with the saf
 Configuration approval depends on:
 
 - the [AI and OCR privacy review checklist](../security/ai-ocr-privacy-review-checklist.md);
-- provider contract and negative-path tests;
+- the [AI and OCR integration test plan](ai-ocr-integration-test-plan.md);
 - [provider budget and usage controls](ai-ocr-usage-cost-controls.md);
 - the FIN-124 AI/OCR release-readiness checklist.
 

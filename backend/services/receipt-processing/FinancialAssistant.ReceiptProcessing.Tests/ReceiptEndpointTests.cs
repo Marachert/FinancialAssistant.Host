@@ -35,6 +35,16 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
     [Fact]
     public async Task Upload_StoresSafeMetadataRunsOcrAndCreatesReviewableDraft()
     {
+        var provider = new CapturingOcrProviderClient();
+        using var factory = new ReceiptProcessingWebApplicationFactory()
+            .WithWebHostBuilder(builder =>
+                builder.ConfigureServices(serviceCollection =>
+                {
+                    serviceCollection.RemoveAll<IOcrProviderClient>();
+                    serviceCollection.AddSingleton<IOcrProviderClient>(provider);
+                }));
+        using var testClient = factory.CreateClient();
+        var testServices = factory.Services;
         const string userId = "synthetic-receipt-owner";
         using var request = CreateUploadRequest(
             userId,
@@ -42,7 +52,7 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
             SyntheticPng,
             "image/png");
 
-        var response = await client.SendAsync(request);
+        var response = await testClient.SendAsync(request);
         var receipt = await response.Content.ReadFromJsonAsync<ReceiptResponse>();
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -52,14 +62,16 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
         Assert.Equal(SyntheticPng.Length, receipt.SizeBytes);
         Assert.Equal(0.91m, receipt.OcrConfidence);
         Assert.Contains("merchant_uncertain", receipt.OcrAmbiguities);
+        Assert.Equal(SyntheticPng, provider.ReceivedReceiptImage);
+        Assert.Equal("image/png", provider.ReceivedContentType);
 
-        var receiptMetadata = services.GetRequiredService<InMemoryReceiptMetadataStore>();
+        var receiptMetadata = testServices.GetRequiredService<InMemoryReceiptMetadataStore>();
         var storedMetadata = Assert.Single(
             receiptMetadata.Records,
             item => item.ReceiptId == receipt.ReceiptId);
         Assert.True(storedMetadata.ReceiptUploadedPublished);
 
-        var ocrMetadata = services.GetRequiredService<InMemoryOcrProcessingStore>();
+        var ocrMetadata = testServices.GetRequiredService<InMemoryOcrProcessingStore>();
         var storedOcr = Assert.Single(
             ocrMetadata.Records,
             item => item.ReceiptId == receipt.ReceiptId);
@@ -80,16 +92,16 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
                 System.Globalization.CultureInfo.InvariantCulture),
             storedOcr.Audit.ProviderUsage.BillingMonth);
 
-        var receiptEvents = services.GetRequiredService<InMemoryReceiptUploadedPublisher>();
+        var receiptEvents = testServices.GetRequiredService<InMemoryReceiptUploadedPublisher>();
         Assert.Single(
             receiptEvents.PublishedEvents,
             item => item.ReceiptId == receipt.ReceiptId);
-        var ocrEvents = services.GetRequiredService<InMemoryOcrCompletedPublisher>();
+        var ocrEvents = testServices.GetRequiredService<InMemoryOcrCompletedPublisher>();
         Assert.Single(
             ocrEvents.PublishedEvents,
             item => item.ReceiptId == receipt.ReceiptId);
 
-        var draftStore = services.GetRequiredService<ITransactionDraftStore>();
+        var draftStore = testServices.GetRequiredService<ITransactionDraftStore>();
         var storedDraft = await draftStore.GetAsync(
             userId,
             $"ocr-{receipt.ReceiptId}",
@@ -455,6 +467,30 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
                 new OcrProviderException(
                     OcrProviderErrorCodes.ProviderUnavailable,
                     isTransient: false));
+    }
+
+    private sealed class CapturingOcrProviderClient : IOcrProviderClient
+    {
+        public string Name => "synthetic-ocr";
+
+        public byte[]? ReceivedReceiptImage { get; private set; }
+
+        public string? ReceivedContentType { get; private set; }
+
+        public Task<OcrExtractionResult> ExtractAsync(
+            ReadOnlyMemory<byte> receiptImage,
+            string contentType,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ReceivedReceiptImage = receiptImage.ToArray();
+            ReceivedContentType = contentType;
+            return Task.FromResult(
+                new OcrExtractionResult(
+                    "123.45 USD 2026-07-23 merchant: Synthetic Market",
+                    0.91m,
+                    new[] { "merchant_uncertain" }));
+        }
     }
 
     private sealed class CountingOcrProviderClient : IOcrProviderClient
