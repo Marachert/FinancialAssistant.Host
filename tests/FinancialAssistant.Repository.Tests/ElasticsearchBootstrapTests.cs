@@ -74,6 +74,7 @@ public sealed class ElasticsearchBootstrapTests
             "$writeAlias = \"$prefix-write\"",
             "is_write_index = $true",
             "Test-ElasticsearchResource",
+            "targets an unexpected physical index",
             "-Path \"_aliases\"",
             "-Path \"_index_template/$templateName\"",
             "-Path \"_alias/$readAlias\"",
