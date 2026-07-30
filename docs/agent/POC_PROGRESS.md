@@ -1,10 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-07-30T12:22:16+03:00
+Last updated: 2026-07-30T13:09:43+03:00
 
 ## Current Snapshot
 
-POC readiness is **45.9%**: **90 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-121 closure is **46.4%**:
+**91 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -12,20 +13,20 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-118 - P5.T14 Configure AI and OCR provider settings
-- pull request: https://github.com/Marachert/FinancialAssistant.Host/pull/59
-- merge commit: `75f9d2c4eabbde5a047caadfa11d8583f9ec4215`
-- previous readiness: 89 / 196, or 45.4%
-- current readiness: 90 / 196, or 45.9%
+- FIN-121 - P5.T15 Add AI and OCR usage cost control baseline
+- pull request: https://github.com/Marachert/FinancialAssistant.Host/pull/60
+- previous readiness: 90 / 196, or 45.9%
+- current readiness: 91 / 196, or 46.4%
 - change: +0.5 percentage points
 
-FIN-119 and FIN-120 were closed as exact duplicates of FIN-118. They do not
-change the numerator or denominator.
+FIN-122 is an exact later duplicate of FIN-121. Closing it does not change the
+numerator or denominator.
 
 Current delivery:
 
-- FIN-121 - P5.T15 Add AI and OCR usage cost control baseline - In Progress
-- FIN-122 is an exact later duplicate and is excluded from the denominator
+- FIN-121 closure is delivered by pull request 60; actual merge and Jira evidence
+  are recorded in Jira and Confluence after the merge gate passes
+- the next canonical leaf is selected only after FIN-121 is verified Done
 
 ## Epic Progress
 
@@ -36,12 +37,12 @@ Current delivery:
 | FIN-10 | P2 Repository, DevOps, and local platform foundation | 22 | 36 | 61.1% |
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 4 | 22 | 18.2% |
-| FIN-23 | P5 AI orchestration and OCR automation | 16 | 19 | 84.2% |
+| FIN-23 | P5 AI orchestration and OCR automation | 17 | 19 | 89.5% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 0 | 20 | 0.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **90** | **196** | **45.9%** |
+| **Total** | **Canonical POC leaf scope** | **91** | **196** | **46.4%** |
 
 ## First-User-Test Gates
 
@@ -87,3 +88,4 @@ This file is recalculated after every canonical ticket is closed.
 | Recorded at | Canonical ticket | Result | POC readiness | Change |
 | --- | --- | --- | ---: | ---: |
 | 2026-07-30T12:22:16+03:00 | FIN-118 | Merged and Done | 45.9% | +0.5 pp |
+| 2026-07-30T13:09:43+03:00 | FIN-121 | Closure delivered by PR 60 | 46.4% | +0.5 pp |
