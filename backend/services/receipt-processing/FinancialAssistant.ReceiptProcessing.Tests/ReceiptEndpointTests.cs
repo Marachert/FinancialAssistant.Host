@@ -200,6 +200,10 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
                 {
                     serviceCollection.RemoveAll<IOcrProviderClient>();
                     serviceCollection.AddSingleton<IOcrProviderClient>(provider);
+                    serviceCollection.RemoveAll<IReceiptObjectStore>();
+                    serviceCollection.AddSingleton<CountingReceiptObjectStore>();
+                    serviceCollection.AddSingleton<IReceiptObjectStore>(services =>
+                        services.GetRequiredService<CountingReceiptObjectStore>());
                 });
             });
         using var limitedClient = factory.CreateClient();
@@ -224,6 +228,9 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
         Assert.NotNull(secondReceipt);
         Assert.Equal("ocr_failed", secondReceipt.Status);
         Assert.Equal(1, provider.Attempts);
+        var objectStore = factory.Services
+            .GetRequiredService<CountingReceiptObjectStore>();
+        Assert.Equal(1, objectStore.OpenReadAttempts);
         var stored = factory.Services.GetRequiredService<InMemoryOcrProcessingStore>();
         var rejected = Assert.Single(
             stored.Records,
@@ -468,6 +475,26 @@ public sealed class ReceiptEndpointTests : IClassFixture<ReceiptProcessingWebApp
                     "10.00 USD 2026-07-30 merchant: Synthetic Market",
                     0.9m,
                     Array.Empty<string>()));
+        }
+    }
+
+    private sealed class CountingReceiptObjectStore(
+        EncryptedInMemoryReceiptObjectStore inner) : IReceiptObjectStore
+    {
+        public int OpenReadAttempts { get; private set; }
+
+        public Task StoreAsync(
+            string receiptId,
+            ReadOnlyMemory<byte> content,
+            CancellationToken cancellationToken) =>
+            inner.StoreAsync(receiptId, content, cancellationToken);
+
+        public Task<Stream?> OpenReadAsync(
+            string receiptId,
+            CancellationToken cancellationToken)
+        {
+            OpenReadAttempts++;
+            return inner.OpenReadAsync(receiptId, cancellationToken);
         }
     }
 }

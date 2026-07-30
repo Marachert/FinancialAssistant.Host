@@ -101,14 +101,6 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
                 return;
             }
 
-            await using var image = await objectStore.OpenReadAsync(
-                integrationEvent.ReceiptId,
-                cancellationToken);
-            if (image is null)
-            {
-                throw new InvalidOperationException("Receipt image storage is inconsistent.");
-            }
-
             if (ocrProvider.IsExternalEnabled &&
                 !usageLimiter.TryAcquire(
                     integrationEvent.UserId,
@@ -127,6 +119,14 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
                     providerRequestUnits: 0);
                 await processingStore.StoreIfMissingAsync(failed, null, CancellationToken.None);
                 return;
+            }
+
+            await using var image = await objectStore.OpenReadAsync(
+                integrationEvent.ReceiptId,
+                cancellationToken);
+            if (image is null)
+            {
+                throw new InvalidOperationException("Receipt image storage is inconsistent.");
             }
 
             var providerRequestUnits = ocrProvider.IsExternalEnabled ? 1 : 0;
