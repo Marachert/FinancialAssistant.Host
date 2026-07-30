@@ -125,7 +125,7 @@ Configuration approval depends on:
 - the [AI and OCR privacy review checklist](../security/ai-ocr-privacy-review-checklist.md);
 - the [AI and OCR integration test plan](ai-ocr-integration-test-plan.md);
 - [provider budget and usage controls](ai-ocr-usage-cost-controls.md);
-- the FIN-124 AI/OCR release-readiness checklist.
+- the [FIN-124 AI/OCR release-readiness checklist](ai-ocr-release-readiness-checklist.md).
 
 Provider output remains untrusted suggestion data. Configuration can never grant a
 provider authority to create or confirm a financial record.

@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "checklistId": "ai-ocr-release-readiness-v1",
+  "jiraIssueKey": "FIN-124",
+  "appliesBefore": "first_public_release_or_app_store_publication",
+  "decisionValues": [
+    "pass",
+    "blocked",
+    "not_applicable"
+  ],
+  "notApplicableEvidenceRequirements": [
+    "capability scope",
+    "rationale",
+    "approver",
+    "decision date",
+    "compensating controls or explicit none"
+  ],
+  "releaseRule": "all_required_checks_pass_or_have_approved_not_applicable_decisions_and_no_blocking_condition_remains",
+  "evidenceSafetyPolicy": "shared_evidence_uses_safe_metadata_and_access_controlled_operational_budget_references_no_credentials_raw_content_pii_or_user_financial_values",
+  "requiredDomains": [
+    "provider_configuration",
+    "privacy_and_consent",
+    "cost_controls",
+    "fallback_experience",
+    "integration_testing",
+    "monitoring",
+    "support"
+  ],
+  "dependencies": [
+    {
+      "jiraIssueKey": "FIN-117",
+      "title": "AI and OCR privacy review checklist",
+      "path": "docs/security/ai-ocr-privacy-review-checklist.md"
+    },
+    {
+      "jiraIssueKey": "FIN-118",
+      "title": "AI and OCR provider configuration",
+      "path": "docs/engineering/ai-ocr-provider-configuration.md"
+    },
+    {
+      "jiraIssueKey": "FIN-121",
+      "title": "AI and OCR usage cost controls",
+      "path": "docs/engineering/ai-ocr-usage-cost-controls.md"
+    },
+    {
+      "jiraIssueKey": "FIN-123",
+      "title": "AI and OCR integration test plan",
+      "path": "docs/engineering/ai-ocr-integration-test-plan.md"
+    }
+  ],
+  "checks": [
+    {
+      "id": "AI-OCR-READY-001",
+      "domain": "provider_configuration",
+      "owner": "service_owner",
+      "requirement": "Every enabled capability has one approved environment, provider, model, endpoint, adapter commit, bounded resilience policy, and secret reference that match the release deployment.",
+      "requiredEvidence": [
+        "sanitized deployment configuration review",
+        "provider and model identity",
+        "adapter commit and capability mapping",
+        "credential injection and rotation verification"
+      ],
+      "blockingConditions": [
+        "an enabled capability has an unconfigured or mismatched provider adapter",
+        "a credential value is stored in source or evidence",
+        "the provider or model changed without renewed privacy, cost, and sandbox review"
+      ],
+      "references": [
+        "docs/engineering/ai-ocr-provider-configuration.md"
+      ]
+    },
+    {
+      "id": "AI-OCR-READY-002",
+      "domain": "privacy_and_consent",
+      "owner": "security_and_privacy",
+      "requirement": "Every enabled provider and capability has a current approved privacy decision covering minimization, retention, training, subprocessors, region, deletion, incident handling, and safe operational evidence.",
+      "requiredEvidence": [
+        "completed FIN-117 checklist",
+        "provider terms or data-processing agreement reference",
+        "security or privacy approval",
+        "retention and deletion procedure"
+      ],
+      "blockingConditions": [
+        "any required privacy decision is fail or missing",
+        "provider retention, training, region, deletion, or incident terms are unknown",
+        "raw AI or OCR content can enter logs, events, dashboards, tickets, or release evidence"
+      ],
+      "references": [
+        "docs/security/ai-ocr-privacy-review-checklist.md",
+        "docs/engineering/ai-ocr-processing-audit-metadata.md"
+      ]
+    },
+    {
+      "id": "AI-OCR-READY-003",
+      "domain": "privacy_and_consent",
+      "owner": "product_and_privacy",
+      "requirement": "The published privacy policy and capability-specific consent flow disclose external processing before transmission and provide withdrawal plus a non-provider path.",
+      "requiredEvidence": [
+        "approved privacy policy section",
+        "consent screen or product requirement",
+        "consent recording and withdrawal verification",
+        "provider-disabled fallback verification"
+      ],
+      "blockingConditions": [
+        "provider processing can start before required consent",
+        "the privacy policy omits external AI or OCR processing",
+        "consent withdrawal does not stop future provider calls",
+        "withdrawal leaves no safe manual path"
+      ],
+      "references": [
+        "docs/security/ai-ocr-privacy-review-checklist.md"
+      ]
+    },
+    {
+      "id": "AI-OCR-READY-004",
+      "domain": "cost_controls",
+      "owner": "product_and_operations",
+      "requirement": "Per-user limits, request-size limits, monthly budget thresholds, admin visibility, and an approved provider billing review match the release capability and environment.",
+      "requiredEvidence": [
+        "FIN-121 configuration review",
+        "approved monthly provider budget",
+        "access-controlled usage and rejection report",
+        "access-controlled provider billing reconciliation owner and freshness"
+      ],
+      "blockingConditions": [
+        "a production budget or accountable owner is missing",
+        "configured limits exceed approved values",
+        "usage is not visible to the authenticated admin role",
+        "provider-billed spend cannot be reconciled",
+        "operational budget or billing amounts are copied into a public or broadly shared evidence channel"
+      ],
+      "references": [
+        "docs/engineering/ai-ocr-usage-cost-controls.md"
+      ]
+    },
+    {
+      "id": "AI-OCR-READY-005",
+      "domain": "fallback_experience",
+      "owner": "product_and_service_owners",
+      "requirement": "Disabled, unavailable, rejected, low-confidence, and failed provider paths preserve manual draft entry or retry-later behavior without confirming a financial record.",
+      "requiredEvidence": [
+        "manual draft-entry acceptance result",
+        "retry-later and provider-disabled user experience result",
+        "low-confidence review result",
+        "failure-path authority regression tests"
+      ],
+      "blockingConditions": [
+        "a provider failure can confirm or partially persist an authoritative financial record",
+        "the user loses access to manual draft entry",
+        "retry can duplicate a draft or external request without an idempotency guard",
+        "the user-facing error exposes provider details or sensitive content"
+      ],
+      "references": [
+        "docs/engineering/ai-ocr-usage-cost-controls.md",
+        "docs/engineering/ai-ocr-integration-test-plan.md"
+      ]
+    },
+    {
+      "id": "AI-OCR-READY-006",
+      "domain": "integration_testing",
+      "owner": "service_owners",
+      "requirement": "All required FIN-123 cases pass on the release commit and every enabled provider and model has a current approved sandbox contract result.",
+      "requiredEvidence": [
+        "release commit test run",
+        "AI-OCR-IT-001 through AI-OCR-IT-007 results",
+        "generated synthetic fixture provenance",
+        "provider sandbox contract result"
+      ],
+      "blockingConditions": [
+        "a required test is failed, skipped, quarantined, or stale",
+        "an enabled provider and model lacks a matching sandbox contract result",
+        "test or support evidence contains real or provider-captured user data",
+        "provider output bypasses deterministic validation or user confirmation"
+      ],
+      "references": [
+        "docs/engineering/ai-ocr-integration-test-plan.md"
+      ]
+    },
+    {
+      "id": "AI-OCR-READY-007",
+      "domain": "monitoring",
+      "owner": "operations",
+      "requirement": "Authenticated operators can observe safe request, rejection, latency, failure, quota, and budget signals for each enabled capability, provider, model, and environment.",
+      "requiredEvidence": [
+        "admin dashboard or approved query reference",
+        "safe metric and alert catalog",
+        "failure and budget alert verification",
+        "telemetry access-control review"
+      ],
+      "blockingConditions": [
+        "provider failures, quota rejection, or budget exhaustion are not visible",
+        "an alert includes prompts, receipt content, OCR text, provider payloads, PII, or financial values",
+        "monitoring is accessible outside the authenticated admin role",
+        "an enabled provider has no disable or escalation trigger"
+      ],
+      "references": [
+        "docs/engineering/ai-ocr-processing-audit-metadata.md",
+        "docs/engineering/ai-ocr-usage-cost-controls.md",
+        "web-admin/monitoring-ui/README.md"
+      ]
+    },
+    {
+      "id": "AI-OCR-READY-008",
+      "domain": "support",
+      "owner": "support_and_operations",
+      "requirement": "A privacy-safe troubleshooting runbook identifies symptoms, safe correlation fields, retry guidance, provider disablement, escalation, deletion requests, and user communication.",
+      "requiredEvidence": [
+        "versioned support runbook",
+        "synthetic troubleshooting exercise",
+        "provider escalation and deletion contacts",
+        "service owner and on-call ownership"
+      ],
+      "blockingConditions": [
+        "support requires raw prompts, provider responses, receipt content, or OCR text",
+        "provider disablement or escalation steps are missing or untested",
+        "a deletion or privacy incident has no accountable escalation path",
+        "user guidance can cause duplicate submission or financial confirmation"
+      ],
+      "references": [
+        "docs/engineering/ai-ocr-provider-configuration.md",
+        "docs/engineering/ai-ocr-processing-audit-metadata.md"
+      ]
+    },
+    {
+      "id": "AI-OCR-READY-009",
+      "domain": "provider_configuration",
+      "owner": "release_owner",
+      "requirement": "The final release record binds every decision and approval to one release commit, environment, capability, provider, and model immediately before publication.",
+      "requiredEvidence": [
+        "release commit and environment",
+        "capability provider and model matrix",
+        "dated check decisions and approvers",
+        "zero-blocker release approval"
+      ],
+      "blockingConditions": [
+        "any required check is blocked or lacks evidence",
+        "a not-applicable decision lacks scope, rationale, approver, date, and compensating controls",
+        "evidence refers to a different commit, environment, provider, model, or capability",
+        "configuration changed after approval without rerunning affected checks"
+      ],
+      "references": [
+        "docs/engineering/ai-ocr-release-readiness-checklist.md"
+      ]
+    }
+  ]
+}

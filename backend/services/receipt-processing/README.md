@@ -26,4 +26,6 @@ FIN-121 adds the [AI and OCR usage cost-control baseline](../../../docs/engineer
 
 FIN-123 adds the [AI and OCR integration test plan](../../../docs/engineering/ai-ocr-integration-test-plan.md). Generated synthetic fixtures cover encrypted receipt handling, mocked OCR extraction, deterministic normalization, authenticated draft suggestion delivery, quota and media rejection, and safe provider failure behavior. Real receipts and captured provider payloads are prohibited.
 
+FIN-124 adds the [AI and OCR release-readiness checklist](../../../docs/engineering/ai-ocr-release-readiness-checklist.md). It makes privacy and consent, production cost approval, manual draft and retry-later fallback, authenticated monitoring, and privacy-safe support evidence explicit public-release gates.
+
 The receipt-upload transport and storage adapters are development implementations. Production deployment must supply durable object storage, broker-backed receipt-upload delivery, metadata persistence, and an approved OCR provider through the existing interfaces.
