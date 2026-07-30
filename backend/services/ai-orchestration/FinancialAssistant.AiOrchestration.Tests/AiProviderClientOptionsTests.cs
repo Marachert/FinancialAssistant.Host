@@ -77,6 +77,55 @@ public sealed class AiProviderClientOptionsTests
             options.CreateRoute(TransactionParsingPromptCatalog.PromptName));
     }
 
+    [Fact]
+    public void UsageCostControlDefaults_CreateBoundedVisiblePolicy()
+    {
+        var options = new AiUsageCostControlOptions();
+
+        var policy = options.CreatePolicy();
+
+        Assert.True(options.IsValid);
+        Assert.Equal(
+            AiUsageCostControlOptions.DefaultPerUserDailyRequestLimit,
+            policy.PerUserDailyRequestLimit);
+        Assert.Equal(
+            AiUsageCostControlOptions.DefaultMaximumRequestCharacters,
+            policy.MaximumRequestCharacters);
+        Assert.Equal(
+            AiUsageCostControlOptions.DefaultMonthlyBudgetAlertUsd,
+            policy.MonthlyBudgetAlertUsd);
+        Assert.True(policy.AdminVisibilityEnabled);
+        Assert.True(
+            policy.MaximumRequestCharacters >
+            TransactionParsingPromptCatalog.Version1.Template.Length +
+            TransactionParsingPromptCatalog.Version1.OutputJsonSchema.Length +
+            TransactionParsingPromptCatalog.PromptName.Length +
+            64);
+    }
+
+    [Theory]
+    [InlineData(0, 8_000, 25, true)]
+    [InlineData(20, 0, 25, true)]
+    [InlineData(20, 8_000, 0, true)]
+    [InlineData(20, 8_000, 25, false)]
+    public void InvalidUsageCostControls_FailClosed(
+        int perUserDailyRequestLimit,
+        int maximumRequestCharacters,
+        int monthlyBudgetAlertUsd,
+        bool adminVisibilityEnabled)
+    {
+        var options = new AiUsageCostControlOptions
+        {
+            PerUserDailyRequestLimit = perUserDailyRequestLimit,
+            MaximumRequestCharacters = maximumRequestCharacters,
+            MonthlyBudgetAlertUsd = monthlyBudgetAlertUsd,
+            AdminVisibilityEnabled = adminVisibilityEnabled,
+        };
+
+        Assert.False(options.IsValid);
+        Assert.Throws<InvalidOperationException>(options.CreatePolicy);
+    }
+
     [Theory]
     [InlineData(false, "sandbox", "", "", "", "")]
     [InlineData(true, "disabled", "provider", "model", "https://provider.invalid", "AI_KEY")]

@@ -76,6 +76,8 @@ public interface IOcrProvider
 
     string ModelKey { get; }
 
+    bool IsExternalEnabled { get; }
+
     Task<OcrExtractionResult> ExtractAsync(
         Stream receiptImage,
         string contentType,

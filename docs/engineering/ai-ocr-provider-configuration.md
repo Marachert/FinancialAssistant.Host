@@ -124,7 +124,7 @@ Configuration approval depends on:
 
 - the [AI and OCR privacy review checklist](../security/ai-ocr-privacy-review-checklist.md);
 - provider contract and negative-path tests;
-- provider budget and usage controls;
+- [provider budget and usage controls](ai-ocr-usage-cost-controls.md);
 - the FIN-124 AI/OCR release-readiness checklist.
 
 Provider output remains untrusted suggestion data. Configuration can never grant a

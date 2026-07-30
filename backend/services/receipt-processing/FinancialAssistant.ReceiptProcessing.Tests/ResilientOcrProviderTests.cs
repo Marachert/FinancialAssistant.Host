@@ -179,6 +179,16 @@ public sealed class ResilientOcrProviderTests
         Assert.Equal(
             "FINANCIAL_ASSISTANT_TEST_OCR_CREDENTIAL",
             options.CredentialEnvironmentVariable);
+        Assert.Equal(
+            OcrProviderResilienceOptions.DefaultPerUserDailyRequestLimit,
+            options.UsageCostControlPolicy.PerUserDailyRequestLimit);
+        Assert.Equal(
+            OcrProviderResilienceOptions.DefaultMaximumProviderRequestBytes,
+            options.UsageCostControlPolicy.MaximumProviderRequestBytes);
+        Assert.Equal(
+            OcrProviderResilienceOptions.DefaultMonthlyBudgetAlertUsd,
+            options.UsageCostControlPolicy.MonthlyBudgetAlertUsd);
+        Assert.True(options.UsageCostControlPolicy.AdminVisibilityEnabled);
     }
 
     [Theory]
@@ -192,6 +202,10 @@ public sealed class ResilientOcrProviderTests
     [InlineData("ModelKey", "\u03BC\u03BF\u03BD\u03C4\u03AD\u03BB\u03BF")]
     [InlineData("ModelKey", "model-\u0661")]
     [InlineData("Enabled", "not-a-boolean")]
+    [InlineData("UsageCostControls:PerUserDailyRequestLimit", "0")]
+    [InlineData("UsageCostControls:MaximumProviderRequestBytes", "10485761")]
+    [InlineData("UsageCostControls:MonthlyBudgetAlertUsd", "0")]
+    [InlineData("UsageCostControls:AdminVisibilityEnabled", "false")]
     public void FromConfiguration_RejectsInvalidResilienceSettings(
         string settingName,
         string value)
@@ -221,6 +235,10 @@ public sealed class ResilientOcrProviderTests
         Assert.Equal(OcrProviderResilienceOptions.DefaultModelKey, options.ModelKey);
         Assert.Empty(options.Endpoint);
         Assert.Empty(options.CredentialEnvironmentVariable);
+        Assert.Equal(
+            OcrProviderResilienceOptions.DefaultPerUserDailyRequestLimit,
+            options.UsageCostControlPolicy.PerUserDailyRequestLimit);
+        Assert.True(options.UsageCostControlPolicy.AdminVisibilityEnabled);
     }
 
     [Theory]

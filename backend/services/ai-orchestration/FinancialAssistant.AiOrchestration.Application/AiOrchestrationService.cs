@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using FinancialAssistant.AiOrchestration.Application.Abstractions;
 using FinancialAssistant.AiOrchestration.Contracts;
@@ -14,6 +15,8 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
     private readonly IAiCallMetadataStore metadataStore;
     private readonly IAiOrchestrationClock clock;
     private readonly IAiCallIdGenerator callIdGenerator;
+    private readonly AiUsageCostControlPolicy usagePolicy;
+    private readonly IAiUsageLimiter usageLimiter;
 
     public AiOrchestrationService(
         IModelRouter modelRouter,
@@ -22,7 +25,9 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
         IStructuredOutputValidator outputValidator,
         IAiCallMetadataStore metadataStore,
         IAiOrchestrationClock clock,
-        IAiCallIdGenerator callIdGenerator)
+        IAiCallIdGenerator callIdGenerator,
+        AiUsageCostControlPolicy usagePolicy,
+        IAiUsageLimiter usageLimiter)
     {
         this.modelRouter = modelRouter;
         this.promptRegistry = promptRegistry;
@@ -31,6 +36,8 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
         this.metadataStore = metadataStore;
         this.clock = clock;
         this.callIdGenerator = callIdGenerator;
+        this.usagePolicy = usagePolicy;
+        this.usageLimiter = usageLimiter;
     }
 
     public async Task<AiCapabilityResult> ExecuteAsync(
@@ -41,12 +48,36 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
         EnsureRequired(request.CapabilityName, nameof(request.CapabilityName));
         EnsureRequired(request.PromptName, nameof(request.PromptName));
         EnsureRequired(request.Input, nameof(request.Input));
+        var usageSubjectId = NormalizeUsageSubjectId(request.UsageSubjectId);
 
         var route = modelRouter.GetRequiredRoute(request.CapabilityName);
         var prompt = promptRegistry.GetRequired(request.PromptName, request.PromptVersion);
         var provider = providerResolver.GetRequired(route.Provider);
         var callId = callIdGenerator.CreateCallId();
         var startedAtUtc = clock.UtcNow;
+        var providerRequestCharacters =
+            (long)request.CapabilityName.Length +
+            route.Model.Length +
+            prompt.Template.Length +
+            request.Input.Length +
+            prompt.OutputJsonSchema.Length;
+        if (providerRequestCharacters > usagePolicy.MaximumRequestCharacters)
+        {
+            const string code = "provider_request_too_large";
+            await RecordAsync(AiCallStatus.CostControlRejected, null, code, 0);
+            throw new AiUsageCostControlException(code);
+        }
+
+        if (!usageLimiter.TryAcquire(
+                usageSubjectId,
+                route.Provider,
+                DateOnly.FromDateTime(startedAtUtc.UtcDateTime),
+                usagePolicy.PerUserDailyRequestLimit))
+        {
+            const string code = "daily_usage_limit_exceeded";
+            await RecordAsync(AiCallStatus.CostControlRejected, null, code, 0);
+            throw new AiUsageCostControlException(code);
+        }
 
         LlmProviderResponse response;
         try
@@ -63,7 +94,7 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            await RecordAsync(AiCallStatus.Cancelled, null, "cancelled");
+            await RecordAsync(AiCallStatus.Cancelled, null, "cancelled", 1);
             throw;
         }
         catch (LlmProviderException exception)
@@ -71,12 +102,13 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
             await RecordAsync(
                 AiCallStatus.ProviderFailed,
                 null,
-                NormalizeProviderFailureCategory(exception.Code));
+                NormalizeProviderFailureCategory(exception.Code),
+                1);
             throw;
         }
         catch
         {
-            await RecordAsync(AiCallStatus.ProviderFailed, null, "provider_failure");
+            await RecordAsync(AiCallStatus.ProviderFailed, null, "provider_failure", 1);
             throw new LlmProviderException(
                 route.Provider,
                 "provider_failure",
@@ -85,7 +117,7 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
 
         if (response.InputTokens < 0 || response.OutputTokens < 0)
         {
-            await RecordAsync(AiCallStatus.ProviderFailed, null, "invalid_token_usage");
+            await RecordAsync(AiCallStatus.ProviderFailed, null, "invalid_token_usage", 1);
             throw new InvalidOperationException("LLM providers must return non-negative token usage.");
         }
 
@@ -102,7 +134,8 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
             await RecordAsync(
                 AiCallStatus.ValidationFailed,
                 tokenUsage,
-                "structured_output_validation_failed");
+                "structured_output_validation_failed",
+                1);
             throw;
         }
 
@@ -111,12 +144,13 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
             await RecordAsync(
                 AiCallStatus.ValidationFailed,
                 tokenUsage,
-                "structured_output_validation_failed");
+                "structured_output_validation_failed",
+                1);
             throw new StructuredOutputValidationException(validation.Errors);
         }
 
         using var output = JsonDocument.Parse(response.StructuredOutputJson);
-        await RecordAsync(AiCallStatus.Succeeded, tokenUsage, failureCategory: null);
+        await RecordAsync(AiCallStatus.Succeeded, tokenUsage, failureCategory: null, 1);
 
         return new AiCapabilityResult(
             callId,
@@ -134,7 +168,8 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
         Task RecordAsync(
             AiCallStatus status,
             AiTokenUsage? usage,
-            string? failureCategory) =>
+            string? failureCategory,
+            int providerRequestUnits) =>
             metadataStore.AddAsync(
                 new AiCallMetadata(
                     callId,
@@ -148,7 +183,11 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
                     Confidence: null,
                     failureCategory,
                     startedAtUtc,
-                    clock.UtcNow),
+                    clock.UtcNow,
+                    new AiProviderUsageMetadata(
+                        providerRequestCharacters,
+                        providerRequestUnits,
+                        startedAtUtc.ToString("yyyy-MM", CultureInfo.InvariantCulture))),
                 CancellationToken.None);
     }
 
@@ -167,5 +206,24 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
         {
             throw new ArgumentException("Value is required.", parameterName);
         }
+    }
+
+    private static string NormalizeUsageSubjectId(string value)
+    {
+        var normalized = value?.Trim();
+        if (string.IsNullOrWhiteSpace(normalized) ||
+            normalized.Length > 200 ||
+            normalized.Any(character =>
+                !(character is >= 'A' and <= 'Z' ||
+                  character is >= 'a' and <= 'z' ||
+                  character is >= '0' and <= '9' ||
+                  character is '.' or '_' or '~' or '-')))
+        {
+            throw new ArgumentException(
+                "A safe opaque usage subject identifier is required.",
+                nameof(AiCapabilityRequest.UsageSubjectId));
+        }
+
+        return normalized;
     }
 }

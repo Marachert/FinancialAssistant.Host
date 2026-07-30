@@ -6,7 +6,8 @@ public sealed record AiCapabilityRequest(
     string CapabilityName,
     string PromptName,
     string Input,
-    int? PromptVersion = null);
+    int? PromptVersion = null,
+    string UsageSubjectId = "");
 
 public sealed record AiCapabilityResult(
     string CallId,

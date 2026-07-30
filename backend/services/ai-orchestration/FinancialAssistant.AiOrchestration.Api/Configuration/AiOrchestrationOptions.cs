@@ -1,3 +1,4 @@
+using FinancialAssistant.AiOrchestration.Application.Abstractions;
 using FinancialAssistant.AiOrchestration.Domain;
 using FinancialAssistant.AiOrchestration.Infrastructure.Prompts;
 using FinancialAssistant.AiOrchestration.Infrastructure.Providers;
@@ -42,6 +43,8 @@ public sealed class AiProviderClientOptions
         TransactionParsingPromptCatalog.ExecutionPolicy.MaximumAttempts;
 
     public int RetryDelayMilliseconds { get; init; } = 200;
+
+    public AiUsageCostControlOptions UsageCostControls { get; init; } = new();
 
     public bool HasAnyProviderIdentity =>
         !string.IsNullOrWhiteSpace(Name) ||
@@ -116,4 +119,43 @@ public sealed class AiProviderClientOptions
             character is >= 'A' and <= 'Z' ||
             character is >= '0' and <= '9' ||
             character == '_');
+}
+
+public sealed class AiUsageCostControlOptions
+{
+    public const int DefaultPerUserDailyRequestLimit = 20;
+    public const int DefaultMaximumRequestCharacters = 8_000;
+    public const decimal DefaultMonthlyBudgetAlertUsd = 25m;
+
+    public int PerUserDailyRequestLimit { get; init; } =
+        DefaultPerUserDailyRequestLimit;
+
+    public int MaximumRequestCharacters { get; init; } =
+        DefaultMaximumRequestCharacters;
+
+    public decimal MonthlyBudgetAlertUsd { get; init; } =
+        DefaultMonthlyBudgetAlertUsd;
+
+    public bool AdminVisibilityEnabled { get; init; } = true;
+
+    public bool IsValid =>
+        PerUserDailyRequestLimit is >= 1 and <= 10_000 &&
+        MaximumRequestCharacters is >= 1 and <= 100_000 &&
+        MonthlyBudgetAlertUsd is >= 1 and <= 1_000_000 &&
+        AdminVisibilityEnabled;
+
+    public AiUsageCostControlPolicy CreatePolicy()
+    {
+        if (!IsValid)
+        {
+            throw new InvalidOperationException(
+                "AI usage cost-control settings are outside the allowed range.");
+        }
+
+        return new AiUsageCostControlPolicy(
+            PerUserDailyRequestLimit,
+            MaximumRequestCharacters,
+            MonthlyBudgetAlertUsd,
+            AdminVisibilityEnabled);
+    }
 }

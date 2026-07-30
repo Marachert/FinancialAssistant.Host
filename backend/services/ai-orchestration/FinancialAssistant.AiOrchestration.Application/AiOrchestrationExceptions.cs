@@ -46,6 +46,22 @@ public sealed class LlmProviderException : InvalidOperationException
     public bool IsTransient { get; }
 }
 
+public sealed class AiUsageCostControlException : InvalidOperationException
+{
+    public AiUsageCostControlException(string code)
+        : base("The AI request cannot be sent to the provider under the configured usage policy.")
+    {
+        if (code is not ("provider_request_too_large" or "daily_usage_limit_exceeded"))
+        {
+            throw new ArgumentException("Unsupported AI usage cost-control code.", nameof(code));
+        }
+
+        Code = code;
+    }
+
+    public string Code { get; }
+}
+
 public sealed class PromptNotFoundException : InvalidOperationException
 {
     public PromptNotFoundException(string promptName, int? version)

@@ -36,6 +36,12 @@ public sealed record OcrProcessingAuditMetadata(
     long DurationMilliseconds,
     decimal? Confidence,
     string? FailureCategory,
-    string TraceId);
+    string TraceId,
+    OcrProviderUsageMetadata ProviderUsage);
+
+public sealed record OcrProviderUsageMetadata(
+    long RequestBytes,
+    int ProviderRequestUnits,
+    string BillingMonth);
 
 public sealed class ReceiptProcessingDomainAssemblyMarker;

@@ -6,6 +6,7 @@ using FinancialAssistant.AiOrchestration.Infrastructure.Prompts;
 using FinancialAssistant.AiOrchestration.Infrastructure.Providers;
 using FinancialAssistant.AiOrchestration.Infrastructure.Routing;
 using FinancialAssistant.AiOrchestration.Infrastructure.Storage;
+using FinancialAssistant.AiOrchestration.Infrastructure.Usage;
 using FinancialAssistant.AiOrchestration.Infrastructure.Validation;
 
 namespace FinancialAssistant.AiOrchestration.Tests;
@@ -32,7 +33,8 @@ public sealed class AiOrchestrationServiceTests
             new AiCapabilityRequest(
                 "transaction.parse",
                 "transaction.parse",
-                "synthetic private input"),
+                "synthetic private input",
+                UsageSubjectId: "synthetic-user"),
             CancellationToken.None);
 
         var metadata = Assert.Single(metadataStore.Records);
@@ -53,6 +55,15 @@ public sealed class AiOrchestrationServiceTests
         Assert.Equal(250, metadata.DurationMilliseconds);
         Assert.Null(metadata.Confidence);
         Assert.Null(metadata.FailureCategory);
+        var expectedRequestCharacters =
+            "transaction.parse".Length +
+            "model-a".Length +
+            "Parse input".Length +
+            "synthetic private input".Length +
+            Schema.Length;
+        Assert.Equal(expectedRequestCharacters, metadata.ProviderUsage.RequestCharacters);
+        Assert.Equal(1, metadata.ProviderUsage.ProviderRequestUnits);
+        Assert.Equal("2026-07", metadata.ProviderUsage.BillingMonth);
         Assert.DoesNotContain(
             metadata.GetType().GetProperties(),
             property => property.Name.Contains("Input", StringComparison.OrdinalIgnoreCase) ||
@@ -69,7 +80,11 @@ public sealed class AiOrchestrationServiceTests
 
         await Assert.ThrowsAsync<StructuredOutputValidationException>(() =>
             service.ExecuteAsync(
-                new AiCapabilityRequest("transaction.parse", "transaction.parse", "synthetic input"),
+                new AiCapabilityRequest(
+                    "transaction.parse",
+                    "transaction.parse",
+                    "synthetic input",
+                    UsageSubjectId: "synthetic-user"),
                 CancellationToken.None));
 
         var metadata = Assert.Single(metadataStore.Records);
@@ -89,7 +104,11 @@ public sealed class AiOrchestrationServiceTests
 
         var exception = await Assert.ThrowsAsync<LlmProviderException>(() =>
             service.ExecuteAsync(
-                new AiCapabilityRequest("transaction.parse", "transaction.parse", "synthetic input"),
+                new AiCapabilityRequest(
+                    "transaction.parse",
+                    "transaction.parse",
+                    "synthetic input",
+                    UsageSubjectId: "synthetic-user"),
                 CancellationToken.None));
 
         var metadata = Assert.Single(metadataStore.Records);
@@ -112,7 +131,11 @@ public sealed class AiOrchestrationServiceTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.ExecuteAsync(
-                new AiCapabilityRequest("transaction.parse", "transaction.parse", "synthetic input"),
+                new AiCapabilityRequest(
+                    "transaction.parse",
+                    "transaction.parse",
+                    "synthetic input",
+                    UsageSubjectId: "synthetic-user"),
                 CancellationToken.None));
 
         var metadata = Assert.Single(metadataStore.Records);
@@ -129,7 +152,11 @@ public sealed class AiOrchestrationServiceTests
 
         await Assert.ThrowsAsync<InvalidJsonSchemaException>(() =>
             service.ExecuteAsync(
-                new AiCapabilityRequest("transaction.parse", "transaction.parse", "synthetic input"),
+                new AiCapabilityRequest(
+                    "transaction.parse",
+                    "transaction.parse",
+                    "synthetic input",
+                    UsageSubjectId: "synthetic-user"),
                 CancellationToken.None));
 
         var metadata = Assert.Single(metadataStore.Records);
@@ -138,10 +165,73 @@ public sealed class AiOrchestrationServiceTests
         Assert.Equal("structured_output_validation_failed", metadata.FailureCategory);
     }
 
+    [Fact]
+    public async Task Execute_WhenRequestExceedsCostControlSize_DoesNotCallProvider()
+    {
+        var provider = new StubProvider(
+            "synthetic-provider",
+            """{"type":"expense"}""",
+            1,
+            1);
+        var metadataStore = new InMemoryAiCallMetadataStore();
+        var service = CreateService(
+            provider,
+            metadataStore,
+            usagePolicy: new AiUsageCostControlPolicy(20, 10, 25m, true));
+
+        var exception = await Assert.ThrowsAsync<AiUsageCostControlException>(() =>
+            service.ExecuteAsync(
+                new AiCapabilityRequest(
+                    "transaction.parse",
+                    "transaction.parse",
+                    "synthetic input",
+                    UsageSubjectId: "synthetic-user"),
+                CancellationToken.None));
+
+        var metadata = Assert.Single(metadataStore.Records);
+        Assert.Equal("provider_request_too_large", exception.Code);
+        Assert.Equal(AiCallStatus.CostControlRejected, metadata.Status);
+        Assert.Equal("provider_request_too_large", metadata.FailureCategory);
+        Assert.Equal(0, metadata.ProviderUsage.ProviderRequestUnits);
+        Assert.Equal(0, provider.Attempts);
+    }
+
+    [Fact]
+    public async Task Execute_WhenDailyCostControlLimitIsReached_DoesNotCallProviderAgain()
+    {
+        var provider = new StubProvider(
+            "synthetic-provider",
+            """{"type":"expense"}""",
+            1,
+            1);
+        var metadataStore = new InMemoryAiCallMetadataStore();
+        var service = CreateService(
+            provider,
+            metadataStore,
+            usagePolicy: new AiUsageCostControlPolicy(1, 10_000, 25m, true));
+        var request = new AiCapabilityRequest(
+            "transaction.parse",
+            "transaction.parse",
+            "synthetic input",
+            UsageSubjectId: "synthetic-user");
+
+        await service.ExecuteAsync(request, CancellationToken.None);
+        var exception = await Assert.ThrowsAsync<AiUsageCostControlException>(() =>
+            service.ExecuteAsync(request, CancellationToken.None));
+
+        Assert.Equal("daily_usage_limit_exceeded", exception.Code);
+        Assert.Equal(1, provider.Attempts);
+        var rejected = Assert.Single(
+            metadataStore.Records,
+            item => item.Status == AiCallStatus.CostControlRejected);
+        Assert.Equal(0, rejected.ProviderUsage.ProviderRequestUnits);
+    }
+
     private static AiOrchestrationService CreateService(
         ILlmProvider provider,
         InMemoryAiCallMetadataStore metadataStore,
-        string schema = Schema) =>
+        string schema = Schema,
+        AiUsageCostControlPolicy? usagePolicy = null) =>
         new(
             new StaticModelRouter(
                 new[] { new AiModelRoute("transaction.parse", "synthetic-provider", "model-a") }),
@@ -151,7 +241,9 @@ public sealed class AiOrchestrationServiceTests
             new JsonSchemaStructuredOutputValidator(),
             metadataStore,
             new FixedClock(),
-            new FixedCallIdGenerator());
+            new FixedCallIdGenerator(),
+            usagePolicy ?? new AiUsageCostControlPolicy(20, 8_000, 25m, true),
+            new InMemoryAiUsageLimiter());
 
     private sealed class StubProvider : ILlmProvider
     {
@@ -178,11 +270,14 @@ public sealed class AiOrchestrationServiceTests
 
         public LlmProviderRequest? LastRequest { get; private set; }
 
+        public int Attempts { get; private set; }
+
         public Task<LlmProviderResponse> CompleteAsync(
             LlmProviderRequest request,
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            Attempts++;
             LastRequest = request;
             return exception is null
                 ? Task.FromResult(response!)
@@ -201,6 +296,9 @@ public sealed class AiOrchestrationServiceTests
 
     private sealed class FixedCallIdGenerator : IAiCallIdGenerator
     {
-        public string CreateCallId() => "aicall_synthetic_001";
+        private int sequence;
+
+        public string CreateCallId() =>
+            $"aicall_synthetic_{Interlocked.Increment(ref sequence):D3}";
     }
 }

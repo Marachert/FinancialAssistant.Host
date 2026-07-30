@@ -2,6 +2,7 @@ using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Events;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Ocr;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Storage;
+using FinancialAssistant.ReceiptProcessing.Infrastructure.Usage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -37,6 +38,10 @@ public static class DependencyInjection
         services.TryAddSingleton(provider =>
             OcrProviderResilienceOptions.FromConfiguration(
                 provider.GetRequiredService<IConfiguration>()));
+        services.TryAddSingleton(provider =>
+            provider.GetRequiredService<OcrProviderResilienceOptions>()
+                .UsageCostControlPolicy);
+        services.TryAddSingleton<IOcrUsageLimiter, InMemoryOcrUsageLimiter>();
         services.TryAddSingleton<IOcrProvider>(provider =>
         {
             var options = provider.GetRequiredService<OcrProviderResilienceOptions>();

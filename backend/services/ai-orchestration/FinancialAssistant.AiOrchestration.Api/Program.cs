@@ -54,6 +54,9 @@ builder.Services
     .Validate(
         options => options.Provider.HasValidResilienceSettings,
         "AI provider timeout and retry settings are outside the allowed range.")
+    .Validate(
+        options => options.Provider.UsageCostControls.IsValid,
+        "AI usage cost-control settings are outside the allowed range or disable required admin visibility.")
     .ValidateOnStart();
 
 var configuredProvider = builder.Configuration
@@ -64,6 +67,7 @@ if (configuredProvider.IsConfigured)
     builder.Services.AddSingleton(
         configuredProvider.CreateRoute(TransactionParsingPromptCatalog.PromptName));
 }
+builder.Services.AddSingleton(configuredProvider.UsageCostControls.CreatePolicy());
 
 builder.Services.AddAiOrchestrationApplication();
 builder.Services.AddAiOrchestrationInfrastructure();
