@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "checklistId": "ai-ocr-privacy-review-v1",
+  "title": "AI and OCR Privacy Review Checklist",
+  "owners": [
+    "security",
+    "ai-orchestration",
+    "receipt-processing"
+  ],
+  "releaseReadinessIssueKey": "FIN-124",
+  "rawInputStoragePolicy": "owner_storage_only_with_opaque_references_and_bounded_retention",
+  "decisionValues": [
+    "pass",
+    "fail",
+    "not_applicable"
+  ],
+  "notApplicableEvidenceRequirements": [
+    "capability scope",
+    "rationale",
+    "approver",
+    "decision date",
+    "compensating controls or explicit none"
+  ],
+  "requiredDomains": [
+    "data_minimization",
+    "provider_data_handling",
+    "masking_redaction",
+    "raw_input_storage",
+    "logging",
+    "consent_policy",
+    "test_data"
+  ],
+  "checks": [
+    {
+      "id": "AI-OCR-PRIVACY-001",
+      "domain": "data_minimization",
+      "question": "Does the provider request contain only fields required for the named AI or OCR capability?",
+      "expected": "The review lists every transmitted field, its purpose, and why processing cannot use a less sensitive representation.",
+      "requiredEvidence": [
+        "provider request contract or mapping",
+        "data-flow diagram or sequence reference",
+        "negative test proving unrelated fields are omitted"
+      ],
+      "blockingConditions": [
+        "a transmitted field has no documented purpose",
+        "a whole domain object is serialized instead of an allowlisted request",
+        "confirmed financial records are sent when suggestion input is sufficient"
+      ]
+    },
+    {
+      "id": "AI-OCR-PRIVACY-002",
+      "domain": "provider_data_handling",
+      "question": "Are provider retention, training, subprocessors, processing region, deletion, access, encryption, and incident terms answered and approved?",
+      "expected": "The provider review records default and configurable retention, model-training use, subprocessors, cross-border region, encryption, support access, deletion SLA, and incident notification.",
+      "requiredEvidence": [
+        "current provider terms or data-processing agreement",
+        "completed provider question record",
+        "security or privacy approval reference"
+      ],
+      "blockingConditions": [
+        "retention or model-training use is unknown",
+        "subprocessor or processing-region information is unavailable",
+        "deletion capability or incident notification is not documented"
+      ]
+    },
+    {
+      "id": "AI-OCR-PRIVACY-003",
+      "domain": "masking_redaction",
+      "question": "Are unnecessary identifiers and metadata removed before content crosses the provider boundary?",
+      "expected": "The integration omits or irreversibly redacts unrelated identifiers, strips unnecessary file metadata, and validates the minimized payload before transmission.",
+      "requiredEvidence": [
+        "redaction or metadata-removal rule",
+        "before-and-after synthetic fixture",
+        "negative test proving prohibited fields are absent"
+      ],
+      "blockingConditions": [
+        "reversible encoding is treated as redaction",
+        "receipt metadata is transmitted without a capability need",
+        "raw account, session, or confirmed-record identifiers are exposed"
+      ]
+    },
+    {
+      "id": "AI-OCR-PRIVACY-004",
+      "domain": "raw_input_storage",
+      "question": "Is raw AI or OCR input confined to approved service-owned storage with opaque references and bounded retention?",
+      "expected": "Raw prompts, receipt bytes, and OCR text stay in encrypted owner storage only when required; events, drafts, logs, tickets, and evidence use opaque references or safe metadata.",
+      "requiredEvidence": [
+        "storage owner and access-control reference",
+        "retention and deletion rule",
+        "event and persistence contract review"
+      ],
+      "blockingConditions": [
+        "raw input is copied into an integration event or transaction draft",
+        "retention has no bounded duration or deletion path",
+        "another service reads owner storage without an authenticated authorization boundary"
+      ]
+    },
+    {
+      "id": "AI-OCR-PRIVACY-005",
+      "domain": "logging",
+      "question": "Do logs, metrics, traces, failure events, and operator evidence exclude sensitive AI and OCR content?",
+      "expected": "Observability uses stable technical identifiers, safe categories, attempts, durations, and timestamps without prompts, receipt content, OCR text, provider payloads, exception details, or financial values.",
+      "requiredEvidence": [
+        "operational event or log catalog",
+        "safe metadata allowlist",
+        "regression test for prohibited fields"
+      ],
+      "blockingConditions": [
+        "request or response bodies are logged",
+        "provider exception messages or payloads reach shared telemetry",
+        "raw content appears in Jira, Confluence, dashboards, or alerts"
+      ]
+    },
+    {
+      "id": "AI-OCR-PRIVACY-006",
+      "domain": "consent_policy",
+      "question": "Does the user experience obtain required consent and disclose external AI or OCR processing before transmission?",
+      "expected": "The privacy policy and consent flow identify the processing purpose, provider category, data classes, retention or deletion expectations, cross-border processing where applicable, withdrawal path, and non-provider fallback.",
+      "requiredEvidence": [
+        "privacy policy section",
+        "consent screen or product requirement",
+        "withdrawal and provider-disabled behavior"
+      ],
+      "blockingConditions": [
+        "provider processing starts before required consent",
+        "the privacy policy omits external processing",
+        "withdrawal leaves no safe manual or provider-disabled path"
+      ]
+    },
+    {
+      "id": "AI-OCR-PRIVACY-007",
+      "domain": "test_data",
+      "question": "Do automated tests, fixtures, demos, and troubleshooting artifacts use only synthetic or irreversibly sanitized data?",
+      "expected": "Receipt images, OCR text, prompts, provider responses, identities, and financial values are generated for tests and cannot be traced to a real person or production record.",
+      "requiredEvidence": [
+        "fixture provenance statement",
+        "test-data review result",
+        "repository secret and sensitive-artifact scan"
+      ],
+      "blockingConditions": [
+        "a fixture originated from a production export or real receipt",
+        "real provider prompts or responses are committed",
+        "screenshots or logs contain personal or financial data"
+      ]
+    },
+    {
+      "id": "AI-OCR-PRIVACY-008",
+      "domain": "provider_data_handling",
+      "question": "Can provider access be disabled and stored provider data be deleted without creating an authoritative financial side effect?",
+      "expected": "Credentials can be revoked, provider processing can fail closed, deletion requests are traceable, and provider output remains untrusted suggestion data.",
+      "requiredEvidence": [
+        "provider-disable and credential-revocation procedure",
+        "provider deletion or support procedure",
+        "failure-path and authority tests"
+      ],
+      "blockingConditions": [
+        "disabling a provider exposes raw content or silently confirms a record",
+        "provider-held data has no deletion or escalation path",
+        "provider output bypasses deterministic validation and user confirmation"
+      ]
+    }
+  ]
+}
