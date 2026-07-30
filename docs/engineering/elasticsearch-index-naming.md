@@ -62,7 +62,8 @@ fa-{environment}-{service}-{entity}-write
 
 Rules:
 
-- `schemaVersion` is a positive integer prefixed with `v`, such as `v1`;
+- `schemaVersion` is a positive integer, such as `1`; the rendered version
+  segment adds the `v` prefix and is therefore `v1`;
 - `generation` is a positive six-digit sequence, such as `000001`;
 - the service segment is the owning capability, not a shared database name;
 - the entity segment describes one owned document family;
@@ -83,19 +84,31 @@ the first physical generation for that schema.
 Increment the generation for rollover, reindexing, or a replacement index that
 keeps the same compatible schema. Never reuse a physical index name.
 
+A live migration must define write continuity before backfill. The owning
+service must either quiesce writes for the cutover window, dual-write to both
+generations, or capture and replay every change after a recorded high-water
+mark. Backfill alone is not a write-safety strategy.
+
 A migration performs these steps:
 
 1. Create the new physical index from the intended versioned template.
-2. Backfill and validate only synthetic or authorized service-owned data.
-3. Atomically move the read alias after read verification.
-4. Atomically move the write alias to exactly one writable generation.
-5. Retain or remove the previous generation according to the owning service's
+2. Start the selected write-continuity strategy, then backfill and validate only
+   authorized service-owned data or synthetic test data.
+3. Replay captured changes or verify dual writes until the new generation is
+   caught up while the old aliases remain active.
+4. In one atomic Elasticsearch `_aliases` request, remove both stable aliases
+   from the old generation and add both to the new generation; mark exactly one
+   target as `is_write_index: true`.
+5. Verify reads and writes through the stable aliases before resuming quiesced
+   writes, ending dual-write, or retiring change replay.
+6. Retain or remove the previous generation according to the owning service's
    rollback, retention, and audit policy.
 
 The read alias normally points to the active generation. A migration may
 temporarily read multiple compatible generations only when the owning service
 defines deduplication and rollback behavior. The write alias always has exactly
-one write index.
+one write index. Never expose a new read generation while writes can still land
+only on an old generation.
 
 ## Service Examples
 
