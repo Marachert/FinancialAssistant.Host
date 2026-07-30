@@ -104,6 +104,17 @@ if (-not (Test-ElasticsearchResource -Path $physicalIndex)) {
     $null = Invoke-ElasticsearchJson -Method Put -Path $physicalIndex -Body $createIndexBody
 }
 else {
+    foreach ($alias in @($readAlias, $writeAlias)) {
+        $aliasPath = "_alias/$alias"
+        if (Test-ElasticsearchResource -Path $aliasPath) {
+            $existingAliasState = Invoke-ElasticsearchJson -Method Get -Path $aliasPath
+            $existingTargets = @($existingAliasState.PSObject.Properties.Name)
+            if ($existingTargets.Count -ne 1 -or $existingTargets[0] -cne $physicalIndex) {
+                throw "Alias '$alias' targets an unexpected physical index. Use the documented migration procedure instead."
+            }
+        }
+    }
+
     $aliasBody = @{
         actions = @(
             @{
@@ -134,12 +145,14 @@ if ($templateName -notin $templateNames) {
     throw "Elasticsearch did not return the expected template '$templateName'."
 }
 
-if ($physicalIndex -notin @($readAliasState.PSObject.Properties.Name)) {
-    throw "Read alias '$readAlias' does not target '$physicalIndex'."
+$readTargets = @($readAliasState.PSObject.Properties.Name)
+if ($readTargets.Count -ne 1 -or $readTargets[0] -cne $physicalIndex) {
+    throw "Read alias '$readAlias' must target only '$physicalIndex'."
 }
 
-if ($physicalIndex -notin @($writeAliasState.PSObject.Properties.Name)) {
-    throw "Write alias '$writeAlias' does not target '$physicalIndex'."
+$writeTargets = @($writeAliasState.PSObject.Properties.Name)
+if ($writeTargets.Count -ne 1 -or $writeTargets[0] -cne $physicalIndex) {
+    throw "Write alias '$writeAlias' must target only '$physicalIndex'."
 }
 
 $writeIndexState = $writeAliasState.PSObject.Properties[$physicalIndex].Value
