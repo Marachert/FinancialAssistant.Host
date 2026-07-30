@@ -21,8 +21,13 @@ public sealed class ElasticsearchNamingDocumentationTests
             "fa-{environment}-{service}-{entity}-v{schemaVersion}-{generation}",
             "fa-{environment}-{service}-{entity}-read",
             "fa-{environment}-{service}-{entity}-write",
-            "schemaVersion",
+            "schemaVersion is a positive integer, such as 1",
+            "the rendered version segment adds the v prefix",
             "generation",
+            "quiesce writes for the cutover window",
+            "dual-write to both generations",
+            "capture and replay every change",
+            "one atomic Elasticsearch _aliases request",
             "write alias always has exactly one write index",
             "wildcard access across service namespaces is forbidden"
         };
