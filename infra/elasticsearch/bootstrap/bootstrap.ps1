@@ -20,6 +20,14 @@ if (-not [Uri]::TryCreate($baseUri, [UriKind]::Absolute, [ref] $parsedUri) -or
     throw "ElasticsearchUrl must be an absolute HTTP or HTTPS URL."
 }
 
+if (-not $parsedUri.IsLoopback -or
+    -not [string]::IsNullOrEmpty($parsedUri.UserInfo) -or
+    -not [string]::IsNullOrEmpty($parsedUri.Query) -or
+    -not [string]::IsNullOrEmpty($parsedUri.Fragment) -or
+    $parsedUri.AbsolutePath.Trim("/") -ne "") {
+    throw "ElasticsearchUrl must target the root of a loopback-only local endpoint."
+}
+
 $prefix = "fa-$environment-$service-$entity"
 $templateName = "$prefix-template-v$schemaVersion"
 $templatePattern = "$prefix-v$schemaVersion-*"
@@ -70,8 +78,10 @@ function Test-ElasticsearchResource {
         return $true
     }
     catch {
-        if ($null -ne $_.Exception.Response -and
-            [int] $_.Exception.Response.StatusCode -eq 404) {
+        $responseProperty = $_.Exception.PSObject.Properties["Response"]
+        if ($null -ne $responseProperty -and
+            $null -ne $responseProperty.Value -and
+            [int] $responseProperty.Value.StatusCode -eq 404) {
             return $false
         }
 
@@ -89,9 +99,22 @@ if ($patterns.Count -ne 1 -or $patterns[0] -cne $templatePattern) {
     throw "Template index pattern must be exactly '$templatePattern'."
 }
 
+foreach ($alias in @($readAlias, $writeAlias)) {
+    $aliasPath = "_alias/$alias"
+    if (Test-ElasticsearchResource -Path $aliasPath) {
+        $existingAliasState = Invoke-ElasticsearchJson -Method Get -Path $aliasPath
+        $existingTargets = @($existingAliasState.PSObject.Properties.Name)
+        if ($existingTargets.Count -ne 1 -or $existingTargets[0] -cne $physicalIndex) {
+            throw "Alias '$alias' targets an unexpected physical index. Use the documented migration procedure instead."
+        }
+    }
+}
+
+$physicalIndexExists = Test-ElasticsearchResource -Path $physicalIndex
+
 $null = Invoke-ElasticsearchJson -Method Put -Path "_index_template/$templateName" -Body $template
 
-if (-not (Test-ElasticsearchResource -Path $physicalIndex)) {
+if (-not $physicalIndexExists) {
     $createIndexBody = @{
         aliases = @{
             $readAlias = @{}
@@ -104,17 +127,6 @@ if (-not (Test-ElasticsearchResource -Path $physicalIndex)) {
     $null = Invoke-ElasticsearchJson -Method Put -Path $physicalIndex -Body $createIndexBody
 }
 else {
-    foreach ($alias in @($readAlias, $writeAlias)) {
-        $aliasPath = "_alias/$alias"
-        if (Test-ElasticsearchResource -Path $aliasPath) {
-            $existingAliasState = Invoke-ElasticsearchJson -Method Get -Path $aliasPath
-            $existingTargets = @($existingAliasState.PSObject.Properties.Name)
-            if ($existingTargets.Count -ne 1 -or $existingTargets[0] -cne $physicalIndex) {
-                throw "Alias '$alias' targets an unexpected physical index. Use the documented migration procedure instead."
-            }
-        }
-    }
-
     $aliasBody = @{
         actions = @(
             @{
