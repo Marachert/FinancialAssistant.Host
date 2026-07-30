@@ -297,8 +297,42 @@ public sealed class ResilientOcrProviderTests
             provider.GetRequiredService<IOcrProvider>());
 
         Assert.Equal(
-            "The configured OCR provider adapter is not registered.",
+            "Exactly one OCR provider adapter matching the configured provider name must be registered.",
             exception.Message);
+    }
+
+    [Fact]
+    public void EnabledConfiguration_WithMismatchedAdapterFailsResolution()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["ReceiptProcessing:Ocr:Enabled"] = "true",
+                    ["ReceiptProcessing:Ocr:Mode"] = "production",
+                    ["ReceiptProcessing:Ocr:ProviderName"] = "selected-ocr",
+                    ["ReceiptProcessing:Ocr:ModelKey"] = "synthetic-v1",
+                    ["ReceiptProcessing:Ocr:Endpoint"] = "https://ocr.invalid/v1",
+                    ["ReceiptProcessing:Ocr:CredentialEnvironmentVariable"] =
+                        "FINANCIAL_ASSISTANT_TEST_OCR_CREDENTIAL"
+                })
+            .Build();
+        var mismatchedAdapter = new RecordingClient(
+            (_, _, _, _) => Task.FromResult(CreateExtraction()),
+            name: "other-ocr");
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddSingleton<IOcrProviderClient>(mismatchedAdapter);
+        services.AddReceiptProcessingInfrastructure();
+        using var provider = services.BuildServiceProvider();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            provider.GetRequiredService<IOcrProvider>());
+
+        Assert.Equal(
+            "Exactly one OCR provider adapter matching the configured provider name must be registered.",
+            exception.Message);
+        Assert.Equal(0, mismatchedAdapter.Attempts);
     }
 
     private static ResilientOcrProvider CreateProvider(
@@ -329,10 +363,14 @@ public sealed class ResilientOcrProviderTests
                 ReadOnlyMemory<byte>,
                 string,
                 CancellationToken,
-                Task<OcrExtractionResult>> handler)
+                Task<OcrExtractionResult>> handler,
+            string name = "synthetic-ocr")
         {
             this.handler = handler;
+            Name = name;
         }
+
+        public string Name { get; }
 
         public int Attempts { get; private set; }
 

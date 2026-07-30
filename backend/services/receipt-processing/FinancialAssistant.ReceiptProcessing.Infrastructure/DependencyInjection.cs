@@ -47,14 +47,20 @@ public static class DependencyInjection
                     options);
             }
 
-            var client = provider.GetRequiredService<IOcrProviderClient>();
-            if (client is DisabledOcrProviderClient)
+            var matchingClients = provider
+                .GetServices<IOcrProviderClient>()
+                .Where(client => string.Equals(
+                    client.Name,
+                    options.ProviderName,
+                    StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            if (matchingClients.Length != 1)
             {
                 throw new InvalidOperationException(
-                    "The configured OCR provider adapter is not registered.");
+                    "Exactly one OCR provider adapter matching the configured provider name must be registered.");
             }
 
-            return new ResilientOcrProvider(client, options);
+            return new ResilientOcrProvider(matchingClients[0], options);
         });
         return services;
     }

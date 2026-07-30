@@ -44,6 +44,8 @@ public sealed class ReceiptProcessingWebApplicationFactory : WebApplicationFacto
 
     private sealed class SyntheticOcrProviderClient : IOcrProviderClient
     {
+        public string Name => "synthetic-ocr";
+
         public Task<OcrExtractionResult> ExtractAsync(
             ReadOnlyMemory<byte> receiptImage,
             string contentType,
