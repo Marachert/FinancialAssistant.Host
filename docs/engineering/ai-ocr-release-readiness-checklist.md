@@ -29,15 +29,22 @@ capability/provider/model combination. Record:
 - privacy-safe evidence references, decision date, owner, and approver;
 - the final zero-blocker release decision.
 
-`not_applicable` requires capability scope, rationale, approver, decision date, and
-compensating controls or an explicit statement that none are needed.
-Any `blocked` decision, missing required evidence, or unresolved blocking condition
-stops publication. A check from another provider, model, capability, environment,
-or commit is not transferable evidence.
+`pass` requires every item listed as required evidence for that check.
+Missing required evidence blocks a `pass`. `not_applicable` instead requires
+capability scope, rationale, approver, decision date, and compensating controls or
+an explicit statement that none are needed.
+Missing this substitute evidence blocks `not_applicable`. Any `blocked` decision or
+unresolved blocking condition stops publication. A check from another provider,
+model, capability, environment, or commit is not transferable evidence.
 
-Release evidence may contain stable IDs, versions, counts, safe categories,
-timestamps, and pass/fail results. It must not contain credentials, raw prompts,
-provider responses, receipt content, OCR text, personal data, or financial values.
+Shared release evidence may contain stable IDs, versions, counts, safe categories,
+timestamps, pass/fail results, and references to access-controlled operational
+records. It must not contain credentials, raw prompts, provider responses, receipt
+content, OCR text, personal data, or user financial values. Approved provider
+budgets and provider-billed spend are required operational cost evidence, but their
+amounts remain in an access-controlled billing or operations system; pull requests,
+Jira, Confluence, and broadly shared support evidence record only the approved
+reference, status, owner, and freshness.
 
 ## Required Inputs
 
@@ -87,11 +94,14 @@ does not disable future processing, or no manual fallback remains.
 
 **Cost limits.** Product/operations approves per-user limits, maximum request size,
 monthly budget thresholds, provider billing reconciliation, and authenticated admin
-visibility for the release environment.
+visibility for the release environment. Budget and billed-spend amounts remain in
+the approved access-controlled billing or operations system.
 
 Block release when the production budget or owner is missing, configured limits
 exceed approval, usage is not visible, or provider-billed spend cannot be
-reconciled. Checked-in PoC thresholds are not production budget approval.
+reconciled. Also block when operational amounts are copied into a public or broadly
+shared evidence channel. Checked-in PoC thresholds are not production budget
+approval.
 
 ### AI-OCR-READY-005
 

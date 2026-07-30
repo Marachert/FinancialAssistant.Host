@@ -29,6 +29,9 @@ public sealed class AiOcrReleaseReadinessChecklistTests
             "provider_configuration",
             "support"
         };
+        var expectedCheckIds = Enumerable.Range(1, 9)
+            .Select(number => $"AI-OCR-READY-{number:000}")
+            .ToArray();
 
         Assert.Equal(1, checklist.SchemaVersion);
         Assert.Equal("ai-ocr-release-readiness-v1", checklist.ChecklistId);
@@ -40,21 +43,32 @@ public sealed class AiOcrReleaseReadinessChecklistTests
             new[] { "blocked", "not_applicable", "pass" },
             checklist.DecisionValues.Order(StringComparer.Ordinal).ToArray());
         Assert.Equal(
+            new[]
+            {
+                "approver",
+                "capability scope",
+                "compensating controls or explicit none",
+                "decision date",
+                "rationale"
+            },
+            checklist.NotApplicableEvidenceRequirements
+                .Order(StringComparer.Ordinal)
+                .ToArray());
+        Assert.Equal(
             "all_required_checks_pass_or_have_approved_not_applicable_decisions_and_no_blocking_condition_remains",
             checklist.ReleaseRule);
         Assert.Equal(
-            "safe_metadata_only_no_credentials_raw_prompts_provider_responses_receipt_content_ocr_text_pii_or_financial_values",
+            "shared_evidence_uses_safe_metadata_and_access_controlled_operational_budget_references_no_credentials_raw_content_pii_or_user_financial_values",
             checklist.EvidenceSafetyPolicy);
         Assert.Equal(
             expectedDomains,
             checklist.RequiredDomains.Order(StringComparer.Ordinal).ToArray());
 
-        Assert.NotEmpty(checklist.Checks);
         Assert.Equal(
-            checklist.Checks.Length,
+            expectedCheckIds,
             checklist.Checks.Select(check => check.Id)
-                .Distinct(StringComparer.Ordinal)
-                .Count());
+                .Order(StringComparer.Ordinal)
+                .ToArray());
 
         foreach (var domain in expectedDomains)
         {
@@ -125,7 +139,19 @@ public sealed class AiOcrReleaseReadinessChecklistTests
         Assert.Contains("FIN-117", documentation, StringComparison.Ordinal);
         Assert.Contains("FIN-121", documentation, StringComparison.Ordinal);
         Assert.Contains(
-            "Any `blocked` decision",
+            "Missing required evidence blocks a `pass`",
+            documentation,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Missing this substitute evidence blocks",
+            documentation,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "access-controlled billing or operations system",
+            documentation,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "user financial values",
             documentation,
             StringComparison.Ordinal);
         Assert.Contains(
@@ -219,6 +245,7 @@ public sealed class AiOcrReleaseReadinessChecklistTests
         string JiraIssueKey,
         string AppliesBefore,
         string[] DecisionValues,
+        string[] NotApplicableEvidenceRequirements,
         string ReleaseRule,
         string EvidenceSafetyPolicy,
         string[] RequiredDomains,

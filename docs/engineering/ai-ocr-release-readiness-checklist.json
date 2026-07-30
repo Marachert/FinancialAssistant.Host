@@ -8,8 +8,15 @@
     "blocked",
     "not_applicable"
   ],
+  "notApplicableEvidenceRequirements": [
+    "capability scope",
+    "rationale",
+    "approver",
+    "decision date",
+    "compensating controls or explicit none"
+  ],
   "releaseRule": "all_required_checks_pass_or_have_approved_not_applicable_decisions_and_no_blocking_condition_remains",
-  "evidenceSafetyPolicy": "safe_metadata_only_no_credentials_raw_prompts_provider_responses_receipt_content_ocr_text_pii_or_financial_values",
+  "evidenceSafetyPolicy": "shared_evidence_uses_safe_metadata_and_access_controlled_operational_budget_references_no_credentials_raw_content_pii_or_user_financial_values",
   "requiredDomains": [
     "provider_configuration",
     "privacy_and_consent",
@@ -112,14 +119,15 @@
       "requiredEvidence": [
         "FIN-121 configuration review",
         "approved monthly provider budget",
-        "usage and rejection report",
-        "provider billing reconciliation owner and freshness"
+        "access-controlled usage and rejection report",
+        "access-controlled provider billing reconciliation owner and freshness"
       ],
       "blockingConditions": [
         "a production budget or accountable owner is missing",
         "configured limits exceed approved values",
         "usage is not visible to the authenticated admin role",
-        "provider-billed spend cannot be reconciled"
+        "provider-billed spend cannot be reconciled",
+        "operational budget or billing amounts are copied into a public or broadly shared evidence channel"
       ],
       "references": [
         "docs/engineering/ai-ocr-usage-cost-controls.md"
