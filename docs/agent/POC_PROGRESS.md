@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-07-30T17:34:05+03:00
+Last updated: 2026-07-30T17:41:07+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-54 closure is **49.0%**:
-**96 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-55 closure is **49.5%**:
+**97 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,12 +13,11 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-54 - P2.T6 Configure local environment files and development secrets
-  template
+- FIN-55 - P2.T7 Add local infrastructure startup and troubleshooting guide
 - originating implementation commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/0ae739ad20e01f4019aa70c71c6cda35e542e22f
-- previous readiness: 95 / 196, or 48.5%
-- current readiness: 96 / 196, or 49.0%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/98f0ce050b6e4b9ff589297fda242bf915583d61
+- previous readiness: 96 / 196, or 49.0%
+- current readiness: 97 / 196, or 49.5%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
@@ -27,12 +26,11 @@ denominator.
 
 Current delivery:
 
-- FIN-54 is Done after stale Jira state recovery; current `main` retains the
-  development-only environment template and its documented Compose consumers
-- local `.env` files and private credential formats remain ignored while safe
-  `.env.example` templates remain trackable
-- repository hygiene tests enforce the local-secret and generated-artifact
-  boundary
+- FIN-55 is Done after stale Jira state recovery; current `main` retains the
+  infrastructure startup, shutdown, reset, health-check, and troubleshooting
+  guide
+- root onboarding links the guide and includes Bash and PowerShell startup flows
+- helper scripts remain non-interactive and use strict Bash error handling
 
 ## Epic Progress
 
@@ -40,7 +38,7 @@ Current delivery:
 | --- | --- | ---: | ---: | ---: |
 | FIN-1 | P0 Product clarification and release scope | 3 | 3 | 100.0% |
 | FIN-5 | P1 Architecture definition and technical governance | 17 | 17 | 100.0% |
-| FIN-10 | P2 Repository, DevOps, and local platform foundation | 25 | 36 | 69.4% |
+| FIN-10 | P2 Repository, DevOps, and local platform foundation | 26 | 36 | 72.2% |
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 4 | 22 | 18.2% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
@@ -48,7 +46,7 @@ Current delivery:
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **96** | **196** | **49.0%** |
+| **Total** | **Canonical POC leaf scope** | **97** | **196** | **49.5%** |
 
 ## First-User-Test Gates
 
@@ -100,3 +98,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-07-30T17:06:50+03:00 | FIN-50 | Recovered merged work and closed Jira | 48.0% | +0.5 pp |
 | 2026-07-30T17:26:23+03:00 | FIN-56 | Recovered delivered work and closed Jira | 48.5% | +0.5 pp |
 | 2026-07-30T17:34:05+03:00 | FIN-54 | Recovered delivered work and closed Jira | 49.0% | +0.5 pp |
+| 2026-07-30T17:41:07+03:00 | FIN-55 | Recovered delivered work and closed Jira | 49.5% | +0.5 pp |
