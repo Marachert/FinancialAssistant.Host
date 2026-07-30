@@ -377,6 +377,6 @@ public sealed class DisabledOcrProviderClient : IOcrProviderClient
         CancellationToken cancellationToken) =>
         Task.FromException<OcrExtractionResult>(
             new OcrProviderException(
-                OcrProviderErrorCodes.ProviderUnavailable,
+                OcrProviderErrorCodes.ProviderDisabled,
                 isTransient: false));
 }

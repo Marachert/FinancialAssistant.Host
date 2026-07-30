@@ -8,6 +8,8 @@ public static class OcrProviderErrorCodes
 
     public const string ProviderFailure = "provider_failure";
 
+    public const string ProviderDisabled = "provider_disabled";
+
     public const string ProviderTimeout = "provider_timeout";
 
     public const string ProviderUnavailable = "provider_unavailable";
@@ -21,6 +23,7 @@ public sealed class OcrProviderException : Exception
             OcrProviderErrorCodes.InvalidReceiptContent,
             OcrProviderErrorCodes.InvalidProviderResponse,
             OcrProviderErrorCodes.ProviderFailure,
+            OcrProviderErrorCodes.ProviderDisabled,
             OcrProviderErrorCodes.ProviderTimeout,
             OcrProviderErrorCodes.ProviderUnavailable
         };

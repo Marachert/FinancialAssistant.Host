@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using FinancialAssistant.ReceiptProcessing.Application;
 using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
+using FinancialAssistant.ReceiptProcessing.Contracts;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Ocr;
 using Microsoft.Extensions.Configuration;
 
@@ -77,6 +78,30 @@ public sealed class ResilientOcrProviderTests
         Assert.False(exception.IsTransient);
         Assert.Equal(1, client.Attempts);
         Assert.DoesNotContain("secret", exception.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ExtractAsync_DisabledProviderFailsPermanentlyWithoutJobRetry()
+    {
+        var provider = CreateProvider(
+            new DisabledOcrProviderClient(),
+            maximumAttempts: 3);
+
+        var exception = await Assert.ThrowsAsync<OcrProviderException>(() =>
+            provider.ExtractAsync(
+                new MemoryStream(SyntheticReceipt),
+                "image/png",
+                CancellationToken.None));
+
+        Assert.Equal(OcrProviderErrorCodes.ProviderDisabled, exception.ErrorCode);
+        Assert.False(exception.IsTransient);
+        Assert.False(OcrExtractionJobRetryPolicy.ShouldRetry(
+            exception.ErrorCode,
+            exception.IsTransient,
+            failedAttempt: 1));
+        Assert.Equal(
+            "processing_provider_disabled",
+            OcrProcessingUserMessageCodes.ProviderDisabled);
     }
 
     [Fact]
