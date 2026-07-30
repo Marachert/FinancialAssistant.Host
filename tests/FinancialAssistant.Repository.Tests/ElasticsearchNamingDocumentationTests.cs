@@ -12,6 +12,8 @@ public sealed class ElasticsearchNamingDocumentationTests
             repositoryRoot,
             "docs/engineering/elasticsearch-index-naming.md");
 
+        var normalizedGuide = NormalizeWhitespace(guide);
+
         var requiredPhrases = new[]
         {
             "Only the owning service may read or write its indices",
@@ -27,7 +29,7 @@ public sealed class ElasticsearchNamingDocumentationTests
 
         foreach (var phrase in requiredPhrases)
         {
-            Assert.Contains(phrase, guide, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(phrase, normalizedGuide, StringComparison.OrdinalIgnoreCase);
         }
     }
 
@@ -68,6 +70,9 @@ public sealed class ElasticsearchNamingDocumentationTests
             documentationIndex,
             StringComparison.Ordinal);
     }
+
+    private static string NormalizeWhitespace(string value) =>
+        string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
     private static string ReadRequiredFile(string repositoryRoot, string path)
     {
