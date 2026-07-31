@@ -1,6 +1,6 @@
 # Shared Elasticsearch Utilities
 
-This folder contains reusable technical contracts for service-owned Elasticsearch integrations.
+This folder is reserved for reusable technical Elasticsearch integration helpers.
 
 ## Projects
 
