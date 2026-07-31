@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-07-31T11:58:30+03:00
+Last updated: 2026-07-31T12:25:54+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-64 closure is **52.0%**:
-**102 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-65 closure is **52.6%**:
+**103 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,14 +13,14 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-64 - Document shared event contract versioning rules
+- FIN-65 - Implement shared integration event envelope
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/75
+  https://github.com/Marachert/FinancialAssistant.Host/pull/77
 - merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/d431e0c6f57d6ac3f5e9379be220b767ad474838
-- previous readiness: 101 / 196, or 51.5%
-- current readiness: 102 / 196, or 52.0%
-- change: +0.5 percentage points
+  https://github.com/Marachert/FinancialAssistant.Host/commit/b504ba690e9c0b61455afcbd6294cdbcf298c045
+- previous readiness: 102 / 196, or 52.0%
+- current readiness: 103 / 196, or 52.6%
+- change: +0.6 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
 duplicate of FIN-124. Closing either duplicate does not change the numerator or
@@ -28,16 +28,15 @@ denominator.
 
 Current delivery:
 
-- FIN-64 is Done after PR 75 merged the canonical integration-event naming,
-  schema compatibility, and breaking-change rules
-- dual-published versions use a stable opaque occurrence identity for
-  cross-version side-effect deduplication while serialized messages retain
-  distinct event identities
-- required synthetic examples include user registration, transaction
-  confirmation with `draftId`, income creation, and expense creation
-- Backend CI #250 passed restore, Release build, tests, and format on the final
-  FIN-64 head
-- parent FIN-63 remains In Progress because FIN-65 is still unfinished
+- FIN-65 is Done after PR 77 merged the shared .NET 8 integration-event
+  envelope with a strongly typed generic payload
+- required event, occurrence, version, producer, correlation, causation, user
+  hash, and UTC occurrence metadata are validated at construction time
+- operational identifiers are bounded and control-free, event-type/schema
+  versions must align, and uninitialized occurrence timestamps are rejected
+- Backend CI #257 passed restore, Release build, tests, and format on the final
+  FIN-65 head
+- parent FIN-63 is Done after FIN-64 and FIN-65 were both verified Done
 
 ## Epic Progress
 
@@ -45,7 +44,7 @@ Current delivery:
 | --- | --- | ---: | ---: | ---: |
 | FIN-1 | P0 Product clarification and release scope | 3 | 3 | 100.0% |
 | FIN-5 | P1 Architecture definition and technical governance | 17 | 17 | 100.0% |
-| FIN-10 | P2 Repository, DevOps, and local platform foundation | 31 | 36 | 86.1% |
+| FIN-10 | P2 Repository, DevOps, and local platform foundation | 32 | 36 | 88.9% |
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 4 | 22 | 18.2% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
@@ -53,7 +52,7 @@ Current delivery:
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **102** | **196** | **52.0%** |
+| **Total** | **Canonical POC leaf scope** | **103** | **196** | **52.6%** |
 
 ## First-User-Test Gates
 
@@ -111,3 +110,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-07-31T11:22:00+03:00 | FIN-60 | Closure delivered by PR 71 | 51.0% | +0.5 pp |
 | 2026-07-31T11:38:00+03:00 | FIN-62 | Closure delivered by PR 73 | 51.5% | +0.5 pp |
 | 2026-07-31T11:58:30+03:00 | FIN-64 | Closure delivered by PR 75 | 52.0% | +0.5 pp |
+| 2026-07-31T12:25:54+03:00 | FIN-65 | Closure delivered by PR 77 | 52.6% | +0.6 pp |
