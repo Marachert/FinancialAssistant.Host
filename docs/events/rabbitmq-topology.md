@@ -105,6 +105,17 @@ Auto-delete and exclusive application queues are forbidden. Every queue has one
 owning service; multiple replicas of that service may compete on the same
 queue.
 
+Baseline queue arguments are explicit:
+
+| Queue role | Required arguments |
+| --- | --- |
+| Application | `x-queue-type=quorum`, `x-dead-letter-exchange=fa.dead-letter`, and `x-dead-letter-routing-key={applicationQueue}` |
+| Retry | `x-queue-type=quorum`, fixed `x-message-ttl`, `x-dead-letter-exchange=fa.events`, and `x-dead-letter-routing-key={originalEventType}` |
+| Dead-letter | `x-queue-type=quorum` with no automatic return route |
+
+A terminal or retry-exhausted application delivery is rejected without requeue,
+which routes it through the application's configured dead-letter exchange.
+
 ## Binding Examples
 
 | Publisher event | Exchange | Routing key | Consumer queue |
