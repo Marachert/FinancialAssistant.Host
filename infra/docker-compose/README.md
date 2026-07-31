@@ -86,6 +86,19 @@ Or:
 bash scripts/healthcheck.sh
 ```
 
+## Elasticsearch bootstrap
+
+After the Elasticsearch service is healthy, create and verify the first
+Identity-owned index template and aliases from the repository root:
+
+```powershell
+pwsh -NoProfile -NonInteractive -File infra/elasticsearch/bootstrap/bootstrap.ps1
+```
+
+The command is safe to rerun. See the
+[Elasticsearch bootstrap guide](../elasticsearch/bootstrap/README.md) for the
+created resource names and read-back verification commands.
+
 ## Development rules
 
 - `.env.example` is development-only.
