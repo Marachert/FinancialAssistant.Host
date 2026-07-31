@@ -9,22 +9,23 @@ public sealed class RabbitMqTopologyDocumentationTests
     {
         var repositoryRoot = FindRepositoryRoot();
         var guide = ReadRequiredFile(repositoryRoot, "docs/events/rabbitmq-topology.md");
+        var normalizedGuide = NormalizeWhitespace(guide);
 
-        Assert.Contains("Related Jira: FIN-62", guide, StringComparison.Ordinal);
-        Assert.Contains("fa-{environment}", guide, StringComparison.Ordinal);
-        Assert.Contains("fa.events", guide, StringComparison.Ordinal);
-        Assert.Contains("fa.retry", guide, StringComparison.Ordinal);
-        Assert.Contains("fa.dead-letter", guide, StringComparison.Ordinal);
-        Assert.Contains("{domain}.{action}.v{schemaVersion}", guide, StringComparison.Ordinal);
-        Assert.Contains("fa.{consumer}.{purpose}.v{consumerContractVersion}", guide, StringComparison.Ordinal);
-        Assert.Contains("transaction.confirmed.v1", guide, StringComparison.Ordinal);
+        Assert.Contains("Related Jira: FIN-62", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains("fa-{environment}", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains("fa.events", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains("fa.retry", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains("fa.dead-letter", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains("{domain}.{action}.v{schemaVersion}", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains("fa.{consumer}.{purpose}.v{consumerContractVersion}", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains("transaction.confirmed.v1", normalizedGuide, StringComparison.Ordinal);
         Assert.Contains(
             "The routing key is the complete event type, unchanged.",
-            guide,
+            normalizedGuide,
             StringComparison.Ordinal);
         Assert.Contains(
             "Bindings such as `#` or `*.#` are forbidden",
-            guide,
+            normalizedGuide,
             StringComparison.Ordinal);
     }
 
@@ -33,29 +34,30 @@ public sealed class RabbitMqTopologyDocumentationTests
     {
         var repositoryRoot = FindRepositoryRoot();
         var guide = ReadRequiredFile(repositoryRoot, "docs/events/rabbitmq-topology.md");
+        var normalizedGuide = NormalizeWhitespace(guide);
 
-        Assert.Contains("three delayed retries", guide, StringComparison.Ordinal);
-        Assert.Contains(".retry.5s", guide, StringComparison.Ordinal);
-        Assert.Contains(".retry.30s", guide, StringComparison.Ordinal);
-        Assert.Contains(".retry.5m", guide, StringComparison.Ordinal);
+        Assert.Contains("three delayed retries", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains(".retry.5s", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains(".retry.30s", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains(".retry.5m", normalizedGuide, StringComparison.Ordinal);
         Assert.Contains(
             "Never use immediate requeue loops, unbounded retries",
-            guide,
+            normalizedGuide,
             StringComparison.Ordinal);
         Assert.Contains(
             "{applicationQueue}.dead-letter",
-            guide,
+            normalizedGuide,
             StringComparison.Ordinal);
         Assert.Contains(
             "Dead-letter messages are not replayed automatically.",
-            guide,
+            normalizedGuide,
             StringComparison.Ordinal);
-        Assert.Contains("x-dead-letter-exchange=fa.dead-letter", guide, StringComparison.Ordinal);
-        Assert.Contains("x-dead-letter-exchange=fa.events", guide, StringComparison.Ordinal);
-        Assert.Contains("rejected without requeue", guide, StringComparison.Ordinal);
+        Assert.Contains("x-dead-letter-exchange=fa.dead-letter", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains("x-dead-letter-exchange=fa.events", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains("rejected without requeue", normalizedGuide, StringComparison.Ordinal);
         Assert.Contains(
             "preserves the original `eventId`",
-            guide,
+            normalizedGuide,
             StringComparison.Ordinal);
     }
 
@@ -64,21 +66,22 @@ public sealed class RabbitMqTopologyDocumentationTests
     {
         var repositoryRoot = FindRepositoryRoot();
         var guide = ReadRequiredFile(repositoryRoot, "docs/events/rabbitmq-topology.md");
+        var normalizedGuide = NormalizeWhitespace(guide);
 
-        Assert.Contains("at-least-once delivery", guide, StringComparison.Ordinal);
-        Assert.Contains("Exactly-once delivery is not claimed.", guide, StringComparison.Ordinal);
-        Assert.Contains("publisher confirms", guide, StringComparison.Ordinal);
-        Assert.Contains("mandatory messages", guide, StringComparison.Ordinal);
-        Assert.Contains("durable service-owned outbox", guide, StringComparison.Ordinal);
-        Assert.Contains("durable inbox", guide, StringComparison.Ordinal);
-        Assert.Contains("keyed by `eventId`", guide, StringComparison.Ordinal);
+        Assert.Contains("at-least-once delivery", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains("Exactly-once delivery is not claimed.", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains("publisher confirms", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains("mandatory messages", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains("durable service-owned outbox", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains("durable inbox", normalizedGuide, StringComparison.Ordinal);
+        Assert.Contains("keyed by `eventId`", normalizedGuide, StringComparison.Ordinal);
         Assert.Contains(
             "acknowledges the RabbitMQ delivery only after the durable result succeeds",
-            guide,
+            normalizedGuide,
             StringComparison.Ordinal);
         Assert.Contains(
             "RabbitMQ transports facts and is never a source of truth.",
-            guide,
+            normalizedGuide,
             StringComparison.Ordinal);
     }
 
@@ -87,6 +90,7 @@ public sealed class RabbitMqTopologyDocumentationTests
     {
         var repositoryRoot = FindRepositoryRoot();
         var guide = ReadRequiredFile(repositoryRoot, "docs/events/rabbitmq-topology.md");
+        var normalizedGuide = NormalizeWhitespace(guide);
         var eventsReadme = ReadRequiredFile(repositoryRoot, "docs/events/README.md");
         var documentationReadme = ReadRequiredFile(repositoryRoot, "docs/README.md");
 
@@ -95,16 +99,19 @@ public sealed class RabbitMqTopologyDocumentationTests
             eventsReadme,
             StringComparison.Ordinal);
         Assert.Contains("docs/events/rabbitmq-topology.md", documentationReadme, StringComparison.Ordinal);
-        Assert.Contains("Use synthetic messages only.", guide, StringComparison.Ordinal);
+        Assert.Contains("Use synthetic messages only.", normalizedGuide, StringComparison.Ordinal);
         Assert.Contains(
             "must not include message payloads",
-            guide,
+            normalizedGuide,
             StringComparison.Ordinal);
         Assert.Contains(
             "Production credentials, permissions, and virtual hosts must never be shared",
-            guide,
+            normalizedGuide,
             StringComparison.Ordinal);
     }
+
+    private static string NormalizeWhitespace(string content) =>
+        string.Join(' ', content.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
     private static string ReadRequiredFile(string repositoryRoot, string path)
     {
