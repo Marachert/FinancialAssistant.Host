@@ -9,15 +9,20 @@ public interface IElasticsearchRepository<TDocument>
         string documentId,
         CancellationToken cancellationToken = default);
 
-    Task<ElasticsearchWriteResult> SaveAsync(
+    Task<ElasticsearchWriteResult> CreateAsync(
         string documentId,
         TDocument document,
-        ElasticsearchConcurrencyToken? expectedConcurrencyToken = null,
         CancellationToken cancellationToken = default);
 
-    Task<bool> DeleteAsync(
+    Task<ElasticsearchWriteResult> UpdateAsync(
         string documentId,
-        ElasticsearchConcurrencyToken? expectedConcurrencyToken = null,
+        TDocument document,
+        ElasticsearchConcurrencyToken expectedConcurrencyToken,
+        CancellationToken cancellationToken = default);
+
+    Task DeleteAsync(
+        string documentId,
+        ElasticsearchConcurrencyToken expectedConcurrencyToken,
         CancellationToken cancellationToken = default);
 }
 
@@ -57,15 +62,11 @@ public sealed record ElasticsearchStoredDocument<TDocument>
 public sealed record ElasticsearchWriteResult
 {
     public ElasticsearchWriteResult(
-        bool created,
         ElasticsearchConcurrencyToken concurrencyToken)
     {
-        Created = created;
         ConcurrencyToken = concurrencyToken ??
             throw new ArgumentNullException(nameof(concurrencyToken));
     }
-
-    public bool Created { get; }
 
     public ElasticsearchConcurrencyToken ConcurrencyToken { get; }
 }
