@@ -65,6 +65,35 @@ public sealed class ElasticsearchRepositoryContractsTests
     }
 
     [Fact]
+    public void RepositoryContract_SeparatesCreateFromConditionalMutations()
+    {
+        var repositoryType = typeof(IElasticsearchRepository<TestDocument>);
+        var methodNames = repositoryType
+            .GetMethods()
+            .Select(method => method.Name)
+            .ToArray();
+
+        Assert.Contains("CreateAsync", methodNames);
+        Assert.Contains("UpdateAsync", methodNames);
+        Assert.Contains("DeleteAsync", methodNames);
+        Assert.DoesNotContain("SaveAsync", methodNames);
+
+        var updateParameters = repositoryType
+            .GetMethod("UpdateAsync")!
+            .GetParameters();
+        var deleteParameters = repositoryType
+            .GetMethod("DeleteAsync")!
+            .GetParameters();
+
+        Assert.Equal(
+            typeof(ElasticsearchConcurrencyToken),
+            updateParameters[2].ParameterType);
+        Assert.Equal(
+            typeof(ElasticsearchConcurrencyToken),
+            deleteParameters[1].ParameterType);
+    }
+
+    [Fact]
     public void ConcurrencyToken_AcceptsValidSequenceNumberAndPrimaryTerm()
     {
         var token = new ElasticsearchConcurrencyToken(0, 1);
@@ -113,7 +142,7 @@ public sealed class ElasticsearchRepositoryContractsTests
     public void WriteResult_RequiresConcurrencyToken()
     {
         Assert.Throws<ArgumentNullException>(
-            () => new ElasticsearchWriteResult(true, null!));
+            () => new ElasticsearchWriteResult(null!));
     }
 
     [Fact]
