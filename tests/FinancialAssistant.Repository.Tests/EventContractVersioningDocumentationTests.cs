@@ -92,7 +92,7 @@ public sealed class EventContractVersioningDocumentationTests
     private static string ReadRequiredFile(string repositoryRoot, string path)
     {
         var fullPath = ToRepositoryPath(repositoryRoot, path);
-        Assert.True(File.Exists(fullPath), $"Required event contract document '${path}' is missing.");
+        Assert.True(File.Exists(fullPath), $"Required event contract document '{path}' is missing.");
         return File.ReadAllText(fullPath);
     }
 
