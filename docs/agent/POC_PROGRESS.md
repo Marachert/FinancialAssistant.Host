@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-07-30T18:16:21+03:00
+Last updated: 2026-07-31T11:22:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-59 closure is **50.5%**:
-**99 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-60 closure is **51.0%**:
+**100 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,13 +13,13 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-59 - Define Elasticsearch naming and alias conventions
+- FIN-60 - Create sample Elasticsearch index template and aliases
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/69
+  https://github.com/Marachert/FinancialAssistant.Host/pull/71
 - merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/ea087ad05fe3a44e27f878b4d83fb7a3d5b005d3
-- previous readiness: 98 / 196, or 50.0%
-- current readiness: 99 / 196, or 50.5%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/073132ab7f504705be6c42f550c86ac12892a81f
+- previous readiness: 99 / 196, or 50.5%
+- current readiness: 100 / 196, or 51.0%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
@@ -28,15 +28,15 @@ denominator.
 
 Current delivery:
 
-- FIN-59 is Done after PR 69 merged the canonical service-owned Elasticsearch
-  namespace, physical index, template, and stable read/write alias conventions
-- schema-version and generation migration semantics require a write-safe
-  strategy and one atomic read/write alias cutover
-- repository regression tests cover ownership, naming grammar, lifecycle rules,
-  all eight required synthetic service examples, and documentation discovery
-- Backend CI #232 passed restore, Release build, tests, and format on the final
-  FIN-59 head
-- parent FIN-58 remains In Progress because FIN-60 is still To Do
+- FIN-60 is Done after PR 71 merged the first executable local Elasticsearch
+  template and stable read/write alias bootstrap for an Identity-owned index
+- reruns reuse the fixed initial generation, verify the resulting template and
+  aliases, and reject unexpected alias drift before any mutation
+- the bootstrap accepts only loopback root endpoints and uses synthetic schema
+  metadata without credentials, real identities, or financial data
+- Backend CI #239 passed restore, Release build, tests, and format on the final
+  FIN-60 head
+- parent FIN-58 is Done after FIN-59 and FIN-60 were both verified Done
 
 ## Epic Progress
 
@@ -44,7 +44,7 @@ Current delivery:
 | --- | --- | ---: | ---: | ---: |
 | FIN-1 | P0 Product clarification and release scope | 3 | 3 | 100.0% |
 | FIN-5 | P1 Architecture definition and technical governance | 17 | 17 | 100.0% |
-| FIN-10 | P2 Repository, DevOps, and local platform foundation | 28 | 36 | 77.8% |
+| FIN-10 | P2 Repository, DevOps, and local platform foundation | 29 | 36 | 80.6% |
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 4 | 22 | 18.2% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
@@ -52,7 +52,7 @@ Current delivery:
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **99** | **196** | **50.5%** |
+| **Total** | **Canonical POC leaf scope** | **100** | **196** | **51.0%** |
 
 ## First-User-Test Gates
 
@@ -107,3 +107,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-07-30T17:41:07+03:00 | FIN-55 | Recovered delivered work and closed Jira | 49.5% | +0.5 pp |
 | 2026-07-30T17:49:00+03:00 | FIN-57 | Recovered delivered CI baseline and closed Jira | 50.0% | +0.5 pp |
 | 2026-07-30T18:16:21+03:00 | FIN-59 | Closure delivered by PR 69 | 50.5% | +0.5 pp |
+| 2026-07-31T11:22:00+03:00 | FIN-60 | Closure delivered by PR 71 | 51.0% | +0.5 pp |
