@@ -31,7 +31,8 @@ public sealed record ElasticsearchStoredDocument<TDocument>
     {
         DocumentId = RequireDocumentId(documentId);
         Source = source ?? throw new ArgumentNullException(nameof(source));
-        ConcurrencyToken = concurrencyToken;
+        ConcurrencyToken = concurrencyToken ??
+            throw new ArgumentNullException(nameof(concurrencyToken));
     }
 
     public string DocumentId { get; }
@@ -53,11 +54,23 @@ public sealed record ElasticsearchStoredDocument<TDocument>
     }
 }
 
-public sealed record ElasticsearchWriteResult(
-    bool Created,
-    ElasticsearchConcurrencyToken ConcurrencyToken);
+public sealed record ElasticsearchWriteResult
+{
+    public ElasticsearchWriteResult(
+        bool created,
+        ElasticsearchConcurrencyToken concurrencyToken)
+    {
+        Created = created;
+        ConcurrencyToken = concurrencyToken ??
+            throw new ArgumentNullException(nameof(concurrencyToken));
+    }
 
-public readonly record struct ElasticsearchConcurrencyToken
+    public bool Created { get; }
+
+    public ElasticsearchConcurrencyToken ConcurrencyToken { get; }
+}
+
+public sealed record ElasticsearchConcurrencyToken
 {
     public ElasticsearchConcurrencyToken(
         long sequenceNumber,
