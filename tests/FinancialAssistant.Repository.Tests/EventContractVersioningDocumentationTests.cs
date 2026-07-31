@@ -42,7 +42,7 @@ public sealed class EventContractVersioningDocumentationTests
         Assert.Contains("create the new event type, schema, tests, and routing key", normalized, StringComparison.Ordinal);
         Assert.Contains("inventory authorized consumers", normalized, StringComparison.Ordinal);
         Assert.Contains("dual-publish old and new versions", normalized, StringComparison.Ordinal);
-        Assert.Contains("distinct eventId values", normalized, StringComparison.Ordinal);
+        Assert.Contains("distinct `eventId` values", normalized, StringComparison.Ordinal);
         Assert.Contains("stop the old version only after every required consumer has migrated", normalized, StringComparison.Ordinal);
         Assert.Contains("must be reversible during the support window", normalized, StringComparison.Ordinal);
         Assert.Contains("Unsupported versions and invalid contracts are terminal failures", normalized, StringComparison.Ordinal);
