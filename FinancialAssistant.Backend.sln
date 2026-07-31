@@ -108,9 +108,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.AiOrches
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.AiOrchestration.Api", "backend\services\ai-orchestration\FinancialAssistant.AiOrchestration.Api\FinancialAssistant.AiOrchestration.Api.csproj", "{B6270667-C22C-4C3B-8CB4-52FBD431F4B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04EFBC}") = "FinancialAssistant.Shared.Contracts", "backend\shared\contracts\FinancialAssistant.Shared.Contracts\FinancialAssistant.Shared.Contracts.csproj", "{C4D2A8E1-6B7F-4C23-9A11-6E5F01A2B301}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Contracts", "backend\shared\contracts\FinancialAssistant.Shared.Contracts\FinancialAssistant.Shared.Contracts.csproj", "{C4D2A8E1-6B7F-4C23-9A11-6E5F01A2B301}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04EFBC}") = "FinancialAssistant.Shared.Contracts.Tests", "backend\shared\contracts\FinancialAssistant.Shared.Contracts.Tests\FinancialAssistant.Shared.Contracts.Tests.csproj", "{C4D2A8E1-6B7F-4C23-9A11-6E5F01A2B302}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Contracts.Tests", "backend\shared\contracts\FinancialAssistant.Shared.Contracts.Tests\FinancialAssistant.Shared.Contracts.Tests.csproj", "{C4D2A8E1-6B7F-4C23-9A11-6E5F01A2B302}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
