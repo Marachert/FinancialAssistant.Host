@@ -33,6 +33,7 @@ Platform messaging conventions:
 
 ```text
 docs/events/rabbitmq-topology.md
+docs/events/event-contract-versioning.md
 ```
 
 ## Canonical folders
