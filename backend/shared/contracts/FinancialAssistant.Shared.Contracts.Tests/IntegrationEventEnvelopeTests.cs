@@ -113,6 +113,50 @@ public sealed class IntegrationEventEnvelopeTests
         Assert.Equal("schemaVersion", exception.ParamName);
     }
 
+    [Theory]
+    [InlineData("correlationId")]
+    [InlineData("causationId")]
+    public void Constructor_RejectsOverlongOperationalIdentifier(string parameterName)
+    {
+        var overlongValue = new string('x', IntegrationEventEnvelope<TestPayload>.MaximumIdentifierLength + 1);
+        Action act = parameterName switch
+        {
+            "correlationId" => () => Create(correlationId: overlongValue),
+            "causationId" => () => Create(causationId: overlongValue),
+            _ => throw new InvalidOperationException($"Unexpected parameter {parameterName}.")
+        };
+
+        var exception = Assert.Throws<ArgumentException>(act);
+
+        Assert.Equal(parameterName, exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData("correlationId")]
+    [InlineData("causationId")]
+    public void Constructor_RejectsControlCharactersInOperationalIdentifier(string parameterName)
+    {
+        Action act = parameterName switch
+        {
+            "correlationId" => () => Create(correlationId: "trace\nforged"),
+            "causationId" => () => Create(causationId: "cause\rforged"),
+            _ => throw new InvalidOperationException($"Unexpected parameter {parameterName}.")
+        };
+
+        var exception = Assert.Throws<ArgumentException>(act);
+
+        Assert.Equal(parameterName, exception.ParamName);
+    }
+
+    [Fact]
+    public void Constructor_RejectsUninitializedOccurrenceTime()
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(
+            () => Create(occurredAtUtc: default(DateTimeOffset)));
+
+        Assert.Equal("occurredAtUtc", exception.ParamName);
+    }
+
     [Fact]
     public void Constructor_RejectsBlankUserHash()
     {
