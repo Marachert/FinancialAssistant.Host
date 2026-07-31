@@ -1,4 +1,5 @@
 using FinancialAssistant.Shared.Elasticsearch;
+using Xunit;
 
 namespace FinancialAssistant.Shared.Elasticsearch.Tests;
 
