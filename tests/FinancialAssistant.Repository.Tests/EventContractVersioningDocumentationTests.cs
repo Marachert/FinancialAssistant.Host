@@ -14,7 +14,8 @@ public sealed class EventContractVersioningDocumentationTests
         Assert.Contains("{domain}.{action}.v{schemaVersion}", normalized, StringComparison.Ordinal);
         Assert.Contains("positive integer major compatibility version", normalized, StringComparison.Ordinal);
         Assert.Contains("The complete event type is the RabbitMQ routing key.", normalized, StringComparison.Ordinal);
-        Assert.Contains("The suffix and field must match", normalized, StringComparison.Ordinal);
+        Assert.Contains("The event-type suffix and schema-version field must match", normalized, StringComparison.Ordinal);
+        Assert.Contains("`occurrenceId` is an opaque identifier assigned once", normalized, StringComparison.Ordinal);
         Assert.Contains("A mismatch is an invalid contract", normalized, StringComparison.Ordinal);
         Assert.Contains("Published messages are immutable facts.", normalized, StringComparison.Ordinal);
     }
@@ -43,6 +44,9 @@ public sealed class EventContractVersioningDocumentationTests
         Assert.Contains("inventory authorized consumers", normalized, StringComparison.Ordinal);
         Assert.Contains("dual-publish old and new versions", normalized, StringComparison.Ordinal);
         Assert.Contains("distinct `eventId` values", normalized, StringComparison.Ordinal);
+        Assert.Contains("same `occurrenceId`", normalized, StringComparison.Ordinal);
+        Assert.Contains("deduplicate cross-version business side effects by `occurrenceId`", normalized, StringComparison.Ordinal);
+        Assert.Contains("correlation and causation are not deduplication identities", normalized, StringComparison.Ordinal);
         Assert.Contains("stop the old version only after every required consumer has migrated", normalized, StringComparison.Ordinal);
         Assert.Contains("must be reversible during the support window", normalized, StringComparison.Ordinal);
         Assert.Contains("Unsupported versions and invalid contracts are terminal failures", normalized, StringComparison.Ordinal);
@@ -69,6 +73,7 @@ public sealed class EventContractVersioningDocumentationTests
 
         Assert.Contains("Owner: Identity Service.", normalized, StringComparison.Ordinal);
         Assert.Contains("Owner: Transaction Intake Service.", normalized, StringComparison.Ordinal);
+        Assert.Contains("transactionId userId draftId transactionType", normalized, StringComparison.Ordinal);
         Assert.Contains("Owner: Income Service.", normalized, StringComparison.Ordinal);
         Assert.Contains("Owner: Expense Service.", normalized, StringComparison.Ordinal);
         Assert.Contains(
