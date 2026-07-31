@@ -50,6 +50,9 @@ public sealed class RabbitMqTopologyDocumentationTests
             "Dead-letter messages are not replayed automatically.",
             guide,
             StringComparison.Ordinal);
+        Assert.Contains("x-dead-letter-exchange=fa.dead-letter", guide, StringComparison.Ordinal);
+        Assert.Contains("x-dead-letter-exchange=fa.events", guide, StringComparison.Ordinal);
+        Assert.Contains("rejected without requeue", guide, StringComparison.Ordinal);
         Assert.Contains(
             "preserves the original `eventId`",
             guide,
