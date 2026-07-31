@@ -23,7 +23,7 @@ public sealed class RabbitMqTopologyDocumentationTests
             guide,
             StringComparison.Ordinal);
         Assert.Contains(
-            "Bindings such as \`#\` or \`*.#\` are forbidden",
+            "Bindings such as `#` or `*.#` are forbidden",
             guide,
             StringComparison.Ordinal);
     }
@@ -51,7 +51,7 @@ public sealed class RabbitMqTopologyDocumentationTests
             guide,
             StringComparison.Ordinal);
         Assert.Contains(
-            "preserves the original \`eventId\`",
+            "preserves the original `eventId`",
             guide,
             StringComparison.Ordinal);
     }
@@ -68,7 +68,7 @@ public sealed class RabbitMqTopologyDocumentationTests
         Assert.Contains("mandatory messages", guide, StringComparison.Ordinal);
         Assert.Contains("durable service-owned outbox", guide, StringComparison.Ordinal);
         Assert.Contains("durable inbox", guide, StringComparison.Ordinal);
-        Assert.Contains("keyed by \`eventId\`", guide, StringComparison.Ordinal);
+        Assert.Contains("keyed by `eventId`", guide, StringComparison.Ordinal);
         Assert.Contains(
             "acknowledges the RabbitMQ delivery only after the durable result succeeds",
             guide,
@@ -106,7 +106,7 @@ public sealed class RabbitMqTopologyDocumentationTests
     private static string ReadRequiredFile(string repositoryRoot, string path)
     {
         var fullPath = ToRepositoryPath(repositoryRoot, path);
-        Assert.True(File.Exists(fullPath), $"Required RabbitMQ documentation file '${path}' is missing.");
+        Assert.True(File.Exists(fullPath), $"Required RabbitMQ documentation file '{path}' is missing.");
         return File.ReadAllText(fullPath);
     }
 
