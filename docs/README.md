@@ -29,6 +29,12 @@ Platform storage conventions:
 docs/engineering/elasticsearch-index-naming.md
 ```
 
+Platform messaging conventions:
+
+```text
+docs/events/rabbitmq-topology.md
+```
+
 ## Canonical folders
 
 ```text
