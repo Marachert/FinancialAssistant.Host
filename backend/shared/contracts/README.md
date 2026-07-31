@@ -25,15 +25,17 @@ versioned integration-event payloads.
 | `OccurredAtUtc` | Authoritative occurrence time normalized to UTC |
 | `Producer` | Stable service identifier, not a host or environment name |
 | `SchemaVersion` | Positive major version matching the event-type suffix |
-| `CorrelationId` | Bounded operational trace identity |
-| `CausationId` | Identity of the command or event that caused this event |
+| `CorrelationId` | Operational trace identity, limited to 128 control-free characters |
+| `CausationId` | Bounded identity of the command or event that caused this event |
 | `UserIdHash` | Optional opaque, non-reversible user hash; never a raw user identifier |
 | `Payload` | Strongly typed service-owned event payload |
 
-The constructor rejects missing required metadata, null payloads, non-canonical
-event names, non-positive schema versions, and event-type/schema mismatches.
-It does not calculate user hashes or create event identities; producers remain
-responsible for generating those values safely.
+The constructor rejects missing required metadata, null payloads, uninitialized
+occurrence times, non-canonical event names, non-positive schema versions, and
+event-type/schema mismatches. Envelope identifiers are limited to 128 characters
+and reject control characters before they can reach broker storage or logs.
+The envelope does not calculate user hashes or create event identities; producers
+remain responsible for generating those values safely.
 
 Synthetic example:
 
