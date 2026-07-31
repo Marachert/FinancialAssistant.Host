@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-07-31T11:38:00+03:00
+Last updated: 2026-07-31T11:58:30+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-62 closure is **51.5%**:
-**101 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-64 closure is **52.0%**:
+**102 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,13 +13,13 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-62 - Document RabbitMQ exchange and queue conventions
+- FIN-64 - Document shared event contract versioning rules
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/73
+  https://github.com/Marachert/FinancialAssistant.Host/pull/75
 - merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/fb1ce65e5b713ff8ae670647f86b3674c7c1eb83
-- previous readiness: 100 / 196, or 51.0%
-- current readiness: 101 / 196, or 51.5%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/d431e0c6f57d6ac3f5e9379be220b767ad474838
+- previous readiness: 101 / 196, or 51.5%
+- current readiness: 102 / 196, or 52.0%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
@@ -28,15 +28,16 @@ denominator.
 
 Current delivery:
 
-- FIN-62 is Done after PR 73 merged the canonical RabbitMQ topology and
-  delivery conventions for local and PoC environments
-- environment-isolated virtual hosts, durable exchanges, consumer-owned queues,
-  and complete versioned event routing keys are documented
-- bounded delayed retries, terminal dead-letter handling, and durable
-  outbox/inbox acknowledgement boundaries are covered by repository tests
-- Backend CI #243 passed restore, Release build, tests, and format on the final
-  FIN-62 head
-- parent FIN-61 is Done after its sole child FIN-62 was verified Done
+- FIN-64 is Done after PR 75 merged the canonical integration-event naming,
+  schema compatibility, and breaking-change rules
+- dual-published versions use a stable opaque occurrence identity for
+  cross-version side-effect deduplication while serialized messages retain
+  distinct event identities
+- required synthetic examples include user registration, transaction
+  confirmation with `draftId`, income creation, and expense creation
+- Backend CI #250 passed restore, Release build, tests, and format on the final
+  FIN-64 head
+- parent FIN-63 remains In Progress because FIN-65 is still unfinished
 
 ## Epic Progress
 
@@ -44,7 +45,7 @@ Current delivery:
 | --- | --- | ---: | ---: | ---: |
 | FIN-1 | P0 Product clarification and release scope | 3 | 3 | 100.0% |
 | FIN-5 | P1 Architecture definition and technical governance | 17 | 17 | 100.0% |
-| FIN-10 | P2 Repository, DevOps, and local platform foundation | 30 | 36 | 83.3% |
+| FIN-10 | P2 Repository, DevOps, and local platform foundation | 31 | 36 | 86.1% |
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 4 | 22 | 18.2% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
@@ -52,7 +53,7 @@ Current delivery:
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **101** | **196** | **51.5%** |
+| **Total** | **Canonical POC leaf scope** | **102** | **196** | **52.0%** |
 
 ## First-User-Test Gates
 
@@ -109,3 +110,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-07-30T18:16:21+03:00 | FIN-59 | Closure delivered by PR 69 | 50.5% | +0.5 pp |
 | 2026-07-31T11:22:00+03:00 | FIN-60 | Closure delivered by PR 71 | 51.0% | +0.5 pp |
 | 2026-07-31T11:38:00+03:00 | FIN-62 | Closure delivered by PR 73 | 51.5% | +0.5 pp |
+| 2026-07-31T11:58:30+03:00 | FIN-64 | Closure delivered by PR 75 | 52.0% | +0.5 pp |
