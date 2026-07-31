@@ -2,6 +2,9 @@
 
 This folder contains asynchronous integration-event contracts and RabbitMQ delivery conventions for Financial Assistant.
 
+Canonical RabbitMQ exchange, queue, routing, retry, dead-letter, outbox, and
+inbox rules are defined in [RabbitMQ Topology and Delivery Conventions](rabbitmq-topology.md).
+
 ## Scope
 
 Event documentation should define:
