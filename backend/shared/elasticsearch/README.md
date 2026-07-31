@@ -14,9 +14,10 @@ Only a service's Infrastructure project may reference these contracts. Domain an
 * Reads use `ElasticsearchIndexNames.ReadAlias`.
 * Creates, updates, and deletes use `ElasticsearchIndexNames.WriteAlias`.
 * Repository callers and implementations must not address a physical generation directly.
-* An expected `ElasticsearchConcurrencyToken` maps to Elasticsearch `if_seq_no` and `if_primary_term` parameters.
-* A version conflict is returned as an application conflict. Implementations must not blindly retry a stale write or delete.
-* Successful reads and writes return the current sequence number and primary term for the next conditional mutation.
+* `CreateAsync` maps to `op_type=create` and returns a conflict when the document ID already exists.
+* `UpdateAsync` and `DeleteAsync` require an `ElasticsearchConcurrencyToken` and map it to Elasticsearch `if_seq_no` and `if_primary_term` parameters.
+* A version conflict is returned as an application conflict. Implementations must not blindly retry a stale create, update, or delete.
+* Successful reads, creates, and updates return the current sequence number and primary term for the next conditional mutation.
 
 `IElasticsearchMappingBootstrap` is implemented inside each owning service. The operation must be idempotent, verify the expected template, mapping, and read/write aliases before mutation, and fail on incompatible drift. It must not silently overwrite an incompatible mapping.
 
