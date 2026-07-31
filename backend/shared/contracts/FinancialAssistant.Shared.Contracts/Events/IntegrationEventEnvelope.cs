@@ -8,6 +8,8 @@ namespace FinancialAssistant.Shared.Contracts.Events;
 /// <typeparam name="TPayload">The immutable, event-specific payload contract.</typeparam>
 public sealed record IntegrationEventEnvelope<TPayload>
 {
+    public const int MaximumIdentifierLength = 128;
+
     public IntegrationEventEnvelope(
         string eventId,
         string occurrenceId,
@@ -20,12 +22,12 @@ public sealed record IntegrationEventEnvelope<TPayload>
         string? userIdHash,
         TPayload payload)
     {
-        EventId = RequireValue(eventId, nameof(eventId));
-        OccurrenceId = RequireValue(occurrenceId, nameof(occurrenceId));
-        EventType = RequireValue(eventType, nameof(eventType));
-        Producer = RequireValue(producer, nameof(producer));
-        CorrelationId = RequireValue(correlationId, nameof(correlationId));
-        CausationId = RequireValue(causationId, nameof(causationId));
+        EventId = RequireSafeIdentifier(eventId, nameof(eventId));
+        OccurrenceId = RequireSafeIdentifier(occurrenceId, nameof(occurrenceId));
+        EventType = RequireSafeIdentifier(eventType, nameof(eventType));
+        Producer = RequireSafeIdentifier(producer, nameof(producer));
+        CorrelationId = RequireSafeIdentifier(correlationId, nameof(correlationId));
+        CausationId = RequireSafeIdentifier(causationId, nameof(causationId));
 
         if (schemaVersion <= 0)
         {
@@ -49,11 +51,17 @@ public sealed record IntegrationEventEnvelope<TPayload>
                 nameof(schemaVersion));
         }
 
-        if (userIdHash is not null && string.IsNullOrWhiteSpace(userIdHash))
+        if (occurredAtUtc == default)
         {
-            throw new ArgumentException(
-                "User ID hash must be null or a non-empty opaque value.",
-                nameof(userIdHash));
+            throw new ArgumentOutOfRangeException(
+                nameof(occurredAtUtc),
+                occurredAtUtc,
+                "Occurrence time must be initialized.");
+        }
+
+        if (userIdHash is not null)
+        {
+            _ = RequireSafeIdentifier(userIdHash, nameof(userIdHash));
         }
 
         OccurredAtUtc = occurredAtUtc.ToUniversalTime();
@@ -84,11 +92,25 @@ public sealed record IntegrationEventEnvelope<TPayload>
 
     public TPayload Payload { get; }
 
-    private static string RequireValue(string value, string parameterName)
+    private static string RequireSafeIdentifier(string value, string parameterName)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
             throw new ArgumentException("Value must not be empty.", parameterName);
+        }
+
+        if (value.Length > MaximumIdentifierLength)
+        {
+            throw new ArgumentException(
+                $"Value must not exceed {MaximumIdentifierLength} characters.",
+                parameterName);
+        }
+
+        if (value.Any(char.IsControl))
+        {
+            throw new ArgumentException(
+                "Value must not contain control characters.",
+                parameterName);
         }
 
         return value;
