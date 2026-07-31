@@ -5,6 +5,9 @@ This folder contains asynchronous integration-event contracts and RabbitMQ deliv
 Canonical RabbitMQ exchange, queue, routing, retry, dead-letter, outbox, and
 inbox rules are defined in [RabbitMQ Topology and Delivery Conventions](rabbitmq-topology.md).
 
+Canonical event naming, schema compatibility, and breaking-change rules are
+defined in [Integration Event Contract Versioning](event-contract-versioning.md).
+
 ## Scope
 
 Event documentation should define:
