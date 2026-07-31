@@ -35,8 +35,14 @@ an event name or routing key.
 
 ## Envelope and Version Alignment
 
-Every event envelope carries both `eventType` and numeric `schemaVersion`.
-The suffix and field must match:
+Every event envelope carries `eventId`, `occurrenceId`, `eventType`, and numeric
+`schemaVersion`. `eventId` uniquely identifies one serialized message.
+`occurrenceId` is an opaque identifier assigned once to the authoritative business
+occurrence and reused only by schema-version variants of that occurrence. It must
+not encode a user, account, transaction, merchant, or other personal or financial
+identifier.
+
+The event-type suffix and schema-version field must match:
 
 | Event type | Required schema version |
 | --- | ---: |
@@ -113,10 +119,13 @@ A publisher introducing a breaking contract must:
    schema and deprecation record.
 
 Dual-published versions are separate serialized messages and receive distinct
-`eventId` values. They share the same safe `correlationId` and
-`causationId` so operations can relate them without using payload data.
-Consumers scope inbox idempotency to the unique event ID and supported event
-type. A consumer must subscribe only to versions it can process.
+`eventId` values, but they must carry the same `occurrenceId`. They may also share
+safe `correlationId` and `causationId` values for tracing; correlation and
+causation are not deduplication identities. A consumer bound to more than one
+version of the same event must deduplicate cross-version business side effects by
+`occurrenceId` before applying any version. Inbox handling still deduplicates
+broker redelivery of an individual serialized message by `eventId`. A consumer
+must subscribe only to versions it can process.
 
 A breaking migration must be reversible during the support window. Turning off
 the old version is a deliberate release decision, not an automatic consequence
@@ -131,7 +140,9 @@ Consumers:
 - tolerate unknown fields within a supported major version;
 - treat missing optional fields according to the documented default;
 - validate event type and `schemaVersion` alignment before payload handling;
-- deduplicate at-least-once delivery by `eventId`;
+- deduplicate at-least-once redelivery of each serialized message by `eventId`;
+- when subscribed to multiple versions of an event, deduplicate the authoritative
+  business occurrence by `occurrenceId` before producing side effects;
 - keep deterministic business validation authoritative;
 - do not infer authorization or ownership from routing alone.
 
@@ -166,6 +177,7 @@ Required payload fields:
 ```text
 transactionId
 userId
+draftId
 transactionType
 amount
 currency
