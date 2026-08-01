@@ -14,7 +14,8 @@ public sealed record TransactionDraft(
     IReadOnlyList<string> Ambiguities,
     bool RequiresReview,
     TransactionDraftSuggestionMetadata Suggestion,
-    DateTimeOffset CreatedAtUtc)
+    DateTimeOffset CreatedAtUtc,
+    string InputSource = TransactionInputSources.Text)
 {
     public const string Status = "draft";
 }
