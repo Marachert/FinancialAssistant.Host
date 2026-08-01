@@ -82,7 +82,7 @@ Backend CI runs on:
 - pushes to `main` or `develop`;
 - manual workflow dispatch.
 
-The workflow path filters cover backend/shared/test code, mobile and web-admin boundaries, local Docker Compose files, architecture/API/event/security/delivery/engineering documentation, repository hygiene files, solution/project files, and the workflow itself.
+The workflow has no path filters. Every pull request runs the complete baseline so source, infrastructure, documentation, and repository-policy changes receive the same checks.
 
 ## What CI checks
 
@@ -91,6 +91,7 @@ Current required jobs:
 ```text
 ci-dotnet-build-test
 ci-dotnet-format
+ci-privacy-baseline
 ```
 
 `ci-dotnet-build-test` runs:
@@ -107,6 +108,14 @@ dotnet test FinancialAssistant.Backend.sln --no-build --configuration Release --
 dotnet format FinancialAssistant.Backend.sln --verify-no-changes --verbosity diagnostic
 ```
 
+`ci-privacy-baseline` runs:
+
+```powershell
+pwsh -NoProfile -NonInteractive -File tools/scripts/verify-privacy-baseline.ps1
+```
+
+It rejects forbidden tracked configuration/credential artifacts and high-confidence embedded secret markers without printing matched values. Semantic raw-PII logging checks, mapping tests, and contract tests remain explicit future gates in `docs/engineering/ci.md`.
+
 The workflow detects the first available `.sln` or `.csproj`, but the root `FinancialAssistant.Backend.sln` is the canonical backend verification target.
 
 ## Local checks before opening a PR
@@ -119,6 +128,7 @@ dotnet restore FinancialAssistant.Backend.sln
 dotnet build FinancialAssistant.Backend.sln --no-restore --configuration Release
 dotnet test FinancialAssistant.Backend.sln --no-build --configuration Release --logger trx --results-directory TestResults
 dotnet format FinancialAssistant.Backend.sln --verify-no-changes --verbosity diagnostic
+pwsh -NoProfile -NonInteractive -File tools/scripts/verify-privacy-baseline.ps1
 git diff --check
 git status
 ```
@@ -193,6 +203,7 @@ Use the failed GitHub Actions step name first.
 | Build solution | Compile, analyzer, or project-reference error | Run the same Release build locally |
 | Test solution | Unit/integration/repository test failure | Reproduce the first failing assertion locally |
 | Verify formatting | Source differs from `.editorconfig` rules | Run `dotnet format FinancialAssistant.Backend.sln` |
+| Verify tracked files and secret markers | Forbidden tracked artifact or suspected hard-coded secret | Remove it, rotate any exposed credential, and run the privacy script locally |
 | Upload test results | Result path or logger issue | Inspect `TestResults/**/*.trx` |
 
 ## When tests fail
@@ -247,7 +258,7 @@ A pull request is merge-ready only when:
 
 - scope matches the Jira issue;
 - applicable local checks pass;
-- CI is green on the final head;
+- all three required CI jobs are green on the final head;
 - review comments were processed;
 - unresolved review threads are zero;
 - documentation matches current behavior;
