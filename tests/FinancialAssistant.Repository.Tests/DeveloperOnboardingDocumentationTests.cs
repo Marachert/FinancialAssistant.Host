@@ -12,6 +12,7 @@ public sealed class DeveloperOnboardingDocumentationTests
         var requiredPhrases = new[]
         {
             "docs/delivery/developer-onboarding.md",
+            "docs/delivery/local-developer-smoke-test.md",
             "FinancialAssistant.Backend.sln",
             "infra/docker-compose/README.md",
             "docs/engineering/contributing.md",
@@ -38,6 +39,7 @@ public sealed class DeveloperOnboardingDocumentationTests
         var requiredPhrases = new[]
         {
             "Required tools",
+            "docs/delivery/local-developer-smoke-test.md",
             "docker compose config",
             "Copy-Item .env.example .env",
             "dotnet restore FinancialAssistant.Backend.sln",
@@ -55,6 +57,34 @@ public sealed class DeveloperOnboardingDocumentationTests
         }
 
         Assert.DoesNotContain("backend/FinancialAssistant.sln", onboarding, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LocalDeveloperSmokeTest_CoversPlatformFoundation()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var smokeTest = ReadRequiredFile(
+            repositoryRoot,
+            "docs/delivery/local-developer-smoke-test.md");
+        var requiredPhrases = new[]
+        {
+            "git status --short",
+            "docker compose config --quiet",
+            "bash scripts/healthcheck.sh",
+            "dotnet restore FinancialAssistant.Backend.sln",
+            "dotnet test FinancialAssistant.Backend.sln",
+            "dotnet format FinancialAssistant.Backend.sln",
+            "backend/templates/service-template/README.md",
+            "FinancialAssistant.PublicApiGateway.csproj",
+            "curl -fsS http://127.0.0.1:5080/health",
+            "infra/docker-compose/README.md#troubleshooting",
+            "must not use production secrets"
+        };
+
+        foreach (var phrase in requiredPhrases)
+        {
+            Assert.Contains(phrase, smokeTest, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     [Fact]
@@ -87,6 +117,7 @@ public sealed class DeveloperOnboardingDocumentationTests
         var documentationIndex = ReadRequiredFile(repositoryRoot, "docs/README.md");
 
         Assert.Contains("docs/delivery/developer-onboarding.md", documentationIndex, StringComparison.Ordinal);
+        Assert.Contains("docs/delivery/local-developer-smoke-test.md", documentationIndex, StringComparison.Ordinal);
         Assert.Contains("README.md", documentationIndex, StringComparison.Ordinal);
         Assert.Contains("docs/engineering/contributing.md", documentationIndex, StringComparison.Ordinal);
         Assert.Contains("docs/engineering/ci.md", documentationIndex, StringComparison.Ordinal);
@@ -112,6 +143,7 @@ public sealed class DeveloperOnboardingDocumentationTests
             "infra/docker-compose/README.md",
             "docs/README.md",
             "docs/delivery/developer-onboarding.md",
+            "docs/delivery/local-developer-smoke-test.md",
             "docs/engineering/contributing.md",
             "docs/engineering/ci.md",
             ".github/workflows/backend-ci.yml"
