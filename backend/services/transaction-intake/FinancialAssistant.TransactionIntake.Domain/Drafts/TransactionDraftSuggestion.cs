@@ -1,5 +1,13 @@
 namespace FinancialAssistant.TransactionIntake.Domain.Drafts;
 
+public static class TransactionInputSources
+{
+    public const string Text = "text";
+    public const string VoiceTranscript = "voice_transcript";
+    public const string ReceiptOcr = "receipt_ocr";
+    public const string ManualForm = "manual_form";
+}
+
 public static class TransactionDraftSuggestionSources
 {
     public const string AiNaturalLanguage = "ai_natural_language";
