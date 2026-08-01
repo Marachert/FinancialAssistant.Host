@@ -98,7 +98,8 @@ public sealed class TransactionIntakeEndpointTests : IClassFixture<TransactionIn
         Assert.Equal(first.CreatedAtUtc, second.CreatedAtUtc);
 
         var integrationEvent = Assert.Single(
-            draftCreatedPublisher.PublishedEvents.Where(item => item.DraftId == first.Id));
+            draftCreatedPublisher.PublishedEvents,
+            item => item.DraftId == first.Id);
         Assert.Equal(TransactionDraftCreatedIntegrationEvent.Name, integrationEvent.EventType);
         Assert.Equal("synthetic-intake-user", integrationEvent.UserId);
         Assert.Equal($"ai-job-{first.Id}", integrationEvent.JobId);
@@ -250,7 +251,8 @@ public sealed class TransactionIntakeEndpointTests : IClassFixture<TransactionIn
         Assert.Single(results.Select(result => result.Id).Distinct(StringComparer.Ordinal));
         var draftId = results[0].Id;
         Assert.Single(
-            draftCreatedPublisher.PublishedEvents.Where(item => item.DraftId == draftId));
+            draftCreatedPublisher.PublishedEvents,
+            item => item.DraftId == draftId);
     }
 
     private static HttpRequestMessage CreateRequest(
