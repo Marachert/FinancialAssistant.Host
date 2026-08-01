@@ -1,6 +1,6 @@
 # Financial Assistant Transaction Intake Service
 
-.NET 8 Transaction Intake Service for FIN-21.
+.NET 8 Transaction Intake Service for FIN-21 and FIN-91.
 
 Canonical engineering documentation:
 
@@ -23,6 +23,19 @@ POST /transactions/drafts/{draftId}/confirm
 Both paths use the same handler; `/transactions/intake` matches the existing gateway's unchanged forwarding path. The endpoint requires `X-Gateway-Authentication`, `X-Gateway-User-Id`, and an opaque `Idempotency-Key`. Configure `TransactionIntake__Gateway__SharedSecret` from the environment with at least 32 characters. Configure the gateway with the same environment-provided value in `Gateway__DownstreamAuthentication__SharedSecret`; it strips client attempts to supply this header and injects its own value only for protected destinations. Never place the shared secret, user input, or idempotency values in source control or logs.
 
 Receipt Processing delivers `ocr.completed.v1` to the internal `/internal/events/ocr-completed` endpoint. Configure both services with the same environment-provided `ReceiptProcessing__Events__SharedSecret` of 32 to 256 characters. The endpoint is not routed through the public gateway and rejects requests without the dedicated service credential.
+
+## Input sources
+
+Every draft exposes one stable input source:
+
+```text
+text
+voice_transcript
+receipt_ocr
+manual_form
+```
+
+Text and receipt OCR have active adapters. Voice transcript and manual form are contract placeholders in this baseline; later adapters must use the same review and validation boundary.
 
 ## Draft behavior
 
