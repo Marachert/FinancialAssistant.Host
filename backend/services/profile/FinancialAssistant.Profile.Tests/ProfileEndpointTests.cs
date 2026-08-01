@@ -43,6 +43,12 @@ public sealed class ProfileEndpointTests : IClassFixture<ProfileContractWebAppli
         Assert.Equal("USD", profile.CurrencyCode);
         Assert.Equal("standard", profile.PrivacyMode);
         Assert.False(profile.AiPersonalizationEnabled);
+        Assert.Equal("monday", profile.FirstDayOfWeek);
+        Assert.Equal(0m, profile.MonthlyBudgetAmount);
+        Assert.False(profile.BudgetNotificationsEnabled);
+        Assert.False(profile.WeeklySummaryNotificationsEnabled);
+        Assert.False(profile.ProfileOnboardingCompleted);
+        Assert.False(profile.PreferencesOnboardingCompleted);
         Assert.Equal(createdAt, profile.CreatedAtUtc);
     }
 
@@ -58,11 +64,17 @@ public sealed class ProfileEndpointTests : IClassFixture<ProfileContractWebAppli
         {
             Content = JsonContent.Create(
                 new UpdateUserPreferencesRequest(
-                    "uk-UA",
-                    "UTC",
-                    "eur",
-                    "strict",
-                    true))
+                    Locale: "uk-UA",
+                    TimeZone: "UTC",
+                    CurrencyCode: "eur",
+                    PrivacyMode: "strict",
+                    AiPersonalizationEnabled: true,
+                    FirstDayOfWeek: "sunday",
+                    MonthlyBudgetAmount: 2500.50m,
+                    BudgetNotificationsEnabled: true,
+                    WeeklySummaryNotificationsEnabled: true,
+                    ProfileOnboardingCompleted: true,
+                    PreferencesOnboardingCompleted: true))
         };
         updateRequest.Headers.TryAddWithoutValidation(ProfileGatewayHeaders.UserId, "synthetic-user-a");
 
@@ -76,6 +88,12 @@ public sealed class ProfileEndpointTests : IClassFixture<ProfileContractWebAppli
         Assert.Equal("EUR", updated.CurrencyCode);
         Assert.Equal("strict", updated.PrivacyMode);
         Assert.True(updated.AiPersonalizationEnabled);
+        Assert.Equal("sunday", updated.FirstDayOfWeek);
+        Assert.Equal(2500.50m, updated.MonthlyBudgetAmount);
+        Assert.True(updated.BudgetNotificationsEnabled);
+        Assert.True(updated.WeeklySummaryNotificationsEnabled);
+        Assert.True(updated.ProfileOnboardingCompleted);
+        Assert.True(updated.PreferencesOnboardingCompleted);
 
         using var readOtherRequest = new HttpRequestMessage(HttpMethod.Get, ProfileApiRoutes.CurrentProfile);
         readOtherRequest.Headers.TryAddWithoutValidation(ProfileGatewayHeaders.UserId, "synthetic-user-b");
@@ -86,6 +104,12 @@ public sealed class ProfileEndpointTests : IClassFixture<ProfileContractWebAppli
         Assert.Equal("USD", other.CurrencyCode);
         Assert.Equal("standard", other.PrivacyMode);
         Assert.False(other.AiPersonalizationEnabled);
+        Assert.Equal("monday", other.FirstDayOfWeek);
+        Assert.Equal(0m, other.MonthlyBudgetAmount);
+        Assert.False(other.BudgetNotificationsEnabled);
+        Assert.False(other.WeeklySummaryNotificationsEnabled);
+        Assert.False(other.ProfileOnboardingCompleted);
+        Assert.False(other.PreferencesOnboardingCompleted);
     }
 
     [Fact]
@@ -170,6 +194,66 @@ public sealed class ProfileEndpointTests : IClassFixture<ProfileContractWebAppli
         Assert.Equal((int)HttpStatusCode.BadRequest, problem.Status);
         Assert.Equal("invalid_preferences", problem.Code);
         Assert.False(string.IsNullOrWhiteSpace(problem.TraceId));
+    }
+
+    [Fact]
+    public async Task InvalidFirstDayOfWeek_ReturnsValidationProblem()
+    {
+        await CreateProfileAsync("synthetic-user-week-start");
+
+        using var updateRequest = CreateUpdateRequest(
+            "synthetic-user-week-start",
+            new UpdateUserPreferencesRequest(
+                "en-US",
+                "UTC",
+                "USD",
+                "standard",
+                false,
+                FirstDayOfWeek: "not-a-weekday"));
+
+        var response = await client.SendAsync(updateRequest);
+        var problem = await response.Content.ReadFromJsonAsync<ProfileApiErrorResponse>();
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.NotNull(problem);
+        Assert.Contains("First day of week", problem.Detail, StringComparison.Ordinal);
+        Assert.Equal("invalid_preferences", problem.Code);
+    }
+
+    [Fact]
+    public async Task NegativeMonthlyBudget_ReturnsValidationProblem()
+    {
+        await CreateProfileAsync("synthetic-user-budget");
+
+        using var updateRequest = CreateUpdateRequest(
+            "synthetic-user-budget",
+            new UpdateUserPreferencesRequest(
+                "en-US",
+                "UTC",
+                "USD",
+                "standard",
+                false,
+                MonthlyBudgetAmount: -0.01m));
+
+        var response = await client.SendAsync(updateRequest);
+        var problem = await response.Content.ReadFromJsonAsync<ProfileApiErrorResponse>();
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.NotNull(problem);
+        Assert.Contains("Monthly budget amount", problem.Detail, StringComparison.Ordinal);
+        Assert.Equal("invalid_preferences", problem.Code);
+    }
+
+    private static HttpRequestMessage CreateUpdateRequest(
+        string userId,
+        UpdateUserPreferencesRequest preferences)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Put, ProfileApiRoutes.CurrentProfilePreferences)
+        {
+            Content = JsonContent.Create(preferences)
+        };
+        request.Headers.TryAddWithoutValidation(ProfileGatewayHeaders.UserId, userId);
+        return request;
     }
 
     private async Task CreateProfileAsync(string userId)

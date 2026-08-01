@@ -53,7 +53,13 @@ public sealed class UserProfileService : IUserProfileService
                     request.TimeZone ?? existing.Preferences.TimeZone,
                     request.CurrencyCode ?? existing.Preferences.CurrencyCode,
                     request.PrivacyMode ?? existing.Preferences.PrivacyMode,
-                    request.AiPersonalizationEnabled ?? existing.Preferences.AiPersonalizationEnabled);
+                    request.AiPersonalizationEnabled ?? existing.Preferences.AiPersonalizationEnabled,
+                    request.FirstDayOfWeek ?? existing.Preferences.FirstDayOfWeek,
+                    request.MonthlyBudgetAmount ?? existing.Preferences.MonthlyBudgetAmount,
+                    request.BudgetNotificationsEnabled ?? existing.Preferences.BudgetNotificationsEnabled,
+                    request.WeeklySummaryNotificationsEnabled ?? existing.Preferences.WeeklySummaryNotificationsEnabled,
+                    request.ProfileOnboardingCompleted ?? existing.Preferences.ProfileOnboardingCompleted,
+                    request.PreferencesOnboardingCompleted ?? existing.Preferences.PreferencesOnboardingCompleted);
 
                 return existing.UpdatePreferences(preferences, clock.UtcNow);
             },
@@ -80,6 +86,12 @@ public sealed class UserProfileService : IUserProfileService
             profile.Preferences.CurrencyCode,
             profile.Preferences.PrivacyMode,
             profile.Preferences.AiPersonalizationEnabled,
+            profile.Preferences.FirstDayOfWeek,
+            profile.Preferences.MonthlyBudgetAmount,
+            profile.Preferences.BudgetNotificationsEnabled,
+            profile.Preferences.WeeklySummaryNotificationsEnabled,
+            profile.Preferences.ProfileOnboardingCompleted,
+            profile.Preferences.PreferencesOnboardingCompleted,
             profile.CreatedAtUtc,
             profile.UpdatedAtUtc);
 }
