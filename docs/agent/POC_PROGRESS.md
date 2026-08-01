@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-01T17:18:30+03:00
+Last updated: 2026-08-01T17:34:05+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-68 closure is **54.1%**:
-**106 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-69 closure is **54.6%**:
+**107 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,13 +13,13 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-68 - Add local developer smoke test checklist
+- FIN-69 - Add CI quality gates for formatting, tests, and privacy checks
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/83
+  https://github.com/Marachert/FinancialAssistant.Host/pull/85
 - merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/821fff49b91c23cb17c66b2948b1bba8a18932e1
-- previous readiness: 105 / 196, or 53.6%
-- current readiness: 106 / 196, or 54.1%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/c5479deb6dfa55cf1674fed276f75c864676c5b9
+- previous readiness: 106 / 196, or 54.1%
+- current readiness: 107 / 196, or 54.6%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
@@ -28,17 +28,15 @@ denominator.
 
 Current delivery:
 
-- FIN-68 is Done after PR 83 merged an ordered clean-machine smoke checklist
-  for checkout, local infrastructure, backend verification, service-template
-  coverage, gateway health, documentation, and cleanup
-- PowerShell and Bash flows point failures to the owning troubleshooting guide
-  and prohibit production secrets, real data, paid providers, and destructive
-  cleanup by default
-- repository regression tests guard the checklist commands, paths, safety
-  boundaries, and documentation entry points
-- Backend CI #277 passed restore, Release build, all solution tests, and format
-  on the final FIN-68 head
-- parent FIN-10 remains In Progress because FIN-69 is unfinished
+- FIN-69 is Done after PR 85 added the required privacy baseline alongside the
+  existing restore/build/test and format quality gates
+- the repository-owned PowerShell check rejects forbidden tracked artifacts and
+  high-confidence secret markers without printing matched values
+- branch protection guidance requires all three checks, while semantic privacy,
+  mapping, and contract enforcement remain explicit future TODO gates
+- Backend CI #281 passed privacy, format, Release build, and all solution tests
+  on the final FIN-69 head
+- parent FIN-10 is Done with all 36 canonical leaves complete
 
 ## Epic Progress
 
@@ -46,7 +44,7 @@ Current delivery:
 | --- | --- | ---: | ---: | ---: |
 | FIN-1 | P0 Product clarification and release scope | 3 | 3 | 100.0% |
 | FIN-5 | P1 Architecture definition and technical governance | 17 | 17 | 100.0% |
-| FIN-10 | P2 Repository, DevOps, and local platform foundation | 35 | 36 | 97.2% |
+| FIN-10 | P2 Repository, DevOps, and local platform foundation | 36 | 36 | 100.0% |
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 4 | 22 | 18.2% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
@@ -54,7 +52,7 @@ Current delivery:
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **106** | **196** | **54.1%** |
+| **Total** | **Canonical POC leaf scope** | **107** | **196** | **54.6%** |
 
 ## First-User-Test Gates
 
@@ -116,3 +114,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-07-31T13:01:00+03:00 | FIN-66 | Closure delivered by PR 79 | 53.1% | +0.5 pp |
 | 2026-08-01T17:04:30+03:00 | FIN-67 | Closure delivered by PR 81 | 53.6% | +0.5 pp |
 | 2026-08-01T17:18:30+03:00 | FIN-68 | Closure delivered by PR 83 | 54.1% | +0.5 pp |
+| 2026-08-01T17:34:05+03:00 | FIN-69 | Closure delivered by PR 85; FIN-10 completed | 54.6% | +0.5 pp |
