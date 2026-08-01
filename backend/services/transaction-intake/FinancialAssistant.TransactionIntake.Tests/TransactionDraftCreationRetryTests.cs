@@ -1,3 +1,4 @@
+using System.Reflection;
 using FinancialAssistant.TransactionIntake.Application.Abstractions;
 using FinancialAssistant.TransactionIntake.Application.Drafts;
 using FinancialAssistant.TransactionIntake.Contracts;
@@ -48,6 +49,18 @@ public sealed class TransactionDraftCreationRetryTests
         Assert.NotNull(stored);
         Assert.True(stored.Published);
         Assert.Equal(request.Input, stored.NormalizedInput);
+        Assert.Equal(0, GetActiveGateCount(service));
+    }
+
+    private static int GetActiveGateCount(TransactionIntakeService service)
+    {
+        var field = typeof(TransactionIntakeService).GetField(
+            "draftCreatedEventGates",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        var gates = field?.GetValue(service)
+            ?? throw new InvalidOperationException("Draft event gates were not found.");
+        return (int)(gates.GetType().GetProperty("Count")?.GetValue(gates)
+            ?? throw new InvalidOperationException("Draft event gate count was not found."));
     }
 
     private sealed class FixedParser : ITransactionInputParser
