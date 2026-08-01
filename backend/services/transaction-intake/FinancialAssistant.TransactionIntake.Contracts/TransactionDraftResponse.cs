@@ -3,6 +3,7 @@ namespace FinancialAssistant.TransactionIntake.Contracts;
 public sealed record TransactionDraftResponse(
     string Id,
     string Status,
+    string InputSource,
     string Type,
     decimal? Amount,
     string? Currency,
