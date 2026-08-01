@@ -21,6 +21,18 @@ public sealed class FinancialAssistantTestcontainerFactoryTests
         };
 
         Assert.Equal(4, images.Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(
+            "elasticsearch:8.15.3",
+            TestcontainerDefaults.ElasticsearchImage);
+        Assert.Equal(
+            "rabbitmq:3.13.7-management",
+            TestcontainerDefaults.RabbitMqImage);
+        Assert.Equal(
+            "redis:7.4.7-alpine",
+            TestcontainerDefaults.RedisImage);
+        Assert.Equal(
+            "minio/minio:RELEASE.2025-09-07T16-13-09Z",
+            TestcontainerDefaults.MinioImage);
         Assert.All(images, image =>
         {
             Assert.Contains(':', image);
