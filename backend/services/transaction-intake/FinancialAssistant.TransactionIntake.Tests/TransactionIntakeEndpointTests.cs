@@ -27,6 +27,7 @@ public sealed class TransactionIntakeEndpointTests : IClassFixture<TransactionIn
         Assert.NotNull(draft);
         Assert.StartsWith("draft_", draft.Id, StringComparison.Ordinal);
         Assert.Equal("draft", draft.Status);
+        Assert.Equal("text", draft.InputSource);
         Assert.Equal("expense", draft.Type);
         Assert.Equal(12.50m, draft.Amount);
         Assert.Equal("USD", draft.Currency);
