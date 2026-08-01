@@ -103,4 +103,35 @@ public sealed class TransactionDraftValidatorTests
         Assert.Contains("merchant", draft.Suggestion.MissingFields);
         Assert.Equal("Please review the merchant.", draft.Suggestion.ReviewMessage);
     }
+    [Fact]
+    public void InputSources_AreStableAndReceiptSuggestionsMapToReceiptOcr()
+    {
+        Assert.Equal("text", TransactionInputSources.Text);
+        Assert.Equal("voice_transcript", TransactionInputSources.VoiceTranscript);
+        Assert.Equal("receipt_ocr", TransactionInputSources.ReceiptOcr);
+        Assert.Equal("manual_form", TransactionInputSources.ManualForm);
+
+        var validator = new TransactionDraftValidator();
+        var draft = validator.Validate(
+            "draft_synthetic_receipt_source",
+            "synthetic-validator-user",
+            "SYNTHETICFINGERPRINT",
+            new ParsedTransactionCandidate(
+                "expense",
+                10,
+                "USD",
+                "expense.other",
+                null,
+                new DateOnly(2026, 7, 19),
+                0.9m),
+            new DateTimeOffset(2026, 7, 19, 12, 0, 0, TimeSpan.Zero),
+            new TransactionDraftSuggestionContext(
+                TransactionDraftSuggestionSources.ReceiptOcr,
+                "receipt_synthetic_001",
+                Array.Empty<string>(),
+                Array.Empty<string>()));
+
+        Assert.Equal(TransactionInputSources.ReceiptOcr, draft.InputSource);
+        Assert.Equal(TransactionDraftSuggestionAuthority.Suggestion, draft.Suggestion.OutputAuthority);
+    }
 }
