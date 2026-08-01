@@ -2,13 +2,13 @@
 
 ## Scope
 
-FIN-21 implements the first half of the core single-input workflow. FIN-91 completes the service baseline with explicit input-source metadata. FIN-92 adds the nullable note placeholder and the recoverable draft-created event boundary. An authenticated user submits one natural-language statement and receives a structured draft containing type, amount, currency, category, merchant, date, confidence, and explicit ambiguities. The draft is review material only. No balance, transaction ledger, report, or score changes until the separate confirmation flow validates and persists authoritative state.
+FIN-21 implements the first half of the core single-input workflow. FIN-91 completes the service baseline with explicit input-source metadata. FIN-92 adds the nullable note placeholder and the recoverable draft-created event boundary. FIN-93 adds owner-scoped review, deterministic draft updates, rejection, and a revision-claimed confirmation lifecycle. An authenticated user submits one natural-language statement and receives a structured draft containing type, amount, currency, category, merchant, date, confidence, and explicit ambiguities. The draft is review material only. No balance, transaction ledger, report, or score changes until the separate confirmation flow validates and persists authoritative state.
 
 ## Input sources
 
 Drafts identify one of four stable sources: `text`, `voice_transcript`, `receipt_ocr`, or `manual_form`. Text and receipt OCR are active adapters. Voice transcript and manual form are placeholders for later adapters and cannot bypass deterministic validation, review requirements, or confirmation rules.
 
-The draft lifecycle is explicit: `draft` output is suggestion-only, ambiguous or low-confidence values require review, and only the separate confirmation flow can create an authoritative income or expense record.
+The draft lifecycle is explicit: `draft` output is suggestion-only, ambiguous or low-confidence values require review, and only the separate confirmation flow can create an authoritative income or expense record. Confirmation atomically claims one draft revision before publishing and then records `confirmed`; rejection records the terminal `rejected` status without publishing.
 
 ## Request boundary
 
@@ -28,7 +28,7 @@ The service stores a SHA-256 fingerprint of normalized input with the user-scope
 - date bounds;
 - confidence range and the low-confidence review threshold.
 
-Invalid candidate values are removed and represented by stable ambiguity codes. Unknown, low-confidence, or incomplete candidates remain drafts with `requiresReview = true`. The client contract also exposes `note = null` as an explicit placeholder until a later reviewed-input capability owns note content.
+Invalid candidate values are removed and represented by stable ambiguity codes. Unknown, low-confidence, or incomplete candidates remain drafts with `requiresReview = true`. A full draft update revalidates every user-reviewed value, normalizes the optional note, and keeps invalid updates review-required rather than allowing them into financial state.
 
 ## Development adapters
 
@@ -36,9 +36,18 @@ The deterministic parser recognizes a bounded English keyword and amount/date su
 
 Production adapters must be environment-selected, preserve the application interfaces, encrypt sensitive draft and source-payload fields at rest, avoid raw financial input in logs or events, and use durable storage plus a transactional outbox. A future AI adapter may improve extraction, but deterministic backend validation remains mandatory.
 
-## Confirmation and authoritative records
+## Review, rejection, and authoritative records
 
-`POST /api/v1/transactions/drafts/{draftId}/confirm` and the gateway-forwarded `/transactions/drafts/{draftId}/confirm` route confirm a draft owned by the authenticated user. Unknown, transfer, incomplete, or review-required drafts return `422 transaction_draft_not_confirmable` and cannot alter financial state.
+The canonical owner-scoped draft routes are:
+
+- `GET /api/v1/transactions/drafts/{draftId}` to review current values and status;
+- `PUT /api/v1/transactions/drafts/{draftId}` to replace and deterministically revalidate editable values;
+- `POST /api/v1/transactions/drafts/{draftId}/reject` to reject idempotently;
+- `POST /api/v1/transactions/drafts/{draftId}/confirm` to create authoritative state.
+
+Equivalent `/transactions/drafts/{draftId}` gateway routes reach the same handlers. A draft belonging to another user is indistinguishable from a missing draft. Confirming or rejected drafts cannot be edited, and rejected drafts cannot be confirmed.
+
+Unknown, transfer, incomplete, review-required, or rejected drafts return `422 transaction_draft_not_confirmable` from confirmation and cannot alter financial state.
 
 The first valid confirmation creates a stable transaction ID and `transaction.confirmed.v1` event. Income and Expense consumers independently validate event type, positive amount, currency shape, category ownership, and identifiers before idempotently storing their service-owned source-of-truth record. Repeated and concurrent confirmation returns the original transaction without another event or record.
 
