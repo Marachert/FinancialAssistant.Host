@@ -12,7 +12,11 @@ public static class DependencyInjection
     {
         services.AddSingleton<ITransactionInputParser, DeterministicTransactionInputParser>();
         services.AddSingleton<ITransactionDraftStore, InMemoryTransactionDraftStore>();
+        services.AddSingleton<ITransactionDraftCreationStore, InMemoryTransactionDraftCreationStore>();
         services.AddSingleton<ITransactionConfirmationStore, InMemoryTransactionConfirmationStore>();
+        services.AddSingleton<InMemoryTransactionDraftCreatedPublisher>();
+        services.AddSingleton<ITransactionDraftCreatedPublisher>(provider =>
+            provider.GetRequiredService<InMemoryTransactionDraftCreatedPublisher>());
         services.AddSingleton<InMemoryTransactionConfirmedPublisher>();
         services.AddSingleton<ITransactionConfirmedPublisher>(provider =>
             provider.GetRequiredService<InMemoryTransactionConfirmedPublisher>());

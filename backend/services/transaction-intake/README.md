@@ -1,6 +1,6 @@
 # Financial Assistant Transaction Intake Service
 
-.NET 8 Transaction Intake Service for FIN-21 and FIN-91.
+.NET 8 Transaction Intake Service for FIN-21, FIN-91, and FIN-92.
 
 Canonical engineering documentation:
 
@@ -39,9 +39,23 @@ Text and receipt OCR have active adapters. Voice transcript and manual form are 
 
 ## Draft behavior
 
-The parser is an interchangeable probabilistic-input boundary. Its output is validated by deterministic backend rules before a draft is returned. Unsupported or invalid values become explicit ambiguities instead of financial facts. Low-confidence drafts remain review-required.
+The parser is an interchangeable probabilistic-input boundary. Its output is validated by deterministic backend rules before a draft is returned. The response includes a nullable note placeholder; this baseline does not infer note content from free-form text. Unsupported or invalid values become explicit ambiguities instead of financial facts. Low-confidence drafts remain review-required.
 
 FIN-21 ships an intentionally limited deterministic parser and in-memory idempotency store for local development and CI. Production work must provide a configured parser adapter and durable encrypted idempotency/draft persistence without changing the application contract.
+
+## Draft-created event
+
+The first successful text-draft request stores normalized source text behind an opaque
+reference and publishes `transaction.draft-created.v1`. The event carries only identifiers
+and timestamps; it excludes raw input, merchant, amount, note, idempotency material, and
+parser output. Repeated or concurrent requests publish one logical event. If publication
+fails, retrying the same request resumes the pending publication before returning the
+stored draft.
+
+The current source-payload and publication-state store is an in-memory development adapter.
+Production delivery requires encrypted durable payload storage and a transactional outbox;
+downstream consumers resolve the opaque reference through an authenticated owner boundary
+and deduplicate by event and job identifiers.
 
 ## Confirmation
 

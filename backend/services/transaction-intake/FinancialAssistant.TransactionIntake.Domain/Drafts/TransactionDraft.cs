@@ -15,7 +15,8 @@ public sealed record TransactionDraft(
     bool RequiresReview,
     TransactionDraftSuggestionMetadata Suggestion,
     DateTimeOffset CreatedAtUtc,
-    string InputSource = TransactionInputSources.Text)
+    string InputSource = TransactionInputSources.Text,
+    string? Note = null)
 {
     public const string Status = "draft";
 }
