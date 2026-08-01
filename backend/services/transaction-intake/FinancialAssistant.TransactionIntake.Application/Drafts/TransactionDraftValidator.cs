@@ -74,7 +74,10 @@ public sealed partial class TransactionDraftValidator
             ambiguities.ToArray(),
             requiresReview,
             suggestion,
-            createdAtUtc);
+            createdAtUtc,
+            source == TransactionDraftSuggestionSources.ReceiptOcr
+                ? TransactionInputSources.ReceiptOcr
+                : TransactionInputSources.Text);
     }
 
     private static string NormalizeSource(string source)
