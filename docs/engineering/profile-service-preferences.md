@@ -1,6 +1,6 @@
-# FIN-19 Profile Service Preferences
+# Profile Service Preferences
 
-FIN-19 introduces the Profile Service as the owner of user profile preferences needed for localized transaction parsing and user experience.
+FIN-19 introduces the Profile Service baseline. FIN-88 completes the MVP settings model used by localized UX, financial calculations, recommendations, notifications, and onboarding.
 
 ## Service boundary
 
@@ -9,6 +9,10 @@ Profile owns:
 - locale;
 - timezone;
 - default currency;
+- first day of week;
+- monthly budget preference;
+- budget and weekly-summary notification placeholders;
+- profile and preference onboarding completion flags;
 - privacy mode;
 - AI personalization opt-in.
 
@@ -43,6 +47,12 @@ New profiles use:
 locale = en-US
 timezone = UTC
 currencyCode = USD
+firstDayOfWeek = monday
+monthlyBudgetAmount = 0
+budgetNotificationsEnabled = false
+weeklySummaryNotificationsEnabled = false
+profileOnboardingCompleted = false
+preferencesOnboardingCompleted = false
 privacyMode = standard
 aiPersonalizationEnabled = false
 ```
@@ -52,8 +62,12 @@ Preference updates are deterministic backend logic:
 - locale must resolve through .NET culture metadata;
 - timezone must resolve through .NET timezone metadata;
 - currency is normalized to a three-letter uppercase code;
+- first day of week is normalized to a lowercase weekday name;
+- monthly budget amount cannot be negative, and zero means not configured;
 - privacy mode is either `standard` or `strict`;
 - AI personalization is explicit and defaults to disabled.
+
+Notification fields are preference placeholders only; delivery is owned by a later notification increment. Onboarding flags record completion state without inferring it from financial activity.
 
 ## Storage and privacy
 
@@ -68,6 +82,6 @@ Profile logs and evidence must remain privacy-safe. Do not log raw user identifi
 - `user.registered.v1` creates a default profile;
 - users can read their own profile via gateway context;
 - preference updates affect only the authenticated user's profile;
-- invalid preferences return a validation problem;
+- invalid currency, locale, timezone, first-day-of-week, and monthly-budget preferences return a validation problem;
 - the registration event contract excludes sensitive Identity attributes;
 - Domain remains isolated from Infrastructure and provider clients.
