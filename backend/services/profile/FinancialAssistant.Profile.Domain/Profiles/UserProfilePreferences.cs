@@ -13,18 +13,41 @@ public sealed record UserProfilePreferences
         StrictPrivacyMode
     };
 
+    private static readonly HashSet<string> SupportedFirstDaysOfWeek = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday"
+    };
+
     private UserProfilePreferences(
         string locale,
         string timeZone,
         string currencyCode,
         string privacyMode,
-        bool aiPersonalizationEnabled)
+        bool aiPersonalizationEnabled,
+        string firstDayOfWeek,
+        decimal monthlyBudgetAmount,
+        bool budgetNotificationsEnabled,
+        bool weeklySummaryNotificationsEnabled,
+        bool profileOnboardingCompleted,
+        bool preferencesOnboardingCompleted)
     {
         Locale = locale;
         TimeZone = timeZone;
         CurrencyCode = currencyCode;
         PrivacyMode = privacyMode;
         AiPersonalizationEnabled = aiPersonalizationEnabled;
+        FirstDayOfWeek = firstDayOfWeek;
+        MonthlyBudgetAmount = monthlyBudgetAmount;
+        BudgetNotificationsEnabled = budgetNotificationsEnabled;
+        WeeklySummaryNotificationsEnabled = weeklySummaryNotificationsEnabled;
+        ProfileOnboardingCompleted = profileOnboardingCompleted;
+        PreferencesOnboardingCompleted = preferencesOnboardingCompleted;
     }
 
     public string Locale { get; }
@@ -37,27 +60,64 @@ public sealed record UserProfilePreferences
 
     public bool AiPersonalizationEnabled { get; }
 
+    public string FirstDayOfWeek { get; }
+
+    public decimal MonthlyBudgetAmount { get; }
+
+    public bool BudgetNotificationsEnabled { get; }
+
+    public bool WeeklySummaryNotificationsEnabled { get; }
+
+    public bool ProfileOnboardingCompleted { get; }
+
+    public bool PreferencesOnboardingCompleted { get; }
+
     public static UserProfilePreferences Default() =>
-        Create("en-US", "UTC", "USD", StandardPrivacyMode, aiPersonalizationEnabled: false);
+        Create(
+            "en-US",
+            "UTC",
+            "USD",
+            StandardPrivacyMode,
+            aiPersonalizationEnabled: false,
+            firstDayOfWeek: "monday",
+            monthlyBudgetAmount: 0m,
+            budgetNotificationsEnabled: false,
+            weeklySummaryNotificationsEnabled: false,
+            profileOnboardingCompleted: false,
+            preferencesOnboardingCompleted: false);
 
     public static UserProfilePreferences Create(
         string locale,
         string timeZone,
         string currencyCode,
         string privacyMode,
-        bool aiPersonalizationEnabled)
+        bool aiPersonalizationEnabled,
+        string firstDayOfWeek = "monday",
+        decimal monthlyBudgetAmount = 0m,
+        bool budgetNotificationsEnabled = false,
+        bool weeklySummaryNotificationsEnabled = false,
+        bool profileOnboardingCompleted = false,
+        bool preferencesOnboardingCompleted = false)
     {
         var normalizedLocale = NormalizeLocale(locale);
         var normalizedTimeZone = NormalizeTimeZone(timeZone);
         var normalizedCurrency = NormalizeCurrency(currencyCode);
         var normalizedPrivacyMode = NormalizePrivacyMode(privacyMode);
+        var normalizedFirstDayOfWeek = NormalizeFirstDayOfWeek(firstDayOfWeek);
+        var normalizedMonthlyBudgetAmount = NormalizeMonthlyBudgetAmount(monthlyBudgetAmount);
 
         return new UserProfilePreferences(
             normalizedLocale,
             normalizedTimeZone,
             normalizedCurrency,
             normalizedPrivacyMode,
-            aiPersonalizationEnabled);
+            aiPersonalizationEnabled,
+            normalizedFirstDayOfWeek,
+            normalizedMonthlyBudgetAmount,
+            budgetNotificationsEnabled,
+            weeklySummaryNotificationsEnabled,
+            profileOnboardingCompleted,
+            preferencesOnboardingCompleted);
     }
 
     private static string NormalizeLocale(string locale)
@@ -123,5 +183,35 @@ public sealed record UserProfilePreferences
         }
 
         return normalized;
+    }
+
+    private static string NormalizeFirstDayOfWeek(string firstDayOfWeek)
+    {
+        if (string.IsNullOrWhiteSpace(firstDayOfWeek))
+        {
+            throw new ArgumentException("First day of week is required.", nameof(firstDayOfWeek));
+        }
+
+        var normalized = firstDayOfWeek.Trim().ToLowerInvariant();
+        if (!SupportedFirstDaysOfWeek.Contains(normalized))
+        {
+            throw new ArgumentException(
+                "First day of week must be a weekday name from monday through sunday.",
+                nameof(firstDayOfWeek));
+        }
+
+        return normalized;
+    }
+
+    private static decimal NormalizeMonthlyBudgetAmount(decimal monthlyBudgetAmount)
+    {
+        if (monthlyBudgetAmount < 0m)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(monthlyBudgetAmount),
+                "Monthly budget amount cannot be negative.");
+        }
+
+        return monthlyBudgetAmount;
     }
 }
