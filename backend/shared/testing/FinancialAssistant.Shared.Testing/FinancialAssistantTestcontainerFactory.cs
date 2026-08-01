@@ -44,8 +44,8 @@ public sealed class FinancialAssistantTestcontainerFactory :
 public static class TestcontainerDefaults
 {
     public const string ElasticsearchImage = "elasticsearch:8.15.3";
-    public const string RabbitMqImage = "rabbitmq:3.13-management";
-    public const string RedisImage = "redis:7-alpine";
+    public const string RabbitMqImage = "rabbitmq:3.13.7-management";
+    public const string RedisImage = "redis:7.4.7-alpine";
     public const string MinioImage =
         "minio/minio:RELEASE.2025-09-07T16-13-09Z";
 
