@@ -14,7 +14,8 @@ public sealed record TransactionDraftResponse(
     IReadOnlyList<string> Ambiguities,
     bool RequiresReview,
     TransactionDraftSuggestionMetadataResponse Suggestion,
-    DateTimeOffset CreatedAtUtc);
+    DateTimeOffset CreatedAtUtc,
+    string? Note = null);
 
 public sealed record TransactionDraftSuggestionMetadataResponse(
     string Source,

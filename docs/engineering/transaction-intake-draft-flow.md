@@ -2,7 +2,7 @@
 
 ## Scope
 
-FIN-21 implements the first half of the core single-input workflow. FIN-91 completes the service baseline with explicit input-source metadata. An authenticated user submits one natural-language statement and receives a structured draft containing type, amount, currency, category, merchant, date, confidence, and explicit ambiguities. The draft is review material only. No balance, transaction ledger, report, or score changes until the separate confirmation flow validates and persists authoritative state.
+FIN-21 implements the first half of the core single-input workflow. FIN-91 completes the service baseline with explicit input-source metadata. FIN-92 adds the nullable note placeholder and the recoverable draft-created event boundary. An authenticated user submits one natural-language statement and receives a structured draft containing type, amount, currency, category, merchant, date, confidence, and explicit ambiguities. The draft is review material only. No balance, transaction ledger, report, or score changes until the separate confirmation flow validates and persists authoritative state.
 
 ## Input sources
 
@@ -14,7 +14,7 @@ The draft lifecycle is explicit: `draft` output is suggestion-only, ambiguous or
 
 `POST /api/v1/transactions/intake` is the canonical service route. `POST /transactions/intake` reaches the same handler and matches the existing gateway's unchanged forwarding path. Both require trusted gateway authentication, a gateway-established user ID, and an opaque 8-to-128 character `Idempotency-Key`. Input is whitespace-normalized and limited to 2,000 characters. The key must not contain identity, device, merchant, amount, or other financial data.
 
-The service stores a SHA-256 fingerprint of normalized input with the user-scoped idempotency key and draft. It does not store raw input in the idempotency record. Repeating the same key and normalized input returns the original draft. Reusing the key for different input returns `409 idempotency_key_conflict`.
+The service stores a SHA-256 fingerprint of normalized input with the user-scoped idempotency key and draft. It does not store raw input in the idempotency record. For downstream AI work, normalized source text is stored separately behind an opaque payload reference; that reference, never the text, is carried by `transaction.draft-created.v1`. Repeating the same key and normalized input returns the original draft. Reusing the key for different input returns `409 idempotency_key_conflict`.
 
 ## Parser boundary
 
@@ -28,13 +28,13 @@ The service stores a SHA-256 fingerprint of normalized input with the user-scope
 - date bounds;
 - confidence range and the low-confidence review threshold.
 
-Invalid candidate values are removed and represented by stable ambiguity codes. Unknown, low-confidence, or incomplete candidates remain drafts with `requiresReview = true`.
+Invalid candidate values are removed and represented by stable ambiguity codes. Unknown, low-confidence, or incomplete candidates remain drafts with `requiresReview = true`. The client contract also exposes `note = null` as an explicit placeholder until a later reviewed-input capability owns note content.
 
 ## Development adapters
 
-The deterministic parser recognizes a bounded English keyword and amount/date subset so contracts remain executable without an external AI provider. It is not presented as general natural-language understanding. The in-memory store demonstrates user-scoped idempotency and atomic first-write behavior but is not durable.
+The deterministic parser recognizes a bounded English keyword and amount/date subset so contracts remain executable without an external AI provider. It is not presented as general natural-language understanding. The in-memory stores demonstrate user-scoped idempotency, atomic first-write behavior, opaque payload lookup, and retryable publication state but are not durable.
 
-Production adapters must be environment-selected, preserve the application interfaces, encrypt sensitive draft fields at rest, avoid raw financial input in logs, and use durable storage. A future AI adapter may improve extraction, but deterministic backend validation remains mandatory.
+Production adapters must be environment-selected, preserve the application interfaces, encrypt sensitive draft and source-payload fields at rest, avoid raw financial input in logs or events, and use durable storage plus a transactional outbox. A future AI adapter may improve extraction, but deterministic backend validation remains mandatory.
 
 ## Confirmation and authoritative records
 

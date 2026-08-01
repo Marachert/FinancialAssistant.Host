@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -11,8 +12,13 @@ public sealed partial class TransactionIntakeService : ITransactionIntakeService
 {
     public const int MaximumInputLength = 2000;
 
+    private readonly ConcurrentDictionary<string, DraftCreatedEventGate> draftCreatedEventGates =
+        new(StringComparer.Ordinal);
+
     private readonly ITransactionInputParser parser;
     private readonly ITransactionDraftStore store;
+    private readonly ITransactionDraftCreationStore draftCreationStore;
+    private readonly ITransactionDraftCreatedPublisher draftCreatedPublisher;
     private readonly ITransactionIntakeClock clock;
     private readonly ITransactionDraftIdGenerator idGenerator;
     private readonly TransactionDraftValidator validator;
@@ -20,12 +26,16 @@ public sealed partial class TransactionIntakeService : ITransactionIntakeService
     public TransactionIntakeService(
         ITransactionInputParser parser,
         ITransactionDraftStore store,
+        ITransactionDraftCreationStore draftCreationStore,
+        ITransactionDraftCreatedPublisher draftCreatedPublisher,
         ITransactionIntakeClock clock,
         ITransactionDraftIdGenerator idGenerator,
         TransactionDraftValidator validator)
     {
         this.parser = parser;
         this.store = store;
+        this.draftCreationStore = draftCreationStore;
+        this.draftCreatedPublisher = draftCreatedPublisher;
         this.clock = clock;
         this.idGenerator = idGenerator;
         this.validator = validator;
@@ -47,7 +57,12 @@ public sealed partial class TransactionIntakeService : ITransactionIntakeService
         var existing = await store.GetAsync(normalizedUserId, normalizedKey, cancellationToken);
         if (existing is not null)
         {
-            return CreateReplay(existing, fingerprint);
+            var replay = CreateReplay(existing, fingerprint);
+            await EnsureDraftCreatedEventAsync(
+                existing.Draft,
+                normalizedInput,
+                cancellationToken);
+            return replay;
         }
 
         var createdAtUtc = clock.UtcNow.ToUniversalTime();
@@ -74,7 +89,85 @@ public sealed partial class TransactionIntakeService : ITransactionIntakeService
             throw new IdempotencyConflictException();
         }
 
+        await EnsureDraftCreatedEventAsync(
+            stored.Stored.Draft,
+            normalizedInput,
+            cancellationToken);
+
         return new TransactionIntakeResult(ToResponse(stored.Stored.Draft), Replayed: !stored.Created);
+    }
+
+    private async Task EnsureDraftCreatedEventAsync(
+        TransactionDraft draft,
+        string normalizedInput,
+        CancellationToken cancellationToken)
+    {
+        var gateKey = $"{draft.UserId.Length}:{draft.UserId}{draft.Id}";
+        var gate = AcquireDraftCreatedEventGate(gateKey);
+        try
+        {
+            await gate.Semaphore.WaitAsync(cancellationToken);
+            try
+            {
+                var integrationEvent = new TransactionDraftCreatedIntegrationEvent(
+                    $"draft-created-{draft.Id}",
+                    $"ai-job-{draft.Id}",
+                    draft.Id,
+                    draft.UserId,
+                    $"draft-payload-{draft.Id}",
+                    draft.CreatedAtUtc);
+                var stored = await draftCreationStore.StoreIfMissingAsync(
+                    integrationEvent,
+                    normalizedInput,
+                    cancellationToken);
+                if (stored.Stored.Published)
+                {
+                    return;
+                }
+
+                await draftCreatedPublisher.PublishAsync(
+                    stored.Stored.IntegrationEvent,
+                    cancellationToken);
+                await draftCreationStore.MarkPublishedAsync(
+                    draft.UserId,
+                    draft.Id,
+                    integrationEvent.EventId,
+                    CancellationToken.None);
+            }
+            finally
+            {
+                gate.Semaphore.Release();
+            }
+        }
+        finally
+        {
+            ReleaseDraftCreatedEventGate(gateKey, gate);
+        }
+    }
+
+    private DraftCreatedEventGate AcquireDraftCreatedEventGate(string key)
+    {
+        while (true)
+        {
+            var gate = draftCreatedEventGates.GetOrAdd(
+                key,
+                _ => new DraftCreatedEventGate());
+            if (gate.TryAddReference())
+            {
+                return gate;
+            }
+        }
+    }
+
+    private void ReleaseDraftCreatedEventGate(string key, DraftCreatedEventGate gate)
+    {
+        if (!gate.ReleaseReference())
+        {
+            return;
+        }
+
+        draftCreatedEventGates.TryRemove(key, out _);
+        gate.Dispose();
     }
 
     private static TransactionIntakeResult CreateReplay(
@@ -143,8 +236,49 @@ public sealed partial class TransactionIntakeService : ITransactionIntakeService
                 draft.Suggestion.Ambiguities,
                 draft.Suggestion.MissingFields,
                 draft.Suggestion.ReviewMessage),
-            draft.CreatedAtUtc);
+            draft.CreatedAtUtc,
+            draft.Note);
 
     [GeneratedRegex("^[A-Za-z0-9._~-]{8,128}$", RegexOptions.CultureInvariant)]
     private static partial Regex IdempotencyKeyPattern();
+
+    private sealed class DraftCreatedEventGate : IDisposable
+    {
+        private readonly object sync = new();
+        private int referenceCount;
+        private bool removed;
+
+        public SemaphoreSlim Semaphore { get; } = new(1, 1);
+
+        public bool TryAddReference()
+        {
+            lock (sync)
+            {
+                if (removed)
+                {
+                    return false;
+                }
+
+                referenceCount++;
+                return true;
+            }
+        }
+
+        public bool ReleaseReference()
+        {
+            lock (sync)
+            {
+                referenceCount--;
+                if (referenceCount != 0)
+                {
+                    return false;
+                }
+
+                removed = true;
+                return true;
+            }
+        }
+
+        public void Dispose() => Semaphore.Dispose();
+    }
 }

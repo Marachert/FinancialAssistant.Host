@@ -1,16 +1,28 @@
 using System.Net;
 using System.Net.Http.Json;
+using FinancialAssistant.TransactionIntake.Application.Abstractions;
 using FinancialAssistant.TransactionIntake.Contracts;
+using FinancialAssistant.TransactionIntake.Infrastructure.Events;
+using FinancialAssistant.TransactionIntake.Infrastructure.Storage;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FinancialAssistant.TransactionIntake.Tests;
 
 public sealed class TransactionIntakeEndpointTests : IClassFixture<TransactionIntakeWebApplicationFactory>
 {
     private readonly HttpClient client;
+    private readonly InMemoryTransactionDraftCreatedPublisher draftCreatedPublisher;
+    private readonly InMemoryTransactionDraftCreationStore draftCreationStore;
 
     public TransactionIntakeEndpointTests(TransactionIntakeWebApplicationFactory factory)
     {
         client = factory.CreateClient();
+        draftCreatedPublisher =
+            factory.Services.GetRequiredService<InMemoryTransactionDraftCreatedPublisher>();
+        draftCreationStore =
+            factory.Services.GetRequiredService<ITransactionDraftCreationStore>()
+                as InMemoryTransactionDraftCreationStore
+            ?? throw new InvalidOperationException("Expected the in-memory draft creation store.");
     }
 
     [Fact]
@@ -33,6 +45,7 @@ public sealed class TransactionIntakeEndpointTests : IClassFixture<TransactionIn
         Assert.Equal("USD", draft.Currency);
         Assert.Equal("expense.food", draft.CategoryId);
         Assert.Equal("Coffee Shop", draft.Merchant);
+        Assert.Null(draft.Note);
         Assert.NotNull(draft.Date);
         Assert.InRange(draft.Confidence, 0.75m, 1m);
         Assert.Empty(draft.Ambiguities);
@@ -83,6 +96,21 @@ public sealed class TransactionIntakeEndpointTests : IClassFixture<TransactionIn
         Assert.NotNull(second);
         Assert.Equal(first.Id, second.Id);
         Assert.Equal(first.CreatedAtUtc, second.CreatedAtUtc);
+
+        var integrationEvent = Assert.Single(
+            draftCreatedPublisher.PublishedEvents,
+            item => item.DraftId == first.Id);
+        Assert.Equal(TransactionDraftCreatedIntegrationEvent.Name, integrationEvent.EventType);
+        Assert.Equal("synthetic-intake-user", integrationEvent.UserId);
+        Assert.Equal($"ai-job-{first.Id}", integrationEvent.JobId);
+        Assert.Equal($"draft-payload-{first.Id}", integrationEvent.SourcePayloadReferenceId);
+        var payload = await draftCreationStore.GetByReferenceAsync(
+            integrationEvent.UserId,
+            integrationEvent.SourcePayloadReferenceId,
+            CancellationToken.None);
+        Assert.NotNull(payload);
+        Assert.Equal("Paid 20 USD for taxi today", payload.NormalizedInput);
+        Assert.True(payload.Published);
     }
 
     [Fact]
@@ -221,6 +249,10 @@ public sealed class TransactionIntakeEndpointTests : IClassFixture<TransactionIn
                 result.StatusCode is HttpStatusCode.Created or HttpStatusCode.OK,
                 $"Unexpected status code: {result.StatusCode}."));
         Assert.Single(results.Select(result => result.Id).Distinct(StringComparer.Ordinal));
+        var draftId = results[0].Id;
+        Assert.Single(
+            draftCreatedPublisher.PublishedEvents,
+            item => item.DraftId == draftId);
     }
 
     private static HttpRequestMessage CreateRequest(

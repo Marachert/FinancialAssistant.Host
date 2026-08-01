@@ -64,7 +64,12 @@ public sealed class TransactionIntakeArchitectureTests
         Assert.DoesNotContain(properties, name =>
             name.Equals("Input", StringComparison.OrdinalIgnoreCase) ||
             name.Contains("InputText", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("NormalizedInput", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Idempotency", StringComparison.OrdinalIgnoreCase) ||
             name.Contains("Prompt", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Merchant", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Amount", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Note", StringComparison.OrdinalIgnoreCase) ||
             name.Contains("Confirmed", StringComparison.OrdinalIgnoreCase));
     }
 }
