@@ -5,6 +5,7 @@ This guide is the canonical first-day path for a developer joining Financial Ass
 Use it together with:
 
 - `README.md` for the repository overview;
+- `docs/delivery/local-developer-smoke-test.md` for the repeatable platform smoke test;
 - `infra/docker-compose/README.md` for local infrastructure details;
 - `docs/engineering/contributing.md` for the pull request workflow;
 - `docs/engineering/ci.md` for CI quality gates.
