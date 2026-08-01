@@ -15,7 +15,7 @@ function Add-PrivacyViolation {
         [int]$Line = 0
     )
 
-    $location = if ($Line -gt 0) { "$Path:$Line" } else { $Path }
+    $location = if ($Line -gt 0) { "${Path}:$Line" } else { $Path }
     $Violations.Add("$location - $Rule")
 }
 
@@ -211,9 +211,9 @@ finally {
 }
 
 if ($violations.Count -gt 0) {
-    Write-Error "Privacy baseline failed. Matched values are intentionally omitted."
+    [Console]::Error.WriteLine("Privacy baseline failed. Matched values are intentionally omitted.")
     foreach ($violation in $violations | Sort-Object -Unique) {
-        Write-Error "  $violation"
+        [Console]::Error.WriteLine("  $violation")
     }
 
     exit 1
