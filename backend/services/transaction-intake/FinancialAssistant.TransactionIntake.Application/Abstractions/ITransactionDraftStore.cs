@@ -20,8 +20,17 @@ public interface ITransactionDraftStore
         string inputFingerprint,
         TransactionDraft draft,
         CancellationToken cancellationToken);
+
+    Task<TransactionDraftMutationResult> ReplaceAsync(
+        string userId,
+        string draftId,
+        long expectedRevision,
+        TransactionDraft replacement,
+        CancellationToken cancellationToken);
 }
 
 public sealed record StoredTransactionDraft(string InputFingerprint, TransactionDraft Draft);
 
 public sealed record TransactionDraftStoreResult(StoredTransactionDraft Stored, bool Created);
+
+public sealed record TransactionDraftMutationResult(TransactionDraft? Draft, bool Replaced);
