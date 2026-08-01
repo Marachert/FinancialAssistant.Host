@@ -17,6 +17,7 @@ docs/engineering/contributing.md
 | --- | --- |
 | `ci-dotnet-build-test` | Restore and build the selected .NET target, run test projects, and upload TRX results |
 | `ci-dotnet-format` | Verify repository formatting with `dotnet format --verify-no-changes` |
+| `ci-privacy-baseline` | Reject tracked local/production configuration, credential artifacts, user-data stores, private keys, and high-confidence embedded secret markers |
 
 ## CI triggers
 
@@ -26,18 +27,7 @@ Backend CI runs on:
 - pushes to `main` or `develop`;
 - manual `workflow_dispatch`.
 
-Path filters cover:
-
-- backend, shared, and test code;
-- mobile and web-admin source boundaries;
-- local Docker Compose infrastructure;
-- root and documentation indexes;
-- architecture, API, event, security, delivery, and engineering documentation;
-- solution/project and central build files;
-- `.gitignore`, `.gitattributes`, `.editorconfig`, and `LICENSE`;
-- the workflow file itself.
-
-Documentation entry-point changes intentionally run repository tests so commands, links, paths, and ownership rules cannot drift silently.
+The workflow intentionally has no path filters. Every pull request runs all three jobs, including documentation and repository-policy changes, so commands, links, paths, ownership rules, and privacy controls cannot drift silently.
 
 ## .NET target detection
 
@@ -74,6 +64,7 @@ dotnet restore FinancialAssistant.Backend.sln
 dotnet build FinancialAssistant.Backend.sln --no-restore --configuration Release
 dotnet test FinancialAssistant.Backend.sln --no-build --configuration Release --logger trx --results-directory TestResults
 dotnet format FinancialAssistant.Backend.sln --verify-no-changes --verbosity diagnostic
+pwsh -NoProfile -NonInteractive -File tools/scripts/verify-privacy-baseline.ps1
 ```
 
 ## Pull request quality gate
@@ -84,6 +75,7 @@ A pull request is merge-ready only when:
 - the PR body explains the change and verification;
 - `ci-dotnet-build-test` succeeds on the final head;
 - `ci-dotnet-format` succeeds on the final head;
+- `ci-privacy-baseline` succeeds on the final head;
 - architecture, API, event, security, delivery, and onboarding documentation is updated where behavior changes;
 - no secrets, generated binaries, real receipts, raw OCR text, real LLM content, personal data, or real financial data are introduced;
 - all actionable review comments are processed;
@@ -114,7 +106,7 @@ develop
 Recommended `main` rules:
 
 - require a pull request before merge;
-- require `ci-dotnet-build-test` and `ci-dotnet-format`;
+- require `ci-dotnet-build-test`, `ci-dotnet-format`, and `ci-privacy-baseline`;
 - require conversation resolution when supported;
 - block force pushes;
 - block branch deletion;
@@ -154,6 +146,7 @@ These artifacts must contain only synthetic, privacy-safe information.
 | Build solution | Compiler, analyzer, or project-reference error | Run the Release build locally |
 | Test solution | Unit, integration, repository, or documentation regression | Reproduce the first failing assertion locally |
 | Verify formatting | Source differs from `.editorconfig` | Run `dotnet format FinancialAssistant.Backend.sln` |
+| Verify tracked files and secret markers | Forbidden tracked artifact or high-confidence secret marker | Remove the sensitive file/value, rotate any exposed credential, and run the privacy script locally |
 | Upload results | Missing TRX files or artifact path issue | Inspect `TestResults/**/*.trx` |
 
 ## Security and privacy rules
@@ -167,6 +160,22 @@ CI logs, artifacts, fixtures, and failure messages must not expose:
 - generated local environment files.
 
 Use synthetic fixtures and sanitized identifiers.
+
+The repository-owned privacy script scans only tracked files. It reports the path, line, and rule while intentionally omitting matched values. It is a baseline defense, not proof that a change is privacy-safe. Reviewers must still inspect logs, fixtures, telemetry, OCR/LLM boundaries, and financial data handling.
+
+GitHub secret scanning and push protection are recommended when the repository plan supports them without additional paid spend. A future task may evaluate a pinned open-source scanner, but this workflow does not call external scanning services or add billable infrastructure.
+
+## Explicit future gates
+
+These placeholders are intentionally not required checks yet:
+
+| Gate | Future enforcement |
+| --- | --- |
+| `TODO-PRIVACY-SEMANTIC` | Add analyzer-backed or policy-tested detection for raw PII, receipt text, OCR output, prompts, responses, and financial values passed to logs or telemetry |
+| `TODO-MAPPING-TESTS` | Require deterministic mapping tests for API, persistence, event, OCR/LLM candidate, and domain boundaries as those contracts are introduced |
+| `TODO-CONTRACT-TESTS` | Require provider/consumer compatibility tests for REST and RabbitMQ contracts after contract ownership and versioning are implemented |
+
+Each TODO becomes a required branch-protection check only after its implementation is deterministic, documented, and proven stable on pull requests.
 
 ## Current out-of-scope items
 
