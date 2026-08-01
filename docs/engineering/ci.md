@@ -52,7 +52,7 @@ The workflow runs `dotnet test` when at least one project contains:
 <IsTestProject>true</IsTestProject>
 ```
 
-The root solution includes repository tests that enforce source layout, shared ownership, documentation onboarding, CI path filters, and tracked-file hygiene.
+The root solution includes repository tests that enforce source layout, shared ownership, documentation onboarding, CI trigger coverage, quality-gate contracts, and tracked-file hygiene.
 
 ## Commands executed by CI
 
@@ -140,7 +140,7 @@ These artifacts must contain only synthetic, privacy-safe information.
 
 | Failed step | Likely cause | Developer action |
 | --- | --- | --- |
-| Detect .NET target | Unexpected repository path or workflow logic | Inspect selected target and path filters |
+| Detect .NET target | Unexpected repository path or workflow logic | Inspect the selected target and workflow trigger configuration |
 | Detect test project | Missing `<IsTestProject>true</IsTestProject>` or detection issue | Inspect test `.csproj` files |
 | Restore solution | Package source/reference or solution issue | Run `dotnet restore FinancialAssistant.Backend.sln` |
 | Build solution | Compiler, analyzer, or project-reference error | Run the Release build locally |
