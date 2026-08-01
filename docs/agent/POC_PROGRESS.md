@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-01T18:05:00+03:00
+Last updated: 2026-08-01T18:12:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-89 closure is **56.1%**:
-**110 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-90 closure is **56.6%**:
+**111 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,13 +13,13 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-89 - Create Category Service project baseline
-- recovered delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/43
+- FIN-90 - Implement default category seed and localization keys
+- delivery PR:
+  https://github.com/Marachert/FinancialAssistant.Host/pull/91
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/b0c4b79a4eeaa56570ac4e42865e31a90dd7040c
-- previous readiness: 109 / 196, or 55.6%
-- current readiness: 110 / 196, or 56.1%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/f861ef25d0ab7a97034e01aabf51658a0b03e9ba
+- previous readiness: 110 / 196, or 56.1%
+- current readiness: 111 / 196, or 56.6%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
@@ -28,18 +28,17 @@ denominator.
 
 Current delivery:
 
-- FIN-89 is Done after state recovery verified that completed FIN-20 delivery
-  already exceeds the requested Category Service baseline
-- current main contains Category API, Application, Contracts, Domain,
-  Infrastructure, and Tests projects with local configuration and health probes
-- stable system taxonomy and per-user catalogs are separate, while trusted
-  gateway context enforces user visibility
-- category identifiers flow into financial records, and probabilistic
-  confidence remains suggestion metadata rather than Category authority
-- Backend CI #289 passed privacy, format, Release build, and all solution tests
-  on the current delivered code
-- no redundant FIN-89 branch or implementation PR was created; parent FIN-18
-  remains In Progress because later P4 leaves are unfinished
+- FIN-90 is Done after PR #91 completed the default Category presentation-key
+  contract
+- every stable category ID now derives localization, icon, and color keys that
+  clients map to locale resources and visual tokens
+- idempotent registration seeding, income/expense separation, and per-user
+  alias overrides remain intact
+- custom user categories and direct presentation-key overrides are explicitly
+  deferred
+- Backend CI #293 passed privacy, format, Release build, and all solution tests
+  on the final PR head
+- parent FIN-18 remains In Progress because later P4 leaves are unfinished
 
 ## Epic Progress
 
@@ -49,13 +48,13 @@ Current delivery:
 | FIN-5 | P1 Architecture definition and technical governance | 17 | 17 | 100.0% |
 | FIN-10 | P2 Repository, DevOps, and local platform foundation | 36 | 36 | 100.0% |
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
-| FIN-18 | P4 Financial core backend services | 7 | 22 | 31.8% |
+| FIN-18 | P4 Financial core backend services | 8 | 22 | 36.4% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 0 | 20 | 0.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **110** | **196** | **56.1%** |
+| **Total** | **Canonical POC leaf scope** | **111** | **196** | **56.6%** |
 
 ## First-User-Test Gates
 
@@ -121,3 +120,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-08-01T17:42:03+03:00 | FIN-87 | Recovered completed FIN-19 delivery from PRs 40 and 42 | 55.1% | +0.5 pp |
 | 2026-08-01T17:57:00+03:00 | FIN-88 | Closure delivered by PR 88 | 55.6% | +0.5 pp |
 | 2026-08-01T18:05:00+03:00 | FIN-89 | Recovered completed FIN-20 delivery from PR 43 | 56.1% | +0.5 pp |
+| 2026-08-01T18:12:00+03:00 | FIN-90 | Closure delivered by PR 91 | 56.6% | +0.5 pp |
