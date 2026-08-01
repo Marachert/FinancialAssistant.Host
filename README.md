@@ -15,8 +15,9 @@ docs/delivery/developer-onboarding.md
 Related guides:
 
 ```text
-infra/docker-compose/README.md       Local infrastructure and troubleshooting
-docs/engineering/contributing.md    Branch, PR, review, and CI workflow
+docs/delivery/local-developer-smoke-test.md  Clean-machine platform smoke test
+infra/docker-compose/README.md              Local infrastructure and troubleshooting
+docs/engineering/contributing.md           Branch, PR, review, and CI workflow
 docs/engineering/ci.md              CI checks and quality gates
 docs/README.md                       Documentation map
 ```
