@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-01T17:34:05+03:00
+Last updated: 2026-08-01T17:42:03+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-69 closure is **54.6%**:
-**107 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-87 closure is **55.1%**:
+**108 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,13 +13,15 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-69 - Add CI quality gates for formatting, tests, and privacy checks
-- delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/85
-- merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/c5479deb6dfa55cf1674fed276f75c864676c5b9
-- previous readiness: 106 / 196, or 54.1%
-- current readiness: 107 / 196, or 54.6%
+- FIN-87 - Create Profile Service project baseline
+- recovered delivery PR:
+  https://github.com/Marachert/FinancialAssistant.Host/pull/40
+- review follow-up PR:
+  https://github.com/Marachert/FinancialAssistant.Host/pull/42
+- delivery merge commit:
+  https://github.com/Marachert/FinancialAssistant.Host/commit/203696a7f5ce6c75170619e86bd2b3676cd846ac
+- previous readiness: 107 / 196, or 54.6%
+- current readiness: 108 / 196, or 55.1%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
@@ -28,15 +30,17 @@ denominator.
 
 Current delivery:
 
-- FIN-69 is Done after PR 85 added the required privacy baseline alongside the
-  existing restore/build/test and format quality gates
-- the repository-owned PowerShell check rejects forbidden tracked artifacts and
-  high-confidence secret markers without printing matched values
-- branch protection guidance requires all three checks, while semantic privacy,
-  mapping, and contract enforcement remain explicit future TODO gates
-- Backend CI #281 passed privacy, format, Release build, and all solution tests
-  on the final FIN-69 head
-- parent FIN-10 is Done with all 36 canonical leaves complete
+- FIN-87 is Done after state recovery verified that completed FIN-19 delivery
+  already exceeds the requested Profile Service baseline
+- current main contains Profile API, Application, Domain, Infrastructure,
+  Contracts, and Tests projects with health, readiness, OpenAPI, ownership, and
+  local storage boundaries
+- Profile owns preferences but not accounts, authentication credentials,
+  provider links, sessions, or duplicated identity fields
+- Backend CI #283 passed privacy, format, Release build, and all solution tests,
+  including Profile tests, on the current delivered code
+- no redundant implementation PR was created; parent FIN-18 remains In Progress
+  because later P4 leaves are unfinished
 
 ## Epic Progress
 
@@ -46,13 +50,13 @@ Current delivery:
 | FIN-5 | P1 Architecture definition and technical governance | 17 | 17 | 100.0% |
 | FIN-10 | P2 Repository, DevOps, and local platform foundation | 36 | 36 | 100.0% |
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
-| FIN-18 | P4 Financial core backend services | 4 | 22 | 18.2% |
+| FIN-18 | P4 Financial core backend services | 5 | 22 | 22.7% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 0 | 20 | 0.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **107** | **196** | **54.6%** |
+| **Total** | **Canonical POC leaf scope** | **108** | **196** | **55.1%** |
 
 ## First-User-Test Gates
 
@@ -115,3 +119,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-08-01T17:04:30+03:00 | FIN-67 | Closure delivered by PR 81 | 53.6% | +0.5 pp |
 | 2026-08-01T17:18:30+03:00 | FIN-68 | Closure delivered by PR 83 | 54.1% | +0.5 pp |
 | 2026-08-01T17:34:05+03:00 | FIN-69 | Closure delivered by PR 85; FIN-10 completed | 54.6% | +0.5 pp |
+| 2026-08-01T17:42:03+03:00 | FIN-87 | Recovered completed FIN-19 delivery from PRs 40 and 42 | 55.1% | +0.5 pp |
