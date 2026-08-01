@@ -1,6 +1,6 @@
 # Financial Assistant Profile Service
 
-.NET 8 Profile Service for FIN-19.
+.NET 8 Profile Service for FIN-19 and FIN-88.
 
 Canonical engineering documentation:
 
@@ -15,6 +15,10 @@ Profile Service owns user profile preferences needed by transaction parsing and 
 - locale;
 - timezone;
 - default currency;
+- first day of week;
+- monthly budget preference;
+- budget and weekly-summary notification placeholders;
+- profile and preference onboarding completion flags;
 - privacy mode;
 - AI personalization opt-in.
 
@@ -41,11 +45,17 @@ New profiles start with:
 locale = en-US
 timezone = UTC
 currencyCode = USD
+firstDayOfWeek = monday
+monthlyBudgetAmount = 0
+budgetNotificationsEnabled = false
+weeklySummaryNotificationsEnabled = false
+profileOnboardingCompleted = false
+preferencesOnboardingCompleted = false
 privacyMode = standard
 aiPersonalizationEnabled = false
 ```
 
-Users can update preferences through `PUT /users/me/preferences`. Currency codes are normalized to uppercase three-letter values. Locale, timezone, and privacy mode are validated by deterministic backend logic.
+Users can update preferences through `PUT /users/me/preferences`. Currency codes are normalized to uppercase three-letter values. Locale, timezone, first day of week, monthly budget amount, and privacy mode are validated by deterministic backend logic. A zero monthly budget means that no budget has been configured yet; notification fields are stored preferences only and do not send messages in this increment.
 
 ## Storage
 
