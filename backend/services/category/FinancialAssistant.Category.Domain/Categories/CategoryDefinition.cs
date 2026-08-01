@@ -10,6 +10,9 @@ public sealed record CategoryDefinition
         string id,
         string key,
         string displayName,
+        string localizationKey,
+        string iconKey,
+        string colorKey,
         string kind,
         int sortOrder,
         IReadOnlyList<string> aliases,
@@ -20,6 +23,9 @@ public sealed record CategoryDefinition
         Id = id;
         Key = key;
         DisplayName = displayName;
+        LocalizationKey = localizationKey;
+        IconKey = iconKey;
+        ColorKey = colorKey;
         Kind = kind;
         SortOrder = sortOrder;
         Aliases = aliases;
@@ -33,6 +39,12 @@ public sealed record CategoryDefinition
     public string Key { get; }
 
     public string DisplayName { get; }
+
+    public string LocalizationKey { get; }
+
+    public string IconKey { get; }
+
+    public string ColorKey { get; }
 
     public string Kind { get; }
 
@@ -71,6 +83,9 @@ public sealed record CategoryDefinition
             normalizedKey,
             normalizedKey,
             normalizedName,
+            $"categories.{normalizedKey}",
+            $"category.icon.{normalizedKey}",
+            $"category.color.{normalizedKey}",
             normalizedKind,
             sortOrder,
             NormalizeAliases(aliases),
@@ -91,6 +106,9 @@ public sealed record CategoryDefinition
             Id,
             Key,
             DisplayName,
+            LocalizationKey,
+            IconKey,
+            ColorKey,
             Kind,
             SortOrder,
             normalizedAliases,
