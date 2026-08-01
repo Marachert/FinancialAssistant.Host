@@ -8,6 +8,7 @@ New contributors should begin with:
 
 ```text
 docs/delivery/developer-onboarding.md
+docs/delivery/local-developer-smoke-test.md
 ```
 
 Repository entry point:

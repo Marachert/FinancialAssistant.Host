@@ -2,6 +2,11 @@
 
 This folder contains implementation sequencing, release readiness, deployment, verification, and operational handoff documentation for Financial Assistant.
 
+## Developer entry points
+
+- [Developer onboarding](developer-onboarding.md)
+- [Local developer smoke test](local-developer-smoke-test.md)
+
 ## Scope
 
 Delivery documentation should include:
