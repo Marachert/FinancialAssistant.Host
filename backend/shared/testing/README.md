@@ -21,8 +21,8 @@ Use the returned connection string or endpoint only inside the owning service's 
 Pinned baseline images:
 
 * `elasticsearch:8.15.3`
-* `rabbitmq:3.13-management`
-* `redis:7-alpine`
+* `rabbitmq:3.13.7-management`
+* `redis:7.4.7-alpine`
 * `minio/minio:RELEASE.2025-09-07T16-13-09Z`
 
 A developer machine or CI runner must provide a Docker-compatible runtime. Testcontainers uses random host ports and removes its resources after disposal. Tests must use public development images, synthetic data, and the built-in synthetic credentials; they must never connect to production networks or paid external providers. A failed container startup is an integration-test failure, not a reason to fall back to a production endpoint.
