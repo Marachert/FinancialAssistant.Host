@@ -132,10 +132,10 @@ public sealed class TransactionDraftReviewEndpointTests : IClassFixture<Transact
             "Received 100 USD salary today");
         var update = new TransactionDraftUpdateRequest(
             "expense",
-            Amount: null,
+            null,
             "USD",
             "income.salary",
-            Merchant: null,
+            null,
             DateOnly.FromDateTime(DateTime.UtcNow));
 
         using var updateRequest = CreateRequest(
