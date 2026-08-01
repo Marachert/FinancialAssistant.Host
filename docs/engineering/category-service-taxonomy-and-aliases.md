@@ -2,19 +2,27 @@
 
 ## Scope
 
-FIN-20 introduces the Category Service boundary used by Transaction Intake. Category owns stable category definitions, per-user aliases, deterministic lookup, and category update events. It does not classify transactions probabilistically and does not persist transaction or receipt data.
+FIN-20 introduces the Category Service boundary used by Transaction Intake. FIN-90 adds stable client presentation keys to the idempotent default seed. Category owns stable category definitions, per-user aliases, deterministic lookup, and category update events. It does not classify transactions probabilistically and does not persist transaction or receipt data.
 
 ## Default taxonomy
 
 Each registered user receives the same ordered baseline with stable identifiers such as `income.salary`, `expense.food`, and `expense.transportation`. Identifiers and sort order are deterministic and are never generated from display text or user data.
 
-The current catalog contains two income categories and nine expense categories. Display names are English bootstrap values; future localization must map stable keys to localized resources without changing identifiers.
+The current catalog contains two income categories and nine expense categories. Display names are English bootstrap values. Every category exposes deterministic presentation keys:
 
-Registration is idempotent. Replaying `user.registered.v1` returns the existing catalog and does not reset aliases or timestamps.
+```text
+localizationKey = categories.{categoryId}
+iconKey = category.icon.{categoryId}
+colorKey = category.color.{categoryId}
+```
+
+Clients map these keys to localized labels, icon assets, and color tokens without changing category identifiers. The service does not store locale-specific display resources.
+
+Registration is idempotent. Replaying `user.registered.v1` returns the existing catalog and does not reset identifiers, presentation keys, aliases, or timestamps.
 
 ## Aliases and matching
 
-Aliases are scoped to one authenticated user. Input is whitespace-normalized, lowercased with invariant rules, de-duplicated, sorted, and constrained to 20 values of at most 80 characters each.
+Aliases are the supported user-specific category override in this increment and are scoped to one authenticated user. User-created categories and direct presentation-key overrides are explicitly deferred.  Input is whitespace-normalized, lowercased with invariant rules, de-duplicated, sorted, and constrained to 20 values of at most 80 characters each.
 
 Search evaluates normalized category keys, display names, and aliases. Results are ordered by:
 

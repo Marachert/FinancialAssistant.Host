@@ -34,7 +34,15 @@ public sealed class CategoryArchitectureTests
         Assert.Equal(
             categories.OrderBy(category => category.SortOrder).Select(category => category.Id),
             categories.Select(category => category.Id));
-        Assert.All(categories, category => Assert.Equal(category.Id, category.Key));
+        Assert.All(categories, category =>
+        {
+            Assert.Equal(category.Id, category.Key);
+            Assert.Equal($"categories.{category.Id}", category.LocalizationKey);
+            Assert.Equal($"category.icon.{category.Id}", category.IconKey);
+            Assert.Equal($"category.color.{category.Id}", category.ColorKey);
+        });
+        Assert.Contains(categories, category => category.Kind == CategoryKinds.Income);
+        Assert.Contains(categories, category => category.Kind == CategoryKinds.Expense);
     }
 
     [Fact]

@@ -31,7 +31,18 @@ public sealed class CategoryEndpointTests : IClassFixture<CategoryContractWebApp
         Assert.Equal(first.Select(category => category.CreatedAtUtc), second.Select(category => category.CreatedAtUtc));
         Assert.Equal("income.salary", first[0].Id);
         Assert.Equal("expense.other", first[^1].Id);
-        Assert.All(first, category => Assert.Equal(1, category.Version));
+        Assert.Contains(first, category => category.Kind == "income");
+        Assert.Contains(first, category => category.Kind == "expense");
+        Assert.All(first, category =>
+        {
+            Assert.Equal($"categories.{category.Id}", category.LocalizationKey);
+            Assert.Equal($"category.icon.{category.Id}", category.IconKey);
+            Assert.Equal($"category.color.{category.Id}", category.ColorKey);
+            Assert.Equal(1, category.Version);
+        });
+        Assert.Equal(
+            first.Select(category => category.LocalizationKey),
+            second.Select(category => category.LocalizationKey));
     }
 
     [Fact]
@@ -74,6 +85,9 @@ public sealed class CategoryEndpointTests : IClassFixture<CategoryContractWebApp
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
         Assert.NotNull(updated);
         Assert.Equal(new[] { "coffee shop", "morning brew" }, updated.Aliases);
+        Assert.Equal("categories.expense.food", updated.LocalizationKey);
+        Assert.Equal("category.icon.expense.food", updated.IconKey);
+        Assert.Equal("category.color.expense.food", updated.ColorKey);
         Assert.Equal(2, updated.Version);
 
         using var ownerSearch = CreateUserRequest(
