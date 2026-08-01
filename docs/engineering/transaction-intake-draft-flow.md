@@ -2,7 +2,13 @@
 
 ## Scope
 
-FIN-21 implements the first half of the core single-input workflow. An authenticated user submits one natural-language statement and receives a structured draft containing type, amount, currency, category, merchant, date, confidence, and explicit ambiguities. The draft is review material only. No balance, transaction ledger, report, or score changes until the separate confirmation flow validates and persists authoritative state.
+FIN-21 implements the first half of the core single-input workflow. FIN-91 completes the service baseline with explicit input-source metadata. An authenticated user submits one natural-language statement and receives a structured draft containing type, amount, currency, category, merchant, date, confidence, and explicit ambiguities. The draft is review material only. No balance, transaction ledger, report, or score changes until the separate confirmation flow validates and persists authoritative state.
+
+## Input sources
+
+Drafts identify one of four stable sources: `text`, `voice_transcript`, `receipt_ocr`, or `manual_form`. Text and receipt OCR are active adapters. Voice transcript and manual form are placeholders for later adapters and cannot bypass deterministic validation, review requirements, or confirmation rules.
+
+The draft lifecycle is explicit: `draft` output is suggestion-only, ambiguous or low-confidence values require review, and only the separate confirmation flow can create an authoritative income or expense record.
 
 ## Request boundary
 
