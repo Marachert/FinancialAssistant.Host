@@ -15,6 +15,7 @@ public static class DependencyInjection
         services.AddSingleton<TransactionDraftValidator>();
         services.AddSingleton<ITransactionIntakeService, TransactionIntakeService>();
         services.AddSingleton<ITransactionConfirmationService, TransactionConfirmationService>();
+        services.AddSingleton<ITransactionDraftReviewService, TransactionDraftReviewService>();
         services.AddSingleton<IOcrCompletedConsumer, OcrCompletedDraftConsumer>();
         return services;
     }

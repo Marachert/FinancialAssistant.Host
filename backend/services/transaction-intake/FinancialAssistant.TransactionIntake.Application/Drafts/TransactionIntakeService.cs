@@ -217,7 +217,7 @@ public sealed partial class TransactionIntakeService : ITransactionIntakeService
     private static TransactionDraftResponse ToResponse(TransactionDraft draft) =>
         new(
             draft.Id,
-            TransactionDraft.Status,
+            draft.Status,
             draft.InputSource,
             draft.Type,
             draft.Amount,

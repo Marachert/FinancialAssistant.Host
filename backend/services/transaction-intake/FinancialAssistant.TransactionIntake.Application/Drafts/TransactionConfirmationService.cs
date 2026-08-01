@@ -7,7 +7,9 @@ namespace FinancialAssistant.TransactionIntake.Application.Drafts;
 
 public sealed class TransactionConfirmationService : ITransactionConfirmationService
 {
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> confirmationGates = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, ConfirmationGate> confirmationGates =
+        new(StringComparer.Ordinal);
+
     private readonly ITransactionDraftStore draftStore;
     private readonly ITransactionConfirmationStore confirmationStore;
     private readonly ITransactionConfirmedPublisher publisher;
@@ -36,21 +38,27 @@ public sealed class TransactionConfirmationService : ITransactionConfirmationSer
     {
         var normalizedUserId = NormalizeRequired(userId, nameof(userId));
         var normalizedDraftId = NormalizeRequired(draftId, nameof(draftId));
-        var gate = confirmationGates.GetOrAdd(
-            $"{normalizedUserId.Length}:{normalizedUserId}{normalizedDraftId}",
-            _ => new SemaphoreSlim(1, 1));
-        await gate.WaitAsync(cancellationToken);
+        var gateKey = $"{normalizedUserId.Length}:{normalizedUserId}{normalizedDraftId}";
+        var gate = AcquireGate(gateKey);
         try
         {
-            return await ConfirmLockedAsync(
-                normalizedUserId,
-                normalizedDraftId,
-                correlationId,
-                cancellationToken);
+            await gate.Semaphore.WaitAsync(cancellationToken);
+            try
+            {
+                return await ConfirmLockedAsync(
+                    normalizedUserId,
+                    normalizedDraftId,
+                    correlationId,
+                    cancellationToken);
+            }
+            finally
+            {
+                gate.Semaphore.Release();
+            }
         }
         finally
         {
-            gate.Release();
+            ReleaseGate(gateKey, gate);
         }
     }
 
@@ -60,51 +68,80 @@ public sealed class TransactionConfirmationService : ITransactionConfirmationSer
         string? correlationId,
         CancellationToken cancellationToken)
     {
-        var existing = await confirmationStore.GetAsync(
-            normalizedUserId,
-            normalizedDraftId,
-            cancellationToken);
-        if (existing is not null)
+        while (true)
         {
-            await PublishIfPendingAsync(existing, cancellationToken);
+            var existing = await confirmationStore.GetAsync(
+                normalizedUserId,
+                normalizedDraftId,
+                cancellationToken);
+            if (existing is not null)
+            {
+                await PublishIfPendingAsync(existing, cancellationToken);
+                await MarkConfirmedAsync(normalizedUserId, normalizedDraftId);
+                return new TransactionConfirmationResult(
+                    ToResponse(existing.IntegrationEvent),
+                    Replayed: true);
+            }
+
+            var draft = await draftStore.GetByIdAsync(
+                normalizedUserId,
+                normalizedDraftId,
+                cancellationToken);
+            if (draft is null)
+            {
+                return null;
+            }
+
+            EnsureConfirmable(draft);
+            if (draft.Status == TransactionDraftStatuses.Draft)
+            {
+                var claim = await draftStore.ReplaceAsync(
+                    normalizedUserId,
+                    normalizedDraftId,
+                    draft.Revision,
+                    draft with
+                    {
+                        Status = TransactionDraftStatuses.Confirming,
+                        Revision = draft.Revision + 1
+                    },
+                    cancellationToken);
+                if (!claim.Replaced)
+                {
+                    continue;
+                }
+
+                draft = claim.Draft!;
+            }
+            else if (draft.Status != TransactionDraftStatuses.Confirming)
+            {
+                throw new DraftNotConfirmableException();
+            }
+
+            var confirmedAtUtc = clock.UtcNow.ToUniversalTime();
+            var integrationEvent = new TransactionConfirmedIntegrationEvent(
+                idGenerator.CreateEventId(),
+                idGenerator.CreateTransactionId(),
+                normalizedUserId,
+                normalizedDraftId,
+                draft.Type,
+                draft.Amount!.Value,
+                draft.Currency!,
+                draft.CategoryId!,
+                draft.Merchant,
+                draft.Date!.Value,
+                confirmedAtUtc,
+                NormalizeCorrelationId(correlationId, normalizedDraftId));
+            var stored = await confirmationStore.StoreIfMissingAsync(
+                integrationEvent,
+                cancellationToken);
+
+            await PublishIfPendingAsync(stored.Stored, cancellationToken);
+            await MarkConfirmedAsync(normalizedUserId, normalizedDraftId);
+
             return new TransactionConfirmationResult(
-                ToResponse(existing.IntegrationEvent),
-                Replayed: true);
+                ToResponse(stored.Stored.IntegrationEvent),
+                Replayed: !stored.Created);
         }
-
-        var draft = await draftStore.GetByIdAsync(
-            normalizedUserId,
-            normalizedDraftId,
-            cancellationToken);
-        if (draft is null)
-        {
-            return null;
-        }
-
-        EnsureConfirmable(draft);
-        var confirmedAtUtc = clock.UtcNow.ToUniversalTime();
-        var integrationEvent = new TransactionConfirmedIntegrationEvent(
-            idGenerator.CreateEventId(),
-            idGenerator.CreateTransactionId(),
-            normalizedUserId,
-            normalizedDraftId,
-            draft.Type,
-            draft.Amount!.Value,
-            draft.Currency!,
-            draft.CategoryId!,
-            draft.Merchant,
-            draft.Date!.Value,
-            confirmedAtUtc,
-            NormalizeCorrelationId(correlationId, normalizedDraftId));
-        var stored = await confirmationStore.StoreIfMissingAsync(
-            integrationEvent,
-            cancellationToken);
-
-        await PublishIfPendingAsync(stored.Stored, cancellationToken);
-
-        return new TransactionConfirmationResult(
-            ToResponse(stored.Stored.IntegrationEvent),
-            Replayed: !stored.Created);
     }
 
     private async Task PublishIfPendingAsync(
@@ -124,9 +161,67 @@ public sealed class TransactionConfirmationService : ITransactionConfirmationSer
             CancellationToken.None);
     }
 
+    private async Task MarkConfirmedAsync(string userId, string draftId)
+    {
+        while (true)
+        {
+            var draft = await draftStore.GetByIdAsync(userId, draftId, CancellationToken.None);
+            if (draft is null ||
+                draft.Status == TransactionDraftStatuses.Confirmed)
+            {
+                return;
+            }
+
+            if (draft.Status != TransactionDraftStatuses.Confirming)
+            {
+                return;
+            }
+
+            var result = await draftStore.ReplaceAsync(
+                userId,
+                draftId,
+                draft.Revision,
+                draft with
+                {
+                    Status = TransactionDraftStatuses.Confirmed,
+                    Revision = draft.Revision + 1
+                },
+                CancellationToken.None);
+            if (result.Replaced)
+            {
+                return;
+            }
+        }
+    }
+
+    private ConfirmationGate AcquireGate(string key)
+    {
+        while (true)
+        {
+            var gate = confirmationGates.GetOrAdd(key, _ => new ConfirmationGate());
+            if (gate.TryAddReference())
+            {
+                return gate;
+            }
+        }
+    }
+
+    private void ReleaseGate(string key, ConfirmationGate gate)
+    {
+        if (!gate.ReleaseReference())
+        {
+            return;
+        }
+
+        confirmationGates.TryRemove(key, out _);
+        gate.Dispose();
+    }
+
     private static void EnsureConfirmable(TransactionDraft draft)
     {
-        if (draft.Type is not TransactionTypes.Income and not TransactionTypes.Expense ||
+        if (draft.Status is not TransactionDraftStatuses.Draft and
+            not TransactionDraftStatuses.Confirming ||
+            draft.Type is not TransactionTypes.Income and not TransactionTypes.Expense ||
             draft.Amount is null or <= 0 ||
             string.IsNullOrWhiteSpace(draft.Currency) ||
             string.IsNullOrWhiteSpace(draft.CategoryId) ||
@@ -170,7 +265,7 @@ public sealed class TransactionConfirmationService : ITransactionConfirmationSer
         new(
             integrationEvent.TransactionId,
             integrationEvent.DraftId,
-            "confirmed",
+            TransactionDraftStatuses.Confirmed,
             integrationEvent.TransactionType,
             integrationEvent.Amount,
             integrationEvent.Currency,
@@ -178,4 +273,44 @@ public sealed class TransactionConfirmationService : ITransactionConfirmationSer
             integrationEvent.Merchant,
             integrationEvent.Date,
             integrationEvent.ConfirmedAtUtc);
+
+    private sealed class ConfirmationGate : IDisposable
+    {
+        private readonly object sync = new();
+        private int referenceCount;
+        private bool removed;
+
+        public SemaphoreSlim Semaphore { get; } = new(1, 1);
+
+        public bool TryAddReference()
+        {
+            lock (sync)
+            {
+                if (removed)
+                {
+                    return false;
+                }
+
+                referenceCount++;
+                return true;
+            }
+        }
+
+        public bool ReleaseReference()
+        {
+            lock (sync)
+            {
+                referenceCount--;
+                if (referenceCount != 0)
+                {
+                    return false;
+                }
+
+                removed = true;
+                return true;
+            }
+        }
+
+        public void Dispose() => Semaphore.Dispose();
+    }
 }

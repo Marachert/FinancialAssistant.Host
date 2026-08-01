@@ -11,9 +11,42 @@ public static class TransactionIntakeEndpointExtensions
     {
         MapIntakeRoute(app, TransactionIntakeApiRoutes.Intake, "CreateTransactionDraft");
         MapIntakeRoute(app, TransactionIntakeApiRoutes.GatewayIntake, "CreateTransactionDraftFromGateway");
+        MapReviewRoutes(app, TransactionIntakeApiRoutes.ReviewDraft, "TransactionDraft");
+        MapReviewRoutes(app, TransactionIntakeApiRoutes.GatewayReviewDraft, "TransactionDraftFromGateway");
         MapConfirmRoute(app, TransactionIntakeApiRoutes.ConfirmDraft, "ConfirmTransactionDraft");
         MapConfirmRoute(app, TransactionIntakeApiRoutes.GatewayConfirmDraft, "ConfirmTransactionDraftFromGateway");
+        MapRejectRoute(app, TransactionIntakeApiRoutes.RejectDraft, "RejectTransactionDraft");
+        MapRejectRoute(app, TransactionIntakeApiRoutes.GatewayRejectDraft, "RejectTransactionDraftFromGateway");
         return app;
+    }
+
+    private static void MapReviewRoutes(IEndpointRouteBuilder app, string pattern, string name)
+    {
+        app.MapGet(pattern, HandleReviewAsync)
+            .WithName($"Review{name}")
+            .Produces<TransactionDraftResponse>(StatusCodes.Status200OK)
+            .Produces<TransactionIntakeErrorResponse>(StatusCodes.Status400BadRequest)
+            .Produces<TransactionIntakeErrorResponse>(StatusCodes.Status401Unauthorized)
+            .Produces<TransactionIntakeErrorResponse>(StatusCodes.Status404NotFound);
+
+        app.MapPut(pattern, HandleUpdateAsync)
+            .WithName($"Update{name}")
+            .Produces<TransactionDraftResponse>(StatusCodes.Status200OK)
+            .Produces<TransactionIntakeErrorResponse>(StatusCodes.Status400BadRequest)
+            .Produces<TransactionIntakeErrorResponse>(StatusCodes.Status401Unauthorized)
+            .Produces<TransactionIntakeErrorResponse>(StatusCodes.Status404NotFound)
+            .Produces<TransactionIntakeErrorResponse>(StatusCodes.Status409Conflict);
+    }
+
+    private static void MapRejectRoute(IEndpointRouteBuilder app, string pattern, string name)
+    {
+        app.MapPost(pattern, HandleRejectionAsync)
+            .WithName(name)
+            .Produces<TransactionDraftResponse>(StatusCodes.Status200OK)
+            .Produces<TransactionIntakeErrorResponse>(StatusCodes.Status400BadRequest)
+            .Produces<TransactionIntakeErrorResponse>(StatusCodes.Status401Unauthorized)
+            .Produces<TransactionIntakeErrorResponse>(StatusCodes.Status404NotFound)
+            .Produces<TransactionIntakeErrorResponse>(StatusCodes.Status409Conflict);
     }
 
     private static void MapConfirmRoute(IEndpointRouteBuilder app, string pattern, string name)
@@ -109,6 +142,129 @@ public static class TransactionIntakeEndpointExtensions
         }
     }
 
+    private static async Task<IResult> HandleReviewAsync(
+        HttpContext httpContext,
+        string draftId,
+        ITransactionDraftReviewService reviewService,
+        TransactionIntakeGatewayAuthenticator gatewayAuthenticator,
+        CancellationToken cancellationToken)
+    {
+        var authenticationError = AuthenticateDraftRequest(
+            httpContext,
+            gatewayAuthenticator,
+            out var userId);
+        if (authenticationError is not null)
+        {
+            return authenticationError;
+        }
+
+        try
+        {
+            var draft = await reviewService.ReviewAsync(userId!, draftId, cancellationToken);
+            return draft is null
+                ? DraftNotFound(httpContext)
+                : Results.Ok(draft);
+        }
+        catch (ArgumentException exception)
+        {
+            return Problem(
+                httpContext,
+                "Transaction draft review is invalid.",
+                exception.Message,
+                "invalid_transaction_draft_review",
+                StatusCodes.Status400BadRequest);
+        }
+    }
+
+    private static async Task<IResult> HandleUpdateAsync(
+        HttpContext httpContext,
+        string draftId,
+        TransactionDraftUpdateRequest request,
+        ITransactionDraftReviewService reviewService,
+        TransactionIntakeGatewayAuthenticator gatewayAuthenticator,
+        CancellationToken cancellationToken)
+    {
+        var authenticationError = AuthenticateDraftRequest(
+            httpContext,
+            gatewayAuthenticator,
+            out var userId);
+        if (authenticationError is not null)
+        {
+            return authenticationError;
+        }
+
+        try
+        {
+            var draft = await reviewService.UpdateAsync(
+                userId!,
+                draftId,
+                request,
+                cancellationToken);
+            return draft is null
+                ? DraftNotFound(httpContext)
+                : Results.Ok(draft);
+        }
+        catch (DraftNotEditableException exception)
+        {
+            return DraftConflict(httpContext, exception.Message);
+        }
+        catch (DraftMutationConflictException exception)
+        {
+            return DraftConflict(httpContext, exception.Message);
+        }
+        catch (ArgumentException exception)
+        {
+            return Problem(
+                httpContext,
+                "Transaction draft update is invalid.",
+                exception.Message,
+                "invalid_transaction_draft_update",
+                StatusCodes.Status400BadRequest);
+        }
+    }
+
+    private static async Task<IResult> HandleRejectionAsync(
+        HttpContext httpContext,
+        string draftId,
+        ITransactionDraftReviewService reviewService,
+        TransactionIntakeGatewayAuthenticator gatewayAuthenticator,
+        CancellationToken cancellationToken)
+    {
+        var authenticationError = AuthenticateDraftRequest(
+            httpContext,
+            gatewayAuthenticator,
+            out var userId);
+        if (authenticationError is not null)
+        {
+            return authenticationError;
+        }
+
+        try
+        {
+            var draft = await reviewService.RejectAsync(userId!, draftId, cancellationToken);
+            return draft is null
+                ? DraftNotFound(httpContext)
+                : Results.Ok(draft);
+        }
+        catch (DraftNotEditableException exception)
+        {
+            return DraftConflict(httpContext, exception.Message);
+        }
+        catch (DraftMutationConflictException exception)
+        {
+            return DraftConflict(httpContext, exception.Message);
+        }
+        catch (ArgumentException exception)
+        {
+            return Problem(
+                httpContext,
+                "Transaction draft rejection is invalid.",
+                exception.Message,
+                "invalid_transaction_draft_rejection",
+                StatusCodes.Status400BadRequest);
+        }
+    }
+
     private static async Task<IResult> HandleConfirmationAsync(
         HttpContext httpContext,
         string draftId,
@@ -179,6 +335,52 @@ public static class TransactionIntakeEndpointExtensions
                 StatusCodes.Status400BadRequest);
         }
     }
+
+    private static IResult? AuthenticateDraftRequest(
+        HttpContext httpContext,
+        TransactionIntakeGatewayAuthenticator gatewayAuthenticator,
+        out string? userId)
+    {
+        userId = null;
+        if (!gatewayAuthenticator.IsAuthenticated(httpContext))
+        {
+            return Problem(
+                httpContext,
+                "Trusted gateway authentication is required.",
+                "Transaction draft access is accepted only from the authenticated gateway.",
+                "trusted_gateway_authentication_required",
+                StatusCodes.Status401Unauthorized);
+        }
+
+        userId = GetHeader(httpContext, TransactionIntakeHeaders.GatewayUserId);
+        if (userId is null)
+        {
+            return Problem(
+                httpContext,
+                "Authentication is required.",
+                "Transaction draft access requires a trusted gateway user context.",
+                "authentication_required",
+                StatusCodes.Status401Unauthorized);
+        }
+
+        return null;
+    }
+
+    private static IResult DraftNotFound(HttpContext httpContext) =>
+        Problem(
+            httpContext,
+            "Transaction draft was not found.",
+            "The draft does not exist for the authenticated user.",
+            "transaction_draft_not_found",
+            StatusCodes.Status404NotFound);
+
+    private static IResult DraftConflict(HttpContext httpContext, string detail) =>
+        Problem(
+            httpContext,
+            "Transaction draft cannot be changed.",
+            detail,
+            "transaction_draft_not_editable",
+            StatusCodes.Status409Conflict);
 
     private static string? GetHeader(HttpContext httpContext, string name)
     {
