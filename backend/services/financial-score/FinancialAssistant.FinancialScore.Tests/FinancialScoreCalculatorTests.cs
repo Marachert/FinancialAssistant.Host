@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FinancialAssistant.FinancialScore.Domain;
 using Xunit;
 
@@ -35,7 +36,7 @@ public sealed class FinancialScoreCalculatorTests
             semanticFactors: null,
             CalculatedAt);
 
-        Assert.Equal(first, second);
+        Assert.Equal(JsonSerializer.Serialize(first), JsonSerializer.Serialize(second));
         Assert.Equal(FinancialScoreFormula.Version, first.FormulaVersion);
         Assert.Equal(4, first.Factors.Count);
         Assert.InRange(first.Score, FinancialScoreFormula.Minimum, FinancialScoreFormula.Maximum);
@@ -101,7 +102,7 @@ public sealed class FinancialScoreCalculatorTests
             null,
             CalculatedAt);
 
-        Assert.Equal(baseline, result);
+        Assert.Equal(JsonSerializer.Serialize(baseline), JsonSerializer.Serialize(result));
     }
 
     private static FinancialScoreRecordProjection Record(
