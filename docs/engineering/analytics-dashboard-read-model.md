@@ -27,9 +27,9 @@ expense.restored.v1
 An accepted event is keyed by owner hash, record type, and record ID. Only a
 higher record revision replaces the current projection. After each accepted
 revision, the store persists materialized owner-and-currency-scoped daily totals,
-calendar-month totals, and monthly category totals. Currency changes rebuild both
-the previous and new currency snapshots. Archived records remain available for
-revision ordering but are excluded from aggregates.
+Monday-based weekly totals, calendar-month totals, and monthly category totals.
+Currency changes rebuild both the previous and new currency snapshots. Archived
+records remain available for revision ordering but are excluded from aggregates.
 
 The checked-in in-memory adapter is limited to the single-instance PoC. A durable
 adapter must preserve the same keys, revision comparison, atomic snapshot update,
@@ -37,7 +37,7 @@ currency isolation, and rebuild behavior.
 
 ## Deterministic calculations
 
-For every date, month, category, and trend point:
+For every date, Monday-based week, month, category, and trend point:
 
 ```text
 incomeTotal = sum(active income amounts)

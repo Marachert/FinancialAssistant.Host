@@ -60,6 +60,7 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
                     userIdHash,
                     currency.ToUpperInvariant(),
                     new Dictionary<DateOnly, AnalyticsAggregateTotals>(),
+                    new Dictionary<DateOnly, AnalyticsAggregateTotals>(),
                     new Dictionary<DateOnly, AnalyticsMonthlyAggregate>(),
                     LastEventAtUtc: null));
         }
@@ -93,6 +94,11 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
             .ToDictionary(
                 group => group.Key,
                 group => BuildTotals(group));
+        var weekly = active
+            .GroupBy(item => StartOfWeek(item.Date))
+            .ToDictionary(
+                group => group.Key,
+                group => BuildTotals(group));
         var monthly = active
             .GroupBy(item => new DateOnly(item.Date.Year, item.Date.Month, 1))
             .ToDictionary(
@@ -112,6 +118,7 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
                 userIdHash,
                 normalizedCurrency,
                 daily,
+                weekly,
                 monthly,
                 records.Length == 0 ? null : records.Max(item => item.ChangedAtUtc));
     }
@@ -126,6 +133,12 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
         IEnumerable<AnalyticsRecordProjection> records,
         string recordType) =>
         records.Where(item => item.RecordType == recordType).Sum(item => item.Amount);
+
+    private static DateOnly StartOfWeek(DateOnly date)
+    {
+        var daysSinceMonday = ((int)date.DayOfWeek + 6) % 7;
+        return date.AddDays(-daysSinceMonday);
+    }
 
     private static string CreateSnapshotKey(string userIdHash, string currency) =>
         $"{userIdHash}|{currency.ToUpperInvariant()}";

@@ -95,8 +95,12 @@ public sealed class AnalyticsProjectorTests
         var eur = await store.GetAsync(UserIdHash, "EUR", CancellationToken.None);
 
         Assert.Empty(usd.DailyTotals);
+        Assert.Empty(usd.WeeklyTotals);
         Assert.Empty(usd.MonthlyTotals);
         Assert.Equal(45m, eur.DailyTotals[new DateOnly(2026, 8, 20)].Expense);
+        Assert.Equal(
+            45m,
+            eur.WeeklyTotals[new DateOnly(2026, 8, 17)].Expense);
         Assert.Equal(
             45m,
             eur.MonthlyTotals[new DateOnly(2026, 8, 1)].Totals.Expense);

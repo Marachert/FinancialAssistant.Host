@@ -39,6 +39,7 @@ public sealed record AnalyticsProjectionSnapshot(
     string UserIdHash,
     string Currency,
     IReadOnlyDictionary<DateOnly, AnalyticsAggregateTotals> DailyTotals,
+    IReadOnlyDictionary<DateOnly, AnalyticsAggregateTotals> WeeklyTotals,
     IReadOnlyDictionary<DateOnly, AnalyticsMonthlyAggregate> MonthlyTotals,
     DateTimeOffset? LastEventAtUtc);
 

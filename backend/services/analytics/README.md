@@ -8,8 +8,9 @@ OCR data, and AI suggestions never enter analytics totals.
 
 The projector consumes `income.created.v1` and `expense.created.v1` plus their
 update, archive, and restore lifecycle events. Record revision makes duplicate and
-out-of-order delivery idempotent. The store persists materialized daily and
-calendar-month totals plus monthly category totals after every accepted revision.
+out-of-order delivery idempotent. The store persists materialized daily,
+Monday-based weekly, and calendar-month totals plus monthly category totals after
+every accepted revision.
 The in-memory adapter is for the single-instance PoC; a durable production adapter
 must preserve the same owner/currency/date keys and revision rule.
 

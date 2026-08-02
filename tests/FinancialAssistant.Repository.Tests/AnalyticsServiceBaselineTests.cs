@@ -56,6 +56,8 @@ public sealed class AnalyticsServiceBaselineTests
         Assert.Contains("FinancialRecordChangedV1", projector, StringComparison.Ordinal);
         Assert.Contains("current.Revision >= projection.Revision", store, StringComparison.Ordinal);
         Assert.Contains("new AnalyticsProjectionSnapshot", store, StringComparison.Ordinal);
+        Assert.Contains("WeeklyTotals", Read("backend/services/analytics/FinancialAssistant.Analytics.Domain/AnalyticsReadModels.cs"), StringComparison.Ordinal);
+        Assert.Contains("StartOfWeek", store, StringComparison.Ordinal);
         Assert.Contains("new AnalyticsMonthlyAggregate", store, StringComparison.Ordinal);
         Assert.Contains("new AnalyticsCategoryTotal", store, StringComparison.Ordinal);
         Assert.Contains("Unlike currencies are never mixed", documentation, StringComparison.Ordinal);
