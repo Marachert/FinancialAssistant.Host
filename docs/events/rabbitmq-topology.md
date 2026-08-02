@@ -93,6 +93,7 @@ fa.profile.identity-lifecycle.v1
 fa.income.transaction-confirmed.v1
 fa.expense.transaction-confirmed.v1
 fa.analytics.financial-events.v1
+fa.financial-score.financial-events.v1
 ```
 
 The consumer chooses the queue name, bindings, concurrency, retention, retry
@@ -124,6 +125,8 @@ which routes it through the application's configured dead-letter exchange.
 | Transaction confirmed | `fa.events` | `transaction.confirmed.v1` | `fa.income.transaction-confirmed.v1` |
 | Transaction confirmed | `fa.events` | `transaction.confirmed.v1` | `fa.expense.transaction-confirmed.v1` |
 | Transaction confirmed | `fa.events` | `transaction.confirmed.v1` | `fa.analytics.financial-events.v1` |
+| Financial record changed | `fa.events` | `income.created.v1` / `expense.created.v1` and lifecycle variants | `fa.financial-score.financial-events.v1` |
+| Financial score calculated | `fa.events` | `score.calculated.v1` | Authorized recommendation and notification consumers |
 | Token revoked | `fa.events` | `token.revoked.v1` | `fa.audit.identity-events.v1` |
 
 Income and Expense consumers validate the confirmed transaction type before

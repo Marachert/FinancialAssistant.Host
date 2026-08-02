@@ -68,6 +68,13 @@ docs/engineering/analytics-dashboard-read-model.md
 docs/api/analytics-dashboard-v1.md
 ```
 
+Deterministic financial score and history API:
+
+```text
+docs/engineering/financial-score-v1.md
+docs/api/financial-score-v1.md
+```
+
 Financial core validation coverage:
 
 ```text

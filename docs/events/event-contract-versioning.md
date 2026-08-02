@@ -27,6 +27,7 @@ user.registered.v1
 transaction.confirmed.v1
 income.created.v1
 expense.created.v1
+score.calculated.v1
 ```
 
 The complete event type is the RabbitMQ routing key. Do not add environment,
@@ -260,6 +261,14 @@ uses safe reason codes and identifiers only, never event payloads. Terminal
 contract or routing failures follow the owning queue's dead-letter policy.
 
 ## Privacy and Review
+
+### score.calculated.v1
+
+Owner: Financial Score Service.
+
+The schema-version-1 payload contains `calculationId`, `currency`, integer `score`, `formulaVersion`, bounded factor code/contribution pairs, and `calculatedAtUtc`. The envelope carries the pseudonymous `userIdHash`. The contract does not contain source record IDs, raw identity, merchant/category text, OCR content, prompts, or semantic-provider text. The calculation ID is deterministic for the source event so an at-least-once republish remains deduplicable.
+
+Changing the formula does not silently reinterpret history: a formula change requires a new stored `formulaVersion`, documentation, and compatibility review. A payload-breaking change requires a new event schema version and routing key.
 
 Contract examples use synthetic identifiers only. Event schemas and examples
 must not include credentials, tokens, passwords, raw receipt images, raw OCR
