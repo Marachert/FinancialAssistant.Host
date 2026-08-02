@@ -42,57 +42,63 @@ public sealed class TransactionDraftReviewService : ITransactionDraftReviewServi
 
         var normalizedUserId = NormalizeRequired(userId, nameof(userId));
         var normalizedDraftId = NormalizeRequired(draftId, nameof(draftId));
-        for (var attempt = 0; attempt < MaximumMutationAttempts; attempt++)
+        if (request.ExpectedRevision is null or < 0)
         {
-            var current = await draftStore.GetByIdAsync(
-                normalizedUserId,
-                normalizedDraftId,
-                cancellationToken);
-            if (current is null)
-            {
-                return null;
-            }
-
-            EnsureEditable(current);
-            var validated = validator.Validate(
-                current.Id,
-                current.UserId,
-                current.InputFingerprint,
-                new ParsedTransactionCandidate(
-                    request.Type,
-                    request.Amount,
-                    request.Currency,
-                    request.CategoryId,
-                    request.Merchant,
-                    request.Date,
-                    Confidence: 1m),
-                current.CreatedAtUtc,
-                new TransactionDraftSuggestionContext(
-                    current.Suggestion.Source,
-                    current.Suggestion.SourceReferenceId,
-                    Ambiguities: Array.Empty<string>(),
-                    MissingFields: Array.Empty<string>(),
-                    ReviewMessage: "User-reviewed values are ready for confirmation."));
-            var replacement = validated with
-            {
-                InputSource = current.InputSource,
-                Note = NormalizeNote(request.Note),
-                Status = TransactionDraftStatuses.Draft,
-                Revision = current.Revision + 1
-            };
-            var result = await draftStore.ReplaceAsync(
-                normalizedUserId,
-                normalizedDraftId,
-                current.Revision,
-                replacement,
-                cancellationToken);
-            if (result.Replaced)
-            {
-                return ToResponse(result.Draft!);
-            }
+            throw new ArgumentException(
+                "Expected revision must be supplied and cannot be negative.",
+                nameof(request));
         }
 
-        throw new DraftMutationConflictException();
+        var current = await draftStore.GetByIdAsync(
+            normalizedUserId,
+            normalizedDraftId,
+            cancellationToken);
+        if (current is null)
+        {
+            return null;
+        }
+
+        EnsureEditable(current);
+        if (request.ExpectedRevision.Value != current.Revision)
+        {
+            throw new DraftMutationConflictException();
+        }
+
+        var validated = validator.Validate(
+            current.Id,
+            current.UserId,
+            current.InputFingerprint,
+            new ParsedTransactionCandidate(
+                request.Type,
+                request.Amount,
+                request.Currency,
+                request.CategoryId,
+                request.Merchant,
+                request.Date,
+                Confidence: 1m),
+            current.CreatedAtUtc,
+            new TransactionDraftSuggestionContext(
+                current.Suggestion.Source,
+                current.Suggestion.SourceReferenceId,
+                Ambiguities: Array.Empty<string>(),
+                MissingFields: Array.Empty<string>(),
+                ReviewMessage: "User-reviewed values are ready for confirmation."));
+        var replacement = validated with
+        {
+            InputSource = current.InputSource,
+            Note = NormalizeNote(request.Note),
+            Status = TransactionDraftStatuses.Draft,
+            Revision = current.Revision + 1
+        };
+        var result = await draftStore.ReplaceAsync(
+            normalizedUserId,
+            normalizedDraftId,
+            current.Revision,
+            replacement,
+            cancellationToken);
+        return result.Replaced
+            ? ToResponse(result.Draft!)
+            : throw new DraftMutationConflictException();
     }
 
     public async Task<TransactionDraftResponse?> RejectAsync(
@@ -187,6 +193,7 @@ public sealed class TransactionDraftReviewService : ITransactionDraftReviewServi
         new(
             draft.Id,
             draft.Status,
+            draft.Revision,
             draft.InputSource,
             draft.Type,
             draft.Amount,

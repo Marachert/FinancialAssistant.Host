@@ -218,6 +218,7 @@ public sealed partial class TransactionIntakeService : ITransactionIntakeService
         new(
             draft.Id,
             draft.Status,
+            draft.Revision,
             draft.InputSource,
             draft.Type,
             draft.Amount,

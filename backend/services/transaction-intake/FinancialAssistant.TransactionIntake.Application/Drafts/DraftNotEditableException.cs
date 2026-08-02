@@ -11,7 +11,7 @@ public sealed class DraftNotEditableException : Exception
 public sealed class DraftMutationConflictException : Exception
 {
     public DraftMutationConflictException()
-        : base("The transaction draft changed while the request was being processed. Retry the request.")
+        : base("The transaction draft revision is stale. Reload the draft and retry with its current revision.")
     {
     }
 }

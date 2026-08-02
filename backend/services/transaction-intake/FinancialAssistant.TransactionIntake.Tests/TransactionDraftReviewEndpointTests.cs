@@ -63,6 +63,7 @@ public sealed class TransactionDraftReviewEndpointTests : IClassFixture<Transact
             "synthetic-review-update-intake",
             "Maybe something happened");
         var update = new TransactionDraftUpdateRequest(
+            draft.Revision,
             "expense",
             42.15m,
             "usd",
@@ -83,6 +84,7 @@ public sealed class TransactionDraftReviewEndpointTests : IClassFixture<Transact
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
         Assert.NotNull(reviewed);
         Assert.False(reviewed.RequiresReview);
+        Assert.Equal(draft.Revision + 1, reviewed.Revision);
         Assert.Empty(reviewed.Ambiguities);
         Assert.Equal("USD", reviewed.Currency);
         Assert.Equal("reviewed by user", reviewed.Note);
@@ -131,6 +133,7 @@ public sealed class TransactionDraftReviewEndpointTests : IClassFixture<Transact
             "synthetic-review-invalid-intake",
             "Received 100 USD salary today");
         var update = new TransactionDraftUpdateRequest(
+            draft.Revision,
             "expense",
             null,
             "USD",
@@ -162,6 +165,59 @@ public sealed class TransactionDraftReviewEndpointTests : IClassFixture<Transact
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, confirmResponse.StatusCode);
         Assert.DoesNotContain(publisher.PublishedEvents, item => item.DraftId == draft.Id);
+    }
+
+    [Fact]
+    public async Task Update_StaleExpectedRevisionReturnsConflictAndPreservesAcceptedValues()
+    {
+        const string userId = "synthetic-review-stale-owner";
+        var draft = await CreateDraftAsync(
+            userId,
+            "synthetic-review-stale-intake",
+            "Maybe something happened");
+        var acceptedUpdate = new TransactionDraftUpdateRequest(
+            draft.Revision,
+            "expense",
+            25.50m,
+            "USD",
+            "expense.groceries",
+            "Synthetic Market",
+            DateOnly.FromDateTime(DateTime.UtcNow));
+
+        using var acceptedRequest = CreateRequest(
+            HttpMethod.Put,
+            TransactionIntakeApiRoutes.ReviewDraft,
+            userId,
+            draft.Id,
+            acceptedUpdate);
+        using var acceptedResponse = await client.SendAsync(acceptedRequest);
+        var accepted = await acceptedResponse.Content.ReadFromJsonAsync<TransactionDraftResponse>();
+        Assert.Equal(HttpStatusCode.OK, acceptedResponse.StatusCode);
+        Assert.NotNull(accepted);
+
+        var staleUpdate = acceptedUpdate with { Amount = 99.99m };
+        using var staleRequest = CreateRequest(
+            HttpMethod.Put,
+            TransactionIntakeApiRoutes.ReviewDraft,
+            userId,
+            draft.Id,
+            staleUpdate);
+        using var staleResponse = await client.SendAsync(staleRequest);
+        var conflict = await staleResponse.Content.ReadFromJsonAsync<TransactionIntakeErrorResponse>();
+        Assert.Equal(HttpStatusCode.Conflict, staleResponse.StatusCode);
+        Assert.NotNull(conflict);
+        Assert.Equal("transaction_draft_not_editable", conflict.Code);
+
+        using var reviewRequest = CreateRequest(
+            HttpMethod.Get,
+            TransactionIntakeApiRoutes.ReviewDraft,
+            userId,
+            draft.Id);
+        using var reviewResponse = await client.SendAsync(reviewRequest);
+        var current = await reviewResponse.Content.ReadFromJsonAsync<TransactionDraftResponse>();
+        Assert.NotNull(current);
+        Assert.Equal(25.50m, current.Amount);
+        Assert.Equal(accepted.Revision, current.Revision);
     }
 
     [Fact]

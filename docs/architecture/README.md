@@ -22,6 +22,7 @@ scores, and recommendations are defined in:
 ```text
 docs/architecture/financial-source-of-truth.md
 docs/architecture/financial-core-service-boundaries.md
+docs/architecture/financial-core-e2e-flow.md
 ```
 
 The service-boundary contract assigns owned data, synchronous read rules,

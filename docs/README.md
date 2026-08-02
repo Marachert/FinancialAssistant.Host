@@ -49,6 +49,12 @@ Financial core ownership and interaction boundaries:
 docs/architecture/financial-core-service-boundaries.md
 ```
 
+Financial core end-to-end API and event flow:
+
+```text
+docs/architecture/financial-core-e2e-flow.md
+```
+
 Financial summary projection baseline:
 
 ```text
