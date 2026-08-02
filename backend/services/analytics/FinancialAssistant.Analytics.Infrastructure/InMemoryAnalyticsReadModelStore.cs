@@ -116,6 +116,8 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
                     currency.ToUpperInvariant(),
                     new Dictionary<DateOnly, AnalyticsAggregateTotals>(),
                     new Dictionary<DateOnly, AnalyticsAggregateTotals>(),
+                    new Dictionary<DateOnly, IReadOnlyList<AnalyticsCategoryTotal>>(),
+                    new Dictionary<DateOnly, IReadOnlyList<AnalyticsCategoryTotal>>(),
                     new Dictionary<DateOnly, AnalyticsMonthlyAggregate>(),
                     LastEventAtUtc: null));
         }
@@ -155,6 +157,16 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
             .ToDictionary(
                 group => group.Key,
                 group => BuildTotals(group));
+        var dailyCategories = active
+            .GroupBy(item => item.Date)
+            .ToDictionary(
+                group => group.Key,
+                group => BuildCategoryTotals(group));
+        var weeklyCategories = active
+            .GroupBy(item => StartOfWeek(item.Date))
+            .ToDictionary(
+                group => group.Key,
+                group => BuildCategoryTotals(group));
         var monthly = active
             .GroupBy(item => new DateOnly(item.Date.Year, item.Date.Month, 1))
             .ToDictionary(
@@ -162,19 +174,15 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
                 group => new AnalyticsMonthlyAggregate(
                     group.Key,
                     BuildTotals(group),
-                    group.GroupBy(item => item.CategoryId, StringComparer.Ordinal)
-                        .OrderBy(category => category.Key, StringComparer.Ordinal)
-                        .Select(category => new AnalyticsCategoryTotal(
-                            category.Key,
-                            Sum(category, AnalyticsRecordTypes.Income),
-                            Sum(category, AnalyticsRecordTypes.Expense)))
-                        .ToArray()));
+                    BuildCategoryTotals(group)));
         snapshots[CreateSnapshotKey(userIdHash, normalizedCurrency)] =
             new AnalyticsProjectionSnapshot(
                 userIdHash,
                 normalizedCurrency,
                 daily,
                 weekly,
+                dailyCategories,
+                weeklyCategories,
                 monthly,
                 records.Length == 0 ? null : records.Max(item => item.ChangedAtUtc));
     }
@@ -184,6 +192,17 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
         new(
             Sum(records, AnalyticsRecordTypes.Income),
             Sum(records, AnalyticsRecordTypes.Expense));
+
+    private static IReadOnlyList<AnalyticsCategoryTotal> BuildCategoryTotals(
+        IEnumerable<AnalyticsRecordProjection> records) =>
+        records
+            .GroupBy(item => item.CategoryId, StringComparer.Ordinal)
+            .OrderBy(category => category.Key, StringComparer.Ordinal)
+            .Select(category => new AnalyticsCategoryTotal(
+                category.Key,
+                Sum(category, AnalyticsRecordTypes.Income),
+                Sum(category, AnalyticsRecordTypes.Expense)))
+            .ToArray();
 
     private static decimal Sum(
         IEnumerable<AnalyticsRecordProjection> records,

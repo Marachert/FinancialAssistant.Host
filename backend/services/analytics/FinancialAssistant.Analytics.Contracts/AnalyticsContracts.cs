@@ -4,6 +4,15 @@ public static class AnalyticsApiRoutes
 {
     public const string Dashboard = "/api/v1/analytics/dashboard";
     public const string GatewayDashboard = "/analytics/dashboard";
+    public const string CategoryBreakdown = "/api/v1/analytics/category-breakdown";
+    public const string GatewayCategoryBreakdown = "/analytics/category-breakdown";
+}
+
+public static class AnalyticsBreakdownPeriods
+{
+    public const string Daily = "daily";
+    public const string Weekly = "weekly";
+    public const string Monthly = "monthly";
 }
 
 public static class AnalyticsGatewayHeaders
@@ -60,6 +69,25 @@ public sealed record AnalyticsDashboardResponse(
     IReadOnlyList<AnalyticsCategoryTotalResponse> CategoryTotals,
     IReadOnlyList<AnalyticsTrendPointResponse> RecentTrend,
     AnalyticsFreshnessResponse Freshness);
+
+public sealed record AnalyticsCategoryBreakdownItemResponse(
+    string CategoryId,
+    decimal IncomeTotal,
+    decimal ExpenseTotal,
+    decimal BalanceDelta,
+    decimal IncomeSharePercent,
+    decimal ExpenseSharePercent);
+
+public sealed record AnalyticsCategoryBreakdownResponse(
+    string Currency,
+    string TimeZoneId,
+    DateOnly ReferenceDate,
+    string Period,
+    DateOnly PeriodStart,
+    DateOnly PeriodEnd,
+    IReadOnlyList<AnalyticsCategoryBreakdownItemResponse> Categories,
+    IReadOnlyList<AnalyticsCategoryBreakdownItemResponse> TopIncomeCategories,
+    IReadOnlyList<AnalyticsCategoryBreakdownItemResponse> TopExpenseCategories);
 
 public sealed record AnalyticsApiErrorResponse(
     string? Title,

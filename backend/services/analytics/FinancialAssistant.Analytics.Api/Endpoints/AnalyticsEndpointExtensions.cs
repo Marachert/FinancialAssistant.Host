@@ -13,6 +13,14 @@ public static class AnalyticsEndpointExtensions
     {
         MapDashboard(app, AnalyticsApiRoutes.Dashboard, "GetAnalyticsDashboard");
         MapDashboard(app, AnalyticsApiRoutes.GatewayDashboard, "GetAnalyticsDashboardFromGateway");
+        MapCategoryBreakdown(
+            app,
+            AnalyticsApiRoutes.CategoryBreakdown,
+            "GetAnalyticsCategoryBreakdown");
+        MapCategoryBreakdown(
+            app,
+            AnalyticsApiRoutes.GatewayCategoryBreakdown,
+            "GetAnalyticsCategoryBreakdownFromGateway");
         return app;
     }
 
@@ -23,6 +31,65 @@ public static class AnalyticsEndpointExtensions
             .Produces<AnalyticsDashboardResponse>()
             .Produces<AnalyticsApiErrorResponse>(StatusCodes.Status400BadRequest)
             .Produces<AnalyticsApiErrorResponse>(StatusCodes.Status401Unauthorized);
+    }
+
+    private static void MapCategoryBreakdown(
+        IEndpointRouteBuilder app,
+        string route,
+        string name)
+    {
+        app.MapGet(route, HandleCategoryBreakdownAsync)
+            .WithName(name)
+            .Produces<AnalyticsCategoryBreakdownResponse>()
+            .Produces<AnalyticsApiErrorResponse>(StatusCodes.Status400BadRequest)
+            .Produces<AnalyticsApiErrorResponse>(StatusCodes.Status401Unauthorized);
+    }
+
+    private static async Task<IResult> HandleCategoryBreakdownAsync(
+        HttpContext httpContext,
+        AnalyticsProjector projector,
+        AnalyticsGatewayAuthenticator authenticator,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        var authenticationError = Authenticate(httpContext, authenticator, out var userId);
+        if (authenticationError is not null)
+        {
+            return authenticationError;
+        }
+
+        try
+        {
+            var currency = ReadRequiredQuery(httpContext, "currency");
+            var timeZoneId = ReadRequiredQuery(httpContext, "timeZoneId");
+            var period = ReadRequiredQuery(httpContext, "period");
+            var referenceDate = ReadOptionalDate(httpContext, "referenceDate");
+            var top = ReadOptionalInteger(httpContext, "top") ?? 5;
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            var localNow = TimeZoneInfo.ConvertTime(timeProvider.GetUtcNow(), timeZone);
+            var effectiveReferenceDate =
+                referenceDate ?? DateOnly.FromDateTime(localNow.DateTime);
+            var result = await projector.GetCategoryBreakdownAsync(
+                AnalyticsOwnerHasher.Hash(userId!),
+                currency,
+                effectiveReferenceDate,
+                period,
+                top,
+                cancellationToken);
+            return Results.Ok(AnalyticsDashboardMapper.Map(result, timeZone.Id));
+        }
+        catch (TimeZoneNotFoundException exception)
+        {
+            return Invalid(httpContext, exception.Message);
+        }
+        catch (InvalidTimeZoneException exception)
+        {
+            return Invalid(httpContext, exception.Message);
+        }
+        catch (ArgumentException exception)
+        {
+            return Invalid(httpContext, exception.Message);
+        }
     }
 
     private static async Task<IResult> HandleDashboardAsync(

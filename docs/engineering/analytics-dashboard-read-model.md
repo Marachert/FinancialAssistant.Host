@@ -1,6 +1,6 @@
 # Analytics Dashboard Read Model
 
-Related Jira: FIN-28, FIN-128.
+Related Jira: FIN-28, FIN-128, FIN-129.
 
 ## Ownership and authority
 
@@ -77,6 +77,20 @@ settings or limits source. Callers cannot submit a limit. Analytics calculates
 spent, non-negative remaining amount, and usage percentage. When the provider has
 no limit, the response explicitly returns `isConfigured = false` and does not
 invent a financial value.
+
+## Category breakdown reports
+
+The category-breakdown read model supports daily, Monday-based weekly, and
+calendar-month periods using the same local reference-date rules as the dashboard.
+Each category returns confirmed-record income, expense, balance delta, and
+separate income/expense percentage shares. Shares use the selected period's total
+for that record type and return zero when the denominator is zero.
+
+All categories are sorted deterministically by combined amount and category ID.
+Top-income and top-expense lists are ranked independently by amount and then
+category ID. Missing or whitespace category IDs are normalized to the stable
+`uncategorized` fallback before projection. Archived records remain available
+for revision ordering but are excluded from every breakdown.
 
 ## Freshness, replay, and failures
 

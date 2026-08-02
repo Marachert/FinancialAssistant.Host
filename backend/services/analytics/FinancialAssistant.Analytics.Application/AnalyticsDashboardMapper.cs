@@ -52,6 +52,38 @@ public static class AnalyticsDashboardMapper
                 readModel.LastEventAtUtc));
     }
 
+    public static AnalyticsCategoryBreakdownResponse Map(
+        AnalyticsCategoryBreakdownReadModel readModel,
+        string timeZoneId)
+    {
+        ArgumentNullException.ThrowIfNull(readModel);
+        if (string.IsNullOrWhiteSpace(timeZoneId))
+        {
+            throw new ArgumentException("Time zone is required.", nameof(timeZoneId));
+        }
+
+        return new AnalyticsCategoryBreakdownResponse(
+            readModel.Currency,
+            timeZoneId.Trim(),
+            readModel.ReferenceDate,
+            readModel.Period,
+            readModel.PeriodStart,
+            readModel.PeriodEnd,
+            readModel.Categories.Select(MapCategory).ToArray(),
+            readModel.TopIncomeCategories.Select(MapCategory).ToArray(),
+            readModel.TopExpenseCategories.Select(MapCategory).ToArray());
+    }
+
+    private static AnalyticsCategoryBreakdownItemResponse MapCategory(
+        AnalyticsCategoryBreakdownItem item) =>
+        new(
+            item.CategoryId,
+            item.Income,
+            item.Expense,
+            item.BalanceDelta,
+            item.IncomeSharePercent,
+            item.ExpenseSharePercent);
+
     private static AnalyticsPeriodSummaryResponse MapPeriodSummary(
         AnalyticsPeriodSummary summary) =>
         new(
