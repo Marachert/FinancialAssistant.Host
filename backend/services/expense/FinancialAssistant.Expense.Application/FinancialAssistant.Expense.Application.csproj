@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.Expense.Contracts/FinancialAssistant.Expense.Contracts.csproj" />
     <ProjectReference Include="../FinancialAssistant.Expense.Domain/FinancialAssistant.Expense.Domain.csproj" />
     <ProjectReference Include="../../transaction-intake/FinancialAssistant.TransactionIntake.Contracts/FinancialAssistant.TransactionIntake.Contracts.csproj" />
   </ItemGroup>
