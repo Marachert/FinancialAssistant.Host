@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.Income.Contracts/FinancialAssistant.Income.Contracts.csproj" />
     <ProjectReference Include="../FinancialAssistant.Income.Domain/FinancialAssistant.Income.Domain.csproj" />
     <ProjectReference Include="../../transaction-intake/FinancialAssistant.TransactionIntake.Contracts/FinancialAssistant.TransactionIntake.Contracts.csproj" />
   </ItemGroup>
