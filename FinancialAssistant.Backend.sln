@@ -140,6 +140,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Financia
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.FinancialSummary.Tests", "backend\services\financial-summary\FinancialAssistant.FinancialSummary.Tests\FinancialAssistant.FinancialSummary.Tests.csproj", "{F1000001-0000-4A00-A100-000000000004}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.FinancialSummary.Contracts", "backend\services\financial-summary\FinancialAssistant.FinancialSummary.Contracts\FinancialAssistant.FinancialSummary.Contracts.csproj", "{F1010001-0000-4A00-A101-000000000001}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -410,6 +412,10 @@ Global
 		{F1000001-0000-4A00-A100-000000000004}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F1000001-0000-4A00-A100-000000000004}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F1000001-0000-4A00-A100-000000000004}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1010001-0000-4A00-A101-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1010001-0000-4A00-A101-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1010001-0000-4A00-A101-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1010001-0000-4A00-A101-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7AC3F48D-624D-4E99-8B8A-4D491602CEE2} = {FB7E6B6E-BA1A-4D09-96DE-E4179EB6DA47}
