@@ -1,4 +1,6 @@
 using FinancialAssistant.Analytics.Application;
+using FinancialAssistant.Analytics.Contracts;
+using FinancialAssistant.Analytics.Domain;
 using FinancialAssistant.Analytics.Infrastructure;
 using FinancialAssistant.Shared.Contracts.Events;
 using Xunit;
