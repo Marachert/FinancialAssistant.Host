@@ -49,6 +49,12 @@ Financial summary projection baseline:
 docs/engineering/financial-summary-read-model.md
 ```
 
+Financial core validation coverage:
+
+```text
+docs/engineering/financial-core-validation-test-plan.md
+```
+
 ## Canonical folders
 
 ```text
