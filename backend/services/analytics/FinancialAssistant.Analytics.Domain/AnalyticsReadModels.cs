@@ -27,7 +27,7 @@ public sealed record AnalyticsRecordProjection(
 
 public sealed record AnalyticsProjectionWriteOutcome(
     bool Accepted,
-    string? PreviousCurrency);
+    IReadOnlyList<string> PendingPublicationCurrencies);
 
 public sealed record AnalyticsAggregateTotals(decimal Income, decimal Expense)
 {

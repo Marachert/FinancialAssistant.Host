@@ -8,6 +8,12 @@ public interface IAnalyticsReadModelStore
         AnalyticsRecordProjection projection,
         CancellationToken cancellationToken);
 
+    Task MarkPublicationCompletedAsync(
+        string sourceEventId,
+        string userIdHash,
+        string currency,
+        CancellationToken cancellationToken);
+
     Task<AnalyticsProjectionSnapshot> GetAsync(
         string userIdHash,
         string currency,

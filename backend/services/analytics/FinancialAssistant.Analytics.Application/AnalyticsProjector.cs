@@ -10,13 +10,16 @@ public sealed class AnalyticsProjector
     private const int MaximumTrendDays = 31;
     private readonly IAnalyticsReadModelStore store;
     private readonly IAnalyticsEventPublisher? publisher;
+    private readonly IAnalyticsDailyLimitProvider? dailyLimitProvider;
 
     public AnalyticsProjector(
         IAnalyticsReadModelStore store,
-        IAnalyticsEventPublisher? publisher = null)
+        IAnalyticsEventPublisher? publisher = null,
+        IAnalyticsDailyLimitProvider? dailyLimitProvider = null)
     {
         this.store = store;
         this.publisher = publisher;
+        this.dailyLimitProvider = dailyLimitProvider;
     }
 
     public async Task ApplyAsync(
@@ -42,27 +45,38 @@ public sealed class AnalyticsProjector
                 payload.ChangedAtUtc.ToUniversalTime(),
                 envelope.EventId),
             cancellationToken);
-        if (!outcome.Accepted || publisher is null)
+        if (outcome.PendingPublicationCurrencies.Count == 0)
         {
             return;
         }
 
-        var affectedCurrencies = new HashSet<string>(StringComparer.Ordinal)
+        if (publisher is null)
         {
-            payload.Currency.ToUpperInvariant()
-        };
-        if (!string.IsNullOrWhiteSpace(outcome.PreviousCurrency))
-        {
-            affectedCurrencies.Add(outcome.PreviousCurrency.ToUpperInvariant());
+            foreach (var currency in outcome.PendingPublicationCurrencies)
+            {
+                await store.MarkPublicationCompletedAsync(
+                    envelope.EventId,
+                    envelope.UserIdHash!,
+                    currency,
+                    cancellationToken);
+            }
+
+            return;
         }
 
-        foreach (var currency in affectedCurrencies.OrderBy(item => item, StringComparer.Ordinal))
+        var reportingDate = DateOnly.FromDateTime(payload.ChangedAtUtc.UtcDateTime);
+        foreach (var currency in outcome.PendingPublicationCurrencies)
         {
             await PublishUpdatedAsync(
                 envelope,
                 currency,
-                payload.Date,
+                reportingDate,
                 payload.ChangedAtUtc,
+                cancellationToken);
+            await store.MarkPublicationCompletedAsync(
+                envelope.EventId,
+                envelope.UserIdHash!,
+                currency,
                 cancellationToken);
         }
     }
@@ -198,6 +212,13 @@ public sealed class AnalyticsProjector
             .OrderByDescending(item => item.Expense)
             .ThenBy(item => item.CategoryId, StringComparer.Ordinal)
             .FirstOrDefault()?.CategoryId;
+        var dailyExpenseLimit = dailyLimitProvider is null
+            ? null
+            : await dailyLimitProvider.GetDailyExpenseLimitAsync(
+                source.UserIdHash!,
+                currency,
+                referenceDate,
+                cancellationToken);
         var eventId = StableId("analytics-updated", source.EventId, currency);
         await publisher!.PublishAsync(
             new IntegrationEventEnvelope<AnalyticsUpdatedV1>(
@@ -215,7 +236,7 @@ public sealed class AnalyticsProjector
                     referenceDate,
                     monthly?.Totals.Income ?? 0m,
                     monthly?.Totals.Expense ?? 0m,
-                    DailyExpenseLimit: null,
+                    dailyExpenseLimit,
                     daily?.Expense ?? 0m,
                     topExpenseCategory,
                     updatedAtUtc)),

@@ -17,6 +17,12 @@ No provider is enabled in v1.
 
 ## Event flow
 
+The Analytics projector publishes the current UTC reporting date after each
+accepted financial-record change, including when the changed record belongs to
+an older period. It resolves the backend-owned daily limit for that reporting
+date. Process-local pending publication scopes retain failed currency events so
+a financial-event retry republishes only the unconfirmed scopes.
+
 1. Recommendation Service consumes `analytics.updated.v1` or
    `score.calculated.v1`.
 2. Accepted events update an owner/currency insight snapshot.
