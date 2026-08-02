@@ -35,7 +35,7 @@ public sealed class IncomeServiceBaselineTests : IClassFixture<IncomeWebApplicat
         Assert.Equal("running", response.Status);
         Assert.Equal("Testing", response.Environment);
         Assert.Equal("in-memory", response.StorageProvider);
-        Assert.Equal("confirmed_transaction", response.AuthoritativeInput);
+        Assert.Equal("confirmed_or_manual", response.AuthoritativeInput);
     }
 
     [Fact]
