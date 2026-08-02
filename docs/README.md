@@ -37,6 +37,12 @@ docs/events/rabbitmq-topology.md
 docs/events/event-contract-versioning.md
 ```
 
+Canonical financial calculation policy:
+
+```text
+docs/architecture/financial-source-of-truth.md
+```
+
 ## Canonical folders
 
 ```text
