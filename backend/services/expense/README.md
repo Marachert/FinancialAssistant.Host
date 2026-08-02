@@ -1,82 +1,75 @@
 # Financial Assistant Expense Service
 
-.NET 8 Expense Service baseline for FIN-22 and FIN-96.
+.NET 8 Expense Service for FIN-22, FIN-94, and FIN-95.
 
 ## Responsibility
 
-Expense Service owns confirmed expense records and deterministic spending totals derived from them. It does not own transaction parsing, draft review, income records, category definitions, reports, limits, OCR, or LLM output.
+Expense Service owns confirmed expense records and deterministic active-expense totals. It does not own transaction parsing, draft review, expense records, categories, balances, reports, OCR, or LLM output.
 
-The current aggregate records:
+Authoritative records have one of two origins:
 
-- transaction and source-draft identifiers;
-- owning user identifier;
-- positive amount and ISO currency;
-- Expense-category identifier;
-- optional merchant;
-- effective date;
-- confirmation timestamp.
+- `confirmed_transaction`, created idempotently from a validated `transaction.confirmed.v1` expense event;
+- `manual`, created by the authenticated owner through the Expense API.
 
-Only a validated `transaction.confirmed.v1` event with transaction type `expense` may create the initial authoritative record. Raw AI or OCR output is suggestion-only and is never accepted as Expense source of truth.
+Raw AI and OCR output remains suggestion-only and is never accepted as Expense source of truth.
 
-## Service projects
+## API
+
+Canonical routes:
 
 ```text
-FinancialAssistant.Expense.Api
-FinancialAssistant.Expense.Application
-FinancialAssistant.Expense.Contracts
-FinancialAssistant.Expense.Domain
-FinancialAssistant.Expense.Infrastructure
-FinancialAssistant.Expense.Tests
+POST /api/v1/expenses
+GET  /api/v1/expenses?from=YYYY-MM-DD&to=YYYY-MM-DD&includeArchived=false
+GET  /api/v1/expenses/{expenseId}
+PUT  /api/v1/expenses/{expenseId}
+POST /api/v1/expenses/{expenseId}/archive
+POST /api/v1/expenses/{expenseId}/restore
+GET  /expense/info
+GET  /health
+GET  /health/live
+GET  /health/ready
 ```
 
-The API project is the HTTP composition root. Application owns use-case ports and confirmation consumption, Domain owns the aggregate, Contracts owns stable transport models, and Infrastructure owns storage and event adapters.
+Equivalent `/expenses` gateway routes reach the same handlers. Financial routes require one trusted `X-Gateway-Authentication` value and an `X-Gateway-User-Id` established by the gateway. A record owned by another user is indistinguishable from a missing record.
 
-## Baseline API
+Development and Testing expose OpenAPI at `/openapi/v1.json`.
 
-```text
-GET /expense/info
-GET /health
-GET /health/live
-GET /health/ready
-```
+## Validation
 
-Development and Testing expose OpenAPI at `/openapi/v1.json`. FIN-96 intentionally does not expose expense CRUD routes; FIN-97 owns those commands, validation responses, authentication integration, and user-facing resource contracts.
+Application validation is deterministic:
 
-## Lifecycle definition
+- amount must be positive, bounded, and rounds to two decimal places;
+- currency must be EUR, GBP, UAH, or USD;
+- category identifiers must match the `expense.*` namespace and stable identifier shape;
+- merchant text is whitespace-normalized and limited to 120 characters;
+- dates must be within ten years before today and 366 days after today;
+- list periods must be ordered and no longer than ten years.
 
-The planned command lifecycle is deterministic:
+Invalid requests return `400 invalid_expense_request` before storage changes. Expense validates category contract shape locally and must use a stable Category Service contract or versioned projection when user-created category validation is introduced; it never reads Category storage directly.
 
-1. **Create** accepts only a confirmed transaction request or trusted confirmed event and deduplicates by transaction identifier.
-2. **Update** preserves owner and source transaction identity, validates every replacement financial value, and advances optimistic concurrency state.
-3. **Archive** is a reversible soft transition. Archived records remain auditable but are excluded from active spending totals.
-4. **Restore** returns an archived record to active totals after current category and financial values pass validation.
-5. Physical deletion is not part of the normal financial lifecycle.
+## Lifecycle and totals
 
-FIN-97 will implement the CRUD command surface. Until then, the existing confirmed-event consumer is the only write path and the in-memory record is active by definition.
+Manual creation stores an active authoritative record. Updates preserve owner, record identity, origin, source-draft reference, and confirmation timestamp while advancing the revision.
 
-## Category validation
+Archive and restore are idempotent reversible transitions:
 
-Expense category identifiers must use the `expense.` namespace. The application will validate category ownership through a stable Category Service contract or a service-owned validated projection. Expense must never read Category storage directly.
+- archived records remain auditable and cannot be updated;
+- archived records are excluded from list results by default;
+- `includeArchived=true` includes them in records but never in active totals;
+- restore revalidates the stored financial fields before returning the record to active totals;
+- physical deletion is not part of the first-release financial lifecycle.
 
-A category failure must reject the command before an Expense write. Temporary Category Service unavailability must fail closed or use an explicitly versioned local projection; it must not silently accept an unknown category.
+List results group active totals by currency so unlike currencies are never summed together.
 
-## Storage layout
+## Storage
 
-The development adapter stores records in memory so CI can exercise the confirmed-event boundary without production infrastructure.
+The development adapter is an owner-scoped in-memory store with atomic create and compare-and-replace updates. Confirmed events remain idempotent by transaction identifier.
 
-The durable adapter will use Expense-owned PostgreSQL storage with logical tables for:
-
-- `expense_records`, including owner, financial values, lifecycle status, revision, and audit timestamps;
-- `expense_event_inbox` for idempotent confirmed-event consumption;
-- `expense_event_outbox` for atomic publication after owned state changes.
-
-Indexes will support owner/date queries, owner/status totals, category reporting, and unique transaction/source identifiers. Other services must use Expense APIs or events and must not query these tables.
-
-Spending totals include only active, confirmed records for the requested owner and currency. Drafts, rejected drafts, archived records, raw AI or OCR output, and failed event deliveries contribute nothing.
+The durable adapter will use Expense-owned PostgreSQL storage with logical `expense_records`, `expense_event_inbox`, and `expense_event_outbox` tables. Other services must use Expense APIs or events and must not query these tables.
 
 ## Planned events
 
-FIN-99 owns implementation of service-owned change publication. The planned versioned events are:
+FIN-99 owns publication of:
 
 ```text
 expense.created.v1
@@ -85,7 +78,7 @@ expense.archived.v1
 expense.restored.v1
 ```
 
-Events will contain stable identifiers and the minimum consumer data required. They will not include raw intake text, prompts, OCR payloads, credentials, or idempotency keys.
+Events will contain minimum required stable data and exclude raw intake text, prompts, OCR payloads, credentials, and idempotency keys.
 
 ## Verification
 
@@ -95,3 +88,5 @@ dotnet build FinancialAssistant.Backend.sln --no-restore --configuration Release
 dotnet test FinancialAssistant.Backend.sln --no-build --configuration Release
 dotnet run --project backend/services/expense/FinancialAssistant.Expense.Api/FinancialAssistant.Expense.Api.csproj
 ```
+
+Set `Expense__Gateway__SharedSecret` to an environment-backed value of at least 32 characters before starting the API.
