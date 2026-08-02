@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FinancialAssistant.Income.Contracts;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Xunit;
 
 namespace FinancialAssistant.Income.Tests;
 
