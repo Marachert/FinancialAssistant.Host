@@ -43,6 +43,12 @@ Canonical financial calculation policy:
 docs/architecture/financial-source-of-truth.md
 ```
 
+Financial core ownership and interaction boundaries:
+
+```text
+docs/architecture/financial-core-service-boundaries.md
+```
+
 Financial summary projection baseline:
 
 ```text
