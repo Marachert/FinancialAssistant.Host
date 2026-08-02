@@ -85,17 +85,24 @@ public static class FinancialScoreEndpointExtensions
         {
             var limit = ReadOptionalInteger(context, "limit") ?? 20;
             var beforeUtc = ReadOptionalTimestamp(context, "beforeUtc");
+            var beforeCalculationId = ReadOptionalQuery(context, "beforeCalculationId");
             var history = await service.GetHistoryAsync(
                 FinancialScoreOwnerHasher.Hash(userId!),
                 ReadRequiredQuery(context, "currency"),
                 beforeUtc,
+                beforeCalculationId,
                 limit,
                 cancellationToken);
+            var items = history.Take(limit).Select(Map).ToArray();
+            var hasMore = history.Count > limit;
+            var next = hasMore ? items[^1] : null;
             return Results.Ok(
                 new FinancialScoreHistoryResponse(
-                    history.Take(limit).Select(Map).ToArray(),
+                    items,
                     limit,
-                    history.Count > limit));
+                    hasMore,
+                    next?.CalculatedAtUtc,
+                    next?.CalculationId));
         }
         catch (ArgumentException exception)
         {
@@ -136,6 +143,12 @@ public static class FinancialScoreEndpointExtensions
         return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var result)
             ? result
             : throw new ArgumentException($"Query parameter '{name}' must be an integer.");
+    }
+
+    private static string? ReadOptionalQuery(HttpContext context, string name)
+    {
+        var value = context.Request.Query[name].FirstOrDefault()?.Trim();
+        return string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
     private static DateTimeOffset? ReadOptionalTimestamp(HttpContext context, string name)

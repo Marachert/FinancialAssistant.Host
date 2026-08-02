@@ -64,3 +64,7 @@ public enum FinancialScoreProjectionWriteResult
     Duplicate,
     Stale
 }
+
+public sealed record FinancialScoreProjectionWriteOutcome(
+    FinancialScoreProjectionWriteResult Result,
+    string? PreviousCurrency);

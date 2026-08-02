@@ -73,6 +73,20 @@ public sealed class FinancialScoreEndpointTests :
         Assert.NotNull(history);
         Assert.Single(history.Items);
         Assert.True(history.HasMore);
+        Assert.NotNull(history.NextBeforeUtc);
+        Assert.False(string.IsNullOrWhiteSpace(history.NextBeforeCalculationId));
+
+        using var nextHistoryRequest = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"{FinancialScoreApiRoutes.GatewayHistory}?currency=USD&limit=1&beforeUtc={Uri.EscapeDataString(history.NextBeforeUtc.Value.ToString("O"))}&beforeCalculationId={Uri.EscapeDataString(history.NextBeforeCalculationId)}");
+        AddTrustedHeaders(nextHistoryRequest, userId);
+        using var nextHistoryResponse = await client.SendAsync(nextHistoryRequest);
+        var nextHistory = await nextHistoryResponse.Content
+            .ReadFromJsonAsync<FinancialScoreHistoryResponse>();
+        Assert.Equal(HttpStatusCode.OK, nextHistoryResponse.StatusCode);
+        Assert.NotNull(nextHistory);
+        Assert.Single(nextHistory.Items);
+        Assert.NotEqual(history.Items[0].CalculationId, nextHistory.Items[0].CalculationId);
     }
 
     [Fact]

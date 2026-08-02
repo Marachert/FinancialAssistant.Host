@@ -36,9 +36,13 @@ expense.archived.v1
 expense.restored.v1
 ```
 
-Record type, record ID, owner hash, currency, status, and revision form the idempotent projection boundary. Lower or equal non-identical revisions are ignored. A replay of the same event returns the previously stored calculation and republishes the same deterministic score event ID, allowing downstream inbox deduplication after a transient publish failure.
+Record type, record ID, owner hash, currency, status, and revision form the idempotent projection boundary. Lower or equal non-identical revisions are ignored. A replay lookup occurs before revision rejection, so an old event can still republish its stored deterministic score event after a newer revision has arrived. This allows downstream inbox deduplication and publish recovery without reverting current projection state.
+
+When an update moves a record between currencies, the event produces separate recalculations for the old and new currency scopes. Current-score selection follows the latest accepted calculation for a scope, independent of source timestamps, because different financial event families have no global delivery order. History remains ordered by source calculation time and a calculation-ID tie-breaker.
 
 Each accepted new revision appends one history item and publishes `score.calculated.v1`. The payload contains no raw user identity, record ID, category, merchant, OCR text, prompt, or unrestricted model output.
+
+Transient consumer failures use the repository baseline of three durable delayed retries at 5 seconds, 30 seconds, and 5 minutes through `fa.retry`. The input delivery is acknowledged only after the retry publish is confirmed. Validation failures and exhausted retries route to the terminal dead-letter queue.
 
 ## POC persistence
 

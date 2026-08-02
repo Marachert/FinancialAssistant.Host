@@ -33,40 +33,67 @@ public sealed class FinancialScoreService
         try
         {
             Validate(envelope);
+            var replayCalculations = await store.GetBySourceEventIdAsync(
+                envelope.EventId,
+                cancellationToken);
+            if (replayCalculations.Count > 0)
+            {
+                foreach (var replayCalculation in replayCalculations)
+                {
+                    await publisher.PublishAsync(
+                        MapEvent(envelope, replayCalculation),
+                        cancellationToken);
+                }
+
+                return replayCalculations.FirstOrDefault(item =>
+                    item.Currency == envelope.Payload.Currency.ToUpperInvariant()) ??
+                    replayCalculations[0];
+            }
+
             var projection = MapProjection(envelope);
-            var writeResult = await store.UpsertProjectionAsync(projection, cancellationToken);
-            if (writeResult == FinancialScoreProjectionWriteResult.Stale)
+            var writeOutcome = await store.UpsertProjectionAsync(projection, cancellationToken);
+            if (writeOutcome.Result == FinancialScoreProjectionWriteResult.Stale)
             {
                 return null;
             }
 
-            FinancialScoreCalculation calculation;
-            if (writeResult == FinancialScoreProjectionWriteResult.Duplicate)
+            if (writeOutcome.Result == FinancialScoreProjectionWriteResult.Duplicate)
             {
-                calculation = await store.GetBySourceEventIdAsync(
-                    envelope.EventId,
-                    cancellationToken) ?? throw new InvalidOperationException(
+                throw new InvalidOperationException(
                         "A duplicate financial event has no stored score calculation.");
             }
-            else
+
+            var currencies = new[]
+            {
+                writeOutcome.PreviousCurrency,
+                envelope.Payload.Currency.ToUpperInvariant()
+            }
+                .Where(item => !string.IsNullOrWhiteSpace(item))
+                .Distinct(StringComparer.Ordinal)
+                .Cast<string>()
+                .ToArray();
+            var calculations = new List<FinancialScoreCalculation>(currencies.Length);
+            foreach (var currency in currencies)
             {
                 var snapshot = await store.GetSnapshotAsync(
                     envelope.UserIdHash!,
-                    envelope.Payload.Currency,
+                    currency,
                     cancellationToken);
-                calculation = calculator.Calculate(
-                    CreateDeterministicId("score", envelope.EventId),
+                var calculation = calculator.Calculate(
+                    CreateDeterministicId("score", $"{envelope.EventId}|{currency}"),
                     envelope.EventId,
                     envelope.UserIdHash!,
-                    envelope.Payload.Currency,
+                    currency,
                     snapshot.Records,
                     semanticFactors,
                     envelope.Payload.ChangedAtUtc);
                 await store.SaveCalculationAsync(calculation, cancellationToken);
+                await publisher.PublishAsync(MapEvent(envelope, calculation), cancellationToken);
+                calculations.Add(calculation);
             }
 
-            await publisher.PublishAsync(MapEvent(envelope, calculation), cancellationToken);
-            return calculation;
+            return calculations.Single(item =>
+                item.Currency == envelope.Payload.Currency.ToUpperInvariant());
         }
         finally
         {
@@ -87,6 +114,7 @@ public sealed class FinancialScoreService
         string userIdHash,
         string currency,
         DateTimeOffset? beforeUtc,
+        string? beforeCalculationId,
         int limit,
         CancellationToken cancellationToken)
     {
@@ -95,10 +123,17 @@ public sealed class FinancialScoreService
             throw new ArgumentOutOfRangeException(nameof(limit), "Limit must be between 1 and 100.");
         }
 
+        if ((beforeUtc is null) != string.IsNullOrWhiteSpace(beforeCalculationId))
+        {
+            throw new ArgumentException(
+                "History cursor timestamp and calculation ID must be supplied together.");
+        }
+
         return store.GetHistoryAsync(
             NormalizeRequired(userIdHash, nameof(userIdHash)),
             NormalizeCurrency(currency),
             beforeUtc?.ToUniversalTime(),
+            beforeCalculationId?.Trim(),
             limit + 1,
             cancellationToken);
     }

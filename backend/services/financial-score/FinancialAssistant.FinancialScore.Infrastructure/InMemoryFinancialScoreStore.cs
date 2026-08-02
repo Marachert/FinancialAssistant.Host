@@ -10,8 +10,10 @@ public sealed class InMemoryFinancialScoreStore : IFinancialScoreStore
         new(StringComparer.Ordinal);
     private readonly Dictionary<string, FinancialScoreCalculation> calculationsBySourceEvent =
         new(StringComparer.Ordinal);
+    private readonly Dictionary<string, FinancialScoreCalculation> currentByScope =
+        new(StringComparer.Ordinal);
 
-    public Task<FinancialScoreProjectionWriteResult> UpsertProjectionAsync(
+    public Task<FinancialScoreProjectionWriteOutcome> UpsertProjectionAsync(
         FinancialScoreRecordProjection projection,
         CancellationToken cancellationToken)
     {
@@ -24,17 +26,27 @@ public sealed class InMemoryFinancialScoreStore : IFinancialScoreStore
             {
                 if (current.EventId == projection.EventId)
                 {
-                    return Task.FromResult(FinancialScoreProjectionWriteResult.Duplicate);
+                    return Task.FromResult(
+                        new FinancialScoreProjectionWriteOutcome(
+                            FinancialScoreProjectionWriteResult.Duplicate,
+                            current.Currency));
                 }
 
                 if (current.Revision >= projection.Revision)
                 {
-                    return Task.FromResult(FinancialScoreProjectionWriteResult.Stale);
+                    return Task.FromResult(
+                        new FinancialScoreProjectionWriteOutcome(
+                            FinancialScoreProjectionWriteResult.Stale,
+                            current.Currency));
                 }
             }
 
+            var previousCurrency = current?.Currency;
             projections[key] = projection;
-            return Task.FromResult(FinancialScoreProjectionWriteResult.Applied);
+            return Task.FromResult(
+                new FinancialScoreProjectionWriteOutcome(
+                    FinancialScoreProjectionWriteResult.Applied,
+                    previousCurrency));
         }
     }
 
@@ -68,20 +80,28 @@ public sealed class InMemoryFinancialScoreStore : IFinancialScoreStore
         cancellationToken.ThrowIfCancellationRequested();
         lock (gate)
         {
-            calculationsBySourceEvent.TryAdd(calculation.SourceEventId, calculation);
+            var key = CalculationKey(calculation.SourceEventId, calculation.Currency);
+            if (calculationsBySourceEvent.TryAdd(key, calculation))
+            {
+                currentByScope[ScopeKey(calculation.UserIdHash, calculation.Currency)] = calculation;
+            }
         }
 
         return Task.CompletedTask;
     }
 
-    public Task<FinancialScoreCalculation?> GetBySourceEventIdAsync(
+    public Task<IReadOnlyList<FinancialScoreCalculation>> GetBySourceEventIdAsync(
         string sourceEventId,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         lock (gate)
         {
-            return Task.FromResult(calculationsBySourceEvent.GetValueOrDefault(sourceEventId));
+            IReadOnlyList<FinancialScoreCalculation> result = calculationsBySourceEvent.Values
+                .Where(item => item.SourceEventId == sourceEventId)
+                .OrderBy(item => item.Currency, StringComparer.Ordinal)
+                .ToArray();
+            return Task.FromResult(result);
         }
     }
 
@@ -94,10 +114,7 @@ public sealed class InMemoryFinancialScoreStore : IFinancialScoreStore
         lock (gate)
         {
             return Task.FromResult(
-                Query(userIdHash, currency)
-                    .OrderByDescending(item => item.CalculatedAtUtc)
-                    .ThenByDescending(item => item.CalculationId, StringComparer.Ordinal)
-                    .FirstOrDefault());
+                currentByScope.GetValueOrDefault(ScopeKey(userIdHash, currency)));
         }
     }
 
@@ -105,6 +122,7 @@ public sealed class InMemoryFinancialScoreStore : IFinancialScoreStore
         string userIdHash,
         string currency,
         DateTimeOffset? beforeUtc,
+        string? beforeCalculationId,
         int limit,
         CancellationToken cancellationToken)
     {
@@ -112,7 +130,7 @@ public sealed class InMemoryFinancialScoreStore : IFinancialScoreStore
         lock (gate)
         {
             IReadOnlyList<FinancialScoreCalculation> result = Query(userIdHash, currency)
-                .Where(item => beforeUtc is null || item.CalculatedAtUtc < beforeUtc.Value)
+                .Where(item => IsBeforeCursor(item, beforeUtc, beforeCalculationId))
                 .OrderByDescending(item => item.CalculatedAtUtc)
                 .ThenByDescending(item => item.CalculationId, StringComparer.Ordinal)
                 .Take(limit)
@@ -128,4 +146,25 @@ public sealed class InMemoryFinancialScoreStore : IFinancialScoreStore
 
     private static string ProjectionKey(FinancialScoreRecordProjection projection) =>
         $"{projection.UserIdHash}|{projection.RecordType}|{projection.RecordId}";
+
+    private static string CalculationKey(string sourceEventId, string currency) =>
+        $"{sourceEventId}|{currency.ToUpperInvariant()}";
+
+    private static string ScopeKey(string userIdHash, string currency) =>
+        $"{userIdHash}|{currency.ToUpperInvariant()}";
+
+    private static bool IsBeforeCursor(
+        FinancialScoreCalculation calculation,
+        DateTimeOffset? beforeUtc,
+        string? beforeCalculationId)
+    {
+        if (beforeUtc is null)
+        {
+            return true;
+        }
+
+        return calculation.CalculatedAtUtc < beforeUtc.Value ||
+            (calculation.CalculatedAtUtc == beforeUtc.Value &&
+             string.CompareOrdinal(calculation.CalculationId, beforeCalculationId) < 0);
+    }
 }

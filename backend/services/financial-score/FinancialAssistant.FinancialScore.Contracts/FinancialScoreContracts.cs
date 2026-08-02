@@ -30,7 +30,9 @@ public sealed record FinancialScoreResponse(
 public sealed record FinancialScoreHistoryResponse(
     IReadOnlyList<FinancialScoreResponse> Items,
     int Limit,
-    bool HasMore);
+    bool HasMore,
+    DateTimeOffset? NextBeforeUtc,
+    string? NextBeforeCalculationId);
 
 public sealed record FinancialScoreApiErrorResponse(
     string? Title,

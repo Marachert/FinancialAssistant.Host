@@ -5,7 +5,7 @@ namespace FinancialAssistant.FinancialScore.Application;
 
 public interface IFinancialScoreStore
 {
-    Task<FinancialScoreProjectionWriteResult> UpsertProjectionAsync(
+    Task<FinancialScoreProjectionWriteOutcome> UpsertProjectionAsync(
         FinancialScoreRecordProjection projection,
         CancellationToken cancellationToken);
 
@@ -18,7 +18,7 @@ public interface IFinancialScoreStore
         FinancialScoreCalculation calculation,
         CancellationToken cancellationToken);
 
-    Task<FinancialScoreCalculation?> GetBySourceEventIdAsync(
+    Task<IReadOnlyList<FinancialScoreCalculation>> GetBySourceEventIdAsync(
         string sourceEventId,
         CancellationToken cancellationToken);
 
@@ -31,6 +31,7 @@ public interface IFinancialScoreStore
         string userIdHash,
         string currency,
         DateTimeOffset? beforeUtc,
+        string? beforeCalculationId,
         int limit,
         CancellationToken cancellationToken);
 }

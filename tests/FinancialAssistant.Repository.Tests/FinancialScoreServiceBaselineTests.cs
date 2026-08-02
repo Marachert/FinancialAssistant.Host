@@ -57,6 +57,8 @@ public sealed class FinancialScoreServiceBaselineTests
 
         Assert.Contains("FinancialRecordChangedV1", service, StringComparison.Ordinal);
         Assert.Contains("BasicConsumeAsync", consumer, StringComparison.Ordinal);
+        Assert.Contains("FinancialScoreRetryPolicy.TryGetNext", consumer, StringComparison.Ordinal);
+        Assert.Contains("options.RetryExchange", consumer, StringComparison.Ordinal);
         Assert.Contains("fa.financial-score.financial-events.v1", Read(
             "backend/services/financial-score/FinancialAssistant.FinancialScore.Infrastructure/FinancialScoreServiceOptions.cs"), StringComparison.Ordinal);
         Assert.Contains("score.calculated.v1", sharedEvent, StringComparison.Ordinal);

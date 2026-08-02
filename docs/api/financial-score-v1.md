@@ -22,10 +22,10 @@ The endpoint returns `404 financial_score_not_found` until a confirmed financial
 ## Score history
 
 ```http
-GET /api/v1/financial-score/history?currency=USD&limit=20&beforeUtc=2026-08-20T12:00:00Z
-GET /financial-score/history?currency=USD&limit=20&beforeUtc=2026-08-20T12:00:00Z
+GET /api/v1/financial-score/history?currency=USD&limit=20&beforeUtc=2026-08-20T12:00:00Z&beforeCalculationId=score-example
+GET /financial-score/history?currency=USD&limit=20&beforeUtc=2026-08-20T12:00:00Z&beforeCalculationId=score-example
 ```
 
-`limit` defaults to 20 and must be from 1 through 100. `beforeUtc` is an optional exclusive ISO 8601 cursor. Results are newest first and return `items`, the effective `limit`, and `hasMore`.
+`limit` defaults to 20 and must be from 1 through 100. The optional cursor is the pair `beforeUtc` and `beforeCalculationId`; both values must be supplied together. This composite cursor retains calculations that share a timestamp. Results are newest first and return `items`, the effective `limit`, `hasMore`, `nextBeforeUtc`, and `nextBeforeCalculationId`.
 
 The contract never exposes owner hashes, source financial record IDs, source event IDs, revisions, category/merchant text, or semantic-provider content.
