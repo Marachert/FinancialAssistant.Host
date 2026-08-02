@@ -110,7 +110,7 @@ public sealed class FinancialSummaryProjector
                 Sum(group, FinancialRecordTypes.Income),
                 Sum(group, FinancialRecordTypes.Expense)))
             .ToArray();
-        var lastEventAtUtc = records.Count == 0
+        DateTimeOffset? lastEventAtUtc = records.Count == 0
             ? null
             : records.Max(record => record.ChangedAtUtc);
         var normalizedAsOfUtc = asOfUtc.ToUniversalTime();
