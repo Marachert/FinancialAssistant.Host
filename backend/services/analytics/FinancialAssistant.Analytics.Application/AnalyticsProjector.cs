@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using FinancialAssistant.Analytics.Contracts;
 using FinancialAssistant.Analytics.Domain;
 using FinancialAssistant.Shared.Contracts.Events;
 
