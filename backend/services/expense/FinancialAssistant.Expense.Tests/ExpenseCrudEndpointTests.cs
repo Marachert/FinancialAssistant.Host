@@ -24,7 +24,7 @@ public sealed class ExpenseCrudEndpointTests : IClassFixture<ExpenseWebApplicati
                 1250.129m,
                 "usd",
                 "expense.groceries",
-                "  Synthetic   Employer ",
+                "  Synthetic   Market ",
                 DateOnly.FromDateTime(DateTime.UtcNow)));
 
         Assert.Equal("active", created.Status);
