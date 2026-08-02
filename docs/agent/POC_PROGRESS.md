@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-02T13:20:30+03:00
+Last updated: 2026-08-02T13:33:30+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-102 closure is **62.8%**:
-**123 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-103 closure is **63.3%**:
+**124 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,14 +13,14 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-102 - Add financial core validation and edge case test plan
+- FIN-103 - Document financial core service boundaries
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/115
+  https://github.com/Marachert/FinancialAssistant.Host/pull/117
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/af73e7837987ad9a61d96eb7f0f1b438eae5753e
-- previous readiness: 122 / 196, or 62.2%
-- current readiness: 123 / 196, or 62.8%
-- change: +0.6 percentage points
+  https://github.com/Marachert/FinancialAssistant.Host/commit/062ac02538329a9f74c4d0a0a041ace422b8eee4
+- previous readiness: 123 / 196, or 62.8%
+- current readiness: 124 / 196, or 63.3%
+- change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
 duplicate of FIN-124. Closing either duplicate does not change the numerator or
@@ -28,16 +28,16 @@ denominator.
 
 Current delivery:
 
-- FIN-102 is Done after PR #115 added the financial-core validation test plan
-- 66 stable cases cover amount, currency, timezones, duplicates, concurrency,
-  lifecycle, categories, ownership, authority boundaries, and summary invariants
-- authoritative command rejection is separated from reviewable parser drafts;
-  deterministic calculations remain independent of AI and OCR suggestions
-- synthetic fixtures, test-project ownership, implementation order, and repository
-  contract checks make the plan ready for incremental implementation
-- Backend CI #357 passed privacy, format, Release build, and all solution tests
+- FIN-103 is Done after PR #117 documented financial-core service boundaries
+- Profile, Category, Transaction Intake, Income, Expense, and Financial Summary
+  now have explicit owned data, decisions, stores, and non-ownership boundaries
+- versioned owner-scoped synchronous reads are separated from asynchronous event
+  propagation, with cross-service storage and distributed writes prohibited
+- outbox/inbox, idempotency, replay, stale projection, retry, failure, and privacy
+  rules are pinned by repository contract tests and review criteria
+- Backend CI #361 passed privacy, format, Release build, and all solution tests
   on the final PR head
-- parent FIN-18 remains In Progress; FIN-103 is the next ranked unfinished leaf
+- parent FIN-18 remains In Progress; FIN-104 is the next ranked unfinished leaf
 
 ## Epic Progress
 
@@ -47,13 +47,13 @@ Current delivery:
 | FIN-5 | P1 Architecture definition and technical governance | 17 | 17 | 100.0% |
 | FIN-10 | P2 Repository, DevOps, and local platform foundation | 36 | 36 | 100.0% |
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
-| FIN-18 | P4 Financial core backend services | 20 | 22 | 90.9% |
+| FIN-18 | P4 Financial core backend services | 21 | 22 | 95.5% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 0 | 20 | 0.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **123** | **196** | **62.8%** |
+| **Total** | **Canonical POC leaf scope** | **124** | **196** | **63.3%** |
 
 ## First-User-Test Gates
 
@@ -132,3 +132,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-08-02T12:55:30+03:00 | FIN-100 | Closure delivered by PR 111 | 61.7% | +0.5 pp |
 | 2026-08-02T13:04:30+03:00 | FIN-101 | Closure delivered by PR 113 | 62.2% | +0.5 pp |
 | 2026-08-02T13:20:30+03:00 | FIN-102 | Closure delivered by PR 115 | 62.8% | +0.6 pp |
+| 2026-08-02T13:33:30+03:00 | FIN-103 | Closure delivered by PR 117 | 63.3% | +0.5 pp |
