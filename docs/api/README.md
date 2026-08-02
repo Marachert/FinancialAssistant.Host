@@ -23,3 +23,7 @@ API contracts must not move business logic into the gateway. The owning service 
 Examples must use synthetic data and must not contain secrets, real tokens, real financial records, receipt content, OCR text, or LLM prompts and responses.
 
 OpenAPI artifacts may be added here or generated from service-owned source contracts when dedicated implementation tasks establish the generation workflow.
+
+## Contracts
+
+- [Financial Summary API v1](financial-summary-v1.md)

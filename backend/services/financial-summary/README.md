@@ -53,5 +53,17 @@ summaries older than the caller's configured freshness threshold return
 show that state; the service must not synchronously query Income or Expense as a
 hidden fallback.
 
-FIN-101 owns the public API contracts and routes. This baseline intentionally has
-no API project or transport contract.
+## API contracts
+
+FIN-101 adds the transport-only `FinancialAssistant.FinancialSummary.Contracts`
+project and an explicit Application mapper. The stable gateway request is:
+
+```text
+GET /financial-summary?currency=USD&timeZoneId=Europe/Kyiv&referenceDate=YYYY-MM-DD
+```
+
+The response returns all three periods, monthly category/balance values, and
+freshness metadata. Empty periods are zero-safe. Projection owner hashes, event
+identifiers, record revisions, origins, storage generations, and rebuild state are
+not exposed. A later endpoint implementation may depend on these contracts but
+must not serialize the internal read model directly.

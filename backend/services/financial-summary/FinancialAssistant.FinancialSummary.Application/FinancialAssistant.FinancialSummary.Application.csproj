@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.FinancialSummary.Contracts/FinancialAssistant.FinancialSummary.Contracts.csproj" />
     <ProjectReference Include="../FinancialAssistant.FinancialSummary.Domain/FinancialAssistant.FinancialSummary.Domain.csproj" />
     <ProjectReference Include="../../../shared/contracts/FinancialAssistant.Shared.Contracts/FinancialAssistant.Shared.Contracts.csproj" />
   </ItemGroup>
