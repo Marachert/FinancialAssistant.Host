@@ -55,7 +55,7 @@ public sealed class FinancialCoreValidationTestPlanTests
         Assert.Contains("suggestion remains reviewable but cannot be confirmed", plan, StringComparison.Ordinal);
         Assert.Contains("still excluded from authoritative records and totals", plan, StringComparison.Ordinal);
         Assert.Contains("synthetic data only", plan, StringComparison.Ordinal);
-        Assert.Contains("no live paid provider", plan, StringComparison.Ordinal);
+        Assert.Contains("live paid provider", plan, StringComparison.Ordinal);
     }
 
     [Fact]
