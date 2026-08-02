@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-02T21:00:20+03:00
+Last updated: 2026-08-02T21:23:30+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-128 closure is **66.3%**:
-**130 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-129 closure is **66.8%**:
+**131 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,20 +13,20 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-128 - P6.T2 Implement daily weekly and monthly summary read models
+- FIN-129 - P6.T3 Implement category breakdown reports
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/129
+  https://github.com/Marachert/FinancialAssistant.Host/pull/131
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/df1ca45bb6a0887a8d7f7af55bc752a6616f0413
-- previous readiness: 129 / 196, or 65.8%
-- current readiness: 130 / 196, or 66.3%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/0b0c1cbd2c1332ffb14dc76aad7d7719994f1406
+- previous readiness: 130 / 196, or 66.3%
+- current readiness: 131 / 196, or 66.8%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-128 - canonical implementation delivered by PR #129
-- previous readiness: 129 / 196, or 65.8%
-- current readiness: 130 / 196, or 66.3%
+- FIN-129 - canonical implementation delivered by PR #131
+- previous readiness: 130 / 196, or 66.3%
+- current readiness: 131 / 196, or 66.8%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -35,17 +35,18 @@ Closing these duplicates does not change the numerator or denominator.
 
 Current delivery:
 
-- FIN-128 is Done after PR #129 exposed explicit daily, Monday-weekly, and
-  calendar-month summary read models
-- each summary returns inclusive local boundaries plus deterministic income,
-  expense, and balance-delta totals from confirmed projections
-- empty and archived-only periods return zero totals; existing daily-limit and
-  monthly-progress response sections remain compatible
-- Backend CI #395 passed privacy, format, Release build, and all solution tests
-  on final head `a6ca531ba1ddd30233ecb473994a82c1ca1bdaa4`
+- FIN-129 is Done after PR #131 added authenticated daily, Monday-weekly, and
+  calendar-month category breakdown reports from confirmed analytics projections
+- responses include deterministic income/expense totals, percentage shares,
+  independently ranked top categories, and a stable uncategorized fallback
+- freshness metadata distinguishes confirmed empty periods from delayed or
+  never-built projections; archived records remain excluded
+- Backend CI #402 passed privacy, format, Release build, and all solution tests
+  on final head `bb54c49b8e6d074bc0910afb83a7b19641e8954f`
+- one valid freshness review finding was fixed, evidenced, and resolved
 - no paid provider or external dependency was added
-- parent FIN-27 remains In Progress with 5 of 20 canonical children Done; the
-  next ranked unfinished canonical leaf is FIN-129
+- parent FIN-27 remains In Progress with 6 of 20 canonical children Done; the
+  next ranked unfinished canonical leaf is FIN-130
 
 ## Epic Progress
 
@@ -57,11 +58,11 @@ Current delivery:
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
-| FIN-27 | P6 Analytics, score, recommendations, and notifications | 5 | 20 | 25.0% |
+| FIN-27 | P6 Analytics, score, recommendations, and notifications | 6 | 20 | 30.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **130** | **196** | **66.3%** |
+| **Total** | **Canonical POC leaf scope** | **131** | **196** | **66.8%** |
 
 ## First-User-Test Gates
 
@@ -149,3 +150,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-02T20:39:30+03:00 | FIN-126 | Recovered analytics baseline from merged PR 121 | 65.8% | +0.5 pp |
 | 2026-08-02T20:45:10+03:00 | FIN-127 | Exact duplicate of FIN-126; Jira-linked and Done | 65.8% | +0.0 pp |
 | 2026-08-02T21:00:20+03:00 | FIN-128 | Closure delivered by PR 129 | 66.3% | +0.5 pp |
+| 2026-08-02T21:23:30+03:00 | FIN-129 | Closure delivered by PR 131 | 66.8% | +0.5 pp |
