@@ -43,6 +43,7 @@ The term **public route group** means a route exposed through the public gateway
 | `transaction-draft-confirm` | `/transactions/drafts/{id}/confirm` | POST | authenticated | Transaction Intake Service | `transaction-intake-service` |
 | `receipts` | `/receipts` and `/receipts/{**gatewayPath}` | GET, POST | authenticated | Receipt File Intake Service | `receipt-file-intake-service` |
 | `incomes` | `/incomes` and `/incomes/{**gatewayPath}` | GET, POST, PUT | authenticated | Income Service | `income-service` |
+| `expenses` | `/expenses` and `/expenses/{**gatewayPath}` | GET, POST, PUT | authenticated | Expense Service | `expense-service` |
 | `analytics` | `/analytics` and child paths | GET | authenticated | Analytics Service | `analytics-service` |
 | `score` | `/score` and child paths | GET | authenticated | Financial Score Service | `financial-score-service` |
 | `recommendations` | `/recommendations` and child paths | GET | authenticated | Recommendation Service | `recommendation-service` |
@@ -136,7 +137,7 @@ A route forwards traffic only when all conditions are true:
 4. The base address is a valid absolute HTTP or HTTPS URI.
 5. The route access-policy boundary allows the request.
 
-Repository defaults keep unfinished routes in `placeholder` state and destinations disabled. The Income route is active with a protected enabled destination because its service contract and trusted-gateway integration are ready.
+Repository defaults keep unfinished routes in `placeholder` state and destinations disabled. The Income and Expense routes are active with protected enabled destinations because their service contracts and trusted-gateway integrations are ready.
 
 Activation should be performed in one reviewed deployment change:
 
@@ -281,7 +282,7 @@ dotnet test backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGate
 
 ## Current limitations
 
-* Repository defaults activate only the authenticated Income destination; unfinished downstream services remain disabled.
+* Repository defaults activate only the authenticated Income and Expense destinations; unfinished downstream services remain disabled.
 * Destination availability is not proactively probed; an enabled but unreachable service fails safely during dispatch.
 * Service discovery, retries, circuit breaking, load balancing, and distributed tracing exporters are future work.
 * Array-index environment overrides require disciplined deployment configuration.
