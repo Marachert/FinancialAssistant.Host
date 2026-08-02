@@ -32,8 +32,9 @@ Current delivery:
   deterministic dashboard API
 - confirmed Income and Expense lifecycle events project idempotently into daily,
   Monday-weekly, monthly, category, and recent-trend read models
-- the public dashboard resolves limits from a server-side authority boundary and
-  returns stable validation errors without trusting caller-supplied financial values
+- the Analytics Service dashboard resolves limits from a server-side authority
+  boundary and returns stable validation errors without trusting caller-supplied
+  financial values; gateway activation remains unfinished integration work
 - the hosted RabbitMQ consumer acknowledges only after projection and routes
   terminal or processing failures to its dead-letter path
 - Backend CI #371 passed privacy, format, Release build, and all solution tests
