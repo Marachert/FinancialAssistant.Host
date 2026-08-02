@@ -28,3 +28,4 @@ OpenAPI artifacts may be added here or generated from service-owned source contr
 
 - [Financial Summary API v1](financial-summary-v1.md)
 - [Analytics Dashboard API v1](analytics-dashboard-v1.md)
+- [Financial Score API v1](financial-score-v1.md)

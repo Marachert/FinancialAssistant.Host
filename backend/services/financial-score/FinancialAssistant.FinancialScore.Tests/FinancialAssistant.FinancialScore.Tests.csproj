@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>FinancialAssistant.FinancialScore.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.28" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.7.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.FinancialScore.Api/FinancialAssistant.FinancialScore.Api.csproj" />
+    <ProjectReference Include="../FinancialAssistant.FinancialScore.Application/FinancialAssistant.FinancialScore.Application.csproj" />
+    <ProjectReference Include="../FinancialAssistant.FinancialScore.Contracts/FinancialAssistant.FinancialScore.Contracts.csproj" />
+    <ProjectReference Include="../FinancialAssistant.FinancialScore.Domain/FinancialAssistant.FinancialScore.Domain.csproj" />
+    <ProjectReference Include="../FinancialAssistant.FinancialScore.Infrastructure/FinancialAssistant.FinancialScore.Infrastructure.csproj" />
+    <ProjectReference Include="../../../shared/contracts/FinancialAssistant.Shared.Contracts/FinancialAssistant.Shared.Contracts.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,124 @@
+using System.Net;
+using System.Net.Http.Json;
+using FinancialAssistant.FinancialScore.Application;
+using FinancialAssistant.FinancialScore.Contracts;
+using FinancialAssistant.FinancialScore.Infrastructure;
+using FinancialAssistant.Shared.Contracts.Events;
+using Microsoft.Extensions.DependencyInjection;
+using Xunit;
+
+namespace FinancialAssistant.FinancialScore.Tests;
+
+public sealed class FinancialScoreEndpointTests :
+    IClassFixture<FinancialScoreWebApplicationFactory>
+{
+    private readonly FinancialScoreWebApplicationFactory factory;
+    private readonly HttpClient client;
+
+    public FinancialScoreEndpointTests(FinancialScoreWebApplicationFactory factory)
+    {
+        this.factory = factory;
+        client = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task CurrentAndHistory_ReturnOwnerScopedTransparentScores()
+    {
+        const string userId = "synthetic-score-owner";
+        using (var scope = factory.Services.CreateScope())
+        {
+            var service = scope.ServiceProvider.GetRequiredService<FinancialScoreService>();
+            await service.ApplyAsync(
+                FinancialScoreServiceTests.CreateEvent(
+                    "income-api",
+                    0,
+                    FinancialRecordEventTypes.IncomeCreated,
+                    500m,
+                    FinancialScoreOwnerHasher.Hash(userId)),
+                null,
+                CancellationToken.None);
+            await service.ApplyAsync(
+                FinancialScoreServiceTests.CreateEvent(
+                    "expense-api",
+                    0,
+                    FinancialRecordEventTypes.ExpenseCreated,
+                    100m,
+                    FinancialScoreOwnerHasher.Hash(userId)),
+                null,
+                CancellationToken.None);
+        }
+
+        using var currentRequest = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"{FinancialScoreApiRoutes.GatewayCurrent}?currency=usd");
+        AddTrustedHeaders(currentRequest, userId);
+        using var currentResponse = await client.SendAsync(currentRequest);
+        var current = await currentResponse.Content.ReadFromJsonAsync<FinancialScoreResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, currentResponse.StatusCode);
+        Assert.NotNull(current);
+        Assert.Equal("USD", current.Currency);
+        Assert.Equal("financial-score-v1", current.FormulaVersion);
+        Assert.Equal(4, current.Factors.Count);
+
+        using var historyRequest = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"{FinancialScoreApiRoutes.GatewayHistory}?currency=USD&limit=1");
+        AddTrustedHeaders(historyRequest, userId);
+        using var historyResponse = await client.SendAsync(historyRequest);
+        var history = await historyResponse.Content
+            .ReadFromJsonAsync<FinancialScoreHistoryResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, historyResponse.StatusCode);
+        Assert.NotNull(history);
+        Assert.Single(history.Items);
+        Assert.True(history.HasMore);
+    }
+
+    [Fact]
+    public async Task Endpoints_RequireTrustedGatewayAndValidateQueries()
+    {
+        using var unauthorized = await client.GetAsync(
+            $"{FinancialScoreApiRoutes.Current}?currency=USD");
+        Assert.Equal(HttpStatusCode.Unauthorized, unauthorized.StatusCode);
+
+        using var missingCurrencyRequest = new HttpRequestMessage(
+            HttpMethod.Get,
+            FinancialScoreApiRoutes.Current);
+        AddTrustedHeaders(missingCurrencyRequest, "synthetic-missing-currency-owner");
+        using var missingCurrency = await client.SendAsync(missingCurrencyRequest);
+        var missingProblem = await missingCurrency.Content
+            .ReadFromJsonAsync<FinancialScoreApiErrorResponse>();
+        Assert.Equal(HttpStatusCode.BadRequest, missingCurrency.StatusCode);
+        Assert.Equal("invalid_financial_score_request", missingProblem?.Code);
+
+        using var invalidHistoryRequest = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"{FinancialScoreApiRoutes.History}?currency=USD&limit=101&beforeUtc=not-a-date");
+        AddTrustedHeaders(invalidHistoryRequest, "synthetic-invalid-history-owner");
+        using var invalidHistory = await client.SendAsync(invalidHistoryRequest);
+        Assert.Equal(HttpStatusCode.BadRequest, invalidHistory.StatusCode);
+    }
+
+    [Fact]
+    public async Task Current_ReturnsNotFoundUntilConfirmedEventArrives()
+    {
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"{FinancialScoreApiRoutes.Current}?currency=EUR");
+        AddTrustedHeaders(request, "synthetic-empty-owner");
+        using var response = await client.SendAsync(request);
+        var problem = await response.Content.ReadFromJsonAsync<FinancialScoreApiErrorResponse>();
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal("financial_score_not_found", problem?.Code);
+    }
+
+    private static void AddTrustedHeaders(HttpRequestMessage request, string userId)
+    {
+        request.Headers.TryAddWithoutValidation(
+            FinancialScoreGatewayHeaders.Authentication,
+            FinancialScoreWebApplicationFactory.GatewaySecret);
+        request.Headers.TryAddWithoutValidation(FinancialScoreGatewayHeaders.UserId, userId);
+    }
+}
