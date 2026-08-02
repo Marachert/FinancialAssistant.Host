@@ -75,6 +75,13 @@ docs/engineering/financial-score-v1.md
 docs/api/financial-score-v1.md
 ```
 
+Recommendations and notification preparation:
+
+```text
+docs/engineering/recommendations-notifications-v1.md
+docs/api/recommendations-notifications-v1.md
+```
+
 Financial core validation coverage:
 
 ```text

@@ -270,6 +270,27 @@ The schema-version-1 payload contains `calculationId`, `currency`, integer `scor
 
 Changing the formula does not silently reinterpret history: a formula change requires a new stored `formulaVersion`, documentation, and compatibility review. A payload-breaking change requires a new event schema version and routing key.
 
+### analytics.updated.v1
+
+Owner: Analytics Service. The payload contains currency, reference date,
+monthly income and expense totals, optional daily expense limit, daily expense
+spent, optional top expense category identifier, and update timestamp. The
+envelope carries only the pseudonymous owner hash.
+
+### recommendation.generated.v1
+
+Owner: Recommendation Service. The payload contains a stable recommendation
+identifier, currency, deterministic code and severity, bounded wording, numeric
+fact code/value pairs, and generation timestamp. Optional AI wording never
+becomes a fact and cannot alter codes, severity, or values.
+
+### notification.prepared.v1
+
+Owner: Notification Service. The payload contains stable notification and
+recommendation identifiers, currency, channel, versioned template code,
+delivery status, and preparation timestamp. Device tokens, endpoints, raw
+identities, and provider credentials are excluded.
+
 Contract examples use synthetic identifiers only. Event schemas and examples
 must not include credentials, tokens, passwords, raw receipt images, raw OCR
 text, unrestricted LLM content, account numbers, or unnecessary personal or

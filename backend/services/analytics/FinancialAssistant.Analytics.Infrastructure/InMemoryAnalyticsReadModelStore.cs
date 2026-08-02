@@ -10,8 +10,10 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
         new(StringComparer.Ordinal);
     private readonly Dictionary<string, AnalyticsProjectionSnapshot> snapshots =
         new(StringComparer.Ordinal);
+    private readonly Dictionary<string, HashSet<string>> pendingPublicationCurrencies =
+        new(StringComparer.Ordinal);
 
-    public Task UpsertIfNewerAsync(
+    public Task<AnalyticsProjectionWriteOutcome> UpsertIfNewerAsync(
         AnalyticsRecordProjection projection,
         CancellationToken cancellationToken)
     {
@@ -20,11 +22,27 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
         lock (gate)
         {
             var key = $"{projection.UserIdHash}|{projection.RecordType}|{projection.RecordId}";
+            var publicationKey = CreatePublicationKey(
+                projection.UserIdHash,
+                projection.EventId);
             string? previousCurrency = null;
             if (projections.TryGetValue(key, out var current) &&
                 current.Revision >= projection.Revision)
             {
-                return Task.CompletedTask;
+                if (current.Revision == projection.Revision &&
+                    current.EventId == projection.EventId &&
+                    pendingPublicationCurrencies.TryGetValue(
+                        publicationKey,
+                        out var pending))
+                {
+                    return Task.FromResult(
+                        new AnalyticsProjectionWriteOutcome(
+                            false,
+                            pending.OrderBy(item => item, StringComparer.Ordinal).ToArray()));
+                }
+
+                return Task.FromResult(
+                    new AnalyticsProjectionWriteOutcome(false, Array.Empty<string>()));
             }
 
             if (current is not null)
@@ -40,6 +58,43 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
             }
 
             RebuildSnapshot(projection.UserIdHash, projection.Currency);
+            var affectedCurrencies = new HashSet<string>(StringComparer.Ordinal)
+            {
+                projection.Currency.ToUpperInvariant()
+            };
+            if (!string.IsNullOrWhiteSpace(previousCurrency))
+            {
+                affectedCurrencies.Add(previousCurrency.ToUpperInvariant());
+            }
+
+            pendingPublicationCurrencies[publicationKey] = affectedCurrencies;
+            return Task.FromResult(
+                new AnalyticsProjectionWriteOutcome(
+                    true,
+                    affectedCurrencies.OrderBy(item => item, StringComparer.Ordinal).ToArray()));
+        }
+    }
+
+    public Task MarkPublicationCompletedAsync(
+        string sourceEventId,
+        string userIdHash,
+        string currency,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        lock (gate)
+        {
+            var key = CreatePublicationKey(userIdHash, sourceEventId);
+            if (!pendingPublicationCurrencies.TryGetValue(key, out var pending))
+            {
+                return Task.CompletedTask;
+            }
+
+            pending.Remove(currency.ToUpperInvariant());
+            if (pending.Count == 0)
+            {
+                pendingPublicationCurrencies.Remove(key);
+            }
         }
 
         return Task.CompletedTask;
@@ -73,6 +128,7 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
         {
             projections.Clear();
             snapshots.Clear();
+            pendingPublicationCurrencies.Clear();
         }
 
         return Task.CompletedTask;
@@ -142,4 +198,7 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
 
     private static string CreateSnapshotKey(string userIdHash, string currency) =>
         $"{userIdHash}|{currency.ToUpperInvariant()}";
+
+    private static string CreatePublicationKey(string userIdHash, string sourceEventId) =>
+        $"{userIdHash}|{sourceEventId}";
 }
