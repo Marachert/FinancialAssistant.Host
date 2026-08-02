@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-02T13:33:30+03:00
+Last updated: 2026-08-02T14:24:20+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-103 closure is **63.3%**:
-**124 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-104 closure is **63.8%**:
+**125 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,13 +13,13 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-103 - Document financial core service boundaries
+- FIN-104 - Define end-to-end financial core API flow
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/117
+  https://github.com/Marachert/FinancialAssistant.Host/pull/119
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/062ac02538329a9f74c4d0a0a041ace422b8eee4
-- previous readiness: 123 / 196, or 62.8%
-- current readiness: 124 / 196, or 63.3%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/1b908b96f959ab7f36640ddb5bceaadd2b2613ad
+- previous readiness: 124 / 196, or 63.3%
+- current readiness: 125 / 196, or 63.8%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
@@ -28,16 +28,18 @@ denominator.
 
 Current delivery:
 
-- FIN-103 is Done after PR #117 documented financial-core service boundaries
-- Profile, Category, Transaction Intake, Income, Expense, and Financial Summary
-  now have explicit owned data, decisions, stores, and non-ownership boundaries
-- versioned owner-scoped synchronous reads are separated from asynchronous event
-  propagation, with cross-service storage and distributed writes prohibited
-- outbox/inbox, idempotency, replay, stale projection, retry, failure, and privacy
-  rules are pinned by repository contract tests and review criteria
-- Backend CI #361 passed privacy, format, Release build, and all solution tests
+- FIN-104 is Done after PR #119 documented and regression-guarded the complete
+  user-input-to-financial-summary backend flow
+- synchronous service contracts are separated from asynchronous event propagation,
+  with convergence, idempotency, retry, and failure ownership made explicit
+- full public gateway activation is an explicit prerequisite; direct service
+  contracts are not misrepresented as currently active gateway aliases
+- draft updates require an expected revision and reject stale writes without
+  overwriting accepted financial values
+- Backend CI #366 passed privacy, format, Release build, and all solution tests
   on the final PR head
-- parent FIN-18 remains In Progress; FIN-104 is the next ranked unfinished leaf
+- parent FIN-18 is Done after all 22 canonical children and its Definition of Done
+  were independently verified
 
 ## Epic Progress
 
@@ -47,13 +49,13 @@ Current delivery:
 | FIN-5 | P1 Architecture definition and technical governance | 17 | 17 | 100.0% |
 | FIN-10 | P2 Repository, DevOps, and local platform foundation | 36 | 36 | 100.0% |
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
-| FIN-18 | P4 Financial core backend services | 21 | 22 | 95.5% |
+| FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 0 | 20 | 0.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **124** | **196** | **63.3%** |
+| **Total** | **Canonical POC leaf scope** | **125** | **196** | **63.8%** |
 
 ## First-User-Test Gates
 
@@ -72,7 +74,7 @@ satisfied:
 - the Windows PoC deployment stack is repeatable and the first-user environment
   is verified.
 
-Current blocking areas are P4, P6, P7, P8, and P9. In particular, P7 has no
+Current blocking areas are P6, P7, P8, and P9. In particular, P7 has no
 completed canonical leaf tickets, so there is not yet a client experience that
 can be handed to first users.
 
@@ -133,3 +135,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-08-02T13:04:30+03:00 | FIN-101 | Closure delivered by PR 113 | 62.2% | +0.5 pp |
 | 2026-08-02T13:20:30+03:00 | FIN-102 | Closure delivered by PR 115 | 62.8% | +0.6 pp |
 | 2026-08-02T13:33:30+03:00 | FIN-103 | Closure delivered by PR 117 | 63.3% | +0.5 pp |
+| 2026-08-02T14:24:20+03:00 | FIN-104 | Closure delivered by PR 119; FIN-18 completed | 63.8% | +0.5 pp |
