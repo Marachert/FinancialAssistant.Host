@@ -25,6 +25,10 @@ public sealed record AnalyticsRecordProjection(
     DateTimeOffset ChangedAtUtc,
     string EventId);
 
+public sealed record AnalyticsProjectionWriteOutcome(
+    bool Accepted,
+    string? PreviousCurrency);
+
 public sealed record AnalyticsAggregateTotals(decimal Income, decimal Expense)
 {
     public decimal BalanceDelta => Income - Expense;

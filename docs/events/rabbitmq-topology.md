@@ -247,3 +247,16 @@ queues, and one terminal dead-letter queue per application queue.
 
 Use synthetic messages only. Never copy broker payloads from a real environment
 into local development, tests, tickets, logs, or documentation.
+
+## Recommendations and Notifications v1
+
+The co-hosted POC modules own
+`fa.recommendations-notifications.insight-events.v1` and its
+`.dead-letter` queue.
+
+The application queue binds `analytics.updated.v1`,
+`score.calculated.v1`, and `recommendation.generated.v1`.
+Successful recommendation processing publishes
+`recommendation.generated.v1`; successful delivery preparation publishes
+`notification.prepared.v1`. Retry queues use the standard 5-second,
+30-second, and 5-minute bounded delays.

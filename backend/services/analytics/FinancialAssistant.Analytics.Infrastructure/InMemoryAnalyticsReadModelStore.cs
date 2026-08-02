@@ -11,7 +11,7 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
     private readonly Dictionary<string, AnalyticsProjectionSnapshot> snapshots =
         new(StringComparer.Ordinal);
 
-    public Task UpsertIfNewerAsync(
+    public Task<AnalyticsProjectionWriteOutcome> UpsertIfNewerAsync(
         AnalyticsRecordProjection projection,
         CancellationToken cancellationToken)
     {
@@ -24,7 +24,8 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
             if (projections.TryGetValue(key, out var current) &&
                 current.Revision >= projection.Revision)
             {
-                return Task.CompletedTask;
+                return Task.FromResult(
+                    new AnalyticsProjectionWriteOutcome(false, null));
             }
 
             if (current is not null)
@@ -40,9 +41,9 @@ public sealed class InMemoryAnalyticsReadModelStore : IAnalyticsReadModelStore
             }
 
             RebuildSnapshot(projection.UserIdHash, projection.Currency);
+            return Task.FromResult(
+                new AnalyticsProjectionWriteOutcome(true, previousCurrency));
         }
-
-        return Task.CompletedTask;
     }
 
     public Task<AnalyticsProjectionSnapshot> GetAsync(

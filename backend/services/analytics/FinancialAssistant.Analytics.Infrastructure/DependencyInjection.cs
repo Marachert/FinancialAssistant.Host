@@ -12,12 +12,25 @@ public static class DependencyInjection
     {
         services.Configure<AnalyticsServiceOptions>(
             configuration.GetSection(AnalyticsServiceOptions.SectionName));
+        var options = configuration
+            .GetSection(AnalyticsServiceOptions.SectionName)
+            .Get<AnalyticsServiceOptions>() ?? new AnalyticsServiceOptions();
         services.AddSingleton<InMemoryAnalyticsReadModelStore>();
         services.AddSingleton<IAnalyticsReadModelStore>(provider =>
             provider.GetRequiredService<InMemoryAnalyticsReadModelStore>());
         services.AddSingleton<InMemoryAnalyticsDailyLimitProvider>();
         services.AddSingleton<IAnalyticsDailyLimitProvider>(provider =>
             provider.GetRequiredService<InMemoryAnalyticsDailyLimitProvider>());
+        if (string.Equals(options.Events.Mode, "RabbitMq", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IAnalyticsEventPublisher, RabbitMqAnalyticsEventPublisher>();
+        }
+        else
+        {
+            services.AddSingleton<InMemoryAnalyticsEventPublisher>();
+            services.AddSingleton<IAnalyticsEventPublisher>(provider =>
+                provider.GetRequiredService<InMemoryAnalyticsEventPublisher>());
+        }
         services.AddSingleton<AnalyticsFinancialEventMessageHandler>();
         services.AddHostedService<AnalyticsFinancialEventConsumer>();
         return services;

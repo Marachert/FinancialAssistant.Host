@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using FinancialAssistant.Analytics.Domain;
 using FinancialAssistant.Shared.Contracts.Events;
 
@@ -7,10 +9,14 @@ public sealed class AnalyticsProjector
 {
     private const int MaximumTrendDays = 31;
     private readonly IAnalyticsReadModelStore store;
+    private readonly IAnalyticsEventPublisher? publisher;
 
-    public AnalyticsProjector(IAnalyticsReadModelStore store)
+    public AnalyticsProjector(
+        IAnalyticsReadModelStore store,
+        IAnalyticsEventPublisher? publisher = null)
     {
         this.store = store;
+        this.publisher = publisher;
     }
 
     public async Task ApplyAsync(
@@ -22,7 +28,7 @@ public sealed class AnalyticsProjector
         Validate(envelope);
         var payload = envelope.Payload;
 
-        await store.UpsertIfNewerAsync(
+        var outcome = await store.UpsertIfNewerAsync(
             new AnalyticsRecordProjection(
                 recordType,
                 payload.RecordId,
@@ -36,6 +42,29 @@ public sealed class AnalyticsProjector
                 payload.ChangedAtUtc.ToUniversalTime(),
                 envelope.EventId),
             cancellationToken);
+        if (!outcome.Accepted || publisher is null)
+        {
+            return;
+        }
+
+        var affectedCurrencies = new HashSet<string>(StringComparer.Ordinal)
+        {
+            payload.Currency.ToUpperInvariant()
+        };
+        if (!string.IsNullOrWhiteSpace(outcome.PreviousCurrency))
+        {
+            affectedCurrencies.Add(outcome.PreviousCurrency.ToUpperInvariant());
+        }
+
+        foreach (var currency in affectedCurrencies.OrderBy(item => item, StringComparer.Ordinal))
+        {
+            await PublishUpdatedAsync(
+                envelope,
+                currency,
+                payload.Date,
+                payload.ChangedAtUtc,
+                cancellationToken);
+        }
     }
 
     public async Task RebuildAsync(
@@ -148,6 +177,56 @@ public sealed class AnalyticsProjector
             spent,
             Math.Max(0m, limit.Value - spent),
             Percentage(spent, limit.Value));
+    }
+
+    private async Task PublishUpdatedAsync(
+        IntegrationEventEnvelope<FinancialRecordChangedV1> source,
+        string currency,
+        DateOnly referenceDate,
+        DateTimeOffset updatedAtUtc,
+        CancellationToken cancellationToken)
+    {
+        var snapshot = await store.GetAsync(
+            source.UserIdHash!,
+            currency,
+            cancellationToken);
+        var monthStart = new DateOnly(referenceDate.Year, referenceDate.Month, 1);
+        var monthly = snapshot.MonthlyTotals.GetValueOrDefault(monthStart);
+        var daily = snapshot.DailyTotals.GetValueOrDefault(referenceDate);
+        var topExpenseCategory = monthly?.CategoryTotals
+            .Where(item => item.Expense > 0m)
+            .OrderByDescending(item => item.Expense)
+            .ThenBy(item => item.CategoryId, StringComparer.Ordinal)
+            .FirstOrDefault()?.CategoryId;
+        var eventId = StableId("analytics-updated", source.EventId, currency);
+        await publisher!.PublishAsync(
+            new IntegrationEventEnvelope<AnalyticsUpdatedV1>(
+                eventId,
+                eventId,
+                AnalyticsEventTypes.AnalyticsUpdated,
+                updatedAtUtc,
+                "financial-assistant-analytics-service",
+                AnalyticsEventTypes.SchemaVersion,
+                source.CorrelationId,
+                source.EventId,
+                source.UserIdHash,
+                new AnalyticsUpdatedV1(
+                    currency,
+                    referenceDate,
+                    monthly?.Totals.Income ?? 0m,
+                    monthly?.Totals.Expense ?? 0m,
+                    DailyExpenseLimit: null,
+                    daily?.Expense ?? 0m,
+                    topExpenseCategory,
+                    updatedAtUtc)),
+            cancellationToken);
+    }
+
+    private static string StableId(params string[] components)
+    {
+        var hash = SHA256.HashData(
+            Encoding.UTF8.GetBytes(string.Join('|', components)));
+        return Convert.ToHexString(hash).ToLowerInvariant()[..32];
     }
 
     private static decimal Percentage(decimal numerator, decimal denominator) =>

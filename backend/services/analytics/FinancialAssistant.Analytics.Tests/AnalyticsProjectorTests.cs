@@ -106,6 +106,63 @@ public sealed class AnalyticsProjectorTests
             eur.MonthlyTotals[new DateOnly(2026, 8, 1)].Totals.Expense);
     }
 
+    [Fact]
+    public async Task AcceptedProjection_PublishesIdempotentAnalyticsSnapshot()
+    {
+        var publisher = new InMemoryAnalyticsEventPublisher();
+        var projector = new AnalyticsProjector(
+            new InMemoryAnalyticsReadModelStore(),
+            publisher);
+        var created = CreateEvent(
+            "published-expense",
+            FinancialRecordEventTypes.ExpenseCreated,
+            40m,
+            "expense.groceries",
+            new DateOnly(2026, 8, 20));
+
+        await projector.ApplyAsync(created, CancellationToken.None);
+        await projector.ApplyAsync(created, CancellationToken.None);
+
+        var published = Assert.Single(publisher.Published);
+        Assert.Equal(AnalyticsEventTypes.AnalyticsUpdated, published.EventType);
+        Assert.Equal(40m, published.Payload.MonthlyExpenseTotal);
+        Assert.Equal(40m, published.Payload.DailyExpenseSpent);
+        Assert.Equal("expense.groceries", published.Payload.TopExpenseCategoryId);
+        Assert.Null(published.Payload.DailyExpenseLimit);
+    }
+
+    [Fact]
+    public async Task CurrencyMove_PublishesBothAffectedScopes()
+    {
+        var publisher = new InMemoryAnalyticsEventPublisher();
+        var projector = new AnalyticsProjector(
+            new InMemoryAnalyticsReadModelStore(),
+            publisher);
+        await projector.ApplyAsync(
+            CreateEvent(
+                "published-move",
+                FinancialRecordEventTypes.ExpenseCreated,
+                40m,
+                "expense.groceries",
+                new DateOnly(2026, 8, 20)),
+            CancellationToken.None);
+        await projector.ApplyAsync(
+            CreateEvent(
+                "published-move",
+                FinancialRecordEventTypes.ExpenseUpdated,
+                45m,
+                "expense.groceries",
+                new DateOnly(2026, 8, 20),
+                revision: 1,
+                currency: "EUR"),
+            CancellationToken.None);
+
+        var latest = publisher.Published.Skip(1).ToArray();
+        Assert.Equal(new[] { "EUR", "USD" }, latest.Select(item => item.Payload.Currency));
+        Assert.Equal(45m, latest[0].Payload.MonthlyExpenseTotal);
+        Assert.Equal(0m, latest[1].Payload.MonthlyExpenseTotal);
+    }
+
     private static IntegrationEventEnvelope<FinancialRecordChangedV1> CreateEvent(
         string recordId,
         string eventType,
