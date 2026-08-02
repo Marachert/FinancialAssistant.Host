@@ -33,12 +33,12 @@ public sealed class IncomeGatewayConfigurationTests
         Assert.Equal("income-service", incomeRoute.GetProperty("InternalDestination").GetString());
         Assert.Equal("authenticated", incomeRoute.GetProperty("AccessPolicy").GetString());
         Assert.Equal("active", incomeRoute.GetProperty("Status").GetString());
-        Assert.Equal(
-            ["GET", "POST", "PUT"],
-            incomeRoute.GetProperty("Methods")
-                .EnumerateArray()
-                .Select(method => method.GetString())
-                .ToArray());
+        var methods = incomeRoute.GetProperty("Methods").EnumerateArray().ToArray();
+        Assert.Collection(
+            methods,
+            method => Assert.Equal("GET", method.GetString()),
+            method => Assert.Equal("POST", method.GetString()),
+            method => Assert.Equal("PUT", method.GetString()));
     }
 
     private static JsonElement ReadGatewayConfiguration()
