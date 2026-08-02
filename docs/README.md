@@ -61,6 +61,13 @@ Financial summary projection baseline:
 docs/engineering/financial-summary-read-model.md
 ```
 
+Analytics dashboard projection and API:
+
+```text
+docs/engineering/analytics-dashboard-read-model.md
+docs/api/analytics-dashboard-v1.md
+```
+
 Financial core validation coverage:
 
 ```text
