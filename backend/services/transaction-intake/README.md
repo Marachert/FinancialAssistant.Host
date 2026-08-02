@@ -16,11 +16,25 @@ Transaction Intake owns natural-language intake, idempotent draft creation, dete
 ```text
 POST /api/v1/transactions/intake
 POST /transactions/intake
+GET|PUT /api/v1/transactions/drafts/{draftId}
+GET|PUT /transactions/drafts/{draftId}
+POST /api/v1/transactions/drafts/{draftId}/reject
+POST /transactions/drafts/{draftId}/reject
 POST /api/v1/transactions/drafts/{draftId}/confirm
 POST /transactions/drafts/{draftId}/confirm
 ```
 
-Both paths use the same handler; `/transactions/intake` matches the existing gateway's unchanged forwarding path. The endpoint requires `X-Gateway-Authentication`, `X-Gateway-User-Id`, and an opaque `Idempotency-Key`. Configure `TransactionIntake__Gateway__SharedSecret` from the environment with at least 32 characters. Configure the gateway with the same environment-provided value in `Gateway__DownstreamAuthentication__SharedSecret`; it strips client attempts to supply this header and injects its own value only for protected destinations. Never place the shared secret, user input, or idempotency values in source control or logs.
+Each `/api/v1` route and short service alias uses the same handler. The checked-in
+public gateway still keeps Transaction Intake disabled and does not yet route the
+complete draft lifecycle; activating that public route set is separate delivery
+work. Service endpoints require `X-Gateway-Authentication` and
+`X-Gateway-User-Id`; draft creation also requires an opaque `Idempotency-Key`.
+Configure `TransactionIntake__Gateway__SharedSecret` from the environment with at
+least 32 characters. Configure the gateway with the same environment-provided
+value in `Gateway__DownstreamAuthentication__SharedSecret`; it strips client
+attempts to supply this header and injects its own value only for protected
+destinations. Never place the shared secret, user input, or idempotency values in
+source control or logs.
 
 Receipt Processing delivers `ocr.completed.v1` to the internal `/internal/events/ocr-completed` endpoint. Configure both services with the same environment-provided `ReceiptProcessing__Events__SharedSecret` of 32 to 256 characters. The endpoint is not routed through the public gateway and rejects requests without the dedicated service credential.
 
@@ -40,6 +54,11 @@ Text and receipt OCR have active adapters. Voice transcript and manual form are 
 ## Draft behavior
 
 The parser is an interchangeable probabilistic-input boundary. Its output is validated by deterministic backend rules before a draft is returned. The response includes a nullable note placeholder; this baseline does not infer note content from free-form text. Unsupported or invalid values become explicit ambiguities instead of financial facts. Low-confidence drafts remain review-required.
+
+Draft responses expose the current non-negative `revision`. A full replacement
+update must echo it as `expectedRevision`; a missing or negative value is invalid,
+and a stale value returns `409 transaction_draft_not_editable`. The service never
+reapplies a stale client update to a newer revision.
 
 FIN-21 ships an intentionally limited deterministic parser and in-memory idempotency store for local development and CI. Production work must provide a configured parser adapter and durable encrypted idempotency/draft persistence without changing the application contract.
 

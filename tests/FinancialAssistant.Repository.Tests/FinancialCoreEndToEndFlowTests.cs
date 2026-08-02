@@ -72,6 +72,8 @@ public sealed class FinancialCoreEndToEndFlowTests
         Assert.Contains("The first successful request returns `201`", flow, StringComparison.Ordinal);
         Assert.Contains("returns `200` with the same draft ID", flow, StringComparison.Ordinal);
         Assert.Contains("Repeating or racing the same confirmation returns `200`", flow, StringComparison.Ordinal);
+        Assert.Contains("Public gateway readiness is an explicit prerequisite", flow, StringComparison.Ordinal);
+        Assert.Contains("has no review, update, rejection, or Summary route", flow, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -130,6 +132,8 @@ public sealed class FinancialCoreEndToEndFlowTests
         }
 
         Assert.Contains("bounded exponential backoff and jitter", flow, StringComparison.Ordinal);
+        Assert.Contains("expectedRevision", flow, StringComparison.Ordinal);
+        Assert.Contains("does not retry stale client values against the newer revision", flow, StringComparison.Ordinal);
         Assert.Contains("Tests must not use a fixed sleep", flow, StringComparison.Ordinal);
         Assert.Contains("Confirmation remains committed; Summary may be pending", flow, StringComparison.Ordinal);
         Assert.Contains("Authoritative record remains committed; Summary is stale", flow, StringComparison.Ordinal);
@@ -158,7 +162,7 @@ public sealed class FinancialCoreEndToEndFlowTests
             flow,
             StringComparison.Ordinal);
         Assert.Contains(
-            "before a full HTTP end-to-end test is classified green",
+            "before a full public HTTP end-to-end test is classified green",
             flow,
             StringComparison.Ordinal);
     }

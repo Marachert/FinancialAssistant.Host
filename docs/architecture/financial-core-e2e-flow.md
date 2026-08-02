@@ -63,8 +63,17 @@ Before the journey:
   same supported v1 contracts;
 - production adapters have durable service-owned stores, inboxes, and
   transactional outboxes;
-- the Summary query route is hosted from the FIN-101 contract before a full HTTP
-  end-to-end test is classified green.
+- every public gateway route and downstream destination used below is active,
+  including draft review/update/reject and Financial Summary, before a full
+  public HTTP end-to-end test is classified green.
+
+Public gateway readiness is an explicit prerequisite, not a current capability.
+At FIN-104, the checked-in gateway catalog keeps Transaction Intake disabled,
+marks only intake and confirmation placeholders, and has no review, update,
+rejection, or Summary route. Service-contract tests may call the `/api/v1` routes
+in an isolated Transaction Intake test host with synthetic trusted-gateway
+headers. A public-gateway test must fail its prerequisite check until the complete
+route set and destinations are activated by their owning delivery work.
 
 The deterministic development parser and in-memory adapters are sufficient for
 local and CI contract tests. No live or paid AI/OCR provider is required.
@@ -73,7 +82,7 @@ local and CI contract tests. No live or paid AI/OCR provider is required.
 
 ### E2E-001: Create a draft
 
-The client sends through the gateway:
+The service-contract request is:
 
 ```http
 POST /api/v1/transactions/intake
@@ -86,7 +95,8 @@ Content-Type: application/json
 }
 ```
 
-The canonical gateway alias is `POST /transactions/intake`. The gateway supplies
+The intended gateway alias is `POST /transactions/intake`; it becomes usable only
+after the public gateway prerequisite above is satisfied. The gateway supplies
 trusted authentication and owner headers downstream.
 
 Transaction Intake normalizes the input, uses current Profile/Category reference
@@ -106,13 +116,13 @@ financial state.
 
 ### E2E-002: Review the current revision
 
-The client reads:
+The service-contract test reads:
 
 ```http
 GET /api/v1/transactions/drafts/{draftId}
 ```
 
-The gateway alias is `GET /transactions/drafts/{draftId}`. The response is
+The intended gateway alias is `GET /transactions/drafts/{draftId}`. The response is
 owner-scoped and returns the current values, status, revision, confidence,
 ambiguities, and `requiresReview`. Another owner's draft is indistinguishable
 from a missing draft and returns `404 transaction_draft_not_found`.
@@ -122,14 +132,15 @@ confirmation from parser confidence or silently fill missing values.
 
 ### E2E-003: Correct and revalidate when needed
 
-For an ambiguous, incomplete, low-confidence, or user-corrected draft, the client
-sends the full reviewed replacement:
+For an ambiguous, incomplete, low-confidence, or user-corrected draft, the
+service-contract test sends the full reviewed replacement:
 
 ```http
 PUT /api/v1/transactions/drafts/{draftId}
 Content-Type: application/json
 
 {
+  "expectedRevision": 0,
   "type": "expense",
   "amount": 25.50,
   "currency": "USD",
@@ -140,9 +151,11 @@ Content-Type: application/json
 }
 ```
 
-Transaction Intake deterministically normalizes and revalidates the complete
-replacement, then atomically advances the draft revision. A stale concurrent
-mutation returns `409 transaction_draft_not_editable`. Invalid suggestions
+`expectedRevision` comes from the reviewed response. Transaction Intake rejects a
+missing or negative value, deterministically normalizes and revalidates the
+complete replacement, and conditionally advances that exact revision. A stale
+concurrent mutation returns `409 transaction_draft_not_editable`; the service does
+not retry stale client values against the newer revision. Invalid suggestions
 remain review-required and cannot be confirmed.
 
 A user may instead send
@@ -151,7 +164,7 @@ terminal, publishes no confirmation event, and changes no financial total.
 
 ### E2E-004: Confirm one reviewed revision
 
-The client sends:
+The service-contract test sends:
 
 ```http
 POST /api/v1/transactions/drafts/{draftId}/confirm
@@ -233,14 +246,15 @@ not published as fresh.
 
 ### E2E-009: Query the latest summary
 
-The client sends through the gateway:
+The service-contract request is:
 
 ```http
 GET /api/v1/financial-summary?currency=USD&timeZoneId=Europe%2FKyiv&referenceDate=2026-08-02
 ```
 
-The gateway alias is `GET /financial-summary`. A valid query returns `200`
-with daily, weekly, monthly, category, balance-delta, and freshness fields.
+The intended gateway alias is `GET /financial-summary`; it becomes usable only
+after the public gateway prerequisite above is satisfied. A valid query returns
+`200` with daily, weekly, monthly, category, balance-delta, and freshness fields.
 
 If the record event has not arrived, the response may contain previous or zero
 values with `freshness.isStale = true`. The service does not synchronously query
@@ -301,7 +315,7 @@ end-to-end financial-core test.
 | Boundary | Stable identity | Duplicate behavior | Retry owner |
 | --- | --- | --- | --- |
 | Draft creation | authenticated owner + opaque idempotency key + normalized-input fingerprint | Same input returns same draft; different input returns 409 | Client retries same request/key after transport failure |
-| Draft update/reject | owner + draft ID + current revision/status | One atomic mutation wins; stale mutation returns 409 | Client reloads current draft before another command |
+| Draft update/reject | owner + draft ID + expected/current revision and status | One atomic mutation wins; stale update returns 409; rejection is status-idempotent | Client reloads current draft before another update |
 | Confirmation | owner + draft ID + claimed revision | Same stable transaction and response; one confirmation outbox row | Client retries confirmation; Intake resumes pending publication |
 | Confirmation consumption | event ID + transaction ID | One Income/Expense record and one created-event outbox row | Matching consumer inbox retries transient failures |
 | Record event publication | event type + record ID + revision | One logical lifecycle event | Owning service outbox dispatcher |
