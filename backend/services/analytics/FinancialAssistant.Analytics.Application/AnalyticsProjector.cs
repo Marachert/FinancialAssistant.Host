@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using FinancialAssistant.Analytics.Contracts;
 using FinancialAssistant.Analytics.Domain;
 using FinancialAssistant.Shared.Contracts.Events;
 
@@ -38,7 +39,7 @@ public sealed class AnalyticsProjector
                 envelope.UserIdHash!,
                 payload.Amount,
                 payload.Currency.ToUpperInvariant(),
-                payload.CategoryId,
+                NormalizeCategoryId(payload.CategoryId),
                 payload.Date,
                 payload.Status,
                 payload.Revision,
@@ -196,6 +197,111 @@ public sealed class AnalyticsProjector
                 asOfUtc.ToUniversalTime() - snapshot.LastEventAtUtc.Value > staleAfter);
     }
 
+    public async Task<AnalyticsCategoryBreakdownReadModel> GetCategoryBreakdownAsync(
+        string userIdHash,
+        string currency,
+        DateOnly referenceDate,
+        string period,
+        int top,
+        DateTimeOffset asOfUtc,
+        TimeSpan staleAfter,
+        CancellationToken cancellationToken)
+    {
+        var normalizedUserIdHash = NormalizeRequired(userIdHash, nameof(userIdHash));
+        var normalizedCurrency = NormalizeRequired(currency, nameof(currency)).ToUpperInvariant();
+        if (normalizedCurrency.Length != 3)
+        {
+            throw new ArgumentException("Currency must use a three-letter code.", nameof(currency));
+        }
+
+        if (referenceDate == default)
+        {
+            throw new ArgumentOutOfRangeException(nameof(referenceDate));
+        }
+
+        if (top is < 1 or > 10)
+        {
+            throw new ArgumentOutOfRangeException(nameof(top), "Top must be between 1 and 10.");
+        }
+
+        if (asOfUtc == default || staleAfter <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(asOfUtc));
+        }
+
+        var normalizedPeriod = NormalizeRequired(period, nameof(period)).ToLowerInvariant();
+        var snapshot = await store.GetAsync(
+            normalizedUserIdHash,
+            normalizedCurrency,
+            cancellationToken);
+        DateOnly periodStart;
+        DateOnly periodEnd;
+        IReadOnlyList<AnalyticsCategoryTotal> categoryTotals;
+        switch (normalizedPeriod)
+        {
+            case AnalyticsBreakdownPeriods.Daily:
+                periodStart = referenceDate;
+                periodEnd = referenceDate;
+                categoryTotals = snapshot.DailyCategoryTotals.GetValueOrDefault(referenceDate) ??
+                    Array.Empty<AnalyticsCategoryTotal>();
+                break;
+            case AnalyticsBreakdownPeriods.Weekly:
+                periodStart = StartOfWeek(referenceDate);
+                periodEnd = periodStart.AddDays(6);
+                categoryTotals = snapshot.WeeklyCategoryTotals.GetValueOrDefault(periodStart) ??
+                    Array.Empty<AnalyticsCategoryTotal>();
+                break;
+            case AnalyticsBreakdownPeriods.Monthly:
+                periodStart = new DateOnly(referenceDate.Year, referenceDate.Month, 1);
+                periodEnd = periodStart.AddMonths(1).AddDays(-1);
+                categoryTotals = snapshot.MonthlyTotals.GetValueOrDefault(periodStart)
+                    ?.CategoryTotals ?? Array.Empty<AnalyticsCategoryTotal>();
+                break;
+            default:
+                throw new ArgumentException(
+                    "Period must be daily, weekly, or monthly.",
+                    nameof(period));
+        }
+
+        var incomeTotal = categoryTotals.Sum(item => item.Income);
+        var expenseTotal = categoryTotals.Sum(item => item.Expense);
+        var categories = categoryTotals
+            .Select(item => new AnalyticsCategoryBreakdownItem(
+                item.CategoryId,
+                item.Income,
+                item.Expense,
+                incomeTotal == 0m ? 0m : Percentage(item.Income, incomeTotal),
+                expenseTotal == 0m ? 0m : Percentage(item.Expense, expenseTotal)))
+            .OrderByDescending(item => item.Income + item.Expense)
+            .ThenBy(item => item.CategoryId, StringComparer.Ordinal)
+            .ToArray();
+        var topIncome = categories
+            .Where(item => item.Income > 0m)
+            .OrderByDescending(item => item.Income)
+            .ThenBy(item => item.CategoryId, StringComparer.Ordinal)
+            .Take(top)
+            .ToArray();
+        var topExpense = categories
+            .Where(item => item.Expense > 0m)
+            .OrderByDescending(item => item.Expense)
+            .ThenBy(item => item.CategoryId, StringComparer.Ordinal)
+            .Take(top)
+            .ToArray();
+
+        return new AnalyticsCategoryBreakdownReadModel(
+            normalizedCurrency,
+            referenceDate,
+            normalizedPeriod,
+            periodStart,
+            periodEnd,
+            categories,
+            topIncome,
+            topExpense,
+            snapshot.LastEventAtUtc,
+            snapshot.LastEventAtUtc is null ||
+                asOfUtc.ToUniversalTime() - snapshot.LastEventAtUtc.Value > staleAfter);
+    }
+
     private static AnalyticsDailyLimit BuildDailyLimit(decimal? limit, decimal spent)
     {
         if (limit is null)
@@ -304,7 +410,6 @@ public sealed class AnalyticsProjector
             payload.Amount <= 0m ||
             string.IsNullOrWhiteSpace(payload.Currency) ||
             payload.Currency.Length != 3 ||
-            string.IsNullOrWhiteSpace(payload.CategoryId) ||
             payload.Date == default ||
             payload.Revision < 0 ||
             payload.ChangedAtUtc == default ||
@@ -314,6 +419,11 @@ public sealed class AnalyticsProjector
             throw new ArgumentException("Financial record event is invalid.", nameof(envelope));
         }
     }
+
+    private static string NormalizeCategoryId(string? categoryId) =>
+        string.IsNullOrWhiteSpace(categoryId)
+            ? AnalyticsCategoryIds.Uncategorized
+            : categoryId.Trim();
 
     private static string NormalizeRequired(string value, string parameterName)
     {

@@ -6,6 +6,11 @@ public static class AnalyticsRecordTypes
     public const string Expense = "expense";
 }
 
+public static class AnalyticsCategoryIds
+{
+    public const string Uncategorized = "uncategorized";
+}
+
 public static class AnalyticsProjectionStatuses
 {
     public const string Active = "active";
@@ -53,6 +58,8 @@ public sealed record AnalyticsProjectionSnapshot(
     string Currency,
     IReadOnlyDictionary<DateOnly, AnalyticsAggregateTotals> DailyTotals,
     IReadOnlyDictionary<DateOnly, AnalyticsAggregateTotals> WeeklyTotals,
+    IReadOnlyDictionary<DateOnly, IReadOnlyList<AnalyticsCategoryTotal>> DailyCategoryTotals,
+    IReadOnlyDictionary<DateOnly, IReadOnlyList<AnalyticsCategoryTotal>> WeeklyCategoryTotals,
     IReadOnlyDictionary<DateOnly, AnalyticsMonthlyAggregate> MonthlyTotals,
     DateTimeOffset? LastEventAtUtc);
 
@@ -76,6 +83,28 @@ public sealed record AnalyticsCategoryTotal(
 {
     public decimal BalanceDelta => Income - Expense;
 }
+
+public sealed record AnalyticsCategoryBreakdownItem(
+    string CategoryId,
+    decimal Income,
+    decimal Expense,
+    decimal IncomeSharePercent,
+    decimal ExpenseSharePercent)
+{
+    public decimal BalanceDelta => Income - Expense;
+}
+
+public sealed record AnalyticsCategoryBreakdownReadModel(
+    string Currency,
+    DateOnly ReferenceDate,
+    string Period,
+    DateOnly PeriodStart,
+    DateOnly PeriodEnd,
+    IReadOnlyList<AnalyticsCategoryBreakdownItem> Categories,
+    IReadOnlyList<AnalyticsCategoryBreakdownItem> TopIncomeCategories,
+    IReadOnlyList<AnalyticsCategoryBreakdownItem> TopExpenseCategories,
+    DateTimeOffset? LastEventAtUtc,
+    bool IsStale);
 
 public sealed record AnalyticsTrendPoint(
     DateOnly Date,

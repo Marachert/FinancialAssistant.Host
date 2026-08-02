@@ -86,7 +86,9 @@ public sealed class AnalyticsServiceBaselineTests
                      "AnalyticsMonthlyProgressResponse",
                      "AnalyticsCategoryTotalResponse",
                      "AnalyticsTrendPointResponse",
-                     "AnalyticsFreshnessResponse"
+                     "AnalyticsFreshnessResponse",
+                     "AnalyticsCategoryBreakdownResponse",
+                     "AnalyticsCategoryBreakdownItemResponse"
                  })
         {
             Assert.Contains(responseSection, contracts, StringComparison.Ordinal);
@@ -94,6 +96,16 @@ public sealed class AnalyticsServiceBaselineTests
 
         Assert.Contains("GET /api/v1/analytics/dashboard", api, StringComparison.Ordinal);
         Assert.Contains("GET /analytics/dashboard", api, StringComparison.Ordinal);
+        var breakdownApi = Read("docs/api/analytics-category-breakdown-v1.md");
+        Assert.Contains(
+            "GET /api/v1/analytics/category-breakdown",
+            breakdownApi,
+            StringComparison.Ordinal);
+        Assert.Contains("daily", breakdownApi, StringComparison.Ordinal);
+        Assert.Contains("weekly", breakdownApi, StringComparison.Ordinal);
+        Assert.Contains("monthly", breakdownApi, StringComparison.Ordinal);
+        Assert.Contains("uncategorized", breakdownApi, StringComparison.Ordinal);
+        Assert.Contains("isStale", breakdownApi, StringComparison.Ordinal);
         Assert.Contains("dailySummary", api, StringComparison.Ordinal);
         Assert.Contains("weeklySummary", api, StringComparison.Ordinal);
         Assert.Contains("monthlySummary", api, StringComparison.Ordinal);
@@ -122,6 +134,10 @@ public sealed class AnalyticsServiceBaselineTests
             documentationIndex,
             StringComparison.Ordinal);
         Assert.Contains("analytics-dashboard-v1.md", apiIndex, StringComparison.Ordinal);
+        Assert.Contains(
+            "analytics-category-breakdown-v1.md",
+            apiIndex,
+            StringComparison.Ordinal);
     }
 
     private static string Read(string rootRelativePath) =>

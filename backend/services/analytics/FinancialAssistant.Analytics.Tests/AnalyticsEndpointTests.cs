@@ -66,6 +66,64 @@ public sealed class AnalyticsEndpointTests : IClassFixture<AnalyticsWebApplicati
     }
 
     [Fact]
+    public async Task CategoryBreakdown_ReturnsMobileReadyPeriodSharesAndTopCategories()
+    {
+        const string userId = "synthetic-breakdown-owner";
+        var referenceDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        using (var scope = factory.Services.CreateScope())
+        {
+            var projector = scope.ServiceProvider.GetRequiredService<AnalyticsProjector>();
+            await projector.ApplyAsync(
+                CreateCategoryEvent(
+                    userId,
+                    "breakdown-income",
+                    FinancialRecordEventTypes.IncomeCreated,
+                    1000m,
+                    "income.salary",
+                    referenceDate),
+                CancellationToken.None);
+            await projector.ApplyAsync(
+                CreateCategoryEvent(
+                    userId,
+                    "breakdown-expense",
+                    FinancialRecordEventTypes.ExpenseCreated,
+                    100m,
+                    "expense.groceries",
+                    referenceDate),
+                CancellationToken.None);
+        }
+
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"{AnalyticsApiRoutes.GatewayCategoryBreakdown}?currency=USD&timeZoneId=UTC&referenceDate={referenceDate:yyyy-MM-dd}&period=daily&top=2");
+        AddTrustedHeaders(request, userId);
+        using var response = await client.SendAsync(request);
+        var breakdown =
+            await response.Content.ReadFromJsonAsync<AnalyticsCategoryBreakdownResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(breakdown);
+        Assert.Equal(AnalyticsBreakdownPeriods.Daily, breakdown.Period);
+        Assert.Equal(referenceDate, breakdown.PeriodStart);
+        Assert.Equal(referenceDate, breakdown.PeriodEnd);
+        Assert.False(breakdown.Freshness.IsStale);
+        Assert.NotNull(breakdown.Freshness.LastEventAtUtc);
+        Assert.Equal(2, breakdown.Categories.Count);
+        Assert.Equal("income.salary", Assert.Single(breakdown.TopIncomeCategories).CategoryId);
+        Assert.Equal(
+            "expense.groceries",
+            Assert.Single(breakdown.TopExpenseCategories).CategoryId);
+        Assert.Equal(
+            100m,
+            breakdown.Categories.Single(item => item.CategoryId == "income.salary")
+                .IncomeSharePercent);
+        Assert.Equal(
+            100m,
+            breakdown.Categories.Single(item => item.CategoryId == "expense.groceries")
+                .ExpenseSharePercent);
+    }
+
+    [Fact]
     public async Task Dashboard_RequiresTrustedGatewayAndValidQuery()
     {
         using var unauthorized = await client.GetAsync(
@@ -122,6 +180,39 @@ public sealed class AnalyticsEndpointTests : IClassFixture<AnalyticsWebApplicati
                 25m,
                 "USD",
                 "expense.groceries",
+                date,
+                "active",
+                0,
+                "manual",
+                changedAt));
+    }
+
+    private static IntegrationEventEnvelope<FinancialRecordChangedV1> CreateCategoryEvent(
+        string userId,
+        string recordId,
+        string eventType,
+        decimal amount,
+        string categoryId,
+        DateOnly date)
+    {
+        var changedAt = DateTimeOffset.UtcNow;
+        return new IntegrationEventEnvelope<FinancialRecordChangedV1>(
+            $"synthetic-{recordId}-event",
+            $"synthetic-{recordId}-occurrence",
+            eventType,
+            changedAt,
+            eventType == FinancialRecordEventTypes.IncomeCreated
+                ? "income-service"
+                : "expense-service",
+            FinancialRecordEventTypes.SchemaVersion,
+            "synthetic-breakdown-correlation",
+            "synthetic-breakdown-causation",
+            AnalyticsOwnerHasher.Hash(userId),
+            new FinancialRecordChangedV1(
+                recordId,
+                amount,
+                "USD",
+                categoryId,
                 date,
                 "active",
                 0,

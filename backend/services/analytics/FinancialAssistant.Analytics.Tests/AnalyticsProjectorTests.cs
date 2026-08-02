@@ -1,4 +1,6 @@
 using FinancialAssistant.Analytics.Application;
+using FinancialAssistant.Analytics.Contracts;
+using FinancialAssistant.Analytics.Domain;
 using FinancialAssistant.Analytics.Infrastructure;
 using FinancialAssistant.Shared.Contracts.Events;
 using Xunit;
@@ -269,6 +271,141 @@ public sealed class AnalyticsProjectorTests
         var published = Assert.Single(publisher.Published);
         Assert.Equal(50m, published.Payload.DailyExpenseLimit);
         Assert.Equal(60m, published.Payload.DailyExpenseSpent);
+    }
+
+    [Fact]
+    public async Task CategoryBreakdown_SupportsPeriodsSharesTopAndUncategorized()
+    {
+        var projector = new AnalyticsProjector(new InMemoryAnalyticsReadModelStore());
+        var referenceDate = new DateOnly(2026, 8, 20);
+        await projector.ApplyAsync(
+            CreateEvent(
+                "breakdown-income",
+                FinancialRecordEventTypes.IncomeCreated,
+                1000m,
+                "income.salary",
+                referenceDate),
+            CancellationToken.None);
+        await projector.ApplyAsync(
+            CreateEvent(
+                "breakdown-groceries",
+                FinancialRecordEventTypes.ExpenseCreated,
+                100m,
+                "expense.groceries",
+                referenceDate),
+            CancellationToken.None);
+        await projector.ApplyAsync(
+            CreateEvent(
+                "breakdown-utilities",
+                FinancialRecordEventTypes.ExpenseCreated,
+                75m,
+                "expense.utilities",
+                referenceDate),
+            CancellationToken.None);
+        await projector.ApplyAsync(
+            CreateEvent(
+                "breakdown-uncategorized",
+                FinancialRecordEventTypes.ExpenseCreated,
+                50m,
+                " ",
+                referenceDate),
+            CancellationToken.None);
+        await projector.ApplyAsync(
+            CreateEvent(
+                "breakdown-prior",
+                FinancialRecordEventTypes.ExpenseCreated,
+                25m,
+                "expense.entertainment",
+                new DateOnly(2026, 8, 10)),
+            CancellationToken.None);
+
+        var daily = await projector.GetCategoryBreakdownAsync(
+            UserIdHash,
+            "usd",
+            referenceDate,
+            AnalyticsBreakdownPeriods.Daily,
+            2,
+            ChangedAt.AddHours(1),
+            TimeSpan.FromHours(2),
+            CancellationToken.None);
+
+        Assert.Equal(referenceDate, daily.PeriodStart);
+        Assert.Equal(referenceDate, daily.PeriodEnd);
+        Assert.False(daily.IsStale);
+        Assert.Equal(ChangedAt, daily.LastEventAtUtc);
+        Assert.Equal(4, daily.Categories.Count);
+        var salary = Assert.Single(
+            daily.Categories,
+            item => item.CategoryId == "income.salary");
+        Assert.Equal(100m, salary.IncomeSharePercent);
+        Assert.Equal(0m, salary.ExpenseSharePercent);
+        var groceries = Assert.Single(
+            daily.Categories,
+            item => item.CategoryId == "expense.groceries");
+        Assert.Equal(44.44m, groceries.ExpenseSharePercent);
+        var uncategorized = Assert.Single(
+            daily.Categories,
+            item => item.CategoryId == AnalyticsCategoryIds.Uncategorized);
+        Assert.Equal(22.22m, uncategorized.ExpenseSharePercent);
+        Assert.Equal(
+            new[] { "income.salary" },
+            daily.TopIncomeCategories.Select(item => item.CategoryId));
+        Assert.Equal(
+            new[] { "expense.groceries", "expense.utilities" },
+            daily.TopExpenseCategories.Select(item => item.CategoryId));
+
+        var weekly = await projector.GetCategoryBreakdownAsync(
+            UserIdHash,
+            "USD",
+            referenceDate,
+            AnalyticsBreakdownPeriods.Weekly,
+            2,
+            ChangedAt.AddHours(1),
+            TimeSpan.FromHours(2),
+            CancellationToken.None);
+        Assert.Equal(new DateOnly(2026, 8, 17), weekly.PeriodStart);
+        Assert.Equal(new DateOnly(2026, 8, 23), weekly.PeriodEnd);
+        Assert.Equal(4, weekly.Categories.Count);
+
+        var monthly = await projector.GetCategoryBreakdownAsync(
+            UserIdHash,
+            "USD",
+            referenceDate,
+            AnalyticsBreakdownPeriods.Monthly,
+            2,
+            ChangedAt.AddHours(1),
+            TimeSpan.FromHours(2),
+            CancellationToken.None);
+        Assert.Equal(new DateOnly(2026, 8, 1), monthly.PeriodStart);
+        Assert.Equal(new DateOnly(2026, 8, 31), monthly.PeriodEnd);
+        Assert.Equal(5, monthly.Categories.Count);
+
+        var empty = await projector.GetCategoryBreakdownAsync(
+            UserIdHash,
+            "USD",
+            referenceDate.AddDays(1),
+            AnalyticsBreakdownPeriods.Daily,
+            2,
+            ChangedAt.AddHours(1),
+            TimeSpan.FromHours(2),
+            CancellationToken.None);
+        Assert.Empty(empty.Categories);
+        Assert.Empty(empty.TopIncomeCategories);
+        Assert.Empty(empty.TopExpenseCategories);
+        Assert.False(empty.IsStale);
+
+        var neverProjected = await new AnalyticsProjector(
+            new InMemoryAnalyticsReadModelStore()).GetCategoryBreakdownAsync(
+                UserIdHash,
+                "USD",
+                referenceDate,
+                AnalyticsBreakdownPeriods.Daily,
+                2,
+                ChangedAt.AddHours(1),
+                TimeSpan.FromHours(2),
+                CancellationToken.None);
+        Assert.True(neverProjected.IsStale);
+        Assert.Null(neverProjected.LastEventAtUtc);
     }
 
     private static IntegrationEventEnvelope<FinancialRecordChangedV1> CreateEvent(

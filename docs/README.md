@@ -66,6 +66,7 @@ Analytics dashboard projection and API:
 ```text
 docs/engineering/analytics-dashboard-read-model.md
 docs/api/analytics-dashboard-v1.md
+docs/api/analytics-category-breakdown-v1.md
 ```
 
 Deterministic financial score and history API:

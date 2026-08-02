@@ -50,4 +50,42 @@ public sealed class AnalyticsContractTests
         Assert.DoesNotContain("Revision", json, StringComparison.Ordinal);
         Assert.DoesNotContain("Origin", json, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void CategoryBreakdownContract_IsStableAndPrivacySafe()
+    {
+        var item = new AnalyticsCategoryBreakdownItemResponse(
+            "expense.groceries",
+            0m,
+            100m,
+            -100m,
+            0m,
+            100m);
+        var response = new AnalyticsCategoryBreakdownResponse(
+            "USD",
+            "UTC",
+            new DateOnly(2026, 8, 20),
+            AnalyticsBreakdownPeriods.Daily,
+            new DateOnly(2026, 8, 20),
+            new DateOnly(2026, 8, 20),
+            new[] { item },
+            Array.Empty<AnalyticsCategoryBreakdownItemResponse>(),
+            new[] { item },
+            new AnalyticsFreshnessResponse(false, DateTimeOffset.UtcNow));
+
+        var json = JsonSerializer.Serialize(response);
+
+        Assert.Equal(
+            "/api/v1/analytics/category-breakdown",
+            AnalyticsApiRoutes.CategoryBreakdown);
+        Assert.Equal(
+            "/analytics/category-breakdown",
+            AnalyticsApiRoutes.GatewayCategoryBreakdown);
+        Assert.Contains("ExpenseSharePercent", json, StringComparison.Ordinal);
+        Assert.Contains("TopExpenseCategories", json, StringComparison.Ordinal);
+        Assert.Contains("Freshness", json, StringComparison.Ordinal);
+        Assert.Contains("IsStale", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("UserIdHash", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("RecordId", json, StringComparison.Ordinal);
+    }
 }
