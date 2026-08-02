@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-02T21:23:30+03:00
+Last updated: 2026-08-02T21:29:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-129 closure is **66.8%**:
-**131 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-130 closure is **67.3%**:
+**132 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,20 +13,20 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-129 - P6.T3 Implement category breakdown reports
-- delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/131
-- delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/0b0c1cbd2c1332ffb14dc76aad7d7719994f1406
-- previous readiness: 130 / 196, or 66.3%
-- current readiness: 131 / 196, or 66.8%
+- FIN-130 - P6.T4 Create Financial Score Service project baseline
+- recovered delivery PR:
+  https://github.com/Marachert/FinancialAssistant.Host/pull/123
+- recovered delivery merge commit:
+  https://github.com/Marachert/FinancialAssistant.Host/commit/cef3bb653f60a22b3582c0ec6923e91328fcdc54
+- previous readiness: 131 / 196, or 66.8%
+- current readiness: 132 / 196, or 67.3%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-129 - canonical implementation delivered by PR #131
-- previous readiness: 130 / 196, or 66.3%
-- current readiness: 131 / 196, or 66.8%
+- FIN-130 - recovered from the already merged FIN-29 implementation
+- previous readiness: 131 / 196, or 66.8%
+- current readiness: 132 / 196, or 67.3%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -35,18 +35,18 @@ Closing these duplicates does not change the numerator or denominator.
 
 Current delivery:
 
-- FIN-129 is Done after PR #131 added authenticated daily, Monday-weekly, and
-  calendar-month category breakdown reports from confirmed analytics projections
-- responses include deterministic income/expense totals, percentage shares,
-  independently ranked top categories, and a stable uncategorized fallback
-- freshness metadata distinguishes confirmed empty periods from delayed or
-  never-built projections; archived records remain excluded
-- Backend CI #402 passed privacy, format, Release build, and all solution tests
-  on final head `bb54c49b8e6d074bc0910afb83a7b19641e8954f`
-- one valid freshness review finding was fixed, evidenced, and resolved
-- no paid provider or external dependency was added
-- parent FIN-27 remains In Progress with 6 of 20 canonical children Done; the
-  next ranked unfinished canonical leaf is FIN-130
+- FIN-130 is Done after a Definition of Done audit recovered its complete
+  Financial Score Service baseline from merged FIN-29 PR #123
+- the six-layer .NET 8 service includes score snapshot/input/history models,
+  confirmed-event consumption, local adapters, and versioned configuration
+- backend-owned `financial-score-v1` is deterministic and transparent; no LLM
+  or provider calculates the score
+- score history is stored and exposed through authenticated current/history APIs
+- recovered Backend CI #379 passed privacy, format, Release build, and all tests
+  on final head `b8b6672985a2d29609ed447016a4eba931a597f9`
+- no duplicate branch, paid provider, or external dependency was required
+- parent FIN-27 remains In Progress with 7 of 20 canonical children Done; the
+  next ranked unfinished canonical leaf is FIN-131
 
 ## Epic Progress
 
@@ -58,11 +58,11 @@ Current delivery:
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
-| FIN-27 | P6 Analytics, score, recommendations, and notifications | 6 | 20 | 30.0% |
+| FIN-27 | P6 Analytics, score, recommendations, and notifications | 7 | 20 | 35.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **131** | **196** | **66.8%** |
+| **Total** | **Canonical POC leaf scope** | **132** | **196** | **67.3%** |
 
 ## First-User-Test Gates
 
@@ -151,3 +151,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-02T20:45:10+03:00 | FIN-127 | Exact duplicate of FIN-126; Jira-linked and Done | 65.8% | +0.0 pp |
 | 2026-08-02T21:00:20+03:00 | FIN-128 | Closure delivered by PR 129 | 66.3% | +0.5 pp |
 | 2026-08-02T21:23:30+03:00 | FIN-129 | Closure delivered by PR 131 | 66.8% | +0.5 pp |
+| 2026-08-02T21:29:00+03:00 | FIN-130 | Recovered Financial Score baseline from merged PR 123 | 67.3% | +0.5 pp |
