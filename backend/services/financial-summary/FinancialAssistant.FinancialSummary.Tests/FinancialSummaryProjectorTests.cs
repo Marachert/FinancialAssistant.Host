@@ -9,7 +9,7 @@ public sealed class FinancialSummaryProjectorTests
 {
     private static readonly string UserIdHash = new('a', 64);
     private static readonly DateTimeOffset ChangedAt =
-        new(2026, 8, 2, 12, 0, 0, TimeSpan.Zero);
+        new(2026, 8, 20, 12, 0, 0, TimeSpan.Zero);
 
     [Fact]
     public async Task ActiveRecords_DeriveDailyWeeklyMonthlyAndCategoryTotals()
@@ -17,22 +17,22 @@ public sealed class FinancialSummaryProjectorTests
         var projector = CreateProjector();
 
         await projector.ApplyAsync(
-            CreateEvent("income-day", FinancialRecordEventTypes.IncomeCreated, 100m, "income.salary", new DateOnly(2026, 8, 2)),
+            CreateEvent("income-day", FinancialRecordEventTypes.IncomeCreated, 100m, "income.salary", new DateOnly(2026, 8, 20)),
             CancellationToken.None);
         await projector.ApplyAsync(
-            CreateEvent("expense-day", FinancialRecordEventTypes.ExpenseCreated, 40m, "expense.groceries", new DateOnly(2026, 8, 2)),
+            CreateEvent("expense-day", FinancialRecordEventTypes.ExpenseCreated, 40m, "expense.groceries", new DateOnly(2026, 8, 20)),
             CancellationToken.None);
         await projector.ApplyAsync(
-            CreateEvent("income-week", FinancialRecordEventTypes.IncomeCreated, 200m, "income.freelance", new DateOnly(2026, 7, 28)),
+            CreateEvent("income-week", FinancialRecordEventTypes.IncomeCreated, 200m, "income.freelance", new DateOnly(2026, 8, 18)),
             CancellationToken.None);
         await projector.ApplyAsync(
-            CreateEvent("expense-month", FinancialRecordEventTypes.ExpenseCreated, 30m, "expense.utilities", new DateOnly(2026, 7, 15)),
+            CreateEvent("expense-month", FinancialRecordEventTypes.ExpenseCreated, 30m, "expense.utilities", new DateOnly(2026, 8, 5)),
             CancellationToken.None);
 
         var summary = await projector.GetAsync(
             UserIdHash,
             "usd",
-            new DateOnly(2026, 8, 2),
+            new DateOnly(2026, 8, 20),
             ChangedAt.AddHours(1),
             TimeSpan.FromHours(2),
             CancellationToken.None);
@@ -42,9 +42,9 @@ public sealed class FinancialSummaryProjectorTests
         Assert.Equal(300m, summary.Weekly.Income);
         Assert.Equal(40m, summary.Weekly.Expense);
         Assert.Equal(300m, summary.Monthly.Income);
-        Assert.Equal(40m, summary.Monthly.Expense);
-        Assert.Equal(260m, summary.BalanceDelta);
-        Assert.Equal(3, summary.CategoryBreakdown.Count);
+        Assert.Equal(70m, summary.Monthly.Expense);
+        Assert.Equal(230m, summary.BalanceDelta);
+        Assert.Equal(4, summary.CategoryBreakdown.Count);
         Assert.False(summary.IsStale);
     }
 
@@ -57,13 +57,13 @@ public sealed class FinancialSummaryProjectorTests
             FinancialRecordEventTypes.ExpenseCreated,
             40m,
             "expense.groceries",
-            new DateOnly(2026, 8, 2));
+            new DateOnly(2026, 8, 20));
         var archived = CreateEvent(
             "expense-record",
             FinancialRecordEventTypes.ExpenseArchived,
             40m,
             "expense.groceries",
-            new DateOnly(2026, 8, 2),
+            new DateOnly(2026, 8, 20),
             revision: 1,
             status: "archived",
             changedAtUtc: ChangedAt.AddMinutes(5));
@@ -74,7 +74,7 @@ public sealed class FinancialSummaryProjectorTests
         var summary = await projector.GetAsync(
             UserIdHash,
             "USD",
-            new DateOnly(2026, 8, 2),
+            new DateOnly(2026, 8, 20),
             ChangedAt.AddHours(1),
             TimeSpan.FromHours(2),
             CancellationToken.None);
@@ -93,13 +93,13 @@ public sealed class FinancialSummaryProjectorTests
             FinancialRecordEventTypes.IncomeCreated,
             75m,
             "income.salary",
-            new DateOnly(2026, 8, 2));
+            new DateOnly(2026, 8, 20));
         var updated = CreateEvent(
             "income-record",
             FinancialRecordEventTypes.IncomeUpdated,
             90m,
             "income.salary",
-            new DateOnly(2026, 8, 2),
+            new DateOnly(2026, 8, 20),
             revision: 1,
             changedAtUtc: ChangedAt.AddMinutes(10));
 
@@ -107,7 +107,7 @@ public sealed class FinancialSummaryProjectorTests
         var summary = await projector.GetAsync(
             UserIdHash,
             "USD",
-            new DateOnly(2026, 8, 2),
+            new DateOnly(2026, 8, 20),
             ChangedAt.AddHours(4),
             TimeSpan.FromHours(2),
             CancellationToken.None);
@@ -122,7 +122,7 @@ public sealed class FinancialSummaryProjectorTests
         var summary = await CreateProjector().GetAsync(
             UserIdHash,
             "USD",
-            new DateOnly(2026, 8, 2),
+            new DateOnly(2026, 8, 20),
             ChangedAt,
             TimeSpan.FromHours(2),
             CancellationToken.None);
