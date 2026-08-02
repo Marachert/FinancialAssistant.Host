@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-02T12:26:00+03:00
+Last updated: 2026-08-02T12:43:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-98 closure is **60.7%**:
-**119 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-99 closure is **61.2%**:
+**120 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,13 +13,13 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-98 - Define financial source-of-truth rules
+- FIN-99 - Implement financial record event publishing
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/107
+  https://github.com/Marachert/FinancialAssistant.Host/pull/109
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/41d242a4d9f5b64bafb7692028e1cea80562f8c2
-- previous readiness: 118 / 196, or 60.2%
-- current readiness: 119 / 196, or 60.7%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/e3245236da7ee8ce74916c7073e912be8d3fbf2f
+- previous readiness: 119 / 196, or 60.7%
+- current readiness: 120 / 196, or 61.2%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
@@ -28,16 +28,16 @@ denominator.
 
 Current delivery:
 
-- FIN-98 is Done after PR #107 defined the canonical financial source-of-truth
-  contract
-- FST-001 through FST-008 govern authoritative records, AI/OCR suggestions,
-  active-only calculations, owner isolation, per-currency totals, corrections,
-  archive/restore, and read-only derived systems
-- deterministic formulas, fourteen edge cases, and test/review expectations are
-  documented and linked from Transaction Intake, Income, and Expense
-- Backend CI #337 passed privacy, format, Release build, and all solution tests
+- FIN-99 is Done after PR #109 implemented versioned financial record events
+- Income and Expense publish created, updated, archived, and restored v1 events
+  through the shared envelope with correlation and causation metadata
+- event payloads use pseudonymous user identifiers, exclude merchant and raw
+  intake data, and deduplicate confirmed-event replay
+- durable outbox, RabbitMQ retry, safe failure, and dead-letter behavior are
+  documented for the production adapter
+- Backend CI #341 passed privacy, format, Release build, and all solution tests
   on the final PR head
-- parent FIN-18 remains In Progress; FIN-99 is the next ranked unfinished leaf
+- parent FIN-18 remains In Progress; FIN-100 is the next ranked unfinished leaf
 
 ## Epic Progress
 
@@ -47,13 +47,13 @@ Current delivery:
 | FIN-5 | P1 Architecture definition and technical governance | 17 | 17 | 100.0% |
 | FIN-10 | P2 Repository, DevOps, and local platform foundation | 36 | 36 | 100.0% |
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
-| FIN-18 | P4 Financial core backend services | 16 | 22 | 72.7% |
+| FIN-18 | P4 Financial core backend services | 17 | 22 | 77.3% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 0 | 20 | 0.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **119** | **196** | **60.7%** |
+| **Total** | **Canonical POC leaf scope** | **120** | **196** | **61.2%** |
 
 ## First-User-Test Gates
 
@@ -128,3 +128,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-08-02T11:55:00+03:00 | FIN-96 | Closure delivered by PR 103 | 59.7% | +0.5 pp |
 | 2026-08-02T12:14:00+03:00 | FIN-97 | Closure delivered by PR 105 | 60.2% | +0.5 pp |
 | 2026-08-02T12:26:00+03:00 | FIN-98 | Closure delivered by PR 107 | 60.7% | +0.5 pp |
+| 2026-08-02T12:43:00+03:00 | FIN-99 | Closure delivered by PR 109 | 61.2% | +0.5 pp |
