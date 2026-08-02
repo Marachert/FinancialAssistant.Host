@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-02T12:55:30+03:00
+Last updated: 2026-08-02T13:04:30+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-100 closure is **61.7%**:
-**121 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-101 closure is **62.2%**:
+**122 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,13 +13,13 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-100 - Create financial summary read model baseline
+- FIN-101 - Implement financial summary API contracts
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/111
+  https://github.com/Marachert/FinancialAssistant.Host/pull/113
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/a03f20ad12184007d067c94b4db129295c339b07
-- previous readiness: 120 / 196, or 61.2%
-- current readiness: 121 / 196, or 61.7%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/9910a141c8a0beea94ed8c551b0fd595cf5a7715
+- previous readiness: 121 / 196, or 61.7%
+- current readiness: 122 / 196, or 62.2%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
@@ -28,16 +28,15 @@ denominator.
 
 Current delivery:
 
-- FIN-100 is Done after PR #111 created the Financial Summary read model baseline
-- authoritative Income and Expense lifecycle events now project idempotently into
-  per-owner and per-currency daily, weekly, and monthly totals
-- active-only balance delta and category breakdown behavior is covered alongside
-  archive, out-of-order replay, empty state, rebuild, and stale-state tests
-- the summary is explicitly disposable and non-authoritative; rebuild and shadow
-  generation behavior is documented
-- Backend CI #346 passed privacy, format, Release build, and all solution tests
+- FIN-101 is Done after PR #113 added stable Financial Summary API contracts
+- the dashboard contract exposes daily, weekly, monthly, category, balance, and
+  freshness values with explicit currency, timezone, and reference-date semantics
+- empty periods return zero-safe values, stale projections remain explicit, and
+  internal owner/event/revision/storage details are excluded by the mapper
+- mobile/web compatibility and client-facing API documentation are covered
+- Backend CI #350 passed privacy, format, Release build, and all solution tests
   on the final PR head
-- parent FIN-18 remains In Progress; FIN-101 is the next ranked unfinished leaf
+- parent FIN-18 remains In Progress; FIN-102 is the next ranked unfinished leaf
 
 ## Epic Progress
 
@@ -47,13 +46,13 @@ Current delivery:
 | FIN-5 | P1 Architecture definition and technical governance | 17 | 17 | 100.0% |
 | FIN-10 | P2 Repository, DevOps, and local platform foundation | 36 | 36 | 100.0% |
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
-| FIN-18 | P4 Financial core backend services | 18 | 22 | 81.8% |
+| FIN-18 | P4 Financial core backend services | 19 | 22 | 86.4% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 0 | 20 | 0.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **121** | **196** | **61.7%** |
+| **Total** | **Canonical POC leaf scope** | **122** | **196** | **62.2%** |
 
 ## First-User-Test Gates
 
@@ -130,3 +129,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-08-02T12:26:00+03:00 | FIN-98 | Closure delivered by PR 107 | 60.7% | +0.5 pp |
 | 2026-08-02T12:43:00+03:00 | FIN-99 | Closure delivered by PR 109 | 61.2% | +0.5 pp |
 | 2026-08-02T12:55:30+03:00 | FIN-100 | Closure delivered by PR 111 | 61.7% | +0.5 pp |
+| 2026-08-02T13:04:30+03:00 | FIN-101 | Closure delivered by PR 113 | 62.2% | +0.5 pp |
