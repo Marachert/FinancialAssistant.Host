@@ -337,7 +337,7 @@ public sealed partial class IncomeManagementService : IIncomeManagementService
             record.UpdatedAtUtc,
             record.Revision);
 
-    [GeneratedRegex("^income\.[a-z0-9]+(?:-[a-z0-9]+)*$", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"^income\.[a-z0-9]+(?:-[a-z0-9]+)*$", RegexOptions.CultureInvariant)]
     private static partial Regex IncomeCategoryPattern();
 
     private sealed record ValidatedIncomeValues(
