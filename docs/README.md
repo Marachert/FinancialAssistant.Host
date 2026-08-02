@@ -43,6 +43,12 @@ Canonical financial calculation policy:
 docs/architecture/financial-source-of-truth.md
 ```
 
+Financial summary projection baseline:
+
+```text
+docs/engineering/financial-summary-read-model.md
+```
+
 ## Canonical folders
 
 ```text
