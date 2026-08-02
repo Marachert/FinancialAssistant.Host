@@ -1,6 +1,6 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-02T20:39:30+03:00
+Last updated: 2026-08-02T20:45:10+03:00
 
 ## Current Snapshot
 
@@ -22,6 +22,14 @@ Latest canonical closure:
 - current readiness: 129 / 196, or 65.8%
 - change: +0.5 percentage points
 
+Latest Jira closure:
+
+- FIN-127 - exact later duplicate of canonical FIN-126
+- duplicate link: FIN-127 duplicates FIN-126
+- previous readiness: 129 / 196, or 65.8%
+- current readiness: 129 / 196, or 65.8%
+- change: +0.0 percentage points
+
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
 duplicate of FIN-124, and FIN-127 is an exact later duplicate of FIN-126.
 Closing these duplicates does not change the numerator or denominator.
@@ -37,8 +45,10 @@ Current delivery:
   implemented and documented
 - current validation is Backend CI #388: privacy, format, Release build, and all
   solution tests passed on exact head `47a1a92f0f45cb1f9e17eaf603d3476c0f206c2d`
+- FIN-127 is Done as an exact duplicate of FIN-126; it changes canonical
+  readiness by +0.0 percentage points and required no code or paid provider
 - parent FIN-27 remains In Progress with 4 of 20 canonical children Done; the
-  next ranked unfinished issue is FIN-127, an exact later duplicate of FIN-126
+  next ranked unfinished canonical leaf is FIN-128
 
 ## Epic Progress
 
@@ -79,7 +89,8 @@ can be handed to first users.
 
 ## Calculation Contract
 
-This file is recalculated after every canonical ticket is closed.
+This file is updated after every Jira leaf closure. Exact duplicate closures are
+recorded with a +0.0 percentage-point change.
 
 1. Source data is the current Jira `FIN` project hierarchy.
 2. POC scope is the canonical leaf-ticket scope under epics FIN-1, FIN-5,
@@ -97,7 +108,7 @@ This file is recalculated after every canonical ticket is closed.
 
 ## Closure History
 
-| Recorded at | Canonical ticket | Result | POC readiness | Change |
+| Recorded at | Jira ticket | Result | POC readiness | Change |
 | --- | --- | --- | ---: | ---: |
 | 2026-07-30T12:22:16+03:00 | FIN-118 | Merged and Done | 45.9% | +0.5 pp |
 | 2026-07-30T13:09:43+03:00 | FIN-121 | Closure delivered by PR 60 | 46.4% | +0.5 pp |
@@ -139,3 +150,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-08-02T17:16:06+03:00 | FIN-29 | Closure delivered by PR 123 | 64.8% | +0.5 pp |
 | 2026-08-02T20:28:45+03:00 | FIN-30 | Closure delivered by PR 125 | 65.3% | +0.5 pp |
 | 2026-08-02T20:39:30+03:00 | FIN-126 | Recovered analytics baseline from merged PR 121 | 65.8% | +0.5 pp |
+| 2026-08-02T20:45:10+03:00 | FIN-127 | Exact duplicate of FIN-126; Jira-linked and Done | 65.8% | +0.0 pp |
