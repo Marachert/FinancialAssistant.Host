@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-02T14:24:20+03:00
+Last updated: 2026-08-02T16:35:09.228+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-104 closure is **63.8%**:
-**125 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-28 closure is **64.3%**:
+**126 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,13 +13,13 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-104 - Define end-to-end financial core API flow
+- FIN-28 - Implement Analytics Service read models and dashboard APIs
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/119
+  https://github.com/Marachert/FinancialAssistant.Host/pull/121
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/1b908b96f959ab7f36640ddb5bceaadd2b2613ad
-- previous readiness: 124 / 196, or 63.3%
-- current readiness: 125 / 196, or 63.8%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/8981f44485a787fd2bc81f0fc362472cdb277143
+- previous readiness: 125 / 196, or 63.8%
+- current readiness: 126 / 196, or 64.3%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
@@ -28,18 +28,19 @@ denominator.
 
 Current delivery:
 
-- FIN-104 is Done after PR #119 documented and regression-guarded the complete
-  user-input-to-financial-summary backend flow
-- synchronous service contracts are separated from asynchronous event propagation,
-  with convergence, idempotency, retry, and failure ownership made explicit
-- full public gateway activation is an explicit prerequisite; direct service
-  contracts are not misrepresented as currently active gateway aliases
-- draft updates require an expected revision and reject stale writes without
-  overwriting accepted financial values
-- Backend CI #366 passed privacy, format, Release build, and all solution tests
+- FIN-28 is Done after PR #121 delivered the Analytics Service baseline and
+  deterministic dashboard API
+- confirmed Income and Expense lifecycle events project idempotently into daily,
+  Monday-weekly, monthly, category, and recent-trend read models
+- the Analytics Service dashboard resolves limits from a server-side authority
+  boundary and returns stable validation errors without trusting caller-supplied
+  financial values; gateway activation remains unfinished integration work
+- the hosted RabbitMQ consumer acknowledges only after projection and routes
+  terminal or processing failures to its dead-letter path
+- Backend CI #371 passed privacy, format, Release build, and all solution tests
   on the final PR head
-- parent FIN-18 is Done after all 22 canonical children and its Definition of Done
-  were independently verified
+- parent FIN-27 remains In Progress at 1 of 20 canonical leaves because its
+  score, recommendations, notifications, and remaining analytics work are unfinished
 
 ## Epic Progress
 
@@ -51,11 +52,11 @@ Current delivery:
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
-| FIN-27 | P6 Analytics, score, recommendations, and notifications | 0 | 20 | 0.0% |
+| FIN-27 | P6 Analytics, score, recommendations, and notifications | 1 | 20 | 5.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **125** | **196** | **63.8%** |
+| **Total** | **Canonical POC leaf scope** | **126** | **196** | **64.3%** |
 
 ## First-User-Test Gates
 
@@ -136,3 +137,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-08-02T13:20:30+03:00 | FIN-102 | Closure delivered by PR 115 | 62.8% | +0.6 pp |
 | 2026-08-02T13:33:30+03:00 | FIN-103 | Closure delivered by PR 117 | 63.3% | +0.5 pp |
 | 2026-08-02T14:24:20+03:00 | FIN-104 | Closure delivered by PR 119; FIN-18 completed | 63.8% | +0.5 pp |
+| 2026-08-02T16:35:09.228+03:00 | FIN-28 | Closure delivered by PR 121 | 64.3% | +0.5 pp |
