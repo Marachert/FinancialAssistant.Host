@@ -74,12 +74,15 @@ public sealed class FinancialCoreValidationTestPlanTests
     private static string ReadPlan()
     {
         var repositoryRoot = FindRepositoryRoot();
-        return File.ReadAllText(
+        var content = File.ReadAllText(
             Path.Combine(
                 repositoryRoot,
                 "docs",
                 "engineering",
                 "financial-core-validation-test-plan.md"));
+        return string.Join(
+            ' ',
+            content.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
     }
 
     private static string FindRepositoryRoot()
