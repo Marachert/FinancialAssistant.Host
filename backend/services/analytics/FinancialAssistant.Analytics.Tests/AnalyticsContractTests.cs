@@ -13,6 +13,24 @@ public sealed class AnalyticsContractTests
             "USD",
             "UTC",
             new DateOnly(2026, 8, 20),
+            new AnalyticsPeriodSummaryResponse(
+                new DateOnly(2026, 8, 20),
+                new DateOnly(2026, 8, 20),
+                500m,
+                25m,
+                475m),
+            new AnalyticsPeriodSummaryResponse(
+                new DateOnly(2026, 8, 17),
+                new DateOnly(2026, 8, 23),
+                500m,
+                100m,
+                400m),
+            new AnalyticsPeriodSummaryResponse(
+                new DateOnly(2026, 8, 1),
+                new DateOnly(2026, 8, 31),
+                500m,
+                100m,
+                400m),
             new AnalyticsDailyLimitResponse(true, 50m, 25m, 25m, 50m),
             new AnalyticsMonthlyProgressResponse(500m, 100m, 400m, 20m),
             new[] { new AnalyticsCategoryTotalResponse("expense.groceries", 0m, 100m, -100m) },
@@ -23,6 +41,9 @@ public sealed class AnalyticsContractTests
 
         Assert.Equal("/api/v1/analytics/dashboard", AnalyticsApiRoutes.Dashboard);
         Assert.Equal("/analytics/dashboard", AnalyticsApiRoutes.GatewayDashboard);
+        Assert.Contains("DailySummary", json, StringComparison.Ordinal);
+        Assert.Contains("WeeklySummary", json, StringComparison.Ordinal);
+        Assert.Contains("MonthlySummary", json, StringComparison.Ordinal);
         Assert.DoesNotContain("UserIdHash", json, StringComparison.Ordinal);
         Assert.DoesNotContain("RecordId", json, StringComparison.Ordinal);
         Assert.DoesNotContain("EventId", json, StringComparison.Ordinal);
