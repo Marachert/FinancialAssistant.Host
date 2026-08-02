@@ -65,7 +65,7 @@ app.MapGet(
             "running",
             environment.EnvironmentName,
             "in-memory",
-            "confirmed_transaction")));
+            "confirmed_or_manual")));
 
 app.MapIncomeEndpoints();
 
