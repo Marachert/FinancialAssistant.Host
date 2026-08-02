@@ -21,7 +21,12 @@ scores, and recommendations are defined in:
 
 ```text
 docs/architecture/financial-source-of-truth.md
+docs/architecture/financial-core-service-boundaries.md
 ```
+
+The service-boundary contract assigns owned data, synchronous read rules,
+asynchronous event direction, failure ownership, and forbidden coupling across
+Profile, Category, Transaction Intake, Income, Expense, and Financial Summary.
 
 Service documentation and implementation must link to and preserve that
 contract.
