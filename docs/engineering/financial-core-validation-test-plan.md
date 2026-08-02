@@ -34,7 +34,7 @@ containerized free dependencies and synthetic fixtures.
 | ID | Scenario | Expected assertion |
 | --- | --- | --- |
 | FCV-001 | positive amount at minimum accepted precision | stored amount is positive and normalized |
-| FCV-002 | zero or negative amount | `400 invalid_*_request`; no draft, record, event, or total change |
+| FCV-002 | authoritative Income/Expense command with zero or negative amount | `400 invalid_*_request`; no record, event, or total change |
 | FCV-003 | amount above service maximum | deterministic rejection before storage |
 | FCV-004 | more than two decimal places | banker's rounding is stable and event/summary use the stored value |
 | FCV-005 | amount that rounds to zero | rejected; no authoritative record |
@@ -118,7 +118,7 @@ containerized free dependencies and synthetic fixtures.
 
 | ID | Scenario | Expected assertion |
 | --- | --- | --- |
-| FCV-051 | incomplete or ambiguous parser result | draft requires review and cannot affect totals |
+| FCV-051 | incomplete, ambiguous, or non-positive parser amount suggestion | invalid candidate field is removed, ambiguity is recorded, and a review-required draft is returned without affecting totals |
 | FCV-052 | high-confidence parser suggestion before confirmation | still excluded from authoritative records and totals |
 | FCV-053 | confirmed valid draft | exactly one Income or Expense record contributes |
 | FCV-054 | rejected confirmation | draft remains non-authoritative; no event or total |
