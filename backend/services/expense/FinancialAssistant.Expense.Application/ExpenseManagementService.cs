@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using FinancialAssistant.Expense.Contracts;
 using FinancialAssistant.Expense.Domain;
+using FinancialAssistant.Shared.Contracts.Events;
 
 namespace FinancialAssistant.Expense.Application;
 
@@ -14,11 +16,16 @@ public sealed partial class ExpenseManagementService : IExpenseManagementService
 
     private readonly IExpenseRecordStore store;
     private readonly TimeProvider timeProvider;
+    private readonly IExpenseRecordEventPublisher eventPublisher;
 
-    public ExpenseManagementService(IExpenseRecordStore store, TimeProvider timeProvider)
+    public ExpenseManagementService(
+        IExpenseRecordStore store,
+        TimeProvider timeProvider,
+        IExpenseRecordEventPublisher? eventPublisher = null)
     {
         this.store = store;
         this.timeProvider = timeProvider;
+        this.eventPublisher = eventPublisher ?? NullExpenseRecordEventPublisher.Instance;
     }
 
     public async Task<ExpenseRecordResponse> CreateAsync(
@@ -56,6 +63,13 @@ public sealed partial class ExpenseManagementService : IExpenseManagementService
                 ExpenseRecordOrigins.Manual);
             if (await store.CreateAsync(record, cancellationToken))
             {
+                var correlationId = CreateCorrelationId();
+                await eventPublisher.PublishAsync(
+                    FinancialRecordEventTypes.ExpenseCreated,
+                    record,
+                    correlationId,
+                    correlationId,
+                    cancellationToken);
                 return ToResponse(record);
             }
         }
@@ -135,6 +149,7 @@ public sealed partial class ExpenseManagementService : IExpenseManagementService
                     UpdatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime()
                 };
             },
+            FinancialRecordEventTypes.ExpenseUpdated,
             cancellationToken);
     }
 
@@ -185,6 +200,9 @@ public sealed partial class ExpenseManagementService : IExpenseManagementService
                     UpdatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime()
                 };
             },
+            targetStatus == ExpenseRecordStatuses.Archived
+                ? FinancialRecordEventTypes.ExpenseArchived
+                : FinancialRecordEventTypes.ExpenseRestored,
             cancellationToken);
     }
 
@@ -192,6 +210,7 @@ public sealed partial class ExpenseManagementService : IExpenseManagementService
         string userId,
         string expenseId,
         Func<ExpenseRecord, ExpenseRecord> mutate,
+        string eventType,
         CancellationToken cancellationToken)
     {
         for (var attempt = 0; attempt < MaximumMutationAttempts; attempt++)
@@ -216,11 +235,26 @@ public sealed partial class ExpenseManagementService : IExpenseManagementService
                 cancellationToken);
             if (result.Replaced)
             {
+                var correlationId = CreateCorrelationId();
+                await eventPublisher.PublishAsync(
+                    eventType,
+                    result.Record!,
+                    correlationId,
+                    correlationId,
+                    cancellationToken);
                 return ToResponse(result.Record!);
             }
         }
 
         throw new ExpenseMutationConflictException();
+    }
+
+    private static string CreateCorrelationId()
+    {
+        var traceId = Activity.Current?.TraceId.ToString();
+        return string.IsNullOrWhiteSpace(traceId)
+            ? Guid.NewGuid().ToString("N")
+            : traceId;
     }
 
     private ValidatedExpenseValues ValidateValues(

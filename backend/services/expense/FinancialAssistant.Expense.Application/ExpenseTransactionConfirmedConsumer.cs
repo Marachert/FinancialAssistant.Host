@@ -1,4 +1,5 @@
 using FinancialAssistant.Expense.Domain;
+using FinancialAssistant.Shared.Contracts.Events;
 using FinancialAssistant.TransactionIntake.Contracts;
 
 namespace FinancialAssistant.Expense.Application;
@@ -6,10 +7,14 @@ namespace FinancialAssistant.Expense.Application;
 public sealed class ExpenseTransactionConfirmedConsumer : ITransactionConfirmedConsumer
 {
     private readonly IExpenseRecordStore store;
+    private readonly IExpenseRecordEventPublisher eventPublisher;
 
-    public ExpenseTransactionConfirmedConsumer(IExpenseRecordStore store)
+    public ExpenseTransactionConfirmedConsumer(
+        IExpenseRecordStore store,
+        IExpenseRecordEventPublisher? eventPublisher = null)
     {
         this.store = store;
+        this.eventPublisher = eventPublisher ?? NullExpenseRecordEventPublisher.Instance;
     }
 
     public async Task ConsumeAsync(
@@ -23,7 +28,7 @@ public sealed class ExpenseTransactionConfirmedConsumer : ITransactionConfirmedC
         }
 
         Validate(integrationEvent);
-        await store.StoreIfMissingAsync(
+        var record = await store.StoreIfMissingAsync(
             new ExpenseRecord(
                 integrationEvent.TransactionId,
                 integrationEvent.UserId,
@@ -35,12 +40,19 @@ public sealed class ExpenseTransactionConfirmedConsumer : ITransactionConfirmedC
                 integrationEvent.Date,
                 integrationEvent.ConfirmedAtUtc),
             cancellationToken);
+        await eventPublisher.PublishAsync(
+            FinancialRecordEventTypes.ExpenseCreated,
+            record,
+            integrationEvent.CorrelationId,
+            integrationEvent.EventId,
+            cancellationToken);
     }
 
     private static void Validate(TransactionConfirmedIntegrationEvent integrationEvent)
     {
         if (string.IsNullOrWhiteSpace(integrationEvent.TransactionId) ||
             string.IsNullOrWhiteSpace(integrationEvent.EventId) ||
+            string.IsNullOrWhiteSpace(integrationEvent.CorrelationId) ||
             string.IsNullOrWhiteSpace(integrationEvent.UserId) ||
             string.IsNullOrWhiteSpace(integrationEvent.DraftId) ||
             integrationEvent.Amount <= 0 ||

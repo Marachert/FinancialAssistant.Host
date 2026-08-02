@@ -11,6 +11,9 @@ public static class DependencyInjection
         services.AddSingleton<InMemoryIncomeRecordStore>();
         services.AddSingleton<IIncomeRecordStore>(provider =>
             provider.GetRequiredService<InMemoryIncomeRecordStore>());
+        services.AddSingleton<InMemoryIncomeRecordEventPublisher>();
+        services.AddSingleton<IIncomeRecordEventPublisher>(provider =>
+            provider.GetRequiredService<InMemoryIncomeRecordEventPublisher>());
         services.AddSingleton<ITransactionConfirmedConsumer, IncomeTransactionConfirmedConsumer>();
         return services;
     }

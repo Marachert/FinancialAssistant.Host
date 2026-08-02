@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using FinancialAssistant.Income.Contracts;
 using FinancialAssistant.Income.Domain;
+using FinancialAssistant.Shared.Contracts.Events;
 
 namespace FinancialAssistant.Income.Application;
 
@@ -14,11 +16,16 @@ public sealed partial class IncomeManagementService : IIncomeManagementService
 
     private readonly IIncomeRecordStore store;
     private readonly TimeProvider timeProvider;
+    private readonly IIncomeRecordEventPublisher eventPublisher;
 
-    public IncomeManagementService(IIncomeRecordStore store, TimeProvider timeProvider)
+    public IncomeManagementService(
+        IIncomeRecordStore store,
+        TimeProvider timeProvider,
+        IIncomeRecordEventPublisher? eventPublisher = null)
     {
         this.store = store;
         this.timeProvider = timeProvider;
+        this.eventPublisher = eventPublisher ?? NullIncomeRecordEventPublisher.Instance;
     }
 
     public async Task<IncomeRecordResponse> CreateAsync(
@@ -56,6 +63,13 @@ public sealed partial class IncomeManagementService : IIncomeManagementService
                 IncomeRecordOrigins.Manual);
             if (await store.CreateAsync(record, cancellationToken))
             {
+                var correlationId = CreateCorrelationId();
+                await eventPublisher.PublishAsync(
+                    FinancialRecordEventTypes.IncomeCreated,
+                    record,
+                    correlationId,
+                    correlationId,
+                    cancellationToken);
                 return ToResponse(record);
             }
         }
@@ -135,6 +149,7 @@ public sealed partial class IncomeManagementService : IIncomeManagementService
                     UpdatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime()
                 };
             },
+            FinancialRecordEventTypes.IncomeUpdated,
             cancellationToken);
     }
 
@@ -185,6 +200,9 @@ public sealed partial class IncomeManagementService : IIncomeManagementService
                     UpdatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime()
                 };
             },
+            targetStatus == IncomeRecordStatuses.Archived
+                ? FinancialRecordEventTypes.IncomeArchived
+                : FinancialRecordEventTypes.IncomeRestored,
             cancellationToken);
     }
 
@@ -192,6 +210,7 @@ public sealed partial class IncomeManagementService : IIncomeManagementService
         string userId,
         string incomeId,
         Func<IncomeRecord, IncomeRecord> mutate,
+        string eventType,
         CancellationToken cancellationToken)
     {
         for (var attempt = 0; attempt < MaximumMutationAttempts; attempt++)
@@ -216,11 +235,26 @@ public sealed partial class IncomeManagementService : IIncomeManagementService
                 cancellationToken);
             if (result.Replaced)
             {
+                var correlationId = CreateCorrelationId();
+                await eventPublisher.PublishAsync(
+                    eventType,
+                    result.Record!,
+                    correlationId,
+                    correlationId,
+                    cancellationToken);
                 return ToResponse(result.Record!);
             }
         }
 
         throw new IncomeMutationConflictException();
+    }
+
+    private static string CreateCorrelationId()
+    {
+        var traceId = Activity.Current?.TraceId.ToString();
+        return string.IsNullOrWhiteSpace(traceId)
+            ? Guid.NewGuid().ToString("N")
+            : traceId;
     }
 
     private ValidatedIncomeValues ValidateValues(

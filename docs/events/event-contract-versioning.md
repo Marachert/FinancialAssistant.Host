@@ -230,6 +230,35 @@ Optional additive example: `merchant`, with absent meaning not supplied.
 Breaking example: making merchant required, changing category identity
 semantics, or changing amount units.
 
+## Financial Record Lifecycle Events
+
+FIN-99 implements the Income- and Expense-owned lifecycle families:
+
+```text
+income.created.v1
+income.updated.v1
+income.archived.v1
+income.restored.v1
+expense.created.v1
+expense.updated.v1
+expense.archived.v1
+expense.restored.v1
+```
+
+All use `IntegrationEventEnvelope<FinancialRecordChangedV1>` with schema version
+`1`. The payload fields are `recordId`, `amount`, `currency`, `categoryId`,
+`date`, `status`, `revision`, `origin`, and `changedAtUtc`. The envelope's
+`userIdHash` is a SHA-256 pseudonymous identifier; raw user identifiers and
+merchant text are not published. Correlation follows the originating trace, and
+confirmed records use the upstream confirmation event as causation.
+
+One record revision produces one deterministic event identity, making confirmed
+event replay idempotent. Development uses a service-owned in-memory outbox. A
+durable implementation must atomically commit the financial record and outbox row,
+then retry transient RabbitMQ publish failures with bounded backoff. Observability
+uses safe reason codes and identifiers only, never event payloads. Terminal
+contract or routing failures follow the owning queue's dead-letter policy.
+
 ## Privacy and Review
 
 Contract examples use synthetic identifiers only. Event schemas and examples
