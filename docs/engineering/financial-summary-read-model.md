@@ -89,7 +89,10 @@ contracts and unsupported versions are terminal and dead-lettered with safe reas
 codes. Logs and metrics may include event type, event ID, revision, lag, and safe
 owner hash; they must not include event payloads or raw identities.
 
-## Deferred API
+## API boundary
 
-FIN-101 defines mobile/web response contracts, empty-state serialization, timezone
-inputs, and HTTP routes. FIN-100 establishes the internal projection behavior only.
+FIN-101 defines the stable mobile/web response and query in
+[Financial Summary API Contract](../api/financial-summary-v1.md). The Application
+mapper copies only dashboard totals, inclusive period boundaries, category values,
+and freshness metadata into that contract. Internal projection identity, event,
+revision, origin, generation, and rebuild fields remain private.
