@@ -6,6 +6,8 @@
 
 Income Service owns confirmed income records and deterministic active-income totals. It does not own transaction parsing, draft review, expense records, categories, balances, reports, OCR, or LLM output.
 
+The normative rules for authoritative records, ownership, lifecycle, corrections, and per-currency calculations are defined in `docs/architecture/financial-source-of-truth.md`.
+
 Authoritative records have one of two origins:
 
 - `confirmed_transaction`, created idempotently from a validated `transaction.confirmed.v1` income event;

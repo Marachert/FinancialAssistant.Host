@@ -14,6 +14,18 @@ Architecture documentation should cover:
 * OCR, LLM, notification, object-storage, and observability integrations;
 * architecture decisions and trade-offs.
 
+## Canonical decisions
+
+The normative rules for records that may affect balances, reports, limits,
+scores, and recommendations are defined in:
+
+```text
+docs/architecture/financial-source-of-truth.md
+```
+
+Service documentation and implementation must link to and preserve that
+contract.
+
 ## Rules
 
 Architecture documents must distinguish business capabilities from technical utility components.

@@ -4,7 +4,9 @@
 
 ## Responsibility
 
-Expense Service owns confirmed expense records and deterministic active-expense totals. It does not own transaction parsing, draft review, expense records, categories, balances, reports, OCR, or LLM output.
+Expense Service owns confirmed expense records and deterministic active-expense totals. It does not own transaction parsing, draft review, income records, categories, balances, reports, OCR, or LLM output.
+
+The normative rules for authoritative records, ownership, lifecycle, corrections, and per-currency calculations are defined in `docs/architecture/financial-source-of-truth.md`.
 
 Authoritative records have one of two origins:
 

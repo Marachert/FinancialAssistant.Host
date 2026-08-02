@@ -4,6 +4,8 @@
 
 FIN-21 implements the first half of the core single-input workflow. FIN-91 completes the service baseline with explicit input-source metadata. FIN-92 adds the nullable note placeholder and the recoverable draft-created event boundary. FIN-93 adds owner-scoped review, deterministic draft updates, rejection, and a revision-claimed confirmation lifecycle. An authenticated user submits one natural-language statement and receives a structured draft containing type, amount, currency, category, merchant, date, confidence, and explicit ambiguities. The draft is review material only. No balance, transaction ledger, report, or score changes until the separate confirmation flow validates and persists authoritative state.
 
+The canonical calculation and ownership rules are defined in `docs/architecture/financial-source-of-truth.md`. This flow may create suggestions and confirmation evidence, but only the Income- or Expense-owned committed record becomes authoritative.
+
 ## Input sources
 
 Drafts identify one of four stable sources: `text`, `voice_transcript`, `receipt_ocr`, or `manual_form`. Text and receipt OCR are active adapters. Voice transcript and manual form are placeholders for later adapters and cannot bypass deterministic validation, review requirements, or confirmation rules.
