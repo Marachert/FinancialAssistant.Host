@@ -35,7 +35,7 @@ Current delivery:
 - confirmed transaction lifecycle events recalculate isolated owner/currency
   scores with idempotency, replay recovery, delayed retries, and terminal DLQ
 - score history uses a stable composite cursor and publishes
-  `score.calculated.v1` after durable calculation acceptance
+  `score.calculated.v1` after calculation acceptance; the POC store is in-memory
 - Backend CI #379 passed privacy, format, Release build, and all solution tests
   on final head `b8b6672985a2d29609ed447016a4eba931a597f9`
 - parent FIN-27 remains In Progress with 2 of 20 canonical children Done; the
