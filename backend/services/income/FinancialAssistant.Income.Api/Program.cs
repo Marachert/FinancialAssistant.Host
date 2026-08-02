@@ -1,3 +1,6 @@
+using FinancialAssistant.Income.Api.Endpoints;
+using FinancialAssistant.Income.Api.Security;
+using FinancialAssistant.Income.Application;
 using FinancialAssistant.Income.Contracts;
 using FinancialAssistant.Income.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -18,7 +21,9 @@ builder.Services.AddSwaggerGen(options =>
             Description = "Confirmed income records owned by the Income Service."
         });
 });
+builder.Services.AddIncomeApplication();
 builder.Services.AddIncomeInfrastructure();
+builder.Services.AddSingleton<IncomeGatewayAuthenticator>();
 builder.Services
     .AddHealthChecks()
     .AddCheck(
@@ -27,6 +32,8 @@ builder.Services
         tags: new[] { "live", "ready" });
 
 var app = builder.Build();
+
+_ = app.Services.GetRequiredService<IncomeGatewayAuthenticator>();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {
@@ -59,6 +66,8 @@ app.MapGet(
             environment.EnvironmentName,
             "in-memory",
             "confirmed_transaction")));
+
+app.MapIncomeEndpoints();
 
 app.Run();
 
