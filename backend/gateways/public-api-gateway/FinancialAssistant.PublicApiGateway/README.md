@@ -58,7 +58,7 @@ Each destination defines:
 * enabled flag;
 * request timeout between 1 and 300 seconds.
 
-Repository defaults keep unfinished routes as placeholders and destinations disabled. The Income `/incomes` route is active because its service contract and trusted-gateway boundary are available.
+Repository defaults keep unfinished routes as placeholders and destinations disabled. The Income `/incomes` and Expense `/expenses` routes are active because their service contracts and trusted-gateway boundaries are available.
 
 ## Startup validation
 
@@ -130,9 +130,10 @@ curl -i http://localhost:5000/gateway/status
 curl -i http://localhost:5000/gateway/routes
 curl -i http://localhost:5000/categories
 curl -i http://localhost:5000/incomes?from=2026-01-01&to=2026-01-31
+curl -i http://localhost:5000/expenses?from=2026-01-01&to=2026-01-31
 ```
 
-Placeholder route calls return safe `501 route_not_active` responses. The active Income route requires gateway enforce-mode authentication and an environment-backed `Gateway__DownstreamAuthentication__SharedSecret` value shared with `Income__Gateway__SharedSecret`.
+Placeholder route calls return safe `501 route_not_active` responses. The active Income and Expense routes require gateway enforce-mode authentication and an environment-backed `Gateway__DownstreamAuthentication__SharedSecret` value shared with the corresponding `Income__Gateway__SharedSecret` and `Expense__Gateway__SharedSecret` settings.
 
 ## Tests
 
