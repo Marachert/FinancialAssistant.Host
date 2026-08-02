@@ -1,21 +1,17 @@
 using System.Net;
 using System.Net.Http.Json;
 using FinancialAssistant.Expense.Contracts;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace FinancialAssistant.Expense.Tests;
 
-public sealed class ExpenseServiceBaselineTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed class ExpenseServiceBaselineTests : IClassFixture<ExpenseWebApplicationFactory>
 {
     private readonly HttpClient client;
 
-    public ExpenseServiceBaselineTests(WebApplicationFactory<Program> factory)
+    public ExpenseServiceBaselineTests(ExpenseWebApplicationFactory factory)
     {
-        client = factory
-            .WithWebHostBuilder(builder => builder.UseEnvironment("Testing"))
-            .CreateClient();
+        client = factory.CreateClient();
     }
 
     [Theory]
@@ -39,7 +35,7 @@ public sealed class ExpenseServiceBaselineTests : IClassFixture<WebApplicationFa
         Assert.Equal("running", response.Status);
         Assert.Equal("Testing", response.Environment);
         Assert.Equal("in-memory", response.StorageProvider);
-        Assert.Equal("confirmed_transaction", response.AuthoritativeInput);
+        Assert.Equal("confirmed_or_manual", response.AuthoritativeInput);
     }
 
     [Fact]
