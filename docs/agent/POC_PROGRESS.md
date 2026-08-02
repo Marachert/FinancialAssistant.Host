@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-01T20:34:00+03:00
+Last updated: 2026-08-02T10:30:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-93 closure is **58.2%**:
-**114 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-94 closure is **58.7%**:
+**115 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,13 +13,13 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-93 - Implement draft review and confirmation flow
+- FIN-94 - Create Income Service project baseline
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/97
+  https://github.com/Marachert/FinancialAssistant.Host/pull/99
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/09b12cc5b03f6332b5f631b65390e82b226c7dd4
-- previous readiness: 113 / 196, or 57.7%
-- current readiness: 114 / 196, or 58.2%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/72abf98c0090702c9d02f2e91ce7297d99f73aa8
+- previous readiness: 114 / 196, or 58.2%
+- current readiness: 115 / 196, or 58.7%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
@@ -28,14 +28,13 @@ denominator.
 
 Current delivery:
 
-- FIN-93 is Done after PR #97 completed the draft review and confirmation flow
-- owning users can review, deterministically update, confirm, or reject a draft
-  through canonical and gateway-compatible API routes
-- revision claims serialize updates, rejection, and confirmation while repeated
-  confirmation creates one authoritative financial record request
-- invalid updates remain review-required and rejected drafts publish no financial
-  event or income/expense record
-- Backend CI #307 passed privacy, format, Release build, and all solution tests
+- FIN-94 is Done after PR #99 completed the Income Service project baseline
+- Income now has API, Application, Contracts, Domain, Infrastructure, and Tests
+  projects included in the root backend solution
+- health, service-info, and Development/Testing OpenAPI surfaces are executable
+- confirmed-only ownership, lifecycle, category validation, service-owned storage,
+  active totals, and planned event boundaries are documented
+- Backend CI #312 passed privacy, format, Release build, and all solution tests
   on the final PR head
 - parent FIN-18 remains In Progress because later P4 leaves are unfinished
 
@@ -47,13 +46,13 @@ Current delivery:
 | FIN-5 | P1 Architecture definition and technical governance | 17 | 17 | 100.0% |
 | FIN-10 | P2 Repository, DevOps, and local platform foundation | 36 | 36 | 100.0% |
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
-| FIN-18 | P4 Financial core backend services | 11 | 22 | 50.0% |
+| FIN-18 | P4 Financial core backend services | 12 | 22 | 54.5% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 0 | 20 | 0.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **114** | **196** | **58.2%** |
+| **Total** | **Canonical POC leaf scope** | **115** | **196** | **58.7%** |
 
 ## First-User-Test Gates
 
@@ -123,3 +122,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-08-01T19:12:00+03:00 | FIN-91 | Closure delivered by PR 93 | 57.1% | +0.5 pp |
 | 2026-08-01T19:43:00+03:00 | FIN-92 | Closure delivered by PR 95 | 57.7% | +0.6 pp |
 | 2026-08-01T20:34:00+03:00 | FIN-93 | Closure delivered by PR 97 | 58.2% | +0.5 pp |
+| 2026-08-02T10:30:00+03:00 | FIN-94 | Closure delivered by PR 99 | 58.7% | +0.5 pp |
