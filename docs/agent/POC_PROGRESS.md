@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-02T16:35:09.228+03:00
+Last updated: 2026-08-02T17:16:06+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-28 closure is **64.3%**:
-**126 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-29 closure is **64.8%**:
+**127 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,13 +13,13 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-28 - Implement Analytics Service read models and dashboard APIs
+- FIN-29 - Implement Financial Score Service v1
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/121
+  https://github.com/Marachert/FinancialAssistant.Host/pull/123
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/8981f44485a787fd2bc81f0fc362472cdb277143
-- previous readiness: 125 / 196, or 63.8%
-- current readiness: 126 / 196, or 64.3%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/cef3bb653f60a22b3582c0ec6923e91328fcdc54
+- previous readiness: 126 / 196, or 64.3%
+- current readiness: 127 / 196, or 64.8%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
@@ -28,19 +28,18 @@ denominator.
 
 Current delivery:
 
-- FIN-28 is Done after PR #121 delivered the Analytics Service baseline and
-  deterministic dashboard API
-- confirmed Income and Expense lifecycle events project idempotently into daily,
-  Monday-weekly, monthly, category, and recent-trend read models
-- the Analytics Service dashboard resolves limits from a server-side authority
-  boundary and returns stable validation errors without trusting caller-supplied
-  financial values; gateway activation remains unfinished integration work
-- the hosted RabbitMQ consumer acknowledges only after projection and routes
-  terminal or processing failures to its dead-letter path
-- Backend CI #371 passed privacy, format, Release build, and all solution tests
-  on the final PR head
-- parent FIN-27 remains In Progress at 1 of 20 canonical leaves because its
-  score, recommendations, notifications, and remaining analytics work are unfinished
+- FIN-29 is Done after PR #123 delivered the deterministic Financial Score
+  Service v1 and its trusted current-score and history APIs
+- the authoritative backend formula combines cash flow, monthly consistency,
+  tracking coverage, and tightly bounded semantic factors without an LLM call
+- confirmed transaction lifecycle events recalculate isolated owner/currency
+  scores with idempotency, replay recovery, delayed retries, and terminal DLQ
+- score history uses a stable composite cursor and publishes
+  `score.calculated.v1` after calculation acceptance; the POC store is in-memory
+- Backend CI #379 passed privacy, format, Release build, and all solution tests
+  on final head `b8b6672985a2d29609ed447016a4eba931a597f9`
+- parent FIN-27 remains In Progress with 2 of 20 canonical children Done; the
+  next ranked leaf is FIN-30
 
 ## Epic Progress
 
@@ -52,11 +51,11 @@ Current delivery:
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
-| FIN-27 | P6 Analytics, score, recommendations, and notifications | 1 | 20 | 5.0% |
+| FIN-27 | P6 Analytics, score, recommendations, and notifications | 2 | 20 | 10.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **126** | **196** | **64.3%** |
+| **Total** | **Canonical POC leaf scope** | **127** | **196** | **64.8%** |
 
 ## First-User-Test Gates
 
@@ -138,3 +137,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-08-02T13:33:30+03:00 | FIN-103 | Closure delivered by PR 117 | 63.3% | +0.5 pp |
 | 2026-08-02T14:24:20+03:00 | FIN-104 | Closure delivered by PR 119; FIN-18 completed | 63.8% | +0.5 pp |
 | 2026-08-02T16:35:09.228+03:00 | FIN-28 | Closure delivered by PR 121 | 64.3% | +0.5 pp |
+| 2026-08-02T17:16:06+03:00 | FIN-29 | Closure delivered by PR 123 | 64.8% | +0.5 pp |
