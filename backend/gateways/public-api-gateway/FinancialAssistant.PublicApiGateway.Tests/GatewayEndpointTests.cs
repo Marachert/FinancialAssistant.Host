@@ -35,11 +35,16 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
         var routes = document.RootElement.GetProperty("routes");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(11, routes.GetArrayLength());
+        Assert.Equal(12, routes.GetArrayLength());
         Assert.Contains(routes.EnumerateArray(), route =>
             route.GetProperty("routeKey").GetString() == "auth"
             && route.GetProperty("serviceOwner").GetString() == "Auth Service"
             && route.GetProperty("accessPolicy").GetString() == "authenticated");
+        Assert.Contains(routes.EnumerateArray(), route =>
+            route.GetProperty("routeKey").GetString() == "incomes"
+            && route.GetProperty("serviceOwner").GetString() == "Income Service"
+            && route.GetProperty("accessPolicy").GetString() == "authenticated"
+            && route.GetProperty("status").GetString() == "active");
         Assert.Contains(routes.EnumerateArray(), route =>
             route.GetProperty("routeKey").GetString() == "admin-monitoring"
             && route.GetProperty("accessPolicy").GetString() == "admin");
@@ -58,9 +63,9 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("ready", root.GetProperty("status").GetString());
-        Assert.Equal(11, root.GetProperty("routeCount").GetInt32());
-        Assert.Equal(10, root.GetProperty("destinationCount").GetInt32());
-        Assert.Equal(0, root.GetProperty("enabledDestinationCount").GetInt32());
+        Assert.Equal(12, root.GetProperty("routeCount").GetInt32());
+        Assert.Equal(11, root.GetProperty("destinationCount").GetInt32());
+        Assert.Equal(1, root.GetProperty("enabledDestinationCount").GetInt32());
         Assert.Equal("placeholder", root.GetProperty("securityMode").GetString());
     }
 

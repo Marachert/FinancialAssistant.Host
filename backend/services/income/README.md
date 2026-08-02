@@ -1,82 +1,75 @@
 # Financial Assistant Income Service
 
-.NET 8 Income Service baseline for FIN-22 and FIN-94.
+.NET 8 Income Service for FIN-22, FIN-94, and FIN-95.
 
 ## Responsibility
 
-Income Service owns confirmed income records and the deterministic income total derived from them. It does not own transaction parsing, draft review, expense records, categories, balances, reports, OCR, or LLM output.
+Income Service owns confirmed income records and deterministic active-income totals. It does not own transaction parsing, draft review, expense records, categories, balances, reports, OCR, or LLM output.
 
-The current aggregate records:
+Authoritative records have one of two origins:
 
-- transaction and source-draft identifiers;
-- owning user identifier;
-- positive amount and ISO currency;
-- Income-category identifier;
-- optional merchant;
-- effective date;
-- confirmation timestamp.
+- `confirmed_transaction`, created idempotently from a validated `transaction.confirmed.v1` income event;
+- `manual`, created by the authenticated owner through the Income API.
 
-Only a validated `transaction.confirmed.v1` event with transaction type `income` may create the initial authoritative record. Raw AI or OCR output is suggestion-only and is never accepted as Income source of truth.
+Raw AI and OCR output remains suggestion-only and is never accepted as Income source of truth.
 
-## Service projects
+## API
+
+Canonical routes:
 
 ```text
-FinancialAssistant.Income.Api
-FinancialAssistant.Income.Application
-FinancialAssistant.Income.Contracts
-FinancialAssistant.Income.Domain
-FinancialAssistant.Income.Infrastructure
-FinancialAssistant.Income.Tests
+POST /api/v1/incomes
+GET  /api/v1/incomes?from=YYYY-MM-DD&to=YYYY-MM-DD&includeArchived=false
+GET  /api/v1/incomes/{incomeId}
+PUT  /api/v1/incomes/{incomeId}
+POST /api/v1/incomes/{incomeId}/archive
+POST /api/v1/incomes/{incomeId}/restore
+GET  /income/info
+GET  /health
+GET  /health/live
+GET  /health/ready
 ```
 
-The API project is the HTTP composition root. Application owns use-case ports and confirmation consumption, Domain owns the aggregate, Contracts owns stable transport models, and Infrastructure owns storage and event adapters.
+Equivalent `/incomes` gateway routes reach the same handlers. Financial routes require one trusted `X-Gateway-Authentication` value and an `X-Gateway-User-Id` established by the gateway. A record owned by another user is indistinguishable from a missing record.
 
-## Baseline API
+Development and Testing expose OpenAPI at `/openapi/v1.json`.
 
-```text
-GET /income/info
-GET /health
-GET /health/live
-GET /health/ready
-```
+## Validation
 
-Development and Testing expose OpenAPI at `/openapi/v1.json`. FIN-94 intentionally does not expose income CRUD routes; FIN-95 owns those commands, validation responses, authentication integration, and user-facing resource contracts.
+Application validation is deterministic:
 
-## Lifecycle definition
+- amount must be positive, bounded, and rounds to two decimal places;
+- currency must be EUR, GBP, UAH, or USD;
+- category identifiers must match the `income.*` namespace and stable identifier shape;
+- merchant text is whitespace-normalized and limited to 120 characters;
+- dates must be within ten years before today and 366 days after today;
+- list periods must be ordered and no longer than ten years.
 
-The planned command lifecycle is deterministic:
+Invalid requests return `400 invalid_income_request` before storage changes. Income validates category contract shape locally and must use a stable Category Service contract or versioned projection when user-created category validation is introduced; it never reads Category storage directly.
 
-1. **Create** accepts only a confirmed transaction request or trusted confirmed event and deduplicates by transaction identifier.
-2. **Update** preserves the owner and source transaction identity, validates every replacement financial value, and advances optimistic concurrency state.
-3. **Archive** is a reversible soft transition. Archived records remain auditable but are excluded from active totals.
-4. **Restore** returns an archived record to active totals after the current category and financial values pass validation.
-5. Physical deletion is not part of the normal financial lifecycle.
+## Lifecycle and totals
 
-FIN-95 will implement the CRUD command surface. Until then, the existing confirmed-event consumer is the only write path and the in-memory record is active by definition.
+Manual creation stores an active authoritative record. Updates preserve owner, record identity, origin, source-draft reference, and confirmation timestamp while advancing the revision.
 
-## Category validation
+Archive and restore are idempotent reversible transitions:
 
-Income category identifiers must use the `income.` namespace. The application will validate category ownership through a stable Category Service contract or a service-owned validated projection. Income must never read Category storage directly.
+- archived records remain auditable and cannot be updated;
+- archived records are excluded from list results by default;
+- `includeArchived=true` includes them in records but never in active totals;
+- restore revalidates the stored financial fields before returning the record to active totals;
+- physical deletion is not part of the first-release financial lifecycle.
 
-A category failure must reject the command before an Income write. Temporary Category Service unavailability must fail closed or use an explicitly versioned local projection; it must not silently accept an unknown category.
+List results group active totals by currency so unlike currencies are never summed together.
 
-## Storage layout
+## Storage
 
-The development adapter stores records in memory so CI can exercise the confirmed-event boundary without production infrastructure.
+The development adapter is an owner-scoped in-memory store with atomic create and compare-and-replace updates. Confirmed events remain idempotent by transaction identifier.
 
-The durable adapter will use Income-owned PostgreSQL storage with logical tables for:
-
-- `income_records`, including owner, financial values, lifecycle status, revision, and audit timestamps;
-- `income_event_inbox` for idempotent confirmed-event consumption;
-- `income_event_outbox` for atomic publication after owned state changes.
-
-Indexes will support owner/date queries, owner/status totals, category reporting, and unique transaction/source identifiers. Other services must use Income APIs or events and must not query these tables.
-
-Income totals include only active, confirmed records for the requested owner and currency. Drafts, rejected drafts, archived records, raw AI output, and failed event deliveries contribute nothing.
+The durable adapter will use Income-owned PostgreSQL storage with logical `income_records`, `income_event_inbox`, and `income_event_outbox` tables. Other services must use Income APIs or events and must not query these tables.
 
 ## Planned events
 
-FIN-99 owns implementation of service-owned change publication. The planned versioned events are:
+FIN-99 owns publication of:
 
 ```text
 income.created.v1
@@ -85,7 +78,7 @@ income.archived.v1
 income.restored.v1
 ```
 
-Events will contain stable identifiers and the minimum consumer data required. They will not include raw intake text, prompts, OCR payloads, credentials, or idempotency keys.
+Events will contain minimum required stable data and exclude raw intake text, prompts, OCR payloads, credentials, and idempotency keys.
 
 ## Verification
 
@@ -95,3 +88,5 @@ dotnet build FinancialAssistant.Backend.sln --no-restore --configuration Release
 dotnet test FinancialAssistant.Backend.sln --no-build --configuration Release
 dotnet run --project backend/services/income/FinancialAssistant.Income.Api/FinancialAssistant.Income.Api.csproj
 ```
+
+Set `Income__Gateway__SharedSecret` to an environment-backed value of at least 32 characters before starting the API.

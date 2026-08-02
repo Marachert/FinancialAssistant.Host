@@ -30,13 +30,14 @@ docs/engineering/gateway-access-control.md
 
 ## Current availability
 
-All repository-default routes currently have status `placeholder`, and all internal destinations are disabled.
+Repository defaults keep unfinished routes in `placeholder` status with disabled destinations. The authenticated Income route is `active` with its protected destination enabled because its CRUD contract and trusted-gateway boundary are available.
 
 Therefore:
 
 * the groups define the intended public contract and ownership boundary;
-* repository-default calls return safe placeholder or destination-unavailable responses rather than reaching a business service;
-* a route becomes operational only after its owning service contract is ready, its destination is enabled, the route status is changed to `active`, and deployment verification passes.
+* unfinished route calls return safe placeholder or destination-unavailable responses rather than reaching a business service;
+* the Income route forwards only when bearer-token validation, trusted user context, and the environment-backed downstream shared secret are configured;
+* any other route becomes operational only after its owning service contract is ready, its destination is enabled, the route status is changed to `active`, and deployment verification passes.
 
 Clients must not infer production availability from the presence of a route in this document. Runtime availability is visible through the deployed environment and the sanitized `GET /gateway/routes` endpoint.
 
@@ -95,6 +96,7 @@ The admin monitoring group requires a valid bearer token and the configured admi
 | `transaction-intake` | `/transactions/intake`, `/transactions/intake/{**gatewayPath}` | POST | `authenticated` | Transaction Intake Service | `placeholder` |
 | `transaction-draft-confirm` | `/transactions/drafts/{id}/confirm` | POST | `authenticated` | Transaction Intake Service | `placeholder` |
 | `receipts` | `/receipts`, `/receipts/{**gatewayPath}` | GET, POST | `authenticated` | Receipt File Intake Service | `placeholder` |
+| `incomes` | `/incomes`, `/incomes/{**gatewayPath}` | GET, POST, PUT | `authenticated` | Income Service | `active` |
 | `analytics` | `/analytics`, `/analytics/{**gatewayPath}` | GET | `authenticated` | Analytics Service | `placeholder` |
 | `score` | `/score`, `/score/{**gatewayPath}` | GET | `authenticated` | Financial Score Service | `placeholder` |
 | `recommendations` | `/recommendations`, `/recommendations/{**gatewayPath}` | GET | `authenticated` | Recommendation Service | `placeholder` |
@@ -251,6 +253,26 @@ upload image
 ### Gateway responsibility
 
 The gateway authenticates, rate-limits intake, and streams the request. It does not inspect receipt content, call OCR, store files, parse line items, or create expenses.
+
+## Income API group
+
+### Public prefix
+
+```text
+/incomes
+```
+
+### Owner
+
+Income Service.
+
+### Capability ownership
+
+Income owns manual income creation, owner-scoped retrieval and period lists, deterministic validation, update, archive, restore, and active totals grouped by currency.
+
+### Gateway responsibility
+
+The gateway validates the bearer token, removes spoofed gateway context, injects trusted user and downstream-authentication headers, and forwards the request unchanged. Income remains authoritative for ownership, validation, lifecycle, and totals. The gateway does not calculate or persist income values.
 
 ## Analytics API group
 
