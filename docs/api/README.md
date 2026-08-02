@@ -27,3 +27,4 @@ OpenAPI artifacts may be added here or generated from service-owned source contr
 ## Contracts
 
 - [Financial Summary API v1](financial-summary-v1.md)
+- [Analytics Dashboard API v1](analytics-dashboard-v1.md)
