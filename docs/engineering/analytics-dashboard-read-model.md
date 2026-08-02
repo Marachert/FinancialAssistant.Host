@@ -90,7 +90,9 @@ All categories are sorted deterministically by combined amount and category ID.
 Top-income and top-expense lists are ranked independently by amount and then
 category ID. Missing or whitespace category IDs are normalized to the stable
 `uncategorized` fallback before projection. Archived records remain available
-for revision ordering but are excluded from every breakdown.
+for revision ordering but are excluded from every breakdown. The breakdown response
+propagates the snapshot freshness state and last projected event time so clients can
+distinguish confirmed empty periods from delayed or never-built projections.
 
 ## Freshness, replay, and failures
 

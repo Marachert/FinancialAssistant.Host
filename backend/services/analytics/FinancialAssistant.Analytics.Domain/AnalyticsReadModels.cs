@@ -102,7 +102,9 @@ public sealed record AnalyticsCategoryBreakdownReadModel(
     DateOnly PeriodEnd,
     IReadOnlyList<AnalyticsCategoryBreakdownItem> Categories,
     IReadOnlyList<AnalyticsCategoryBreakdownItem> TopIncomeCategories,
-    IReadOnlyList<AnalyticsCategoryBreakdownItem> TopExpenseCategories);
+    IReadOnlyList<AnalyticsCategoryBreakdownItem> TopExpenseCategories,
+    DateTimeOffset? LastEventAtUtc,
+    bool IsStale);
 
 public sealed record AnalyticsTrendPoint(
     DateOnly Date,

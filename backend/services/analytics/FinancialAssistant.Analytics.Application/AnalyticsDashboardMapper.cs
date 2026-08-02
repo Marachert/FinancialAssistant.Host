@@ -71,7 +71,10 @@ public static class AnalyticsDashboardMapper
             readModel.PeriodEnd,
             readModel.Categories.Select(MapCategory).ToArray(),
             readModel.TopIncomeCategories.Select(MapCategory).ToArray(),
-            readModel.TopExpenseCategories.Select(MapCategory).ToArray());
+            readModel.TopExpenseCategories.Select(MapCategory).ToArray(),
+            new AnalyticsFreshnessResponse(
+                readModel.IsStale,
+                readModel.LastEventAtUtc));
     }
 
     private static AnalyticsCategoryBreakdownItemResponse MapCategory(

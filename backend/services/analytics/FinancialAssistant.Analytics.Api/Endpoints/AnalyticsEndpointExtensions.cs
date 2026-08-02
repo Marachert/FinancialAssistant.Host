@@ -66,7 +66,8 @@ public static class AnalyticsEndpointExtensions
             var referenceDate = ReadOptionalDate(httpContext, "referenceDate");
             var top = ReadOptionalInteger(httpContext, "top") ?? 5;
             var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-            var localNow = TimeZoneInfo.ConvertTime(timeProvider.GetUtcNow(), timeZone);
+            var now = timeProvider.GetUtcNow();
+            var localNow = TimeZoneInfo.ConvertTime(now, timeZone);
             var effectiveReferenceDate =
                 referenceDate ?? DateOnly.FromDateTime(localNow.DateTime);
             var result = await projector.GetCategoryBreakdownAsync(
@@ -75,6 +76,8 @@ public static class AnalyticsEndpointExtensions
                 effectiveReferenceDate,
                 period,
                 top,
+                now,
+                StaleAfter,
                 cancellationToken);
             return Results.Ok(AnalyticsDashboardMapper.Map(result, timeZone.Id));
         }

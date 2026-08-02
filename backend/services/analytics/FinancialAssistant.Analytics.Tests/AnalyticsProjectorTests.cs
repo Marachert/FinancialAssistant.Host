@@ -325,10 +325,14 @@ public sealed class AnalyticsProjectorTests
             referenceDate,
             AnalyticsBreakdownPeriods.Daily,
             2,
+            ChangedAt.AddHours(1),
+            TimeSpan.FromHours(2),
             CancellationToken.None);
 
         Assert.Equal(referenceDate, daily.PeriodStart);
         Assert.Equal(referenceDate, daily.PeriodEnd);
+        Assert.False(daily.IsStale);
+        Assert.Equal(ChangedAt, daily.LastEventAtUtc);
         Assert.Equal(4, daily.Categories.Count);
         var salary = Assert.Single(
             daily.Categories,
@@ -356,6 +360,8 @@ public sealed class AnalyticsProjectorTests
             referenceDate,
             AnalyticsBreakdownPeriods.Weekly,
             2,
+            ChangedAt.AddHours(1),
+            TimeSpan.FromHours(2),
             CancellationToken.None);
         Assert.Equal(new DateOnly(2026, 8, 17), weekly.PeriodStart);
         Assert.Equal(new DateOnly(2026, 8, 23), weekly.PeriodEnd);
@@ -367,6 +373,8 @@ public sealed class AnalyticsProjectorTests
             referenceDate,
             AnalyticsBreakdownPeriods.Monthly,
             2,
+            ChangedAt.AddHours(1),
+            TimeSpan.FromHours(2),
             CancellationToken.None);
         Assert.Equal(new DateOnly(2026, 8, 1), monthly.PeriodStart);
         Assert.Equal(new DateOnly(2026, 8, 31), monthly.PeriodEnd);
@@ -378,10 +386,26 @@ public sealed class AnalyticsProjectorTests
             referenceDate.AddDays(1),
             AnalyticsBreakdownPeriods.Daily,
             2,
+            ChangedAt.AddHours(1),
+            TimeSpan.FromHours(2),
             CancellationToken.None);
         Assert.Empty(empty.Categories);
         Assert.Empty(empty.TopIncomeCategories);
         Assert.Empty(empty.TopExpenseCategories);
+        Assert.False(empty.IsStale);
+
+        var neverProjected = await new AnalyticsProjector(
+            new InMemoryAnalyticsReadModelStore()).GetCategoryBreakdownAsync(
+                UserIdHash,
+                "USD",
+                referenceDate,
+                AnalyticsBreakdownPeriods.Daily,
+                2,
+                ChangedAt.AddHours(1),
+                TimeSpan.FromHours(2),
+                CancellationToken.None);
+        Assert.True(neverProjected.IsStale);
+        Assert.Null(neverProjected.LastEventAtUtc);
     }
 
     private static IntegrationEventEnvelope<FinancialRecordChangedV1> CreateEvent(

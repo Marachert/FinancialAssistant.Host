@@ -23,7 +23,8 @@ Query parameters:
 
 The response contains currency, time zone, local reference date, selected period,
 inclusive period boundaries, all category rows, independently ranked top-income
-and top-expense rows, and deterministic percentage shares. Every category row
+and top-expense rows, deterministic percentage shares, and a `freshness` object
+with `isStale` and nullable `lastEventAtUtc`. Every category row
 contains `categoryId`, `incomeTotal`, `expenseTotal`, `balanceDelta`,
 `incomeSharePercent`, and `expenseSharePercent`.
 
@@ -31,7 +32,8 @@ Daily periods cover the local reference date. Weekly periods run Monday through
 Sunday, and monthly periods use the local calendar month. Empty periods return
 empty category and top lists. A zero income or expense denominator produces a
 zero share. Missing or whitespace category IDs use the stable `uncategorized`
-fallback. Archived records are excluded.
+fallback. Archived records are excluded. A never-projected or delayed snapshot is
+explicitly marked stale so an empty response cannot be mistaken for confirmed zero activity.
 
 The contract is designed for direct mobile dashboard consumption and never
 exposes owner hashes, record/event IDs, revisions, raw inputs, storage details,

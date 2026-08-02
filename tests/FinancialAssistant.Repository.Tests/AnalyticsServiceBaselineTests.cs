@@ -105,6 +105,7 @@ public sealed class AnalyticsServiceBaselineTests
         Assert.Contains("weekly", breakdownApi, StringComparison.Ordinal);
         Assert.Contains("monthly", breakdownApi, StringComparison.Ordinal);
         Assert.Contains("uncategorized", breakdownApi, StringComparison.Ordinal);
+        Assert.Contains("isStale", breakdownApi, StringComparison.Ordinal);
         Assert.Contains("dailySummary", api, StringComparison.Ordinal);
         Assert.Contains("weeklySummary", api, StringComparison.Ordinal);
         Assert.Contains("monthlySummary", api, StringComparison.Ordinal);

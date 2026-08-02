@@ -203,6 +203,8 @@ public sealed class AnalyticsProjector
         DateOnly referenceDate,
         string period,
         int top,
+        DateTimeOffset asOfUtc,
+        TimeSpan staleAfter,
         CancellationToken cancellationToken)
     {
         var normalizedUserIdHash = NormalizeRequired(userIdHash, nameof(userIdHash));
@@ -220,6 +222,11 @@ public sealed class AnalyticsProjector
         if (top is < 1 or > 10)
         {
             throw new ArgumentOutOfRangeException(nameof(top), "Top must be between 1 and 10.");
+        }
+
+        if (asOfUtc == default || staleAfter <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(asOfUtc));
         }
 
         var normalizedPeriod = NormalizeRequired(period, nameof(period)).ToLowerInvariant();
@@ -289,7 +296,10 @@ public sealed class AnalyticsProjector
             periodEnd,
             categories,
             topIncome,
-            topExpense);
+            topExpense,
+            snapshot.LastEventAtUtc,
+            snapshot.LastEventAtUtc is null ||
+                asOfUtc.ToUniversalTime() - snapshot.LastEventAtUtc.Value > staleAfter);
     }
 
     private static AnalyticsDailyLimit BuildDailyLimit(decimal? limit, decimal spent)

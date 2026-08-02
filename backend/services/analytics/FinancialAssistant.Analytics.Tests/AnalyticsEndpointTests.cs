@@ -106,6 +106,8 @@ public sealed class AnalyticsEndpointTests : IClassFixture<AnalyticsWebApplicati
         Assert.Equal(AnalyticsBreakdownPeriods.Daily, breakdown.Period);
         Assert.Equal(referenceDate, breakdown.PeriodStart);
         Assert.Equal(referenceDate, breakdown.PeriodEnd);
+        Assert.False(breakdown.Freshness.IsStale);
+        Assert.NotNull(breakdown.Freshness.LastEventAtUtc);
         Assert.Equal(2, breakdown.Categories.Count);
         Assert.Equal("income.salary", Assert.Single(breakdown.TopIncomeCategories).CategoryId);
         Assert.Equal(

@@ -87,7 +87,8 @@ public sealed record AnalyticsCategoryBreakdownResponse(
     DateOnly PeriodEnd,
     IReadOnlyList<AnalyticsCategoryBreakdownItemResponse> Categories,
     IReadOnlyList<AnalyticsCategoryBreakdownItemResponse> TopIncomeCategories,
-    IReadOnlyList<AnalyticsCategoryBreakdownItemResponse> TopExpenseCategories);
+    IReadOnlyList<AnalyticsCategoryBreakdownItemResponse> TopExpenseCategories,
+    AnalyticsFreshnessResponse Freshness);
 
 public sealed record AnalyticsApiErrorResponse(
     string? Title,

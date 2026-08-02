@@ -70,7 +70,8 @@ public sealed class AnalyticsContractTests
             new DateOnly(2026, 8, 20),
             new[] { item },
             Array.Empty<AnalyticsCategoryBreakdownItemResponse>(),
-            new[] { item });
+            new[] { item },
+            new AnalyticsFreshnessResponse(false, DateTimeOffset.UtcNow));
 
         var json = JsonSerializer.Serialize(response);
 
@@ -82,6 +83,8 @@ public sealed class AnalyticsContractTests
             AnalyticsApiRoutes.GatewayCategoryBreakdown);
         Assert.Contains("ExpenseSharePercent", json, StringComparison.Ordinal);
         Assert.Contains("TopExpenseCategories", json, StringComparison.Ordinal);
+        Assert.Contains("Freshness", json, StringComparison.Ordinal);
+        Assert.Contains("IsStale", json, StringComparison.Ordinal);
         Assert.DoesNotContain("UserIdHash", json, StringComparison.Ordinal);
         Assert.DoesNotContain("RecordId", json, StringComparison.Ordinal);
     }
