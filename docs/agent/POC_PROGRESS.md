@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-02T20:28:45+03:00
+Last updated: 2026-08-02T20:39:30+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-30 closure is **65.3%**:
-**128 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-126 closure is **65.8%**:
+**129 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,33 +13,32 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-30 - Implement Recommendations and Notifications v1
+- FIN-126 - P6.T1 Create analytics project baseline
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/125
+  https://github.com/Marachert/FinancialAssistant.Host/pull/121
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/43107bd293c2e7c310ce3bd47c5f035e4e7f0c45
-- previous readiness: 127 / 196, or 64.8%
-- current readiness: 128 / 196, or 65.3%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/8981f44485a787fd2bc81f0fc362472cdb277143
+- previous readiness: 128 / 196, or 65.3%
+- current readiness: 129 / 196, or 65.8%
 - change: +0.5 percentage points
 
-FIN-122 is an exact later duplicate of FIN-121, and FIN-125 is an exact later
-duplicate of FIN-124. Closing either duplicate does not change the numerator or
-denominator.
+FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
+duplicate of FIN-124, and FIN-127 is an exact later duplicate of FIN-126.
+Closing these duplicates does not change the numerator or denominator.
 
 Current delivery:
 
-- FIN-30 is Done after PR #125 delivered deterministic, fact-backed
-  recommendations from analytics and financial-score events
-- Notification Service prepares versioned push and web messages with delivery
-  status tracking; no external AI or delivery provider is enabled
-- analytics publication retains failed currency scopes for retry, publishes
-  current-period facts for historical edits, and includes backend-owned limits
-- RabbitMQ mode uses publisher confirms, bounded retries, and a terminal DLQ;
-  the checked-in POC stores and delivery adapters remain in-memory
-- Backend CI #386 passed privacy, format, Release build, and all solution tests
-  on final head `58b9c2a1095309d1911fbd598f0b673b9a8bc203`
-- parent FIN-27 remains In Progress with 3 of 20 canonical children Done; the
-  next ranked unfinished leaf is FIN-126
+- FIN-126 is Done after recovering its already-delivered analytics baseline from
+  merged FIN-28 PR #121; no duplicate implementation was created
+- Analytics is a complete .NET 8 service with owner/currency-scoped disposable
+  read models derived only from confirmed Income and Expense lifecycle events
+- deterministic daily, Monday-based weekly, monthly, and monthly-category
+  aggregates, local configuration, ownership boundaries, and replay/rebuild are
+  implemented and documented
+- current validation is Backend CI #388: privacy, format, Release build, and all
+  solution tests passed on exact head `47a1a92f0f45cb1f9e17eaf603d3476c0f206c2d`
+- parent FIN-27 remains In Progress with 4 of 20 canonical children Done; the
+  next ranked unfinished issue is FIN-127, an exact later duplicate of FIN-126
 
 ## Epic Progress
 
@@ -51,11 +50,11 @@ Current delivery:
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
-| FIN-27 | P6 Analytics, score, recommendations, and notifications | 3 | 20 | 15.0% |
+| FIN-27 | P6 Analytics, score, recommendations, and notifications | 4 | 20 | 20.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **128** | **196** | **65.3%** |
+| **Total** | **Canonical POC leaf scope** | **129** | **196** | **65.8%** |
 
 ## First-User-Test Gates
 
@@ -139,3 +138,4 @@ This file is recalculated after every canonical ticket is closed.
 | 2026-08-02T16:35:09.228+03:00 | FIN-28 | Closure delivered by PR 121 | 64.3% | +0.5 pp |
 | 2026-08-02T17:16:06+03:00 | FIN-29 | Closure delivered by PR 123 | 64.8% | +0.5 pp |
 | 2026-08-02T20:28:45+03:00 | FIN-30 | Closure delivered by PR 125 | 65.3% | +0.5 pp |
+| 2026-08-02T20:39:30+03:00 | FIN-126 | Recovered analytics baseline from merged PR 121 | 65.8% | +0.5 pp |
