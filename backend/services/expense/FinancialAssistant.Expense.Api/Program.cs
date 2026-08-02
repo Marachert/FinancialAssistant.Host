@@ -1,3 +1,6 @@
+using FinancialAssistant.Expense.Api.Endpoints;
+using FinancialAssistant.Expense.Api.Security;
+using FinancialAssistant.Expense.Application;
 using FinancialAssistant.Expense.Contracts;
 using FinancialAssistant.Expense.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -18,7 +21,9 @@ builder.Services.AddSwaggerGen(options =>
             Description = "Confirmed expense records owned by the Expense Service."
         });
 });
+builder.Services.AddExpenseApplication();
 builder.Services.AddExpenseInfrastructure();
+builder.Services.AddSingleton<ExpenseGatewayAuthenticator>();
 builder.Services
     .AddHealthChecks()
     .AddCheck(
@@ -27,6 +32,8 @@ builder.Services
         tags: new[] { "live", "ready" });
 
 var app = builder.Build();
+
+_ = app.Services.GetRequiredService<ExpenseGatewayAuthenticator>();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {
@@ -58,7 +65,9 @@ app.MapGet(
             "running",
             environment.EnvironmentName,
             "in-memory",
-            "confirmed_transaction")));
+            "confirmed_or_manual")));
+
+app.MapExpenseEndpoints();
 
 app.Run();
 
