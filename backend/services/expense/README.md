@@ -69,9 +69,9 @@ The development adapter is an owner-scoped in-memory store with atomic create an
 
 The durable adapter will use Expense-owned PostgreSQL storage with logical `expense_records`, `expense_event_inbox`, and `expense_event_outbox` tables. Other services must use Expense APIs or events and must not query these tables.
 
-## Planned events
+## Record events
 
-FIN-99 owns publication of:
+Expense publishes these shared-envelope v1 events after authoritative state changes:
 
 ```text
 expense.created.v1
@@ -80,7 +80,18 @@ expense.archived.v1
 expense.restored.v1
 ```
 
-Events will contain minimum required stable data and exclude raw intake text, prompts, OCR payloads, credentials, and idempotency keys.
+The payload contains the record identifier, amount, currency, category, date,
+status, revision, origin, and change time. The envelope carries a SHA-256
+pseudonymous user identifier plus opaque correlation and causation identifiers.
+Merchant text, raw user identifiers, draft identifiers, intake text, prompts, OCR
+payloads, credentials, and idempotency keys are excluded.
+
+The development publisher is an idempotent in-memory outbox keyed by event type,
+record identifier, and revision. Confirmed-event replay repairs a missing enqueue
+without duplicating the message. The durable adapter must write the record and
+outbox row in one Expense-owned PostgreSQL transaction; a RabbitMQ dispatcher retries
+transient publish failures with bounded backoff, records safe reason codes without
+payloads, and dead-letters terminal failures according to the documented topology.
 
 ## Verification
 
