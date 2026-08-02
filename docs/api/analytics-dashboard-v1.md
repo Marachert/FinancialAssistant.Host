@@ -20,11 +20,12 @@ Query parameters:
 | `currency` | yes | three-letter currency; currencies are never combined |
 | `timeZoneId` | yes | valid platform time-zone identifier |
 | `referenceDate` | no | local calendar date; defaults from the supplied time zone |
-| `dailyExpenseLimit` | no | positive authoritative limit; omission means unconfigured |
 | `trendDays` | no | 1-31 inclusive; defaults to 7 |
 
 The response includes currency/time-zone/reference date, daily limit status,
 monthly progress, monthly category totals, zero-filled recent trend points, and
 freshness. It excludes owner hashes, record and event IDs, revisions, origins,
-storage details, and raw inputs. Invalid query values return `400` with
+storage details, and raw inputs. The daily limit is resolved server-side from the
+authoritative limit provider and cannot be supplied by a caller. Missing,
+unparseable, or invalid query values return `400` with
 `invalid_analytics_request`; missing trusted context returns `401`.

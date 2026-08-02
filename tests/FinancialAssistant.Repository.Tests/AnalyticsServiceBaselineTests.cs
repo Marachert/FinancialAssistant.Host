@@ -37,6 +37,12 @@ public sealed class AnalyticsServiceBaselineTests
         var store = Read(
             rootRelativePath:
             "backend/services/analytics/FinancialAssistant.Analytics.Infrastructure/InMemoryAnalyticsReadModelStore.cs");
+        var consumer = Read(
+            rootRelativePath:
+            "backend/services/analytics/FinancialAssistant.Analytics.Infrastructure/AnalyticsFinancialEventConsumer.cs");
+        var dependencyInjection = Read(
+            rootRelativePath:
+            "backend/services/analytics/FinancialAssistant.Analytics.Infrastructure/DependencyInjection.cs");
 
         foreach (var eventName in new[]
                  {
@@ -54,6 +60,9 @@ public sealed class AnalyticsServiceBaselineTests
         }
 
         Assert.Contains("FinancialRecordChangedV1", projector, StringComparison.Ordinal);
+        Assert.Contains("fa.analytics.financial-events.v1", Read("backend/services/analytics/FinancialAssistant.Analytics.Infrastructure/AnalyticsServiceOptions.cs"), StringComparison.Ordinal);
+        Assert.Contains("BasicConsumeAsync", consumer, StringComparison.Ordinal);
+        Assert.Contains("AddHostedService<AnalyticsFinancialEventConsumer>", dependencyInjection, StringComparison.Ordinal);
         Assert.Contains("current.Revision >= projection.Revision", store, StringComparison.Ordinal);
         Assert.Contains("new AnalyticsProjectionSnapshot", store, StringComparison.Ordinal);
         Assert.Contains("WeeklyTotals", Read("backend/services/analytics/FinancialAssistant.Analytics.Domain/AnalyticsReadModels.cs"), StringComparison.Ordinal);
@@ -85,6 +94,7 @@ public sealed class AnalyticsServiceBaselineTests
         Assert.Contains("GET /api/v1/analytics/dashboard", api, StringComparison.Ordinal);
         Assert.Contains("GET /analytics/dashboard", api, StringComparison.Ordinal);
         Assert.Contains("isConfigured = false", Read("docs/engineering/analytics-dashboard-read-model.md"), StringComparison.Ordinal);
+        Assert.Contains("Callers cannot submit a limit", Read("docs/engineering/analytics-dashboard-read-model.md"), StringComparison.Ordinal);
         Assert.DoesNotContain("UserIdHash", contracts, StringComparison.Ordinal);
         Assert.DoesNotContain("RecordId", contracts, StringComparison.Ordinal);
         Assert.DoesNotContain("EventId", contracts, StringComparison.Ordinal);

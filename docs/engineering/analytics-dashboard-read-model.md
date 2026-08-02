@@ -24,6 +24,11 @@ expense.archived.v1
 expense.restored.v1
 ```
 
+The hosted RabbitMQ consumer declares the durable quorum queue
+`fa.analytics.financial-events.v1`, binds each exact routing key, validates the
+serialized envelope, and acknowledges only after the projection succeeds.
+Terminal contract failures are rejected to the consumer-owned dead-letter route.
+
 An accepted event is keyed by owner hash, record type, and record ID. Only a
 higher record revision replaces the current projection. After each accepted
 revision, the store persists materialized owner-and-currency-scoped daily totals,
@@ -51,10 +56,12 @@ decimal places using midpoint-away-from-zero. Unlike currencies are never mixed.
 Recent trends contain one zero-safe point per calendar date, including days with
 no records.
 
-Daily expense limits are supplied from an authoritative settings or limits source.
-Analytics calculates spent, non-negative remaining amount, and usage percentage.
-When no limit is supplied, the response explicitly returns `isConfigured = false`
-and does not invent a financial value.
+Daily expense limits are resolved server-side through
+`IAnalyticsDailyLimitProvider`, whose production adapter must use an authoritative
+settings or limits source. Callers cannot submit a limit. Analytics calculates
+spent, non-negative remaining amount, and usage percentage. When the provider has
+no limit, the response explicitly returns `isConfigured = false` and does not
+invent a financial value.
 
 ## Freshness, replay, and failures
 

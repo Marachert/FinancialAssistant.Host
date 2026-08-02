@@ -22,7 +22,7 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 builder.Services.AddAnalyticsApplication();
-builder.Services.AddAnalyticsInfrastructure();
+builder.Services.AddAnalyticsInfrastructure(builder.Configuration);
 builder.Services.AddSingleton<AnalyticsGatewayAuthenticator>();
 builder.Services
     .AddHealthChecks()

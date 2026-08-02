@@ -9,10 +9,12 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.2.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../FinancialAssistant.Analytics.Application/FinancialAssistant.Analytics.Application.csproj" />
     <ProjectReference Include="../FinancialAssistant.Analytics.Domain/FinancialAssistant.Analytics.Domain.csproj" />
+    <ProjectReference Include="../../../shared/contracts/FinancialAssistant.Shared.Contracts/FinancialAssistant.Shared.Contracts.csproj" />
   </ItemGroup>
 </Project>

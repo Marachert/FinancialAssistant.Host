@@ -1,3 +1,4 @@
+using System.Globalization;
 using FinancialAssistant.Analytics.Api.Security;
 using FinancialAssistant.Analytics.Application;
 using FinancialAssistant.Analytics.Contracts;
@@ -26,12 +27,8 @@ public static class AnalyticsEndpointExtensions
 
     private static async Task<IResult> HandleDashboardAsync(
         HttpContext httpContext,
-        string currency,
-        string timeZoneId,
-        DateOnly? referenceDate,
-        decimal? dailyExpenseLimit,
-        int? trendDays,
         AnalyticsProjector projector,
+        IAnalyticsDailyLimitProvider dailyLimitProvider,
         AnalyticsGatewayAuthenticator authenticator,
         TimeProvider timeProvider,
         CancellationToken cancellationToken)
@@ -44,15 +41,33 @@ public static class AnalyticsEndpointExtensions
 
         try
         {
+            var currency = ReadRequiredQuery(httpContext, "currency");
+            var timeZoneId = ReadRequiredQuery(httpContext, "timeZoneId");
+            var referenceDate = ReadOptionalDate(httpContext, "referenceDate");
+            var trendDays = ReadOptionalInteger(httpContext, "trendDays") ?? 7;
+            if (httpContext.Request.Query.ContainsKey("dailyExpenseLimit"))
+            {
+                throw new ArgumentException(
+                    "Daily expense limits are resolved from the authoritative server-side source.");
+            }
+
             var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
             var now = timeProvider.GetUtcNow();
             var localNow = TimeZoneInfo.ConvertTime(now, timeZone);
-            var result = await projector.GetDashboardAsync(
-                AnalyticsOwnerHasher.Hash(userId!),
+            var ownerHash = AnalyticsOwnerHasher.Hash(userId!);
+            var effectiveReferenceDate =
+                referenceDate ?? DateOnly.FromDateTime(localNow.DateTime);
+            var dailyExpenseLimit = await dailyLimitProvider.GetDailyExpenseLimitAsync(
+                ownerHash,
                 currency,
-                referenceDate ?? DateOnly.FromDateTime(localNow.DateTime),
+                effectiveReferenceDate,
+                cancellationToken);
+            var result = await projector.GetDashboardAsync(
+                ownerHash,
+                currency,
+                effectiveReferenceDate,
                 dailyExpenseLimit,
-                trendDays ?? 7,
+                trendDays,
                 now,
                 StaleAfter,
                 cancellationToken);
@@ -70,6 +85,46 @@ public static class AnalyticsEndpointExtensions
         {
             return Invalid(httpContext, exception.Message);
         }
+    }
+
+    private static string ReadRequiredQuery(HttpContext context, string name)
+    {
+        var value = context.Request.Query[name].FirstOrDefault()?.Trim();
+        return string.IsNullOrWhiteSpace(value)
+            ? throw new ArgumentException($"Query parameter '{name}' is required.")
+            : value;
+    }
+
+    private static DateOnly? ReadOptionalDate(HttpContext context, string name)
+    {
+        var value = context.Request.Query[name].FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return DateOnly.TryParseExact(
+            value,
+            "yyyy-MM-dd",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out var result)
+            ? result
+            : throw new ArgumentException(
+                $"Query parameter '{name}' must use yyyy-MM-dd format.");
+    }
+
+    private static int? ReadOptionalInteger(HttpContext context, string name)
+    {
+        var value = context.Request.Query[name].FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : throw new ArgumentException($"Query parameter '{name}' must be an integer.");
     }
 
     private static IResult? Authenticate(
