@@ -1,6 +1,6 @@
 # Analytics Dashboard API v1
 
-Related Jira: FIN-28.
+Related Jira: FIN-28, FIN-128.
 
 The service-contract routes are:
 
@@ -22,9 +22,18 @@ Query parameters:
 | `referenceDate` | no | local calendar date; defaults from the supplied time zone |
 | `trendDays` | no | 1-31 inclusive; defaults to 7 |
 
-The response includes currency/time-zone/reference date, daily limit status,
-monthly progress, monthly category totals, zero-filled recent trend points, and
-freshness. It excludes owner hashes, record and event IDs, revisions, origins,
+The response includes currency/time-zone/reference date, explicit daily, weekly,
+and monthly summary objects, daily limit status, monthly progress, monthly
+category totals, zero-filled recent trend points, and freshness.
+
+Each `dailySummary`, `weeklySummary`, and `monthlySummary` contains
+`periodStart`, `periodEnd`, `incomeTotal`, `expenseTotal`, and
+`balanceDelta`. Empty periods return zero totals. Daily boundaries use the
+local `referenceDate`; weeks run Monday through Sunday; month boundaries use
+the local calendar month. The API derives `referenceDate` from `timeZoneId`
+when omitted, so UTC instants are never used as implicit local period boundaries.
+
+The response excludes owner hashes, record and event IDs, revisions, origins,
 storage details, and raw inputs. The daily limit is resolved server-side from the
 authoritative limit provider and cannot be supplied by a caller. Missing,
 unparseable, or invalid query values return `400` with

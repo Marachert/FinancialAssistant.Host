@@ -81,6 +81,7 @@ public sealed class AnalyticsServiceBaselineTests
 
         foreach (var responseSection in new[]
                  {
+                     "AnalyticsPeriodSummaryResponse",
                      "AnalyticsDailyLimitResponse",
                      "AnalyticsMonthlyProgressResponse",
                      "AnalyticsCategoryTotalResponse",
@@ -93,6 +94,11 @@ public sealed class AnalyticsServiceBaselineTests
 
         Assert.Contains("GET /api/v1/analytics/dashboard", api, StringComparison.Ordinal);
         Assert.Contains("GET /analytics/dashboard", api, StringComparison.Ordinal);
+        Assert.Contains("dailySummary", api, StringComparison.Ordinal);
+        Assert.Contains("weeklySummary", api, StringComparison.Ordinal);
+        Assert.Contains("monthlySummary", api, StringComparison.Ordinal);
+        Assert.Contains("Empty periods return zero totals", api, StringComparison.Ordinal);
+        Assert.Contains("Monday through Sunday", api, StringComparison.Ordinal);
         Assert.Contains("isConfigured = false", Read("docs/engineering/analytics-dashboard-read-model.md"), StringComparison.Ordinal);
         Assert.Contains("Callers cannot submit a limit", Read("docs/engineering/analytics-dashboard-read-model.md"), StringComparison.Ordinal);
         Assert.DoesNotContain("UserIdHash", contracts, StringComparison.Ordinal);

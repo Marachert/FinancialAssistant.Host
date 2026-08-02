@@ -12,6 +12,13 @@ public static class AnalyticsGatewayHeaders
     public const string UserId = "X-Gateway-User-Id";
 }
 
+public sealed record AnalyticsPeriodSummaryResponse(
+    DateOnly PeriodStart,
+    DateOnly PeriodEnd,
+    decimal IncomeTotal,
+    decimal ExpenseTotal,
+    decimal BalanceDelta);
+
 public sealed record AnalyticsDailyLimitResponse(
     bool IsConfigured,
     decimal? Limit,
@@ -45,6 +52,9 @@ public sealed record AnalyticsDashboardResponse(
     string Currency,
     string TimeZoneId,
     DateOnly ReferenceDate,
+    AnalyticsPeriodSummaryResponse DailySummary,
+    AnalyticsPeriodSummaryResponse WeeklySummary,
+    AnalyticsPeriodSummaryResponse MonthlySummary,
     AnalyticsDailyLimitResponse DailyLimit,
     AnalyticsMonthlyProgressResponse MonthlyProgress,
     IReadOnlyList<AnalyticsCategoryTotalResponse> CategoryTotals,

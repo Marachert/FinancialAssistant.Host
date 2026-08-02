@@ -29,6 +29,21 @@ public sealed class AnalyticsProjectorTests
             TimeSpan.FromHours(2),
             CancellationToken.None);
 
+        Assert.Equal(new DateOnly(2026, 8, 20), result.DailySummary.PeriodStart);
+        Assert.Equal(new DateOnly(2026, 8, 20), result.DailySummary.PeriodEnd);
+        Assert.Equal(500m, result.DailySummary.Income);
+        Assert.Equal(40m, result.DailySummary.Expense);
+        Assert.Equal(460m, result.DailySummary.BalanceDelta);
+        Assert.Equal(new DateOnly(2026, 8, 17), result.WeeklySummary.PeriodStart);
+        Assert.Equal(new DateOnly(2026, 8, 23), result.WeeklySummary.PeriodEnd);
+        Assert.Equal(500m, result.WeeklySummary.Income);
+        Assert.Equal(100m, result.WeeklySummary.Expense);
+        Assert.Equal(400m, result.WeeklySummary.BalanceDelta);
+        Assert.Equal(new DateOnly(2026, 8, 1), result.MonthlySummary.PeriodStart);
+        Assert.Equal(new DateOnly(2026, 8, 31), result.MonthlySummary.PeriodEnd);
+        Assert.Equal(500m, result.MonthlySummary.Income);
+        Assert.Equal(100m, result.MonthlySummary.Expense);
+        Assert.Equal(400m, result.MonthlySummary.BalanceDelta);
         Assert.Equal(40m, result.DailyLimit.Spent);
         Assert.Equal(10m, result.DailyLimit.Remaining);
         Assert.Equal(80m, result.DailyLimit.UsedPercent);
@@ -62,6 +77,15 @@ public sealed class AnalyticsProjectorTests
             CancellationToken.None);
 
         Assert.False(result.DailyLimit.IsConfigured);
+        Assert.Equal(0m, result.DailySummary.Income);
+        Assert.Equal(0m, result.DailySummary.Expense);
+        Assert.Equal(0m, result.DailySummary.BalanceDelta);
+        Assert.Equal(0m, result.WeeklySummary.Income);
+        Assert.Equal(0m, result.WeeklySummary.Expense);
+        Assert.Equal(0m, result.WeeklySummary.BalanceDelta);
+        Assert.Equal(0m, result.MonthlySummary.Income);
+        Assert.Equal(0m, result.MonthlySummary.Expense);
+        Assert.Equal(0m, result.MonthlySummary.BalanceDelta);
         Assert.Equal(0m, result.DailyLimit.Spent);
         Assert.Empty(result.CategoryTotals);
         Assert.True(result.IsStale);

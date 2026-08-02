@@ -19,6 +19,9 @@ public static class AnalyticsDashboardMapper
             readModel.Currency,
             timeZoneId.Trim(),
             readModel.ReferenceDate,
+            MapPeriodSummary(readModel.DailySummary),
+            MapPeriodSummary(readModel.WeeklySummary),
+            MapPeriodSummary(readModel.MonthlySummary),
             new AnalyticsDailyLimitResponse(
                 readModel.DailyLimit.IsConfigured,
                 readModel.DailyLimit.Limit,
@@ -48,4 +51,13 @@ public static class AnalyticsDashboardMapper
                 readModel.IsStale,
                 readModel.LastEventAtUtc));
     }
+
+    private static AnalyticsPeriodSummaryResponse MapPeriodSummary(
+        AnalyticsPeriodSummary summary) =>
+        new(
+            summary.PeriodStart,
+            summary.PeriodEnd,
+            summary.Income,
+            summary.Expense,
+            summary.BalanceDelta);
 }

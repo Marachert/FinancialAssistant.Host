@@ -143,8 +143,11 @@ public sealed class AnalyticsProjector
             normalizedUserIdHash,
             normalizedCurrency,
             cancellationToken);
+        var weekStart = StartOfWeek(referenceDate);
         var monthStart = new DateOnly(referenceDate.Year, referenceDate.Month, 1);
         var daily = snapshot.DailyTotals.GetValueOrDefault(referenceDate) ??
+            new AnalyticsAggregateTotals(0m, 0m);
+        var weekly = snapshot.WeeklyTotals.GetValueOrDefault(weekStart) ??
             new AnalyticsAggregateTotals(0m, 0m);
         var monthly = snapshot.MonthlyTotals.GetValueOrDefault(monthStart) ??
             new AnalyticsMonthlyAggregate(
@@ -163,6 +166,21 @@ public sealed class AnalyticsProjector
             normalizedUserIdHash,
             normalizedCurrency,
             referenceDate,
+            new AnalyticsPeriodSummary(
+                referenceDate,
+                referenceDate,
+                daily.Income,
+                daily.Expense),
+            new AnalyticsPeriodSummary(
+                weekStart,
+                weekStart.AddDays(6),
+                weekly.Income,
+                weekly.Expense),
+            new AnalyticsPeriodSummary(
+                monthStart,
+                monthStart.AddMonths(1).AddDays(-1),
+                monthly.Totals.Income,
+                monthly.Totals.Expense),
             BuildDailyLimit(dailyExpenseLimit, daily.Expense),
             new AnalyticsMonthlyProgress(
                 monthly.Totals.Income,
@@ -249,6 +267,9 @@ public sealed class AnalyticsProjector
             Encoding.UTF8.GetBytes(string.Join('|', components)));
         return Convert.ToHexString(hash).ToLowerInvariant()[..32];
     }
+
+    private static DateOnly StartOfWeek(DateOnly date) =>
+        date.AddDays(-(((int)date.DayOfWeek + 6) % 7));
 
     private static decimal Percentage(decimal numerator, decimal denominator) =>
         Math.Round(numerator / denominator * 100m, 2, MidpointRounding.AwayFromZero);

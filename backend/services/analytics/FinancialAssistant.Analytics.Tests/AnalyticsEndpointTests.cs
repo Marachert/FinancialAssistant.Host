@@ -45,6 +45,20 @@ public sealed class AnalyticsEndpointTests : IClassFixture<AnalyticsWebApplicati
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(dashboard);
+        var weekStart = referenceDate.AddDays(-(((int)referenceDate.DayOfWeek + 6) % 7));
+        Assert.Equal(referenceDate, dashboard.DailySummary.PeriodStart);
+        Assert.Equal(referenceDate, dashboard.DailySummary.PeriodEnd);
+        Assert.Equal(0m, dashboard.DailySummary.IncomeTotal);
+        Assert.Equal(25m, dashboard.DailySummary.ExpenseTotal);
+        Assert.Equal(-25m, dashboard.DailySummary.BalanceDelta);
+        Assert.Equal(weekStart, dashboard.WeeklySummary.PeriodStart);
+        Assert.Equal(weekStart.AddDays(6), dashboard.WeeklySummary.PeriodEnd);
+        Assert.Equal(25m, dashboard.WeeklySummary.ExpenseTotal);
+        Assert.Equal(new DateOnly(referenceDate.Year, referenceDate.Month, 1), dashboard.MonthlySummary.PeriodStart);
+        Assert.Equal(
+            new DateOnly(referenceDate.Year, referenceDate.Month, 1).AddMonths(1).AddDays(-1),
+            dashboard.MonthlySummary.PeriodEnd);
+        Assert.Equal(25m, dashboard.MonthlySummary.ExpenseTotal);
         Assert.Equal(25m, dashboard.DailyLimit.Spent);
         Assert.Equal(25m, dashboard.DailyLimit.Remaining);
         Assert.Single(dashboard.CategoryTotals);
