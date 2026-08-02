@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="../FinancialAssistant.Income.Application/FinancialAssistant.Income.Application.csproj" />
     <ProjectReference Include="../FinancialAssistant.Income.Domain/FinancialAssistant.Income.Domain.csproj" />
+    <ProjectReference Include="../../../shared/contracts/FinancialAssistant.Shared.Contracts/FinancialAssistant.Shared.Contracts.csproj" />
     <ProjectReference Include="../../transaction-intake/FinancialAssistant.TransactionIntake.Contracts/FinancialAssistant.TransactionIntake.Contracts.csproj" />
   </ItemGroup>
 </Project>
