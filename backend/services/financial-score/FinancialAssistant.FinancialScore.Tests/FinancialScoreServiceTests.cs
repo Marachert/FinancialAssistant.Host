@@ -66,7 +66,14 @@ public sealed class FinancialScoreServiceTests
         decimal amount,
         string userIdHash = "synthetic-owner-hash")
     {
-        var changedAt = new DateTimeOffset(2026, 8, 20, 12, revision, 0, TimeSpan.Zero);
+        var changedAt = new DateTimeOffset(
+            2026,
+            8,
+            20,
+            12,
+            checked((int)revision),
+            0,
+            TimeSpan.Zero);
         return new IntegrationEventEnvelope<FinancialRecordChangedV1>(
             $"event-{recordId}-{revision}",
             $"occurrence-{recordId}-{revision}",
