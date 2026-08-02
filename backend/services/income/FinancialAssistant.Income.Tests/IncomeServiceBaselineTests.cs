@@ -1,21 +1,17 @@
 using System.Net;
 using System.Net.Http.Json;
 using FinancialAssistant.Income.Contracts;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace FinancialAssistant.Income.Tests;
 
-public sealed class IncomeServiceBaselineTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed class IncomeServiceBaselineTests : IClassFixture<IncomeWebApplicationFactory>
 {
     private readonly HttpClient client;
 
-    public IncomeServiceBaselineTests(WebApplicationFactory<Program> factory)
+    public IncomeServiceBaselineTests(IncomeWebApplicationFactory factory)
     {
-        client = factory
-            .WithWebHostBuilder(builder => builder.UseEnvironment("Testing"))
-            .CreateClient();
+        client = factory.CreateClient();
     }
 
     [Theory]
