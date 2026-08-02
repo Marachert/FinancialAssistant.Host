@@ -23,7 +23,7 @@ public sealed class ExpenseCrudEndpointTests : IClassFixture<ExpenseWebApplicati
             new CreateExpenseRequest(
                 1250.129m,
                 "usd",
-                "expense.salary",
+                "expense.groceries",
                 "  Synthetic   Employer ",
                 DateOnly.FromDateTime(DateTime.UtcNow)));
 
@@ -31,7 +31,7 @@ public sealed class ExpenseCrudEndpointTests : IClassFixture<ExpenseWebApplicati
         Assert.Equal("manual", created.Origin);
         Assert.Equal(1250.13m, created.Amount);
         Assert.Equal("USD", created.Currency);
-        Assert.Equal("Synthetic Employer", created.Merchant);
+        Assert.Equal("Synthetic Market", created.Merchant);
 
         using var otherRequest = CreateRequest(
             HttpMethod.Get,
@@ -49,8 +49,8 @@ public sealed class ExpenseCrudEndpointTests : IClassFixture<ExpenseWebApplicati
             new UpdateExpenseRequest(
                 1300m,
                 "eur",
-                "expense.freelance",
-                "Synthetic Client",
+                "expense.utilities",
+                "Synthetic Utility",
                 created.Date));
         using var updateResponse = await client.SendAsync(updateRequest);
         var updated = await updateResponse.Content.ReadFromJsonAsync<ExpenseRecordResponse>();
@@ -70,10 +70,10 @@ public sealed class ExpenseCrudEndpointTests : IClassFixture<ExpenseWebApplicati
         var date = DateOnly.FromDateTime(DateTime.UtcNow);
         var first = await CreateAsync(
             userId,
-            new CreateExpenseRequest(100m, "USD", "expense.salary", null, date));
+            new CreateExpenseRequest(100m, "USD", "expense.groceries", null, date));
         _ = await CreateAsync(
             userId,
-            new CreateExpenseRequest(50m, "USD", "expense.freelance", null, date));
+            new CreateExpenseRequest(50m, "USD", "expense.utilities", null, date));
 
         var active = await ListAsync(userId, date.AddDays(-1), date.AddDays(1));
         Assert.Equal(2, active.Records.Count);
@@ -107,7 +107,7 @@ public sealed class ExpenseCrudEndpointTests : IClassFixture<ExpenseWebApplicati
             ExpenseApiRoutes.Expense,
             userId,
             first.Id,
-            new UpdateExpenseRequest(200m, "USD", "expense.salary", null, date));
+            new UpdateExpenseRequest(200m, "USD", "expense.groceries", null, date));
         using var updateArchivedResponse = await client.SendAsync(updateArchivedRequest);
         Assert.Equal(HttpStatusCode.Conflict, updateArchivedResponse.StatusCode);
 
@@ -131,10 +131,10 @@ public sealed class ExpenseCrudEndpointTests : IClassFixture<ExpenseWebApplicati
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var requests = new[]
         {
-            new CreateExpenseRequest(0m, "USD", "expense.salary", null, today),
-            new CreateExpenseRequest(10m, "JPY", "expense.salary", null, today),
-            new CreateExpenseRequest(10m, "USD", "expense.salary", null, today),
-            new CreateExpenseRequest(10m, "USD", "expense.salary", null, today.AddDays(367))
+            new CreateExpenseRequest(0m, "USD", "expense.groceries", null, today),
+            new CreateExpenseRequest(10m, "JPY", "expense.groceries", null, today),
+            new CreateExpenseRequest(10m, "USD", "income.salary", null, today),
+            new CreateExpenseRequest(10m, "USD", "expense.groceries", null, today.AddDays(367))
         };
 
         foreach (var request in requests)
