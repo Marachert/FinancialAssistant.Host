@@ -34,6 +34,15 @@ public sealed record AnalyticsAggregateTotals(decimal Income, decimal Expense)
     public decimal BalanceDelta => Income - Expense;
 }
 
+public sealed record AnalyticsPeriodSummary(
+    DateOnly PeriodStart,
+    DateOnly PeriodEnd,
+    decimal Income,
+    decimal Expense)
+{
+    public decimal BalanceDelta => Income - Expense;
+}
+
 public sealed record AnalyticsMonthlyAggregate(
     DateOnly MonthStart,
     AnalyticsAggregateTotals Totals,
@@ -80,6 +89,9 @@ public sealed record AnalyticsDashboardReadModel(
     string UserIdHash,
     string Currency,
     DateOnly ReferenceDate,
+    AnalyticsPeriodSummary DailySummary,
+    AnalyticsPeriodSummary WeeklySummary,
+    AnalyticsPeriodSummary MonthlySummary,
     AnalyticsDailyLimit DailyLimit,
     AnalyticsMonthlyProgress MonthlyProgress,
     IReadOnlyList<AnalyticsCategoryTotal> CategoryTotals,

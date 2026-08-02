@@ -1,6 +1,6 @@
 # Analytics Dashboard Read Model
 
-Related Jira: FIN-28.
+Related Jira: FIN-28, FIN-128.
 
 ## Ownership and authority
 
@@ -39,6 +39,21 @@ records remain available for revision ordering but are excluded from aggregates.
 The checked-in in-memory adapter is limited to the single-instance PoC. A durable
 adapter must preserve the same keys, revision comparison, atomic snapshot update,
 currency isolation, and rebuild behavior.
+
+## Summary read models
+
+The dashboard exposes three explicit period summaries. `dailySummary` covers
+the local reference date, `weeklySummary` covers the Monday-through-Sunday week
+containing that date, and `monthlySummary` covers its local calendar month.
+Every summary contains inclusive period boundaries plus income, expense, and
+balance-delta totals. Periods without active records return all three totals as
+zero.
+
+The API converts the current UTC instant through the requested `timeZoneId`
+before choosing a default `referenceDate`. An explicit reference date is also
+interpreted in that local calendar. Weekly and monthly boundaries are calculated
+from the resulting local date, so daylight-saving transitions do not shift a
+record into a neighboring summary period.
 
 ## Deterministic calculations
 
