@@ -1,6 +1,6 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-09T15:39:30+03:00
+Last updated: 2026-08-09T15:45:30+03:00
 
 ## Current Snapshot
 
@@ -24,13 +24,13 @@ Latest canonical closure:
 
 Latest Jira closure:
 
-- FIN-143 - exact later duplicate of FIN-140, linked and closed in Jira
+- FIN-146 - exact later duplicate of FIN-145, linked and closed in Jira
 - canonical implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/151
+  https://github.com/Marachert/FinancialAssistant.Host/pull/155
 - canonical implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/a98f6de4135279fcfdcc4a21ce7fe8e723efe3b7
+  https://github.com/Marachert/FinancialAssistant.Host/commit/1c96cc25a63b861e3899694afe838ab379c03642
 - canonical progress PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/152
+  https://github.com/Marachert/FinancialAssistant.Host/pull/156
 - previous readiness: 146 / 197, or 74.1%
 - current readiness: 146 / 197, or 74.1%
 - change: +0.0 percentage points
@@ -47,17 +47,17 @@ change the numerator or denominator.
 
 Current delivery:
 
-- FIN-143 is Done as a Jira-linked exact duplicate of canonical FIN-140, with
-  Jira evidence comment 10839
-- canonical implementation is verified in PR #151 and its progress record in
-  PR #152
+- FIN-146 is Done as a Jira-linked exact duplicate of canonical FIN-145, with
+  Jira evidence comment 10843
+- canonical implementation is verified in PR #155 and its progress record in
+  PR #156
 - canonical POC readiness remains 146/197 (74.1%), a +0.0 percentage-point
   change for this duplicate closure
 - FIN-27 canonical POC scope is 21 of 21 Done (100.0%); the Jira parent
   remains In Progress until every raw duplicate child is linked and Done
 - first-user testing remains Not Ready because runtime and P7-P9 gates remain open
-- the next ranked unfinished raw leaf is FIN-146, an exact later duplicate of
-  FIN-145, subject to a fresh Jira duplicate and link audit
+- the next ranked unfinished raw leaf is FIN-148, an exact later duplicate of
+  FIN-147, subject to a fresh Jira duplicate and link audit
 
 ## Epic Progress
 
@@ -181,3 +181,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-09T15:26:30+03:00 | FIN-141 | Exact duplicate of FIN-140; Jira-linked and Done | 74.1% | +0.0 pp |
 | 2026-08-09T15:33:30+03:00 | FIN-142 | Exact duplicate of FIN-140; Jira-linked and Done | 74.1% | +0.0 pp |
 | 2026-08-09T15:39:30+03:00 | FIN-143 | Exact duplicate of FIN-140; Jira-linked and Done | 74.1% | +0.0 pp |
+| 2026-08-09T15:45:30+03:00 | FIN-146 | Exact duplicate of FIN-145; Jira-linked and Done | 74.1% | +0.0 pp |
