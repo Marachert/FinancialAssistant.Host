@@ -97,9 +97,12 @@ distinguish confirmed empty periods from delayed or never-built projections.
 ## Freshness, replay, and failures
 
 Duplicate and out-of-order events are no-ops when their revision is not newer.
-Rebuild clears the disposable projection and replays authorized events by
-occurrence time and event ID. Empty and lagging projections remain readable with
-explicit `isStale` and `lastEventAtUtc` metadata.
+The process-local development/test rebuild clears the disposable projection and
+replays authorized events by occurrence time and event ID. A production rebuild
+must instead use the scoped, checkpointed staging and atomic-swap process in
+`docs/engineering/analytics-rebuild-backfill.md`; it must never clear unrelated
+owners or periods. Empty and lagging projections remain readable with explicit
+`isStale` and `lastEventAtUtc` metadata.
 
 Unsupported event types, invalid versions, missing owner hashes, non-positive
 amounts, invalid currencies/categories/dates/statuses, and negative revisions are
