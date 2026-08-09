@@ -18,7 +18,15 @@ gateway destinations for unfinished insight services remain disabled.
 - recommendation previews plus `hasMore`;
 - notification unread count and `hasUnread`;
 - explicit empty-state booleans for every dashboard area;
-- analytics freshness without internal projection details.
+- per-source availability, staleness, and last-successful-update metadata for
+  Analytics, Financial Score, Recommendation, and Notification data.
+
+Each `freshness` source has `isAvailable`, `isStale`, and nullable
+`lastSuccessfulUpdateAtUtc`. An unavailable source is therefore distinct from
+a healthy source that legitimately returns an empty widget. Summary, category,
+limit, and streak widgets share the Analytics source state. Score,
+recommendation, and notification widgets each use their corresponding source
+state.
 
 Empty collections are `[]`, not null. Unavailable score values and
 unconfigured limit values are null only where the contract declares nullable
@@ -32,6 +40,6 @@ provider credentials, storage models, and internal service addresses.
 
 Authoritative calculations remain in backend services. A future composition
 endpoint must call or consume service-owned contracts, preserve owner and
-currency boundaries, cap category/recommendation previews, propagate per-source
-freshness, and add gateway activation plus end-to-end tests before clients treat
-the contract as runtime available.
+currency boundaries, cap category/recommendation previews, populate every
+source's freshness state, and add gateway activation plus end-to-end tests
+before clients treat the contract as runtime available.
