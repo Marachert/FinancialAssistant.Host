@@ -10,9 +10,11 @@ public static class DependencyInjection
     {
         services.AddSingleton<RecommendationGenerator>();
         services.AddSingleton<NotificationTemplateCatalog>();
+        services.AddSingleton<NotificationTriggerEvaluator>();
         services.AddSingleton<IRecommendationWordingProvider, DeterministicRecommendationWordingProvider>();
         services.AddSingleton<RecommendationService>();
         services.AddSingleton<NotificationPreparationService>();
+        services.AddSingleton<NotificationTriggerService>();
         return services;
     }
 }
