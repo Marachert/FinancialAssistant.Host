@@ -97,3 +97,9 @@ Channel and type preferences are checked before template preparation, storage,
 or event publication. Quiet hours are preserved as a future delivery-scheduler
 contract; the current non-sending adapter baseline neither sends nor discards
 messages during that window. See `docs/api/notification-preferences-v1.md`.
+
+## Validation plan
+
+The synthetic release matrix for recommendation rules and explanations,
+notification preferences, triggers, delivery, replay, privacy, and negative
+cases is defined in `docs/engineering/insights-validation-test-plan.md`.
