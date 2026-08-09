@@ -131,7 +131,7 @@ public sealed class RecommendationNotificationEndpointTests
         var quietHours = new NotificationQuietHoursContract(
             new TimeOnly(22, 0),
             new TimeOnly(7, 0),
-            "Etc/UTC");
+            TimeZoneInfo.Utc.Id);
         var updateResponse = await client.PutAsJsonAsync(
             RecommendationNotificationApiRoutes.NotificationPreferences,
             new UpdateNotificationPreferencesRequest(
@@ -197,5 +197,17 @@ public sealed class RecommendationNotificationEndpointTests
                 ["unknown-notification-type"],
                 null));
         Assert.Equal(HttpStatusCode.BadRequest, invalidResponse.StatusCode);
+
+        var invalidZoneResponse = await client.PutAsJsonAsync(
+            RecommendationNotificationApiRoutes.NotificationPreferences,
+            new UpdateNotificationPreferencesRequest(
+                true,
+                true,
+                NotificationTriggerCodes.All,
+                new NotificationQuietHoursContract(
+                    new TimeOnly(22, 0),
+                    new TimeOnly(7, 0),
+                    "Not/AZone")));
+        Assert.Equal(HttpStatusCode.BadRequest, invalidZoneResponse.StatusCode);
     }
 }
