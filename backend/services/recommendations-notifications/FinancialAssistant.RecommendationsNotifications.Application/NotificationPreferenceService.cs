@@ -72,7 +72,15 @@ public sealed class NotificationPreferenceService(
                 nameof(quietHours));
         }
 
-        return quietHours with { TimeZoneId = quietHours.TimeZoneId.Trim() };
+        var timeZoneId = quietHours.TimeZoneId.Trim();
+        if (!TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId, out _))
+        {
+            throw new ArgumentException(
+                "Quiet hours time zone is not recognized.",
+                nameof(quietHours));
+        }
+
+        return quietHours with { TimeZoneId = timeZoneId };
     }
 
     private static string NormalizeType(string value) =>
