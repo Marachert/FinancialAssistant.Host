@@ -336,6 +336,12 @@ public sealed class AnalyticsProjector
         IReadOnlyDictionary<DateOnly, AnalyticsAggregateTotals> dailyTotals,
         DateOnly referenceDate)
     {
+        var lastTrackedDate = dailyTotals
+            .Where(item =>
+                item.Key <= referenceDate &&
+                (item.Value.Income > 0m || item.Value.Expense > 0m))
+            .Select(item => (DateOnly?)item.Key)
+            .Max();
         var days = 0;
         var cursor = referenceDate;
         while (dailyTotals.GetValueOrDefault(cursor) is { } totals &&
@@ -347,7 +353,7 @@ public sealed class AnalyticsProjector
 
         return new AnalyticsTrackingStreak(
             days,
-            days == 0 ? null : referenceDate,
+            lastTrackedDate,
             days switch
             {
                 >= 7 => "Great consistency. Keep the daily tracking habit.",
