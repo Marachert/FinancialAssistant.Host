@@ -1,10 +1,10 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-09T10:32:00+03:00
+Last updated: 2026-08-09T10:39:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-134 closure is **69.4%**:
+POC readiness after FIN-135 duplicate closure is **69.4%**:
 **136 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
@@ -24,29 +24,25 @@ Latest canonical closure:
 
 Latest Jira closure:
 
-- FIN-134 - canonical implementation delivered by PR #140
-- previous readiness: 135 / 196, or 68.9%
+- FIN-135 - exact duplicate of canonical FIN-134, linked and closed in Jira
+- previous readiness: 136 / 196, or 69.4%
 - current readiness: 136 / 196, or 69.4%
-- change: +0.5 percentage points
+- change: +0.0 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
-duplicate of FIN-124, and FIN-127 is an exact later duplicate of FIN-126.
-Closing these duplicates does not change the numerator or denominator.
+duplicate of FIN-124, FIN-127 is an exact later duplicate of FIN-126, and
+FIN-135 is an exact later duplicate of FIN-134. Closing these duplicates does
+not change the numerator or denominator.
 
 Current delivery:
 
-- FIN-134 is Done after PR #140 added all six deterministic MVP recommendation
-  rules from confirmed analytics and explicit Profile settings
-- analytics events expose top-category and uncategorized confirmed expense totals
-- recommendation codes are deduplicated before persistence/publication
-- owner-scoped `read` composes with dismissal and automatic expiry while
-  terminal lifecycle protections remain enforced
-- Backend CI #423 passed privacy, format, Release build, and all solution tests
-  on final head `b78db2cac19e513a8a7e8a43b3cc3f5dd828b022`
-- no paid provider or external dependency was added
-- parent FIN-27 remains In Progress with 11 of 20 canonical children Done
-- FIN-135 is an exact later duplicate of FIN-134 and is next for Jira duplicate
-  resolution; it does not add canonical scope
+- FIN-135 is Jira-linked to canonical FIN-134 as an exact later duplicate and
+  is Done with evidence against implementation PR #140
+- duplicate closure adds no canonical numerator, denominator, branch, or code
+- canonical POC readiness remains 136/196 (69.4%), a +0.0 percentage-point change
+- parent FIN-27 remains In Progress at 11 of 20 canonical children Done (55.0%)
+- first-user testing remains Not Ready
+- the next ranked unfinished canonical leaf is FIN-136
 
 ## Epic Progress
 
@@ -156,3 +152,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-09T09:47:30+03:00 | FIN-132 | Closure delivered by PR 136 | 68.4% | +0.5 pp |
 | 2026-08-09T10:12:00+03:00 | FIN-133 | Closure delivered by PR 138 | 68.9% | +0.5 pp |
 | 2026-08-09T10:32:00+03:00 | FIN-134 | Closure delivered by PR 140 | 69.4% | +0.5 pp |
+| 2026-08-09T10:39:00+03:00 | FIN-135 | Exact duplicate of FIN-134; Jira-linked and Done | 69.4% | +0.0 pp |
