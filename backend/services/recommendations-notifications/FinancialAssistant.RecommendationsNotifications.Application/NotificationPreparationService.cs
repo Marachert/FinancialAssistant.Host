@@ -51,7 +51,9 @@ public sealed class NotificationPreparationService
             NotificationChannels.Push,
             NotificationChannels.Web
         }
-            .Where(preferences.IsEnabled)
+            .Where(channel => preferences.IsEnabled(
+                channel,
+                NotificationTriggerCodes.RecommendationAvailable))
             .Select(channel => templates.Prepare(
                 recommendation,
                 channel,
