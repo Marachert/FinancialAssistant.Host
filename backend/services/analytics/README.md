@@ -43,3 +43,18 @@ the current streak to zero. The response includes a short deterministic positive
 message suitable for the mobile dashboard. Time-zone conversion happens before
 the reference date is chosen, so resets follow the requested local calendar and
 daylight-saving changes never move a record between calendar periods.
+
+## Rebuild and backfill contract
+
+`AnalyticsRebuildPlanner` validates an inclusive pseudonymous owner/period
+scope and authoritative source snapshot version, then returns a stable job key
+and ordered stages for analytics, score history, limit progress,
+recommendation inputs, and verified atomic replacement. Progress and failure
+contracts expose safe operational evidence without owner scope or financial
+payloads.
+
+No rebuild endpoint or executor is active. The process-local
+`AnalyticsProjector.RebuildAsync` global reset remains a development/test
+helper. Production work requires the trusted admin, durable checkpoint,
+staging, high-water-mark replay, and owner/period atomic-swap controls defined
+in `docs/engineering/analytics-rebuild-backfill.md`.
