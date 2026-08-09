@@ -50,7 +50,9 @@ public sealed class RecommendationExplanationServiceTests
             CancellationToken.None);
 
         Assert.Equal(recommendation.Code, provider.Input!.RecommendationCode);
-        Assert.Equal(recommendation.Facts, provider.Input.Facts);
+        Assert.Equal(
+            recommendation.Facts.ToArray(),
+            provider.Input.Facts.ToArray());
         Assert.Equal("review-score", explanation.Action.Code);
         Assert.Equal("/score", explanation.Action.Route);
         Assert.Equal(RecommendationExplanationConfidences.High, explanation.Confidence);
@@ -80,6 +82,38 @@ public sealed class RecommendationExplanationServiceTests
             RecommendationExplanationConfidences.Baseline,
             failedResult.Confidence);
         Assert.Equal(failedResult.Text, unsafeResult.Text);
+    }
+
+    [Fact]
+    public async Task CreateAsync_FallsBackWhenOnlyProviderTimeoutIsCanceled()
+    {
+        var recommendation = Recommendation(
+            "score-recovery",
+            [new RecommendationFact("score", 42m)]);
+        var service = new RecommendationExplanationService(
+            new TimedOutExplanationWordingProvider());
+
+        var explanation = await service.CreateAsync(
+            recommendation,
+            CancellationToken.None);
+
+        Assert.False(explanation.IsWordingEnhanced);
+        Assert.Equal("review-score", explanation.Action.Code);
+    }
+
+    [Fact]
+    public async Task CreateAsync_PropagatesCallerCancellation()
+    {
+        var recommendation = Recommendation(
+            "steady-course",
+            Array.Empty<RecommendationFact>());
+        var service = new RecommendationExplanationService(
+            new UnavailableRecommendationExplanationWordingProvider());
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => service.CreateAsync(recommendation, cancellation.Token));
     }
 
     [Fact]
@@ -170,6 +204,16 @@ public sealed class RecommendationExplanationServiceTests
             RecommendationExplanationInput input,
             CancellationToken cancellationToken) =>
             throw new InvalidOperationException("Synthetic provider outage.");
+    }
+
+    private sealed class TimedOutExplanationWordingProvider
+        : IRecommendationExplanationWordingProvider
+    {
+        public Task<RecommendationExplanationWording?> ImproveAsync(
+            RecommendationExplanationInput input,
+            CancellationToken cancellationToken) =>
+            Task.FromException<RecommendationExplanationWording?>(
+                new TaskCanceledException("Synthetic provider timeout."));
     }
 
     private sealed class PassthroughRecommendationWordingProvider
