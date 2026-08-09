@@ -21,6 +21,11 @@ Recommendation facts originate from `analytics.updated.v1` and
 `score.calculated.v1`. Optional wording providers cannot change codes,
 severity, numeric facts, financial values, or delivery policy.
 
+`PUT /api/v1/recommendations/{recommendationId}/dismissal` records an
+authenticated owner's explicit dismissal with an initialized UTC timestamp.
+Newer accepted facts automatically mark superseded active recommendations
+`expired`. Both states are terminal and cannot be reactivated.
+
 ## Notifications
 
 `GET /api/v1/notifications?currency=USD` returns push and web
@@ -41,6 +46,8 @@ Errors use problem details with stable codes:
 - `trusted_gateway_authentication_required`
 - `authentication_required`
 - `invalid_recommendation_notification_request`
+- `recommendation_not_found`
+- `recommendation_status_conflict`
 - `notification_not_found`
 - `notification_status_conflict`
 

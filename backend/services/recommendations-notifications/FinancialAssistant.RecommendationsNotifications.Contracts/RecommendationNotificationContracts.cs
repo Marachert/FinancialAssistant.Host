@@ -4,6 +4,10 @@ public static class RecommendationNotificationApiRoutes
 {
     public const string Recommendations = "/api/v1/recommendations";
     public const string GatewayRecommendations = "/recommendations";
+    public const string RecommendationDismissal =
+        "/api/v1/recommendations/{recommendationId}/dismissal";
+    public const string GatewayRecommendationDismissal =
+        "/recommendations/{recommendationId}/dismissal";
     public const string Notifications = "/api/v1/notifications";
     public const string GatewayNotifications = "/notifications";
     public const string NotificationStatus = "/api/v1/notifications/{notificationId}/delivery-status";
@@ -28,11 +32,16 @@ public sealed record RecommendationResponse(
     string Title,
     string Body,
     IReadOnlyList<RecommendationFactResponse> Facts,
-    DateTimeOffset GeneratedAtUtc);
+    DateTimeOffset GeneratedAtUtc,
+    string Status,
+    DateTimeOffset StatusChangedAtUtc);
 
 public sealed record RecommendationListResponse(
     string Currency,
     IReadOnlyList<RecommendationResponse> Items);
+
+public sealed record DismissRecommendationRequest(
+    DateTimeOffset ChangedAtUtc);
 
 public sealed record NotificationResponse(
     string NotificationId,

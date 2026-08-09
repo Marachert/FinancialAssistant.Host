@@ -10,6 +10,10 @@ a non-invasive steady-course fallback.
 Recommendation identifiers are stable hashes of pseudonymous owner scope,
 currency, source event, and rule code. Event replay is idempotent.
 
+## Recommendation lifecycle
+
+Every generated recommendation starts `active` with `statusChangedAtUtc` equal to its generation time. The authenticated dismissal endpoint performs the `active -> dismissed` transition, while replacement by newer accepted facts performs `active -> expired`. Idempotent same-state writes are allowed, terminal recommendations never reactivate, and owner scope is enforced by the store. The trusted recommendation response exposes both lifecycle fields. This lifecycle is backend-owned and cannot be changed by a wording provider.
+
 `IRecommendationWordingProvider` can later provide bounded wording. It
 receives an already-authoritative recommendation and can return only title and
 body. Wording is rejected when blank, oversized, or control-character-bearing.

@@ -18,6 +18,14 @@ public static class RecommendationNotificationEndpointExtensions
             app,
             RecommendationNotificationApiRoutes.GatewayRecommendations,
             "GetRecommendationsFromGateway");
+        MapRecommendationDismissal(
+            app,
+            RecommendationNotificationApiRoutes.RecommendationDismissal,
+            "DismissRecommendation");
+        MapRecommendationDismissal(
+            app,
+            RecommendationNotificationApiRoutes.GatewayRecommendationDismissal,
+            "DismissRecommendationFromGateway");
         MapNotifications(
             app,
             RecommendationNotificationApiRoutes.Notifications,
@@ -49,6 +57,24 @@ public static class RecommendationNotificationEndpointExtensions
                 StatusCodes.Status400BadRequest)
             .Produces<RecommendationNotificationApiErrorResponse>(
                 StatusCodes.Status401Unauthorized);
+    }
+
+    private static void MapRecommendationDismissal(
+        IEndpointRouteBuilder app,
+        string route,
+        string name)
+    {
+        app.MapPut(route, DismissRecommendationAsync)
+            .WithName(name)
+            .Produces<RecommendationResponse>()
+            .Produces<RecommendationNotificationApiErrorResponse>(
+                StatusCodes.Status400BadRequest)
+            .Produces<RecommendationNotificationApiErrorResponse>(
+                StatusCodes.Status401Unauthorized)
+            .Produces<RecommendationNotificationApiErrorResponse>(
+                StatusCodes.Status404NotFound)
+            .Produces<RecommendationNotificationApiErrorResponse>(
+                StatusCodes.Status409Conflict);
     }
 
     private static void MapNotifications(
@@ -109,6 +135,51 @@ public static class RecommendationNotificationEndpointExtensions
         catch (ArgumentException exception)
         {
             return Invalid(context, exception.Message);
+        }
+    }
+
+    private static async Task<IResult> DismissRecommendationAsync(
+        string recommendationId,
+        DismissRecommendationRequest request,
+        HttpContext context,
+        RecommendationService service,
+        RecommendationNotificationGatewayAuthenticator authenticator,
+        CancellationToken cancellationToken)
+    {
+        var error = Authenticate(context, authenticator, out var userId);
+        if (error is not null)
+        {
+            return error;
+        }
+
+        try
+        {
+            var updated = await service.DismissAsync(
+                RecommendationNotificationOwnerHasher.Hash(userId!),
+                recommendationId,
+                request.ChangedAtUtc,
+                cancellationToken);
+            return updated is null
+                ? Problem(
+                    context,
+                    "Recommendation was not found.",
+                    "The recommendation does not exist in the authenticated user scope.",
+                    "recommendation_not_found",
+                    StatusCodes.Status404NotFound)
+                : Results.Ok(MapRecommendation(updated));
+        }
+        catch (ArgumentException exception)
+        {
+            return Invalid(context, exception.Message);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Problem(
+                context,
+                "Recommendation dismissal conflicts with current state.",
+                exception.Message,
+                "recommendation_status_conflict",
+                StatusCodes.Status409Conflict);
         }
     }
 
@@ -199,7 +270,9 @@ public static class RecommendationNotificationEndpointExtensions
             recommendation.Facts
                 .Select(item => new RecommendationFactResponse(item.Code, item.Value))
                 .ToArray(),
-            recommendation.GeneratedAtUtc);
+            recommendation.GeneratedAtUtc,
+            recommendation.Status,
+            recommendation.StatusChangedAtUtc);
 
     private static NotificationResponse MapNotification(
         PreparedNotification notification) =>
