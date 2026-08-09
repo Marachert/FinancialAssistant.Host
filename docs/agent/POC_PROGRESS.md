@@ -1,6 +1,6 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-09T15:26:30+03:00
+Last updated: 2026-08-09T15:33:30+03:00
 
 ## Current Snapshot
 
@@ -24,7 +24,7 @@ Latest canonical closure:
 
 Latest Jira closure:
 
-- FIN-141 - exact later duplicate of FIN-140, linked and closed in Jira
+- FIN-142 - exact later duplicate of FIN-140, linked and closed in Jira
 - canonical implementation PR:
   https://github.com/Marachert/FinancialAssistant.Host/pull/151
 - canonical implementation merge commit:
@@ -47,8 +47,8 @@ change the numerator or denominator.
 
 Current delivery:
 
-- FIN-141 is Done as a Jira-linked exact duplicate of canonical FIN-140, with
-  Jira evidence comment 10831
+- FIN-142 is Done as a Jira-linked exact duplicate of canonical FIN-140, with
+  Jira evidence comment 10835
 - canonical implementation is verified in PR #151 and its progress record in
   PR #152
 - canonical POC readiness remains 146/197 (74.1%), a +0.0 percentage-point
@@ -56,7 +56,7 @@ Current delivery:
 - FIN-27 canonical POC scope is 21 of 21 Done (100.0%); the Jira parent
   remains In Progress until every raw duplicate child is linked and Done
 - first-user testing remains Not Ready because runtime and P7-P9 gates remain open
-- the next ranked unfinished raw leaf is FIN-142, an exact later duplicate of
+- the next ranked unfinished raw leaf is FIN-143, an exact later duplicate of
   FIN-140, subject to a fresh Jira duplicate and link audit
 
 ## Epic Progress
@@ -179,3 +179,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-09T14:55:00+03:00 | FIN-152 | Closure delivered by PR 159 | 74.0% | +0.5 pp |
 | 2026-08-09T15:20:30+03:00 | FIN-155 | Closure delivered by PR 161 | 74.1% | +0.1 pp |
 | 2026-08-09T15:26:30+03:00 | FIN-141 | Exact duplicate of FIN-140; Jira-linked and Done | 74.1% | +0.0 pp |
+| 2026-08-09T15:33:30+03:00 | FIN-142 | Exact duplicate of FIN-140; Jira-linked and Done | 74.1% | +0.0 pp |
