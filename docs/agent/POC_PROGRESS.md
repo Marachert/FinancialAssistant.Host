@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-09T12:56:17+03:00
+Last updated: 2026-08-09T14:04:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-140 closure is **71.9%**:
-**141 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-144 closure is **72.4%**:
+**142 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,20 +13,20 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-140 - P6.T13 Implement notification preferences API
+- FIN-144 - P6.T14 Define dashboard analytics API contracts
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/151
+  https://github.com/Marachert/FinancialAssistant.Host/pull/153
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/a98f6de4135279fcfdcc4a21ce7fe8e723efe3b7
-- previous readiness: 140 / 196, or 71.4%
-- current readiness: 141 / 196, or 71.9%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/f4c00f484854357bdd6f5b32a3d91033ebdd6435
+- previous readiness: 141 / 196, or 71.9%
+- current readiness: 142 / 196, or 72.4%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-140 - notification preferences API implemented and closed in Jira
-- previous readiness: 140 / 196, or 71.4%
-- current readiness: 141 / 196, or 71.9%
+- FIN-144 - dashboard analytics API contracts defined and closed in Jira
+- previous readiness: 141 / 196, or 71.9%
+- current readiness: 142 / 196, or 72.4%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -38,15 +38,15 @@ or denominator.
 
 Current delivery:
 
-- FIN-140 is Done with verified implementation PR #151 and Jira evidence comment
-  10810
-- owner-scoped channel/type preferences, validated quiet hours, and a registered
-  gateway GET/PUT contract define the mobile settings API without a paid provider;
-  public routing remains unavailable until the notification destination is activated
-- canonical POC readiness is 141/196 (71.9%), a +0.5 percentage-point change
-- parent FIN-27 remains In Progress at 16 of 20 canonical children Done (80.0%)
+- FIN-144 is Done with verified implementation PR #153 and Jira evidence comment
+  10813
+- a versioned mobile-ready dashboard composition contract now defines every
+  requested widget, explicit empty states, and per-source freshness without
+  exposing internal read models; no runtime route or gateway destination is active
+- canonical POC readiness is 142/196 (72.4%), a +0.5 percentage-point change
+- parent FIN-27 remains In Progress at 17 of 20 canonical children Done (85.0%)
 - first-user testing remains Not Ready
-- the next expected unfinished canonical leaf is FIN-144, subject to a fresh Jira
+- the next expected unfinished canonical leaf is FIN-145, subject to a fresh Jira
   rank and duplicate check
 
 ## Epic Progress
@@ -59,11 +59,11 @@ Current delivery:
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
-| FIN-27 | P6 Analytics, score, recommendations, and notifications | 16 | 20 | 80.0% |
+| FIN-27 | P6 Analytics, score, recommendations, and notifications | 17 | 20 | 85.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **141** | **196** | **71.9%** |
+| **Total** | **Canonical POC leaf scope** | **142** | **196** | **72.4%** |
 
 ## First-User-Test Gates
 
@@ -163,3 +163,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-09T12:14:07+03:00 | FIN-138 | Closure delivered by PR 147 | 70.9% | +0.5 pp |
 | 2026-08-09T12:31:43+03:00 | FIN-139 | Closure delivered by PR 149 | 71.4% | +0.5 pp |
 | 2026-08-09T12:56:17+03:00 | FIN-140 | Closure delivered by PR 151 | 71.9% | +0.5 pp |
+| 2026-08-09T14:04:00+03:00 | FIN-144 | Closure delivered by PR 153 | 72.4% | +0.5 pp |
