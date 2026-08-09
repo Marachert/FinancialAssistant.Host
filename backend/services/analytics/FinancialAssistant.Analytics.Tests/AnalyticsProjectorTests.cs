@@ -449,7 +449,7 @@ public sealed class AnalyticsProjectorTests
         string recordId,
         string eventType,
         decimal amount,
-        string categoryId,
+        string? categoryId,
         DateOnly date,
         long revision = 0,
         string status = "active",

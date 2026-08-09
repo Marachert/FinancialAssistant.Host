@@ -32,6 +32,35 @@ public sealed class AnalyticsContractTests
                 100m,
                 400m),
             new AnalyticsDailyLimitResponse(true, 50m, 25m, 25m, 50m),
+            new AnalyticsLimitsProgressResponse(
+                new AnalyticsLimitProgressResponse(
+                    new DateOnly(2026, 8, 20),
+                    new DateOnly(2026, 8, 20),
+                    true,
+                    50m,
+                    25m,
+                    25m,
+                    50m),
+                new AnalyticsLimitProgressResponse(
+                    new DateOnly(2026, 8, 17),
+                    new DateOnly(2026, 8, 23),
+                    true,
+                    100m,
+                    100m,
+                    0m,
+                    100m),
+                new AnalyticsLimitProgressResponse(
+                    new DateOnly(2026, 8, 1),
+                    new DateOnly(2026, 8, 31),
+                    true,
+                    300m,
+                    100m,
+                    200m,
+                    33.33m),
+                new AnalyticsTrackingStreakResponse(
+                    1,
+                    new DateOnly(2026, 8, 20),
+                    "Nice progress. Keep tracking each day.")),
             new AnalyticsMonthlyProgressResponse(500m, 100m, 400m, 20m),
             new[] { new AnalyticsCategoryTotalResponse("expense.groceries", 0m, 100m, -100m) },
             new[] { new AnalyticsTrendPointResponse(new DateOnly(2026, 8, 20), 0m, 25m, -25m) },
@@ -44,6 +73,8 @@ public sealed class AnalyticsContractTests
         Assert.Contains("DailySummary", json, StringComparison.Ordinal);
         Assert.Contains("WeeklySummary", json, StringComparison.Ordinal);
         Assert.Contains("MonthlySummary", json, StringComparison.Ordinal);
+        Assert.Contains("LimitsProgress", json, StringComparison.Ordinal);
+        Assert.Contains("TrackingStreak", json, StringComparison.Ordinal);
         Assert.DoesNotContain("UserIdHash", json, StringComparison.Ordinal);
         Assert.DoesNotContain("RecordId", json, StringComparison.Ordinal);
         Assert.DoesNotContain("EventId", json, StringComparison.Ordinal);
