@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-09T15:16:30+03:00
+Last updated: 2026-08-09T15:20:30+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-152 closure is **74.0%**:
-**145 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-155 closure is **74.1%**:
+**146 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,14 +13,14 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-152 - P6.T17 Add analytics score recommendation and notification test plan
+- FIN-155 - P6.T18 Define insights release readiness checklist
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/159
+  https://github.com/Marachert/FinancialAssistant.Host/pull/161
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/526a59c41f0fdd6e42d838bb8a16f1967ca34114
-- previous readiness: 144 / 196, or 73.5%
-- current readiness: 145 / 196, or 74.0%
-- change: +0.5 percentage points
+  https://github.com/Marachert/FinancialAssistant.Host/commit/ceab006f43c47ce26ec438a98165fe4b0fe772cd
+- previous readiness: 145 / 196, or 74.0%
+- current readiness: 146 / 197, or 74.1%
+- change: +0.1 percentage points
 
 Latest Jira closure:
 
@@ -30,9 +30,8 @@ Latest Jira closure:
 - implementation merge commit:
   https://github.com/Marachert/FinancialAssistant.Host/commit/ceab006f43c47ce26ec438a98165fe4b0fe772cd
 - previous readiness: 145 / 196, or 74.0%
-- current readiness: 145 / 196, or 74.0%
-- change: +0.0 percentage points because P6.T18 is outside the fixed first-test
-  POC denominator
+- current readiness: 146 / 197, or 74.1%
+- change: +0.1 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
 duplicate of FIN-124, FIN-127 is an exact later duplicate of FIN-126, and
@@ -51,9 +50,8 @@ Current delivery:
 - the indexed checklist now separates live Analytics routes from the mock-only
   dashboard composition contract and exposes quality, privacy, notification,
   mobile, operations, durable-storage, delivery, rebuild, and sign-off blockers
-- canonical POC readiness remains 145/196 (74.0%), a +0.0 percentage-point change
-  because P6.T18 is post-POC release governance
-- FIN-27 canonical POC scope remains 20 of 20 Done (100.0%); the Jira parent
+- canonical POC readiness is 146/197 (74.1%), a +0.1 percentage-point change
+- FIN-27 canonical POC scope is 21 of 21 Done (100.0%); the Jira parent
   remains In Progress until every raw duplicate child is linked and Done
 - first-user testing remains Not Ready because runtime and P7-P9 gates remain open
 - the next ranked unfinished raw leaf is FIN-141, an exact later duplicate of
@@ -69,11 +67,11 @@ Current delivery:
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
-| FIN-27 | P6 Analytics, score, recommendations, and notifications | 20 | 20 | 100.0% |
+| FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **145** | **196** | **74.0%** |
+| **Total** | **Canonical POC leaf scope** | **146** | **197** | **74.1%** |
 
 ## First-User-Test Gates
 
@@ -177,4 +175,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-09T14:24:10+03:00 | FIN-145 | Closure delivered by PR 155 | 73.0% | +0.6 pp |
 | 2026-08-09T14:38:12+03:00 | FIN-147 | Closure delivered by PR 157 | 73.5% | +0.5 pp |
 | 2026-08-09T14:55:00+03:00 | FIN-152 | Closure delivered by PR 159 | 74.0% | +0.5 pp |
-| 2026-08-09T15:16:30+03:00 | FIN-155 | Release-readiness checklist delivered by PR 161; post-POC scope | 74.0% | +0.0 pp |
+| 2026-08-09T15:20:30+03:00 | FIN-155 | Closure delivered by PR 161 | 74.1% | +0.1 pp |
