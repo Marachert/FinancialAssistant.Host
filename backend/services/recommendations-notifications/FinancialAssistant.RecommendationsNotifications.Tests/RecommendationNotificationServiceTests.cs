@@ -36,6 +36,44 @@ public sealed class RecommendationNotificationServiceTests
     }
 
     [Fact]
+    public async Task NotificationPreferences_FilterChannelsBeforePreparation()
+    {
+        var fixture = new ServiceFixture();
+        fixture.NotificationPreferences.Set(
+            "owner-a",
+            new NotificationPreferences(false, true));
+
+        var generated = await fixture.Recommendations.ProcessAnalyticsAsync(
+            AnalyticsEnvelope("analytics-web-only", "owner-a", 1_000m, 900m),
+            CancellationToken.None);
+        var notifications = await fixture.Notifications.GetAsync(
+            "owner-a",
+            "USD",
+            CancellationToken.None);
+
+        Assert.NotEmpty(generated);
+        Assert.NotEmpty(notifications);
+        Assert.All(
+            notifications,
+            item => Assert.Equal(NotificationChannels.Web, item.Channel));
+        Assert.Equal(notifications.Count, fixture.NotificationPublisher.Published.Count);
+
+        fixture.NotificationPreferences.Set(
+            "owner-b",
+            new NotificationPreferences(false, false));
+        var suppressed = await fixture.Recommendations.ProcessAnalyticsAsync(
+            AnalyticsEnvelope("analytics-suppressed", "owner-b", 1_000m, 900m),
+            CancellationToken.None);
+        var suppressedNotifications = await fixture.Notifications.GetAsync(
+            "owner-b",
+            "USD",
+            CancellationToken.None);
+
+        Assert.NotEmpty(suppressed);
+        Assert.Empty(suppressedNotifications);
+    }
+
+    [Fact]
     public async Task ReplayedEvent_IsIdempotent()
     {
         var fixture = new ServiceFixture();
@@ -328,10 +366,12 @@ public sealed class RecommendationNotificationServiceTests
         {
             Store = new InMemoryRecommendationNotificationStore();
             NotificationPublisher = new InMemoryNotificationEventPublisher();
+            NotificationPreferences = new InMemoryNotificationPreferenceProvider();
             Notifications = new NotificationPreparationService(
                 Store,
                 new NotificationTemplateCatalog(),
-                NotificationPublisher);
+                NotificationPublisher,
+                NotificationPreferences);
             RecommendationPublisher = new InMemoryRecommendationEventPublisher(Notifications);
             ProfileSettings = new InMemoryRecommendationProfileSettingsProvider();
             Recommendations = new RecommendationService(
@@ -345,6 +385,8 @@ public sealed class RecommendationNotificationServiceTests
         public InMemoryRecommendationNotificationStore Store { get; }
 
         public InMemoryNotificationEventPublisher NotificationPublisher { get; }
+
+        public InMemoryNotificationPreferenceProvider NotificationPreferences { get; }
 
         public InMemoryRecommendationEventPublisher RecommendationPublisher { get; }
 
