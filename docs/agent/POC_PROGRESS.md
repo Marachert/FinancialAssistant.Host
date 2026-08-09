@@ -40,8 +40,9 @@ Current delivery:
 
 - FIN-140 is Done with verified implementation PR #151 and Jira evidence comment
   10810
-- owner-scoped channel/type preferences, validated quiet hours, and public gateway
-  GET/PUT routing now support a mobile settings UI without a paid provider
+- owner-scoped channel/type preferences, validated quiet hours, and a registered
+  gateway GET/PUT contract define the mobile settings API without a paid provider;
+  public routing remains unavailable until the notification destination is activated
 - canonical POC readiness is 141/196 (71.9%), a +0.5 percentage-point change
 - parent FIN-27 remains In Progress at 16 of 20 canonical children Done (80.0%)
 - first-user testing remains Not Ready
