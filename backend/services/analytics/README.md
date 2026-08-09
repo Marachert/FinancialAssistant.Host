@@ -58,3 +58,9 @@ No rebuild endpoint or executor is active. The process-local
 helper. Production work requires the trusted admin, durable checkpoint,
 staging, high-water-mark replay, and owner/period atomic-swap controls defined
 in `docs/engineering/analytics-rebuild-backfill.md`.
+
+## Validation plan
+
+The synthetic release matrix, deterministic expected examples, new-user,
+negative, replay, privacy, and rebuild gates are defined in
+`docs/engineering/insights-validation-test-plan.md`.
