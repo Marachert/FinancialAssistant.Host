@@ -22,10 +22,10 @@ Trusted gateway callers use:
 
 ```text
 GET /financial-score/current?currency=USD
-GET /financial-score/history?currency=USD&limit=20&beforeUtc=2026-08-20T12:00:00Z&beforeCalculationId=score-example
+GET /financial-score/history?currency=USD&fromUtc=2026-08-01T00:00:00Z&toUtc=2026-08-31T23:59:59Z&limit=20
 ```
 
-The service also maps the canonical internal paths under `/api/v1/financial-score`. Both route sets require the configured gateway secret and user context headers. Factor responses include safe structured explanation inputs.
+The service also maps the canonical internal paths under `/api/v1/financial-score`. Both route sets require the configured gateway secret and user context headers. A first current-score read persists the neutral new-user snapshot without publishing a synthetic event. History accepts an inclusive `fromUtc`/`toUtc` pair and composes it with the existing stable cursor. Factor responses include safe structured explanation inputs.
 
 ## Runtime events
 

@@ -30,6 +30,8 @@ public interface IFinancialScoreStore
     Task<IReadOnlyList<FinancialScoreCalculation>> GetHistoryAsync(
         string userIdHash,
         string currency,
+        DateTimeOffset? fromUtc,
+        DateTimeOffset? toUtc,
         DateTimeOffset? beforeUtc,
         string? beforeCalculationId,
         int limit,

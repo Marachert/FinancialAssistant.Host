@@ -63,9 +63,11 @@ public sealed class FinancialScoreEndpointTests :
         Assert.Equal(5, current.Factors.Count);
         Assert.All(current.Factors, factor => Assert.NotNull(factor.Inputs));
 
+        var periodStart = new DateTimeOffset(2026, 8, 20, 11, 0, 0, TimeSpan.Zero);
+        var periodEnd = new DateTimeOffset(2026, 8, 20, 13, 0, 0, TimeSpan.Zero);
         using var historyRequest = new HttpRequestMessage(
             HttpMethod.Get,
-            $"{FinancialScoreApiRoutes.GatewayHistory}?currency=USD&limit=1");
+            $"{FinancialScoreApiRoutes.GatewayHistory}?currency=USD&limit=1&fromUtc={Uri.EscapeDataString(periodStart.ToString("O"))}&toUtc={Uri.EscapeDataString(periodEnd.ToString("O"))}");
         AddTrustedHeaders(historyRequest, userId);
         using var historyResponse = await client.SendAsync(historyRequest);
         var history = await historyResponse.Content
@@ -74,13 +76,15 @@ public sealed class FinancialScoreEndpointTests :
         Assert.Equal(HttpStatusCode.OK, historyResponse.StatusCode);
         Assert.NotNull(history);
         Assert.Single(history.Items);
+        Assert.Equal(periodStart, history.FromUtc);
+        Assert.Equal(periodEnd, history.ToUtc);
         Assert.True(history.HasMore);
         Assert.NotNull(history.NextBeforeUtc);
         Assert.False(string.IsNullOrWhiteSpace(history.NextBeforeCalculationId));
 
         using var nextHistoryRequest = new HttpRequestMessage(
             HttpMethod.Get,
-            $"{FinancialScoreApiRoutes.GatewayHistory}?currency=USD&limit=1&beforeUtc={Uri.EscapeDataString(history.NextBeforeUtc.Value.ToString("O"))}&beforeCalculationId={Uri.EscapeDataString(history.NextBeforeCalculationId)}");
+            $"{FinancialScoreApiRoutes.GatewayHistory}?currency=USD&limit=1&fromUtc={Uri.EscapeDataString(periodStart.ToString("O"))}&toUtc={Uri.EscapeDataString(periodEnd.ToString("O"))}&beforeUtc={Uri.EscapeDataString(history.NextBeforeUtc.Value.ToString("O"))}&beforeCalculationId={Uri.EscapeDataString(history.NextBeforeCalculationId)}");
         AddTrustedHeaders(nextHistoryRequest, userId);
         using var nextHistoryResponse = await client.SendAsync(nextHistoryRequest);
         var nextHistory = await nextHistoryResponse.Content
@@ -114,20 +118,45 @@ public sealed class FinancialScoreEndpointTests :
         AddTrustedHeaders(invalidHistoryRequest, "synthetic-invalid-history-owner");
         using var invalidHistory = await client.SendAsync(invalidHistoryRequest);
         Assert.Equal(HttpStatusCode.BadRequest, invalidHistory.StatusCode);
+
+        using var incompletePeriodRequest = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"{FinancialScoreApiRoutes.History}?currency=USD&fromUtc=2026-08-01T00:00:00Z");
+        AddTrustedHeaders(incompletePeriodRequest, "synthetic-invalid-period-owner");
+        using var incompletePeriod = await client.SendAsync(incompletePeriodRequest);
+        Assert.Equal(HttpStatusCode.BadRequest, incompletePeriod.StatusCode);
     }
 
     [Fact]
-    public async Task Current_ReturnsNotFoundUntilConfirmedEventArrives()
+    public async Task Current_PersistsNeutralDefaultUntilConfirmedEventArrives()
     {
+        const string userId = "synthetic-empty-owner";
         using var request = new HttpRequestMessage(
             HttpMethod.Get,
             $"{FinancialScoreApiRoutes.Current}?currency=EUR");
-        AddTrustedHeaders(request, "synthetic-empty-owner");
+        AddTrustedHeaders(request, userId);
         using var response = await client.SendAsync(request);
-        var problem = await response.Content.ReadFromJsonAsync<FinancialScoreApiErrorResponse>();
+        var current = await response.Content.ReadFromJsonAsync<FinancialScoreResponse>();
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        Assert.Equal("financial_score_not_found", problem?.Code);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(current);
+        Assert.Equal(FinancialScoreFormula.NewUserDefault, current.Score);
+        Assert.Contains(
+            current.Factors.Single(item => item.Code == "penalty_cap").Inputs,
+            item => item.Code == "new_user_default" && item.Value == 1m);
+
+        using var historyRequest = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"{FinancialScoreApiRoutes.History}?currency=EUR");
+        AddTrustedHeaders(historyRequest, userId);
+        using var historyResponse = await client.SendAsync(historyRequest);
+        var history = await historyResponse.Content
+            .ReadFromJsonAsync<FinancialScoreHistoryResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, historyResponse.StatusCode);
+        Assert.NotNull(history);
+        Assert.Single(history.Items);
+        Assert.Equal(current.CalculationId, history.Items[0].CalculationId);
     }
 
     private static void AddTrustedHeaders(HttpRequestMessage request, string userId)
