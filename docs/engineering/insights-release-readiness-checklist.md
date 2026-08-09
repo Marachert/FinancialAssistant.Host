@@ -69,22 +69,33 @@ Evidence:
 
 ## 2. Dashboard API contract review
 
+Analytics service routes:
+
 - [ ] `GET /api/v1/analytics/dashboard` and `GET /analytics/dashboard`
-  remain compatible with the documented mobile contract.
+  remain compatible with `docs/api/analytics-dashboard-v1.md`.
 - [ ] Daily, Monday-based weekly, and calendar-month boundaries are explicit.
-- [ ] Income, expense, balance delta, category, trend, limit, streak,
-  recommendation preview, score, notification badge, and freshness fields are
-  stable or carry an approved version change and migration note.
+- [ ] Summary, category, trend, limit, streak, and Analytics freshness fields
+  are stable or carry an approved version change and migration note.
 - [ ] Empty periods return zero-safe values and empty collections.
 - [ ] Missing limits stay explicitly unconfigured; callers cannot invent or
   submit authoritative limits through the dashboard request.
-- [ ] Each source exposes its own freshness/unavailable state so a healthy
-  projection cannot hide a stale dependency.
 - [ ] Internal owner hashes, record/event IDs, revisions, origins, and storage
-  details remain absent from public responses.
-- [ ] Mock responses used by the mobile team match the checked-in contract.
+  details remain absent from the Analytics response.
 
-Evidence owner: Analytics and mobile contract reviewers.
+Dashboard composition contract:
+
+- [ ] `DashboardCompositionResponse` mock data matches
+  `docs/api/dashboard-composition-v1.md`, including score, recommendation,
+  notification, empty-state, and per-source freshness fields.
+- [ ] Review evidence explicitly records that the composition contract is
+  mock-only and has no activated public route.
+- [ ] No client treats composition as runtime-available until a future endpoint
+  preserves service ownership, activates its gateway destination, and passes
+  contract and end-to-end tests.
+- [ ] Mock responses used by the mobile team identify the Analytics service
+  response and dashboard composition response as separate contracts.
+
+Evidence owner: Analytics, composition, and mobile contract reviewers.
 
 ## 3. Analytics correctness review
 
@@ -273,6 +284,7 @@ Final release outcome:
 - `docs/engineering/recommendations-notifications-v1.md`
 - `docs/engineering/notification-delivery-adapters.md`
 - `docs/api/analytics-dashboard-v1.md`
+- `docs/api/dashboard-composition-v1.md`
 - `docs/api/financial-score-v1.md`
 - `docs/api/recommendations-notifications-v1.md`
 - `docs/api/notification-preferences-v1.md`
