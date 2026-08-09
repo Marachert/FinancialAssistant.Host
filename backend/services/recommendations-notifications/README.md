@@ -4,15 +4,20 @@ This POC host contains two explicit modules:
 
 - Recommendation Service consumes `analytics.updated.v1` and
   `score.calculated.v1`, then derives deterministic fact-backed tips.
-- Notification Service consumes `recommendation.generated.v1`, prepares
-  push and web messages from versioned templates, publishes
-  `notification.prepared.v1`, and tracks delivery status.
+- Notification Service consumes `recommendation.generated.v1`, applies
+  owner-scoped channel preferences, prepares enabled push and web messages from
+  versioned templates, publishes `notification.prepared.v1`, and tracks
+  delivery status.
 
 The modules are co-hosted for the POC but keep separate application services,
 domain types, event contracts, and publisher boundaries. They can be split into
 independent deployables without changing their public contracts.
 
 Recommendations are created with `active` status, can move to nonterminal `read`, and can end as `dismissed` or `expired`; terminal recommendations cannot reactivate. The deterministic MVP rules cover high category share, monthly budget pressure, missing income, incomplete profile settings, uncategorized expenses, and positive budget progress. Status and `statusChangedAtUtc` are part of the trusted recommendation response.
+
+Notification preferences default to push and web enabled. Explicit opt-outs
+are applied before template preparation or event publication through
+`INotificationPreferenceProvider`; the checked-in adapter is in-memory.
 
 No external AI or delivery provider is called. `IRecommendationWordingProvider`
 is a wording-only boundary and defaults to deterministic text. Backend facts,

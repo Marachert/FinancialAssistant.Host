@@ -49,8 +49,9 @@ a financial-event retry republishes only the unconfirmed scopes.
 2. Accepted events update an owner/currency insight snapshot.
 3. Deterministic rules replace the current recommendation set.
 4. Each item publishes `recommendation.generated.v1`.
-5. Notification Service prepares one push and one web notification.
-6. Each accepted preparation publishes `notification.prepared.v1`.
+5. Notification Service reads owner-scoped channel preferences.
+6. Enabled channels are prepared independently from versioned templates.
+7. Each accepted preparation publishes `notification.prepared.v1`.
 
 RabbitMQ mode uses `fa.events`, a quorum application queue, publisher
 confirms, delayed retries at 5 seconds, 30 seconds, and 5 minutes, and a
@@ -62,6 +63,11 @@ The checked-in POC store is process-local memory. It does not claim durable
 history, an outbox, replica coordination, or restart recovery. Production work
 must add service-owned durable stores and outboxes before external delivery is
 enabled.
+
+Push and web are provider-neutral preparations. `INotificationPreferenceProvider`
+is consulted before preparation; explicit channel opt-outs suppress both
+preparation and publication. The POC adapter is process-local memory and
+defaults both channels to enabled until Profile integration supplies settings.
 
 Push and web are provider-neutral preparations. No external provider, token,
 device registration, or paid API is used. Provider credentials and raw endpoint

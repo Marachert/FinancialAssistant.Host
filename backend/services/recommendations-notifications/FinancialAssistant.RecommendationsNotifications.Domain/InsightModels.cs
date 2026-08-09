@@ -29,6 +29,22 @@ public static class NotificationChannels
     public const string Web = "web";
 }
 
+public sealed record NotificationPreferences(
+    bool PushEnabled,
+    bool WebEnabled)
+{
+    public static NotificationPreferences AllEnabled { get; } =
+        new(true, true);
+
+    public bool IsEnabled(string channel) =>
+        channel switch
+        {
+            NotificationChannels.Push => PushEnabled,
+            NotificationChannels.Web => WebEnabled,
+            _ => false
+        };
+}
+
 public static class NotificationDeliveryStatuses
 {
     public const string Prepared = "prepared";

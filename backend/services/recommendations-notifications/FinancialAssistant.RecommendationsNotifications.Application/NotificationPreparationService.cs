@@ -8,15 +8,18 @@ public sealed class NotificationPreparationService
     private readonly IRecommendationNotificationStore store;
     private readonly NotificationTemplateCatalog templates;
     private readonly INotificationEventPublisher publisher;
+    private readonly INotificationPreferenceProvider? preferenceProvider;
 
     public NotificationPreparationService(
         IRecommendationNotificationStore store,
         NotificationTemplateCatalog templates,
-        INotificationEventPublisher publisher)
+        INotificationEventPublisher publisher,
+        INotificationPreferenceProvider? preferenceProvider = null)
     {
         this.store = store;
         this.templates = templates;
         this.publisher = publisher;
+        this.preferenceProvider = preferenceProvider;
     }
 
     public async Task<IReadOnlyList<PreparedNotification>> ProcessAsync(
@@ -38,19 +41,23 @@ public sealed class NotificationPreparationService
             payload.GeneratedAtUtc.ToUniversalTime(),
             RecommendationStatuses.Active,
             payload.GeneratedAtUtc.ToUniversalTime());
+        var preferences = preferenceProvider is null
+            ? NotificationPreferences.AllEnabled
+            : await preferenceProvider.GetAsync(
+                recommendation.UserIdHash,
+                cancellationToken);
         var prepared = new[]
         {
-            templates.Prepare(
+            NotificationChannels.Push,
+            NotificationChannels.Web
+        }
+            .Where(preferences.IsEnabled)
+            .Select(channel => templates.Prepare(
                 recommendation,
-                NotificationChannels.Push,
+                channel,
                 envelope.EventId,
-                envelope.OccurredAtUtc),
-            templates.Prepare(
-                recommendation,
-                NotificationChannels.Web,
-                envelope.EventId,
-                envelope.OccurredAtUtc)
-        };
+                envelope.OccurredAtUtc))
+            .ToArray();
         var accepted = await store.SaveNotificationsIfNewAsync(prepared, cancellationToken);
         foreach (var notification in accepted)
         {
