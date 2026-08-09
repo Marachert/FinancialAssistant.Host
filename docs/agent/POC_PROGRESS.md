@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-09T14:38:12+03:00
+Last updated: 2026-08-09T14:55:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-147 closure is **73.5%**:
-**144 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-152 closure is **74.0%**:
+**145 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,20 +13,20 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-147 - P6.T16 Define analytics rebuild and backfill process
+- FIN-152 - P6.T17 Add analytics score recommendation and notification test plan
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/157
+  https://github.com/Marachert/FinancialAssistant.Host/pull/159
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/d39e73777cb30bc9f440e4273b2e6766834a0815
-- previous readiness: 143 / 196, or 73.0%
-- current readiness: 144 / 196, or 73.5%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/526a59c41f0fdd6e42d838bb8a16f1967ca34114
+- previous readiness: 144 / 196, or 73.5%
+- current readiness: 145 / 196, or 74.0%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-147 - analytics rebuild and backfill process defined and closed in Jira
-- previous readiness: 143 / 196, or 73.0%
-- current readiness: 144 / 196, or 73.5%
+- FIN-152 - P6 insights validation test plan delivered and closed in Jira
+- previous readiness: 144 / 196, or 73.5%
+- current readiness: 145 / 196, or 74.0%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -34,21 +34,23 @@ duplicate of FIN-124, FIN-127 is an exact later duplicate of FIN-126, and
 FIN-135 is an exact later duplicate of FIN-134, FIN-220 is an exact later
 duplicate of FIN-138, and FIN-141, FIN-142, and FIN-143 are exact later
 duplicates of FIN-140, FIN-146 is an exact later duplicate of FIN-145, and
-FIN-148, FIN-149, FIN-150, and FIN-151 are exact later duplicates of FIN-147.
-Closing these duplicates does not change the numerator or denominator.
+FIN-148, FIN-149, FIN-150, and FIN-151 are exact later duplicates of FIN-147,
+and FIN-153 and FIN-154 are exact later duplicates of FIN-152. Closing these
+duplicates does not change the numerator or denominator.
 
 Current delivery:
 
-- FIN-147 is Done with verified implementation PR #157 and Jira evidence comment
-  10819
-- restart-safe analytics rebuild planning now defines stable scoped job keys,
-  bounded validation, ordered stages, safe progress/failure evidence, and the
-  trusted-admin, staging, checkpoint, replay, and atomic-swap requirements
-- canonical POC readiness is 144/196 (73.5%), a +0.5 percentage-point change
-- parent FIN-27 remains In Progress at 19 of 20 canonical children Done (95.0%)
-- first-user testing remains Not Ready
-- the next expected unfinished canonical leaf is FIN-152, subject to a fresh Jira
-  rank and duplicate check
+- FIN-152 is Done with verified implementation PR #159 and Jira evidence comment
+  10822
+- the indexed P6 validation plan now maps executable suites, synthetic expected
+  examples, new-user/negative/replay/privacy gates, and includes the repaired
+  incomplete delivery-configuration regression
+- canonical POC readiness is 145/196 (74.0%), a +0.5 percentage-point change
+- FIN-27 canonical POC scope is 20 of 20 Done (100.0%); the Jira parent remains
+  In Progress pending unfinished-child and duplicate reconciliation
+- first-user testing remains Not Ready because runtime and P7-P9 gates remain open
+- the next expected ranked unfinished leaf is FIN-155, subject to a fresh Jira
+  rank, hierarchy, duplicate, and POC-scope audit
 
 ## Epic Progress
 
@@ -60,11 +62,11 @@ Current delivery:
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
-| FIN-27 | P6 Analytics, score, recommendations, and notifications | 19 | 20 | 95.0% |
+| FIN-27 | P6 Analytics, score, recommendations, and notifications | 20 | 20 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **144** | **196** | **73.5%** |
+| **Total** | **Canonical POC leaf scope** | **145** | **196** | **74.0%** |
 
 ## First-User-Test Gates
 
@@ -167,3 +169,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-09T14:04:00+03:00 | FIN-144 | Closure delivered by PR 153 | 72.4% | +0.5 pp |
 | 2026-08-09T14:24:10+03:00 | FIN-145 | Closure delivered by PR 155 | 73.0% | +0.6 pp |
 | 2026-08-09T14:38:12+03:00 | FIN-147 | Closure delivered by PR 157 | 73.5% | +0.5 pp |
+| 2026-08-09T14:55:00+03:00 | FIN-152 | Closure delivered by PR 159 | 74.0% | +0.5 pp |
