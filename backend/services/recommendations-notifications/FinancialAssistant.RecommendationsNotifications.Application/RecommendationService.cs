@@ -102,6 +102,25 @@ public sealed class RecommendationService
             NormalizeCurrency(currency),
             cancellationToken);
 
+    public Task<FinancialRecommendation?> DismissAsync(
+        string userIdHash,
+        string recommendationId,
+        DateTimeOffset changedAtUtc,
+        CancellationToken cancellationToken)
+    {
+        if (changedAtUtc == default)
+        {
+            throw new ArgumentException("A dismissal timestamp is required.", nameof(changedAtUtc));
+        }
+
+        return store.UpdateRecommendationStatusAsync(
+            NormalizeRequired(userIdHash, nameof(userIdHash)),
+            NormalizeRequired(recommendationId, nameof(recommendationId)),
+            RecommendationStatuses.Dismissed,
+            changedAtUtc.ToUniversalTime(),
+            cancellationToken);
+    }
+
     private async Task<IReadOnlyList<FinancialRecommendation>> GenerateAndPublishAsync<TPayload>(
         InsightSnapshot snapshot,
         IntegrationEventEnvelope<TPayload> source,
@@ -124,6 +143,7 @@ public sealed class RecommendationService
             snapshot.UserIdHash,
             snapshot.Currency,
             recommendations,
+            source.OccurredAtUtc.ToUniversalTime(),
             cancellationToken);
         foreach (var recommendation in recommendations)
         {

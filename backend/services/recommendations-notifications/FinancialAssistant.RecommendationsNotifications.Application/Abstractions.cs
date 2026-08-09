@@ -36,11 +36,19 @@ public interface IRecommendationNotificationStore
         string userIdHash,
         string currency,
         IReadOnlyList<FinancialRecommendation> recommendations,
+        DateTimeOffset changedAtUtc,
         CancellationToken cancellationToken);
 
     Task<IReadOnlyList<FinancialRecommendation>> GetRecommendationsAsync(
         string userIdHash,
         string currency,
+        CancellationToken cancellationToken);
+
+    Task<FinancialRecommendation?> UpdateRecommendationStatusAsync(
+        string userIdHash,
+        string recommendationId,
+        string status,
+        DateTimeOffset changedAtUtc,
         CancellationToken cancellationToken);
 
     Task<IReadOnlyList<PreparedNotification>> SaveNotificationsIfNewAsync(

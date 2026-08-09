@@ -12,7 +12,7 @@ currency, source event, and rule code. Event replay is idempotent.
 
 ## Recommendation lifecycle
 
-Every generated recommendation starts `active` with `statusChangedAtUtc` equal to its generation time. The terminal states are `dismissed` for an explicit user decision and `expired` when newer facts supersede the recommendation. Only `active -> dismissed` and `active -> expired` transitions are valid; idempotent same-state writes are allowed, and terminal recommendations never reactivate. The trusted recommendation response exposes both fields. This lifecycle is backend-owned and cannot be changed by a wording provider.
+Every generated recommendation starts `active` with `statusChangedAtUtc` equal to its generation time. The authenticated dismissal endpoint performs the `active -> dismissed` transition, while replacement by newer accepted facts performs `active -> expired`. Idempotent same-state writes are allowed, terminal recommendations never reactivate, and owner scope is enforced by the store. The trusted recommendation response exposes both lifecycle fields. This lifecycle is backend-owned and cannot be changed by a wording provider.
 
 `IRecommendationWordingProvider` can later provide bounded wording. It
 receives an already-authoritative recommendation and can return only title and

@@ -65,6 +65,15 @@ public sealed class RecommendationNotificationEndpointTests
             "user-1");
         var recommendationResponse = await client.GetAsync(
             $"{RecommendationNotificationApiRoutes.Recommendations}?currency=USD");
+        var recommendations = await recommendationResponse.Content
+            .ReadFromJsonAsync<RecommendationListResponse>();
+        var dismissalResponse = await client.PutAsJsonAsync(
+            RecommendationNotificationApiRoutes.RecommendationDismissal
+                .Replace(
+                    "{recommendationId}",
+                    recommendations!.Items[0].RecommendationId,
+                    StringComparison.Ordinal),
+            new DismissRecommendationRequest(Now.AddMinutes(1)));
         var notificationResponse = await client.GetAsync(
             $"{RecommendationNotificationApiRoutes.Notifications}?currency=USD");
         var notifications = await notificationResponse.Content
@@ -78,6 +87,11 @@ public sealed class RecommendationNotificationEndpointTests
                 Now.AddMinutes(1)));
 
         Assert.Equal(HttpStatusCode.OK, recommendationResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, dismissalResponse.StatusCode);
+        var dismissed = await dismissalResponse.Content
+            .ReadFromJsonAsync<RecommendationResponse>();
+        Assert.Equal("dismissed", dismissed!.Status);
+        Assert.Equal(Now.AddMinutes(1), dismissed.StatusChangedAtUtc);
         Assert.Equal(HttpStatusCode.OK, notificationResponse.StatusCode);
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
         var updated = await updateResponse.Content.ReadFromJsonAsync<NotificationResponse>();

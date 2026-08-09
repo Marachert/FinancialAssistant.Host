@@ -108,13 +108,37 @@ public sealed class InMemoryRecommendationNotificationStore : IRecommendationNot
         string userIdHash,
         string currency,
         IReadOnlyList<FinancialRecommendation> values,
+        DateTimeOffset changedAtUtc,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         lock (gate)
         {
-            recommendations[Scope(userIdHash, currency)] = values
-                .OrderByDescending(item => SeverityRank(item.Severity))
+            var key = Scope(userIdHash, currency);
+            var incomingIds = values
+                .Select(item => item.RecommendationId)
+                .ToHashSet(StringComparer.Ordinal);
+            var lifecycleTimestamp = changedAtUtc.ToUniversalTime();
+            var previous = recommendations.GetValueOrDefault(key) ??
+                Array.Empty<FinancialRecommendation>();
+            var superseded = previous
+                .Where(item => !incomingIds.Contains(item.RecommendationId))
+                .Select(item =>
+                    item.Status == RecommendationStatuses.Active
+                        ? item with
+                        {
+                            Status = RecommendationStatuses.Expired,
+                            StatusChangedAtUtc = lifecycleTimestamp > item.StatusChangedAtUtc
+                                ? lifecycleTimestamp
+                                : item.StatusChangedAtUtc
+                        }
+                        : item);
+
+            recommendations[key] = superseded
+                .Concat(values)
+                .OrderBy(item => RecommendationStatuses.IsTerminal(item.Status))
+                .ThenByDescending(item => SeverityRank(item.Severity))
+                .ThenByDescending(item => item.GeneratedAtUtc)
                 .ThenBy(item => item.Code, StringComparer.Ordinal)
                 .ToArray();
         }
@@ -133,6 +157,61 @@ public sealed class InMemoryRecommendationNotificationStore : IRecommendationNot
             return Task.FromResult<IReadOnlyList<FinancialRecommendation>>(
                 recommendations.GetValueOrDefault(Scope(userIdHash, currency)) ??
                 Array.Empty<FinancialRecommendation>());
+        }
+    }
+
+    public Task<FinancialRecommendation?> UpdateRecommendationStatusAsync(
+        string userIdHash,
+        string recommendationId,
+        string status,
+        DateTimeOffset changedAtUtc,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        lock (gate)
+        {
+            foreach (var (key, values) in recommendations)
+            {
+                var index = Array.FindIndex(
+                    values,
+                    item =>
+                        item.RecommendationId == recommendationId &&
+                        item.UserIdHash == userIdHash);
+                if (index < 0)
+                {
+                    continue;
+                }
+
+                var existing = values[index];
+                if (existing.Status == status)
+                {
+                    return Task.FromResult<FinancialRecommendation?>(existing);
+                }
+
+                if (!RecommendationStatuses.CanTransition(existing.Status, status))
+                {
+                    throw new InvalidOperationException(
+                        "A terminal recommendation status cannot be changed.");
+                }
+
+                if (changedAtUtc < existing.StatusChangedAtUtc)
+                {
+                    throw new InvalidOperationException(
+                        "Recommendation status time cannot precede the current lifecycle state.");
+                }
+
+                var updated = existing with
+                {
+                    Status = status,
+                    StatusChangedAtUtc = changedAtUtc
+                };
+                var replacement = values.ToArray();
+                replacement[index] = updated;
+                recommendations[key] = replacement;
+                return Task.FromResult<FinancialRecommendation?>(updated);
+            }
+
+            return Task.FromResult<FinancialRecommendation?>(null);
         }
     }
 

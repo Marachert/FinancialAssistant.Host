@@ -163,6 +163,71 @@ public sealed class RecommendationNotificationServiceTests
     }
 
     [Fact]
+    public async Task Dismissal_IsOwnerScopedAndTerminal()
+    {
+        var fixture = new ServiceFixture();
+        var generated = await fixture.Recommendations.ProcessAnalyticsAsync(
+            AnalyticsEnvelope("analytics-dismiss", "owner-a", 1_000m, 900m),
+            CancellationToken.None);
+        var recommendation = generated[0];
+
+        var otherOwner = await fixture.Recommendations.DismissAsync(
+            "owner-b",
+            recommendation.RecommendationId,
+            Now.AddMinutes(1),
+            CancellationToken.None);
+        var dismissed = await fixture.Recommendations.DismissAsync(
+            "owner-a",
+            recommendation.RecommendationId,
+            Now.AddMinutes(1),
+            CancellationToken.None);
+
+        Assert.Null(otherOwner);
+        Assert.Equal(RecommendationStatuses.Dismissed, dismissed!.Status);
+        Assert.Equal(Now.AddMinutes(1), dismissed.StatusChangedAtUtc);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            fixture.Store.UpdateRecommendationStatusAsync(
+                "owner-a",
+                recommendation.RecommendationId,
+                RecommendationStatuses.Active,
+                Now.AddMinutes(2),
+                CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task NewerFacts_ExpireSupersededActiveRecommendations()
+    {
+        var fixture = new ServiceFixture();
+        var first = await fixture.Recommendations.ProcessAnalyticsAsync(
+            AnalyticsEnvelope("analytics-first", "owner-a", 1_000m, 900m),
+            CancellationToken.None);
+        var prior = first[0];
+        var replacementTime = Now.AddMinutes(2);
+
+        var current = await fixture.Recommendations.ProcessAnalyticsAsync(
+            AnalyticsEnvelope(
+                "analytics-replacement",
+                "owner-a",
+                1_000m,
+                100m,
+                replacementTime),
+            CancellationToken.None);
+        var stored = await fixture.Recommendations.GetAsync(
+            "owner-a",
+            "USD",
+            CancellationToken.None);
+
+        var expired = Assert.Single(
+            stored,
+            item => item.RecommendationId == prior.RecommendationId);
+        Assert.Equal(RecommendationStatuses.Expired, expired.Status);
+        Assert.Equal(replacementTime, expired.StatusChangedAtUtc);
+        Assert.All(
+            current,
+            item => Assert.Equal(RecommendationStatuses.Active, item.Status));
+    }
+
+    [Fact]
     public async Task ScoreEvent_UsesBackendScoreWithoutChangingIt()
     {
         var fixture = new ServiceFixture();
