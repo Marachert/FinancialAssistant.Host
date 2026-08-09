@@ -46,7 +46,7 @@ public sealed class RecommendationExplanationService
         {
             wording = await wordingProvider.ImproveAsync(input, cancellationToken);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             throw;
         }
