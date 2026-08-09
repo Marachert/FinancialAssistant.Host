@@ -124,7 +124,7 @@ public sealed class InMemoryRecommendationNotificationStore : IRecommendationNot
             var superseded = previous
                 .Where(item => !incomingIds.Contains(item.RecommendationId))
                 .Select(item =>
-                    item.Status == RecommendationStatuses.Active
+                    !RecommendationStatuses.IsTerminal(item.Status)
                         ? item with
                         {
                             Status = RecommendationStatuses.Expired,

@@ -67,6 +67,92 @@ public sealed class RecommendationGeneratorTests
     }
 
     [Fact]
+    public void Generate_EmitsMvpRiskRulesFromConfirmedAndProfileFacts()
+    {
+        var snapshot = new InsightSnapshot(
+            "owner-hash",
+            "USD",
+            new AnalyticsInsightFacts(
+                new DateOnly(2026, 8, 2),
+                1_000m,
+                850m,
+                null,
+                20m,
+                "expense.housing",
+                Now,
+                400m,
+                75m),
+            null,
+            new RecommendationProfileSettings(true, false, 1_000m));
+
+        var result = new RecommendationGenerator().Generate(
+            snapshot,
+            "mvp-risk-rules",
+            Now);
+
+        Assert.Contains(result, item => item.Code == "high-spending-category");
+        Assert.Contains(result, item => item.Code == "monthly-budget-nearing-limit");
+        Assert.Contains(result, item => item.Code == "incomplete-profile");
+        Assert.Contains(result, item => item.Code == "uncategorized-expenses");
+        Assert.Equal(
+            result.Count,
+            result.Select(item => item.Code).Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [Fact]
+    public void Generate_EmitsMissingIncomeRule()
+    {
+        var snapshot = new InsightSnapshot(
+            "owner-hash",
+            "USD",
+            new AnalyticsInsightFacts(
+                new DateOnly(2026, 8, 2),
+                0m,
+                200m,
+                null,
+                20m,
+                null,
+                Now),
+            null);
+
+        var result = new RecommendationGenerator().Generate(
+            snapshot,
+            "missing-income-rule",
+            Now);
+
+        Assert.Contains(result, item => item.Code == "missing-income");
+    }
+
+    [Fact]
+    public void Generate_EmitsPositiveProgressOnlyWithoutRiskSignals()
+    {
+        var snapshot = new InsightSnapshot(
+            "owner-hash",
+            "USD",
+            new AnalyticsInsightFacts(
+                new DateOnly(2026, 8, 2),
+                1_000m,
+                500m,
+                null,
+                20m,
+                null,
+                Now),
+            null,
+            new RecommendationProfileSettings(true, true, 1_000m));
+
+        var result = new RecommendationGenerator().Generate(
+            snapshot,
+            "positive-progress-rule",
+            Now);
+
+        var recommendation = Assert.Single(result);
+        Assert.Equal("positive-budget-progress", recommendation.Code);
+        Assert.Equal(
+            RecommendationSeverities.Information,
+            recommendation.Severity);
+    }
+
+    [Fact]
     public void Generate_StartsRecommendationsActiveAndLifecycleIsTerminal()
     {
         var generatedAt = new DateTimeOffset(2026, 8, 9, 6, 0, 0, TimeSpan.Zero);
@@ -93,6 +179,12 @@ public sealed class RecommendationGeneratorTests
             Assert.Equal(RecommendationStatuses.Active, recommendation.Status);
             Assert.Equal(generatedAt, recommendation.StatusChangedAtUtc);
         });
+        Assert.True(RecommendationStatuses.CanTransition(
+            RecommendationStatuses.Active,
+            RecommendationStatuses.Read));
+        Assert.True(RecommendationStatuses.CanTransition(
+            RecommendationStatuses.Read,
+            RecommendationStatuses.Dismissed));
         Assert.True(RecommendationStatuses.CanTransition(
             RecommendationStatuses.Active,
             RecommendationStatuses.Dismissed));

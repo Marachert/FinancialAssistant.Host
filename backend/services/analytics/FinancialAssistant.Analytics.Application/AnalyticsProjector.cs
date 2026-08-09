@@ -335,7 +335,11 @@ public sealed class AnalyticsProjector
             .Where(item => item.Expense > 0m)
             .OrderByDescending(item => item.Expense)
             .ThenBy(item => item.CategoryId, StringComparer.Ordinal)
-            .FirstOrDefault()?.CategoryId;
+            .FirstOrDefault();
+        var uncategorizedExpense = monthly?.CategoryTotals
+            .FirstOrDefault(item =>
+                item.CategoryId == AnalyticsCategoryIds.Uncategorized)
+            ?.Expense ?? 0m;
         var dailyExpenseLimit = dailyLimitProvider is null
             ? null
             : await dailyLimitProvider.GetDailyExpenseLimitAsync(
@@ -362,8 +366,10 @@ public sealed class AnalyticsProjector
                     monthly?.Totals.Expense ?? 0m,
                     dailyExpenseLimit,
                     daily?.Expense ?? 0m,
-                    topExpenseCategory,
-                    updatedAtUtc)),
+                    topExpenseCategory?.CategoryId,
+                    updatedAtUtc,
+                    topExpenseCategory?.Expense ?? 0m,
+                    uncategorizedExpense)),
             cancellationToken);
     }
 

@@ -11,18 +11,21 @@ public sealed class RecommendationService
     private readonly RecommendationGenerator generator;
     private readonly IRecommendationWordingProvider wordingProvider;
     private readonly IRecommendationEventPublisher publisher;
+    private readonly IRecommendationProfileSettingsProvider? profileSettingsProvider;
     private readonly SemaphoreSlim processGate = new(1, 1);
 
     public RecommendationService(
         IRecommendationNotificationStore store,
         RecommendationGenerator generator,
         IRecommendationWordingProvider wordingProvider,
-        IRecommendationEventPublisher publisher)
+        IRecommendationEventPublisher publisher,
+        IRecommendationProfileSettingsProvider? profileSettingsProvider = null)
     {
         this.store = store;
         this.generator = generator;
         this.wordingProvider = wordingProvider;
         this.publisher = publisher;
+        this.profileSettingsProvider = profileSettingsProvider;
     }
 
     public async Task<IReadOnlyList<FinancialRecommendation>> ProcessAnalyticsAsync(
@@ -46,10 +49,15 @@ public sealed class RecommendationService
                     payload.DailyExpenseLimit,
                     payload.DailyExpenseSpent,
                     payload.TopExpenseCategoryId,
-                    payload.UpdatedAtUtc.ToUniversalTime()),
+                    payload.UpdatedAtUtc.ToUniversalTime(),
+                    payload.TopExpenseCategoryAmount,
+                    payload.UncategorizedExpenseTotal),
                 cancellationToken);
             return result.Accepted
-                ? await GenerateAndPublishAsync(result.Snapshot, envelope, cancellationToken)
+                ? await GenerateAndPublishAsync(
+                    await AttachProfileSettingsAsync(result.Snapshot, cancellationToken),
+                    envelope,
+                    cancellationToken)
                 : Array.Empty<FinancialRecommendation>();
         }
         finally
@@ -84,7 +92,10 @@ public sealed class RecommendationService
                     payload.CalculatedAtUtc.ToUniversalTime()),
                 cancellationToken);
             return result.Accepted
-                ? await GenerateAndPublishAsync(result.Snapshot, envelope, cancellationToken)
+                ? await GenerateAndPublishAsync(
+                    await AttachProfileSettingsAsync(result.Snapshot, cancellationToken),
+                    envelope,
+                    cancellationToken)
                 : Array.Empty<FinancialRecommendation>();
         }
         finally
@@ -106,17 +117,57 @@ public sealed class RecommendationService
         string userIdHash,
         string recommendationId,
         DateTimeOffset changedAtUtc,
+        CancellationToken cancellationToken) =>
+        UpdateStatusAsync(
+            userIdHash,
+            recommendationId,
+            RecommendationStatuses.Dismissed,
+            changedAtUtc,
+            cancellationToken);
+
+    public Task<FinancialRecommendation?> MarkReadAsync(
+        string userIdHash,
+        string recommendationId,
+        DateTimeOffset changedAtUtc,
+        CancellationToken cancellationToken) =>
+        UpdateStatusAsync(
+            userIdHash,
+            recommendationId,
+            RecommendationStatuses.Read,
+            changedAtUtc,
+            cancellationToken);
+
+    private async Task<InsightSnapshot> AttachProfileSettingsAsync(
+        InsightSnapshot snapshot,
+        CancellationToken cancellationToken)
+    {
+        var profile = profileSettingsProvider is null
+            ? RecommendationProfileSettings.Unavailable
+            : await profileSettingsProvider.GetAsync(
+                snapshot.UserIdHash,
+                snapshot.Currency,
+                cancellationToken);
+        return snapshot with { Profile = profile };
+    }
+
+    private Task<FinancialRecommendation?> UpdateStatusAsync(
+        string userIdHash,
+        string recommendationId,
+        string status,
+        DateTimeOffset changedAtUtc,
         CancellationToken cancellationToken)
     {
         if (changedAtUtc == default)
         {
-            throw new ArgumentException("A dismissal timestamp is required.", nameof(changedAtUtc));
+            throw new ArgumentException(
+                "A recommendation status timestamp is required.",
+                nameof(changedAtUtc));
         }
 
         return store.UpdateRecommendationStatusAsync(
             NormalizeRequired(userIdHash, nameof(userIdHash)),
             NormalizeRequired(recommendationId, nameof(recommendationId)),
-            RecommendationStatuses.Dismissed,
+            status,
             changedAtUtc.ToUniversalTime(),
             cancellationToken);
     }
@@ -199,6 +250,8 @@ public sealed class RecommendationService
             payload.MonthlyIncomeTotal < 0m ||
             payload.MonthlyExpenseTotal < 0m ||
             payload.DailyExpenseSpent < 0m ||
+            payload.TopExpenseCategoryAmount < 0m ||
+            payload.UncategorizedExpenseTotal < 0m ||
             payload.DailyExpenseLimit is <= 0m ||
             payload.UpdatedAtUtc == default)
         {
