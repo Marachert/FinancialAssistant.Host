@@ -30,7 +30,12 @@ public sealed class AnalyticsEndpointTests : IClassFixture<AnalyticsWebApplicati
             var projector = scope.ServiceProvider.GetRequiredService<AnalyticsProjector>();
             scope.ServiceProvider
                 .GetRequiredService<InMemoryAnalyticsDailyLimitProvider>()
-                .Set(AnalyticsOwnerHasher.Hash(userId), "USD", 50m);
+                .Set(
+                    AnalyticsOwnerHasher.Hash(userId),
+                    "USD",
+                    50m,
+                    100m,
+                    300m);
             await projector.ApplyAsync(
                 CreateEvent(userId, referenceDate),
                 CancellationToken.None);
@@ -61,6 +66,14 @@ public sealed class AnalyticsEndpointTests : IClassFixture<AnalyticsWebApplicati
         Assert.Equal(25m, dashboard.MonthlySummary.ExpenseTotal);
         Assert.Equal(25m, dashboard.DailyLimit.Spent);
         Assert.Equal(25m, dashboard.DailyLimit.Remaining);
+        Assert.Equal(50m, dashboard.LimitsProgress.Daily.Limit);
+        Assert.Equal(50m, dashboard.LimitsProgress.Daily.UsedPercent);
+        Assert.Equal(100m, dashboard.LimitsProgress.Weekly.Limit);
+        Assert.Equal(25m, dashboard.LimitsProgress.Weekly.UsedPercent);
+        Assert.Equal(300m, dashboard.LimitsProgress.Monthly.Limit);
+        Assert.Equal(8.33m, dashboard.LimitsProgress.Monthly.UsedPercent);
+        Assert.Equal(1, dashboard.LimitsProgress.TrackingStreak.CurrentDays);
+        Assert.Equal(referenceDate, dashboard.LimitsProgress.TrackingStreak.LastTrackedDate);
         Assert.Single(dashboard.CategoryTotals);
         Assert.Equal(7, dashboard.RecentTrend.Count);
     }

@@ -25,7 +25,7 @@ public sealed class AnalyticsProjectorTests
             UserIdHash,
             "usd",
             new DateOnly(2026, 8, 20),
-            50m,
+            new AnalyticsExpenseLimits(50m, 120m, 300m),
             3,
             ChangedAt.AddMinutes(30),
             TimeSpan.FromHours(2),
@@ -49,6 +49,11 @@ public sealed class AnalyticsProjectorTests
         Assert.Equal(40m, result.DailyLimit.Spent);
         Assert.Equal(10m, result.DailyLimit.Remaining);
         Assert.Equal(80m, result.DailyLimit.UsedPercent);
+        Assert.Equal(80m, result.LimitsProgress.Daily.UsedPercent);
+        Assert.Equal(83.33m, result.LimitsProgress.Weekly.UsedPercent);
+        Assert.Equal(33.33m, result.LimitsProgress.Monthly.UsedPercent);
+        Assert.Equal(1, result.LimitsProgress.TrackingStreak.CurrentDays);
+        Assert.Equal(new DateOnly(2026, 8, 20), result.LimitsProgress.TrackingStreak.LastTrackedDate);
         Assert.Equal(500m, result.MonthlyProgress.Income);
         Assert.Equal(100m, result.MonthlyProgress.Expense);
         Assert.Equal(20m, result.MonthlyProgress.ExpenseToIncomePercent);
@@ -72,13 +77,18 @@ public sealed class AnalyticsProjectorTests
             UserIdHash,
             "USD",
             new DateOnly(2026, 8, 20),
-            null,
+            AnalyticsExpenseLimits.Unconfigured,
             7,
             ChangedAt.AddHours(3),
             TimeSpan.FromHours(2),
             CancellationToken.None);
 
         Assert.False(result.DailyLimit.IsConfigured);
+        Assert.False(result.LimitsProgress.Daily.IsConfigured);
+        Assert.False(result.LimitsProgress.Weekly.IsConfigured);
+        Assert.False(result.LimitsProgress.Monthly.IsConfigured);
+        Assert.Equal(0, result.LimitsProgress.TrackingStreak.CurrentDays);
+        Assert.Null(result.LimitsProgress.TrackingStreak.LastTrackedDate);
         Assert.Equal(0m, result.DailySummary.Income);
         Assert.Equal(0m, result.DailySummary.Expense);
         Assert.Equal(0m, result.DailySummary.BalanceDelta);
