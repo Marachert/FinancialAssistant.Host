@@ -7,6 +7,20 @@ public static class RecommendationSeverities
     public const string Critical = "critical";
 }
 
+public static class RecommendationStatuses
+{
+    public const string Active = "active";
+    public const string Dismissed = "dismissed";
+    public const string Expired = "expired";
+
+    public static bool IsTerminal(string value) =>
+        value is Dismissed or Expired;
+
+    public static bool CanTransition(string current, string next) =>
+        current == next ||
+        (current == Active && IsTerminal(next));
+}
+
 public static class NotificationChannels
 {
     public const string Push = "push";
@@ -58,7 +72,9 @@ public sealed record FinancialRecommendation(
     string Body,
     IReadOnlyList<RecommendationFact> Facts,
     string SourceEventId,
-    DateTimeOffset GeneratedAtUtc);
+    DateTimeOffset GeneratedAtUtc,
+    string Status,
+    DateTimeOffset StatusChangedAtUtc);
 
 public sealed record PreparedNotification(
     string NotificationId,

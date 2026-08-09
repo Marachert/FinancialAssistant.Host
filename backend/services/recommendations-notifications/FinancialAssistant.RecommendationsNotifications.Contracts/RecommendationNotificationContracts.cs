@@ -28,7 +28,9 @@ public sealed record RecommendationResponse(
     string Title,
     string Body,
     IReadOnlyList<RecommendationFactResponse> Facts,
-    DateTimeOffset GeneratedAtUtc);
+    DateTimeOffset GeneratedAtUtc,
+    string Status,
+    DateTimeOffset StatusChangedAtUtc);
 
 public sealed record RecommendationListResponse(
     string Currency,

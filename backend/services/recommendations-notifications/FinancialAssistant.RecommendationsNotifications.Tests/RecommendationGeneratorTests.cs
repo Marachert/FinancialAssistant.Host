@@ -65,4 +65,46 @@ public sealed class RecommendationGeneratorTests
         Assert.Equal("steady-course", recommendation.Code);
         Assert.Equal(RecommendationSeverities.Information, recommendation.Severity);
     }
+
+    [Fact]
+    public void Generate_StartsRecommendationsActiveAndLifecycleIsTerminal()
+    {
+        var generatedAt = new DateTimeOffset(2026, 8, 9, 6, 0, 0, TimeSpan.Zero);
+        var snapshot = new InsightSnapshot(
+            "owner-hash",
+            "USD",
+            new AnalyticsInsightFacts(
+                new DateOnly(2026, 8, 9),
+                1_000m,
+                900m,
+                null,
+                0m,
+                null,
+                generatedAt),
+            null);
+        var result = new RecommendationGenerator().Generate(
+            snapshot,
+            "lifecycle-event",
+            generatedAt);
+
+        Assert.NotEmpty(result);
+        Assert.All(result, recommendation =>
+        {
+            Assert.Equal(RecommendationStatuses.Active, recommendation.Status);
+            Assert.Equal(generatedAt, recommendation.StatusChangedAtUtc);
+        });
+        Assert.True(RecommendationStatuses.CanTransition(
+            RecommendationStatuses.Active,
+            RecommendationStatuses.Dismissed));
+        Assert.True(RecommendationStatuses.CanTransition(
+            RecommendationStatuses.Active,
+            RecommendationStatuses.Expired));
+        Assert.False(RecommendationStatuses.CanTransition(
+            RecommendationStatuses.Dismissed,
+            RecommendationStatuses.Active));
+        Assert.False(RecommendationStatuses.CanTransition(
+            RecommendationStatuses.Expired,
+            RecommendationStatuses.Dismissed));
+    }
 }
+

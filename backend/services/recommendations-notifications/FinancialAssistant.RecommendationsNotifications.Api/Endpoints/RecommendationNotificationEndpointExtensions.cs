@@ -199,7 +199,9 @@ public static class RecommendationNotificationEndpointExtensions
             recommendation.Facts
                 .Select(item => new RecommendationFactResponse(item.Code, item.Value))
                 .ToArray(),
-            recommendation.GeneratedAtUtc);
+            recommendation.GeneratedAtUtc,
+            recommendation.Status,
+            recommendation.StatusChangedAtUtc);
 
     private static NotificationResponse MapNotification(
         PreparedNotification notification) =>

@@ -149,6 +149,8 @@ public sealed class RecommendationGenerator
             body,
             facts,
             sourceEventId,
+            generatedAtUtc.ToUniversalTime(),
+            RecommendationStatuses.Active,
             generatedAtUtc.ToUniversalTime());
 
     internal static string StableId(params string[] components)
