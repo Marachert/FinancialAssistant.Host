@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FinancialAssistant.FinancialScore.Application;
 using FinancialAssistant.FinancialScore.Contracts;
+using FinancialAssistant.FinancialScore.Domain;
 using FinancialAssistant.FinancialScore.Infrastructure;
 using FinancialAssistant.Shared.Contracts.Events;
 using Microsoft.Extensions.DependencyInjection;
