@@ -8,6 +8,19 @@ public static class NotificationTriggerCodes
     public const string ScoreImproved = "score-improved";
     public const string RecommendationAvailable = "recommendation-available";
     public const string ReceiptProcessingCompleted = "receipt-processing-completed";
+
+    public static IReadOnlyList<string> All { get; } =
+    [
+        DailyInputReminder,
+        BudgetApproaching,
+        BudgetExceeded,
+        ScoreImproved,
+        RecommendationAvailable,
+        ReceiptProcessingCompleted
+    ];
+
+    public static bool IsKnown(string value) =>
+        All.Contains(value, StringComparer.Ordinal);
 }
 
 public sealed record NotificationTriggerFacts(
