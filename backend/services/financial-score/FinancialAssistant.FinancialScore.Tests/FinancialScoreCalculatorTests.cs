@@ -15,9 +15,12 @@ public sealed class FinancialScoreCalculatorTests
         var calculator = new FinancialScoreCalculator();
         var records = new[]
         {
-            Record("income", FinancialScoreRecordTypes.Income, 1000m, new DateOnly(2026, 8, 1)),
-            Record("expense", FinancialScoreRecordTypes.Expense, 400m, new DateOnly(2026, 8, 2))
+            Record("income-current", FinancialScoreRecordTypes.Income, 1000m, new DateOnly(2026, 8, 1)),
+            Record("expense-current", FinancialScoreRecordTypes.Expense, 400m, new DateOnly(2026, 8, 2)),
+            Record("income-previous", FinancialScoreRecordTypes.Income, 1000m, new DateOnly(2026, 7, 1)),
+            Record("expense-previous", FinancialScoreRecordTypes.Expense, 500m, new DateOnly(2026, 7, 2))
         };
+        var settings = new FinancialScoreProfileSettings(1000m, true, true);
 
         var first = calculator.Calculate(
             "score:event-1",
@@ -25,7 +28,7 @@ public sealed class FinancialScoreCalculatorTests
             "synthetic-owner-hash",
             "usd",
             records,
-            semanticFactors: null,
+            settings,
             CalculatedAt);
         var second = calculator.Calculate(
             "score:event-1",
@@ -33,25 +36,40 @@ public sealed class FinancialScoreCalculatorTests
             "synthetic-owner-hash",
             "usd",
             records.Reverse(),
-            semanticFactors: null,
+            settings,
             CalculatedAt);
 
         Assert.Equal(JsonSerializer.Serialize(first), JsonSerializer.Serialize(second));
         Assert.Equal(FinancialScoreFormula.Version, first.FormulaVersion);
-        Assert.Equal(4, first.Factors.Count);
+        Assert.Equal(5, first.Factors.Count);
+        Assert.Equal(
+            new[]
+            {
+                "budget_usage",
+                "spending_trend",
+                "income_consistency",
+                "data_completeness",
+                "penalty_cap"
+            },
+            first.Factors.Select(item => item.Code));
         Assert.InRange(first.Score, FinancialScoreFormula.Minimum, FinancialScoreFormula.Maximum);
-        Assert.Equal(18m, first.Factors.Single(item => item.Code == "cash_flow").Contribution);
+        Assert.All(first.Factors, item => Assert.False(string.IsNullOrWhiteSpace(item.Explanation)));
+        Assert.Contains(
+            first.Factors.Single(item => item.Code == "budget_usage").Inputs,
+            item => item.Code == "monthly_budget" && item.Value == 1000m);
     }
 
     [Fact]
-    public void Calculate_BoundsSemanticInputsAndNeverAcceptsFinalScore()
+    public void Calculate_AppliesBudgetAndExplicitCap()
     {
         var calculator = new FinancialScoreCalculator();
-        var factors = new[]
+        var records = new[]
         {
-            new FinancialScoreSemanticFactor("recurring_income", 2m),
-            new FinancialScoreSemanticFactor("expense_description_quality", 2m),
-            new FinancialScoreSemanticFactor("merchant_stability", 2m)
+            Record("income-june", FinancialScoreRecordTypes.Income, 1000m, new DateOnly(2026, 6, 10)),
+            Record("income-july", FinancialScoreRecordTypes.Income, 1000m, new DateOnly(2026, 7, 10)),
+            Record("income-august", FinancialScoreRecordTypes.Income, 1000m, new DateOnly(2026, 8, 10)),
+            Record("expense-july", FinancialScoreRecordTypes.Expense, 100m, new DateOnly(2026, 7, 15)),
+            Record("expense-august", FinancialScoreRecordTypes.Expense, 1600m, new DateOnly(2026, 8, 15))
         };
 
         var result = calculator.Calculate(
@@ -59,21 +77,67 @@ public sealed class FinancialScoreCalculatorTests
             "event-2",
             "synthetic-owner-hash",
             "USD",
-            Array.Empty<FinancialScoreRecordProjection>(),
-            factors,
+            records,
+            new FinancialScoreProfileSettings(1000m, true, true),
             CalculatedAt);
 
+        Assert.True(result.Score <= 49);
         Assert.Equal(
-            FinancialScoreFormula.MaximumSemanticAdjustment,
-            result.Factors.Single(item => item.Code == "bounded_semantic").Contribution);
-        Assert.Throws<ArgumentOutOfRangeException>(() => calculator.Calculate(
-            "score:event-3",
-            "event-3",
+            -20m,
+            result.Factors.Single(item => item.Code == "budget_usage").Contribution);
+        var policy = result.Factors.Single(item => item.Code == "penalty_cap");
+        Assert.Contains(
+            policy.Inputs,
+            item => item.Code == "severe_budget_overrun" && item.Value == 1m);
+        Assert.Contains(
+            policy.Inputs,
+            item => item.Code == "applied_cap" && item.Value == 49m);
+    }
+
+    [Fact]
+    public void Calculate_UsesNeutralDefaultForNewUser()
+    {
+        var result = new FinancialScoreCalculator().Calculate(
+            "score:new-user",
+            "new-user",
             "synthetic-owner-hash",
             "USD",
             Array.Empty<FinancialScoreRecordProjection>(),
-            new[] { new FinancialScoreSemanticFactor("unbounded", 2.01m) },
-            CalculatedAt));
+            new FinancialScoreProfileSettings(500m, true, true),
+            CalculatedAt);
+
+        Assert.Equal(FinancialScoreFormula.NewUserDefault, result.Score);
+        Assert.All(result.Factors, item => Assert.Equal(0m, item.Contribution));
+        Assert.Contains(
+            result.Factors.Single(item => item.Code == "penalty_cap").Inputs,
+            item => item.Code == "new_user_default" && item.Value == 1m);
+    }
+
+    [Fact]
+    public void Calculate_ExpenseWithoutIncomeIsPenalizedAndCapped()
+    {
+        var result = new FinancialScoreCalculator().Calculate(
+            "score:expense-only",
+            "expense-only",
+            "synthetic-owner-hash",
+            "USD",
+            new[]
+            {
+                Record(
+                    "expense-only",
+                    FinancialScoreRecordTypes.Expense,
+                    25m,
+                    new DateOnly(2026, 8, 20))
+            },
+            FinancialScoreProfileSettings.Unconfigured,
+            CalculatedAt);
+
+        Assert.True(result.Score <= 39);
+        var policy = result.Factors.Single(item => item.Code == "penalty_cap");
+        Assert.True(policy.Contribution < 0m);
+        Assert.Contains(
+            policy.Inputs,
+            item => item.Code == "expense_without_income" && item.Value == 1m);
     }
 
     [Fact]
@@ -86,11 +150,16 @@ public sealed class FinancialScoreCalculatorTests
             "synthetic-owner-hash",
             "USD",
             Array.Empty<FinancialScoreRecordProjection>(),
-            null,
+            FinancialScoreProfileSettings.Unconfigured,
             CalculatedAt);
         var ignored = new[]
         {
-            Record("archived", FinancialScoreRecordTypes.Expense, 999m, new DateOnly(2026, 8, 20), "archived"),
+            Record(
+                "archived",
+                FinancialScoreRecordTypes.Expense,
+                999m,
+                new DateOnly(2026, 8, 20),
+                FinancialScoreProjectionStatuses.Archived),
             Record("old", FinancialScoreRecordTypes.Expense, 999m, new DateOnly(2025, 1, 1))
         };
         var result = calculator.Calculate(
@@ -99,10 +168,25 @@ public sealed class FinancialScoreCalculatorTests
             "synthetic-owner-hash",
             "USD",
             ignored,
-            null,
+            FinancialScoreProfileSettings.Unconfigured,
             CalculatedAt);
 
         Assert.Equal(JsonSerializer.Serialize(baseline), JsonSerializer.Serialize(result));
+    }
+
+    [Fact]
+    public void Calculate_RejectsInvalidProfileBudget()
+    {
+        var calculator = new FinancialScoreCalculator();
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => calculator.Calculate(
+            "score:invalid-profile",
+            "invalid-profile",
+            "synthetic-owner-hash",
+            "USD",
+            Array.Empty<FinancialScoreRecordProjection>(),
+            new FinancialScoreProfileSettings(-1m, false, false),
+            CalculatedAt));
     }
 
     private static FinancialScoreRecordProjection Record(

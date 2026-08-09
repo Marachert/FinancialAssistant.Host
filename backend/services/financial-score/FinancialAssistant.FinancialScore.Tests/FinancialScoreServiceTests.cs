@@ -206,6 +206,34 @@ public sealed class FinancialScoreServiceTests
         Assert.NotEqual(first.CalculationId, secondPage[0].CalculationId);
     }
 
+    [Fact]
+    public async Task Apply_UsesProfileSettingsAndRejectsSemanticAdjustment()
+    {
+        var profileSettings = new InMemoryFinancialScoreProfileSettingsProvider();
+        profileSettings.Set(
+            "synthetic-owner-hash",
+            "USD",
+            new FinancialScoreProfileSettings(100m, true, true));
+        var service = new FinancialScoreService(
+            new InMemoryFinancialScoreStore(),
+            new InMemoryFinancialScoreEventPublisher(),
+            new FinancialScoreCalculator(),
+            profileSettings);
+
+        var result = await service.ApplyAsync(
+            CreateEvent("profile-expense", 0, FinancialRecordEventTypes.ExpenseCreated, 25m),
+            null,
+            CancellationToken.None);
+
+        Assert.Equal(
+            15m,
+            result!.Factors.Single(item => item.Code == "budget_usage").Contribution);
+        await Assert.ThrowsAsync<ArgumentException>(() => service.ApplyAsync(
+            CreateEvent("semantic-expense", 0, FinancialRecordEventTypes.ExpenseCreated, 25m),
+            new[] { new FinancialScoreSemanticFactor("opaque", 1m) },
+            CancellationToken.None));
+    }
+
     internal static IntegrationEventEnvelope<FinancialRecordChangedV1> CreateEvent(
         string recordId,
         long revision,
