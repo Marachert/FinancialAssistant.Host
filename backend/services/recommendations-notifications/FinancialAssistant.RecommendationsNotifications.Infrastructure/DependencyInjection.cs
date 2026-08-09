@@ -26,6 +26,9 @@ public static class DependencyInjection
         services.AddSingleton<InMemoryNotificationPreferenceProvider>();
         services.AddSingleton<INotificationPreferenceProvider>(provider =>
             provider.GetRequiredService<InMemoryNotificationPreferenceProvider>());
+        services.AddSingleton<INotificationDeliveryAdapter, MobilePushNotificationDeliveryAdapter>();
+        services.AddSingleton<INotificationDeliveryAdapter, WebNotificationDeliveryAdapter>();
+        services.AddSingleton<INotificationRetryPolicy, ConfiguredNotificationRetryPolicy>();
         if (string.Equals(options.Events.Mode, "RabbitMq", StringComparison.OrdinalIgnoreCase))
         {
             services.AddSingleton<RabbitMqRecommendationNotificationEventPublisher>();
