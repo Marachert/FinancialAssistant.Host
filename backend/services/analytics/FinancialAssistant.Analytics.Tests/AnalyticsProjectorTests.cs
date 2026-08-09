@@ -63,6 +63,35 @@ public sealed class AnalyticsProjectorTests
     }
 
     [Fact]
+    public async Task TrackingStreak_PreservesLatestTrackedDateAfterGap()
+    {
+        var projector = new AnalyticsProjector(new InMemoryAnalyticsReadModelStore());
+        await projector.ApplyAsync(
+            CreateEvent(
+                "expense-before-gap",
+                FinancialRecordEventTypes.ExpenseCreated,
+                25m,
+                "expense.groceries",
+                new DateOnly(2026, 8, 18)),
+            CancellationToken.None);
+
+        var result = await projector.GetDashboardAsync(
+            UserIdHash,
+            "USD",
+            new DateOnly(2026, 8, 20),
+            AnalyticsExpenseLimits.Unconfigured,
+            3,
+            ChangedAt.AddMinutes(30),
+            TimeSpan.FromHours(2),
+            CancellationToken.None);
+
+        Assert.Equal(0, result.LimitsProgress.TrackingStreak.CurrentDays);
+        Assert.Equal(
+            new DateOnly(2026, 8, 18),
+            result.LimitsProgress.TrackingStreak.LastTrackedDate);
+    }
+
+    [Fact]
     public async Task ReplayArchiveAndOwnerCurrencyBoundaries_AreDeterministic()
     {
         var projector = new AnalyticsProjector(new InMemoryAnalyticsReadModelStore());
