@@ -1,6 +1,6 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-09T14:55:00+03:00
+Last updated: 2026-08-09T15:16:30+03:00
 
 ## Current Snapshot
 
@@ -24,10 +24,15 @@ Latest canonical closure:
 
 Latest Jira closure:
 
-- FIN-152 - P6 insights validation test plan delivered and closed in Jira
-- previous readiness: 144 / 196, or 73.5%
+- FIN-155 - P6 insights release-readiness checklist delivered and closed in Jira
+- implementation PR:
+  https://github.com/Marachert/FinancialAssistant.Host/pull/161
+- implementation merge commit:
+  https://github.com/Marachert/FinancialAssistant.Host/commit/ceab006f43c47ce26ec438a98165fe4b0fe772cd
+- previous readiness: 145 / 196, or 74.0%
 - current readiness: 145 / 196, or 74.0%
-- change: +0.5 percentage points
+- change: +0.0 percentage points because P6.T18 is outside the fixed first-test
+  POC denominator
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
 duplicate of FIN-124, FIN-127 is an exact later duplicate of FIN-126, and
@@ -35,22 +40,24 @@ FIN-135 is an exact later duplicate of FIN-134, FIN-220 is an exact later
 duplicate of FIN-138, and FIN-141, FIN-142, and FIN-143 are exact later
 duplicates of FIN-140, FIN-146 is an exact later duplicate of FIN-145, and
 FIN-148, FIN-149, FIN-150, and FIN-151 are exact later duplicates of FIN-147,
-and FIN-153 and FIN-154 are exact later duplicates of FIN-152. Closing these
-duplicates does not change the numerator or denominator.
+FIN-153 and FIN-154 are exact later duplicates of FIN-152, and FIN-156 and
+FIN-157 are exact later duplicates of FIN-155. Closing these duplicates does not
+change the numerator or denominator.
 
 Current delivery:
 
-- FIN-152 is Done with verified implementation PR #159 and Jira evidence comment
-  10822
-- the indexed P6 validation plan now maps executable suites, synthetic expected
-  examples, new-user/negative/replay/privacy gates, and includes the repaired
-  incomplete delivery-configuration regression
-- canonical POC readiness is 145/196 (74.0%), a +0.5 percentage-point change
-- FIN-27 canonical POC scope is 20 of 20 Done (100.0%); the Jira parent remains
-  In Progress pending unfinished-child and duplicate reconciliation
+- FIN-155 is Done with verified implementation PR #161 and Jira evidence comment
+  10826
+- the indexed checklist now separates live Analytics routes from the mock-only
+  dashboard composition contract and exposes quality, privacy, notification,
+  mobile, operations, durable-storage, delivery, rebuild, and sign-off blockers
+- canonical POC readiness remains 145/196 (74.0%), a +0.0 percentage-point change
+  because P6.T18 is post-POC release governance
+- FIN-27 canonical POC scope remains 20 of 20 Done (100.0%); the Jira parent
+  remains In Progress until every raw duplicate child is linked and Done
 - first-user testing remains Not Ready because runtime and P7-P9 gates remain open
-- the next expected ranked unfinished leaf is FIN-155, subject to a fresh Jira
-  rank, hierarchy, duplicate, and POC-scope audit
+- the next ranked unfinished raw leaf is FIN-141, an exact later duplicate of
+  FIN-140, subject to a fresh Jira duplicate and link audit
 
 ## Epic Progress
 
@@ -170,3 +177,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-09T14:24:10+03:00 | FIN-145 | Closure delivered by PR 155 | 73.0% | +0.6 pp |
 | 2026-08-09T14:38:12+03:00 | FIN-147 | Closure delivered by PR 157 | 73.5% | +0.5 pp |
 | 2026-08-09T14:55:00+03:00 | FIN-152 | Closure delivered by PR 159 | 74.0% | +0.5 pp |
+| 2026-08-09T15:16:30+03:00 | FIN-155 | Release-readiness checklist delivered by PR 161; post-POC scope | 74.0% | +0.0 pp |
