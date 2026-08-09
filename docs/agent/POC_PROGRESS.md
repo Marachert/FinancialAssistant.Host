@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-09T11:06:00+03:00
+Last updated: 2026-08-09T12:14:07+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-137 closure is **70.4%**:
-**138 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-138 closure is **70.9%**:
+**139 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,37 +13,39 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-137 - P6.T10 Implement MVP notification triggers
+- FIN-138 - P6.T11 Define limits progress and streaks model
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/145
+  https://github.com/Marachert/FinancialAssistant.Host/pull/147
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/6b730bc98974e3b56e901ace00e6736365914557
-- previous readiness: 137 / 196, or 69.9%
-- current readiness: 138 / 196, or 70.4%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/bd6abef22ae2e02d487a14b9f780a95994b4a576
+- previous readiness: 138 / 196, or 70.4%
+- current readiness: 139 / 196, or 70.9%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-137 - MVP notification triggers implemented and closed in Jira
-- previous readiness: 137 / 196, or 69.9%
-- current readiness: 138 / 196, or 70.4%
+- FIN-138 - limits progress and tracking streaks implemented and closed in Jira
+- previous readiness: 138 / 196, or 70.4%
+- current readiness: 139 / 196, or 70.9%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
 duplicate of FIN-124, FIN-127 is an exact later duplicate of FIN-126, and
-FIN-135 is an exact later duplicate of FIN-134. Closing these duplicates does
-not change the numerator or denominator.
+FIN-135 is an exact later duplicate of FIN-134, and FIN-220 is an exact later
+duplicate of FIN-138. Closing these duplicates does not change the numerator or
+denominator.
 
 Current delivery:
 
-- FIN-137 is Done with verified implementation PR #145 and Jira evidence comment
-  10801
-- six deterministic notification triggers use stable occurrence deduplication,
-  owner channel preferences, and generic lock-screen-safe templates
-- canonical POC readiness is 138/196 (70.4%), a +0.5 percentage-point change
-- parent FIN-27 remains In Progress at 13 of 20 canonical children Done (65.0%)
+- FIN-138 is Done with verified implementation PR #147 and Jira evidence comment
+  10804
+- deterministic confirmed-record daily, weekly, and monthly limit progress now
+  includes explainable tracking streaks and explicit local-calendar reset rules
+- canonical POC readiness is 139/196 (70.9%), a +0.5 percentage-point change
+- parent FIN-27 remains In Progress at 14 of 20 canonical children Done (70.0%)
 - first-user testing remains Not Ready
-- the next ranked unfinished canonical leaf is FIN-138
+- the next expected unfinished canonical leaf is FIN-139, subject to a fresh Jira
+  rank and duplicate check
 
 ## Epic Progress
 
@@ -55,11 +57,11 @@ Current delivery:
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
-| FIN-27 | P6 Analytics, score, recommendations, and notifications | 13 | 20 | 65.0% |
+| FIN-27 | P6 Analytics, score, recommendations, and notifications | 14 | 20 | 70.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **138** | **196** | **70.4%** |
+| **Total** | **Canonical POC leaf scope** | **139** | **196** | **70.9%** |
 
 ## First-User-Test Gates
 
@@ -156,3 +158,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-09T10:39:00+03:00 | FIN-135 | Exact duplicate of FIN-134; Jira-linked and Done | 69.4% | +0.0 pp |
 | 2026-08-09T10:51:30+03:00 | FIN-136 | Closure delivered by PR 143 | 69.9% | +0.5 pp |
 | 2026-08-09T11:06:00+03:00 | FIN-137 | Closure delivered by PR 145 | 70.4% | +0.5 pp |
+| 2026-08-09T12:14:07+03:00 | FIN-138 | Closure delivered by PR 147 | 70.9% | +0.5 pp |
