@@ -36,6 +36,30 @@ receives an already-authoritative recommendation and can return only title and
 body. Wording is rejected when blank, oversized, or control-character-bearing.
 No provider is enabled in v1.
 
+## Recommendation explanation flow
+
+Every generated recommendation receives explanation metadata before it is
+persisted. `RecommendationExplanationCatalog` derives the localization key,
+fallback text, allowlisted mobile action code and route, and confidence from
+the backend-owned recommendation code and deterministic facts.
+
+Confidence describes evidence completeness, not probabilistic financial
+judgment:
+
+- `high` means the recommendation includes one or more deterministic numeric
+  facts;
+- `baseline` means the deterministic rule is valid without a numeric fact.
+
+`IRecommendationExplanationWordingProvider` is an optional wording-only
+boundary. It receives the immutable code, facts, localization key, fallback,
+action, and confidence, and can return only replacement display text. It cannot
+change the recommendation code, severity, facts, action, lifecycle, or
+financial values. Blank, oversized, control-character-bearing, unavailable, or
+failed provider output falls back to the deterministic text.
+
+The checked-in provider always reports unavailable. No AI endpoint, credential,
+or paid provider is configured or called.
+
 ## Event flow
 
 The Analytics projector publishes the current UTC reporting date after each
