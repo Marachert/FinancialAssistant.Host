@@ -84,10 +84,11 @@ docs/engineering/recommendations-notifications-v1.md
 docs/api/recommendations-notifications-v1.md
 ```
 
-Insights validation coverage:
+Insights validation and release readiness:
 
 ```text
 docs/engineering/insights-validation-test-plan.md
+docs/engineering/insights-release-readiness-checklist.md
 ```
 
 Financial core validation coverage:
