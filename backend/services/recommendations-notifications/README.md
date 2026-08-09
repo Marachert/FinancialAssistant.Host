@@ -34,3 +34,28 @@ Trusted APIs:
 - `PUT /api/v1/notifications/{notificationId}/delivery-status`
 
 Every request requires the trusted gateway secret and user context headers.
+
+
+## MVP notification triggers
+
+`NotificationTriggerEvaluator` deterministically evaluates confirmed backend
+facts and emits these trigger codes:
+
+- `daily-input-reminder` when no confirmed input exists for the local date;
+- `budget-limit-approaching` from 80% up to, but excluding, 100% usage;
+- `budget-limit-exceeded` at 100% usage or above;
+- `score-improved` when the authoritative score increases;
+- `recommendation-available` when a recommendation occurrence is reported;
+- `receipt-processing-completed` when receipt processing finishes.
+
+Daily and budget triggers use owner, currency, trigger code, and local date as
+their stable occurrence key. Score improvement also includes the resulting
+score. Recommendation and receipt occurrences use their source event ID.
+Replays therefore do not publish duplicate notifications.
+
+Channel preferences are evaluated before preparation and publication.
+`NotificationQuietHours` carries start, end, and IANA/Windows time-zone text
+as a scheduling placeholder; deferred delivery is intentionally left to the
+future delivery adapter. Trigger templates use generic lock-screen-safe wording:
+they never include amounts, categories, receipt contents, owner identifiers, or
+raw source-event data.

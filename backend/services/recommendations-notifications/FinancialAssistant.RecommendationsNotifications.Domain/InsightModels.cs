@@ -29,9 +29,15 @@ public static class NotificationChannels
     public const string Web = "web";
 }
 
+public sealed record NotificationQuietHours(
+    TimeOnly StartsAt,
+    TimeOnly EndsAt,
+    string TimeZoneId);
+
 public sealed record NotificationPreferences(
     bool PushEnabled,
-    bool WebEnabled)
+    bool WebEnabled,
+    NotificationQuietHours? QuietHours = null)
 {
     public static NotificationPreferences AllEnabled { get; } =
         new(true, true);

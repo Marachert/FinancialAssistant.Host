@@ -74,6 +74,107 @@ public sealed class RecommendationNotificationServiceTests
     }
 
     [Fact]
+    public async Task TriggerFacts_PrepareAllApplicableSafeNotifications()
+    {
+        var fixture = new ServiceFixture();
+        var notifications = await fixture.Triggers.ProcessAsync(
+            new NotificationTriggerFacts(
+                "owner-a",
+                "USD",
+                new DateOnly(2026, 8, 2),
+                false,
+                1_000m,
+                1_100m,
+                60,
+                70,
+                true,
+                true,
+                "trigger-source-1",
+                "correlation-1",
+                Now),
+            CancellationToken.None);
+
+        Assert.Equal(10, notifications.Count);
+        Assert.Equal(
+            5,
+            notifications
+                .Select(item => item.TemplateCode)
+                .Distinct(StringComparer.Ordinal)
+                .Count());
+        Assert.DoesNotContain(
+            notifications,
+            item => item.TemplateCode.Contains(
+                NotificationTriggerCodes.BudgetApproaching,
+                StringComparison.Ordinal));
+        Assert.All(
+            notifications,
+            item =>
+            {
+                Assert.DoesNotContain("1000", item.Body);
+                Assert.DoesNotContain("1100", item.Body);
+                Assert.DoesNotContain("owner-a", item.Body);
+                Assert.DoesNotContain("trigger-source-1", item.Body);
+            });
+    }
+
+    [Fact]
+    public async Task TriggerFacts_RespectPreferencesAndDeduplicateOccurrences()
+    {
+        var fixture = new ServiceFixture();
+        fixture.NotificationPreferences.Set(
+            "owner-a",
+            new NotificationPreferences(false, true));
+        var facts = new NotificationTriggerFacts(
+            "owner-a",
+            "USD",
+            new DateOnly(2026, 8, 2),
+            true,
+            1_000m,
+            850m,
+            null,
+            null,
+            false,
+            false,
+            "trigger-source-2",
+            "correlation-2",
+            Now);
+
+        var first = await fixture.Triggers.ProcessAsync(
+            facts,
+            CancellationToken.None);
+        var replay = await fixture.Triggers.ProcessAsync(
+            facts with { SourceEventId = "trigger-source-replay" },
+            CancellationToken.None);
+
+        var notification = Assert.Single(first);
+        Assert.Equal(NotificationChannels.Web, notification.Channel);
+        Assert.Contains(
+            NotificationTriggerCodes.BudgetApproaching,
+            notification.TemplateCode,
+            StringComparison.Ordinal);
+        Assert.Empty(replay);
+    }
+
+    [Fact]
+    public async Task NotificationPreferences_KeepQuietHoursPlaceholder()
+    {
+        var fixture = new ServiceFixture();
+        var quietHours = new NotificationQuietHours(
+            new TimeOnly(22, 0),
+            new TimeOnly(7, 0),
+            "Etc/UTC");
+        fixture.NotificationPreferences.Set(
+            "owner-a",
+            new NotificationPreferences(true, true, quietHours));
+
+        var stored = await fixture.NotificationPreferences.GetAsync(
+            "owner-a",
+            CancellationToken.None);
+
+        Assert.Equal(quietHours, stored.QuietHours);
+    }
+
+    [Fact]
     public async Task ReplayedEvent_IsIdempotent()
     {
         var fixture = new ServiceFixture();
@@ -367,9 +468,16 @@ public sealed class RecommendationNotificationServiceTests
             Store = new InMemoryRecommendationNotificationStore();
             NotificationPublisher = new InMemoryNotificationEventPublisher();
             NotificationPreferences = new InMemoryNotificationPreferenceProvider();
+            var templates = new NotificationTemplateCatalog();
             Notifications = new NotificationPreparationService(
                 Store,
-                new NotificationTemplateCatalog(),
+                templates,
+                NotificationPublisher,
+                NotificationPreferences);
+            Triggers = new NotificationTriggerService(
+                Store,
+                new NotificationTriggerEvaluator(),
+                templates,
                 NotificationPublisher,
                 NotificationPreferences);
             RecommendationPublisher = new InMemoryRecommendationEventPublisher(Notifications);
@@ -395,6 +503,8 @@ public sealed class RecommendationNotificationServiceTests
         public RecommendationService Recommendations { get; }
 
         public NotificationPreparationService Notifications { get; }
+
+        public NotificationTriggerService Triggers { get; }
     }
 
     private sealed class FailOnceNotificationPublisher : INotificationEventPublisher
