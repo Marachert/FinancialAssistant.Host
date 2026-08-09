@@ -14,8 +14,20 @@ service hashes the user identifier before accessing owner-scoped state.
 
 `GET /api/v1/recommendations?currency=USD` returns the current
 recommendation set for one owner and currency. Each item includes a stable
-identifier, code, severity, safe deterministic wording, numeric facts, and
-generation timestamp.
+identifier, code, severity, safe deterministic wording, numeric facts,
+generation timestamp, and an `explanation` object.
+
+The explanation contains a localization key, safe display text, evidence
+confidence, an allowlisted mobile action code and app-relative route, and
+`isWordingEnhanced`. Confidence is `high` when the rule exposes numeric
+deterministic facts and `baseline` when the deterministic rule requires no
+numeric fact. It does not represent AI confidence.
+
+Deterministic fallback text is always available. The checked-in optional
+wording provider is unavailable and makes no external call. A future provider
+may replace display text only; it cannot alter facts, codes, severity, action
+metadata, lifecycle, or financial values. Invalid or failed provider output
+uses the fallback.
 
 Recommendation facts originate from `analytics.updated.v1` and
 `score.calculated.v1`. Optional wording providers cannot change codes,
