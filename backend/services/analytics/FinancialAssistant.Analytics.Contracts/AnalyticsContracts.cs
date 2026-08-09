@@ -41,6 +41,26 @@ public sealed record AnalyticsMonthlyProgressResponse(
     decimal BalanceDelta,
     decimal? ExpenseToIncomePercent);
 
+public sealed record AnalyticsLimitProgressResponse(
+    DateOnly PeriodStart,
+    DateOnly PeriodEnd,
+    bool IsConfigured,
+    decimal? Limit,
+    decimal Spent,
+    decimal? Remaining,
+    decimal? UsedPercent);
+
+public sealed record AnalyticsTrackingStreakResponse(
+    int CurrentDays,
+    DateOnly? LastTrackedDate,
+    string Message);
+
+public sealed record AnalyticsLimitsProgressResponse(
+    AnalyticsLimitProgressResponse Daily,
+    AnalyticsLimitProgressResponse Weekly,
+    AnalyticsLimitProgressResponse Monthly,
+    AnalyticsTrackingStreakResponse TrackingStreak);
+
 public sealed record AnalyticsCategoryTotalResponse(
     string CategoryId,
     decimal IncomeTotal,
@@ -65,6 +85,7 @@ public sealed record AnalyticsDashboardResponse(
     AnalyticsPeriodSummaryResponse WeeklySummary,
     AnalyticsPeriodSummaryResponse MonthlySummary,
     AnalyticsDailyLimitResponse DailyLimit,
+    AnalyticsLimitsProgressResponse LimitsProgress,
     AnalyticsMonthlyProgressResponse MonthlyProgress,
     IReadOnlyList<AnalyticsCategoryTotalResponse> CategoryTotals,
     IReadOnlyList<AnalyticsTrendPointResponse> RecentTrend,

@@ -76,6 +76,26 @@ public sealed record AnalyticsMonthlyProgress(
     decimal BalanceDelta,
     decimal? ExpenseToIncomePercent);
 
+public sealed record AnalyticsLimitProgress(
+    DateOnly PeriodStart,
+    DateOnly PeriodEnd,
+    bool IsConfigured,
+    decimal? Limit,
+    decimal Spent,
+    decimal? Remaining,
+    decimal? UsedPercent);
+
+public sealed record AnalyticsTrackingStreak(
+    int CurrentDays,
+    DateOnly? LastTrackedDate,
+    string Message);
+
+public sealed record AnalyticsLimitsProgress(
+    AnalyticsLimitProgress Daily,
+    AnalyticsLimitProgress Weekly,
+    AnalyticsLimitProgress Monthly,
+    AnalyticsTrackingStreak TrackingStreak);
+
 public sealed record AnalyticsCategoryTotal(
     string CategoryId,
     decimal Income,
@@ -122,6 +142,7 @@ public sealed record AnalyticsDashboardReadModel(
     AnalyticsPeriodSummary WeeklySummary,
     AnalyticsPeriodSummary MonthlySummary,
     AnalyticsDailyLimit DailyLimit,
+    AnalyticsLimitsProgress LimitsProgress,
     AnalyticsMonthlyProgress MonthlyProgress,
     IReadOnlyList<AnalyticsCategoryTotal> CategoryTotals,
     IReadOnlyList<AnalyticsTrendPoint> RecentTrend,

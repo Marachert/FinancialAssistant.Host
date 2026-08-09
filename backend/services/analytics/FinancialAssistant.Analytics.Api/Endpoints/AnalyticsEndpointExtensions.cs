@@ -98,7 +98,7 @@ public static class AnalyticsEndpointExtensions
     private static async Task<IResult> HandleDashboardAsync(
         HttpContext httpContext,
         AnalyticsProjector projector,
-        IAnalyticsDailyLimitProvider dailyLimitProvider,
+        IAnalyticsLimitProvider limitProvider,
         AnalyticsGatewayAuthenticator authenticator,
         TimeProvider timeProvider,
         CancellationToken cancellationToken)
@@ -115,10 +115,12 @@ public static class AnalyticsEndpointExtensions
             var timeZoneId = ReadRequiredQuery(httpContext, "timeZoneId");
             var referenceDate = ReadOptionalDate(httpContext, "referenceDate");
             var trendDays = ReadOptionalInteger(httpContext, "trendDays") ?? 7;
-            if (httpContext.Request.Query.ContainsKey("dailyExpenseLimit"))
+            if (httpContext.Request.Query.ContainsKey("dailyExpenseLimit") ||
+                httpContext.Request.Query.ContainsKey("weeklyExpenseLimit") ||
+                httpContext.Request.Query.ContainsKey("monthlyExpenseLimit"))
             {
                 throw new ArgumentException(
-                    "Daily expense limits are resolved from the authoritative server-side source.");
+                    "Expense limits are resolved from the authoritative server-side source.");
             }
 
             var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
@@ -127,7 +129,7 @@ public static class AnalyticsEndpointExtensions
             var ownerHash = AnalyticsOwnerHasher.Hash(userId!);
             var effectiveReferenceDate =
                 referenceDate ?? DateOnly.FromDateTime(localNow.DateTime);
-            var dailyExpenseLimit = await dailyLimitProvider.GetDailyExpenseLimitAsync(
+            var expenseLimits = await limitProvider.GetExpenseLimitsAsync(
                 ownerHash,
                 currency,
                 effectiveReferenceDate,
@@ -136,7 +138,7 @@ public static class AnalyticsEndpointExtensions
                 ownerHash,
                 currency,
                 effectiveReferenceDate,
-                dailyExpenseLimit,
+                expenseLimits,
                 trendDays,
                 now,
                 StaleAfter,

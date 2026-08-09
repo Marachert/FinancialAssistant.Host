@@ -38,3 +38,19 @@ storage details, and raw inputs. The daily limit is resolved server-side from th
 authoritative limit provider and cannot be supplied by a caller. Missing,
 unparseable, or invalid query values return `400` with
 `invalid_analytics_request`; missing trusted context returns `401`.
+
+
+## Limit progress and tracking streaks
+
+The dashboard exposes daily, Monday-to-Sunday weekly, and calendar-month expense
+progress. Limits come only from the server-side settings boundary; each period
+returns its local calendar boundaries, configured state, limit, confirmed spend,
+non-negative remaining amount, and usage percentage rounded to two decimals.
+Missing limits stay explicitly unconfigured.
+
+The tracking streak counts consecutive local dates ending on `referenceDate`
+that contain at least one active confirmed income or expense record. A gap resets
+the current streak to zero. The response includes a short deterministic positive
+message suitable for the mobile dashboard. Time-zone conversion happens before
+the reference date is chosen, so resets follow the requested local calendar and
+daylight-saving changes never move a record between calendar periods.

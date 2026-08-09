@@ -103,7 +103,7 @@ public sealed class AnalyticsProjector
         string userIdHash,
         string currency,
         DateOnly referenceDate,
-        decimal? dailyExpenseLimit,
+        AnalyticsExpenseLimits expenseLimits,
         int trendDays,
         DateTimeOffset asOfUtc,
         TimeSpan staleAfter,
@@ -121,11 +121,14 @@ public sealed class AnalyticsProjector
             throw new ArgumentOutOfRangeException(nameof(referenceDate));
         }
 
-        if (dailyExpenseLimit is <= 0)
+        ArgumentNullException.ThrowIfNull(expenseLimits);
+        if (expenseLimits.Daily is <= 0m ||
+            expenseLimits.Weekly is <= 0m ||
+            expenseLimits.Monthly is <= 0m)
         {
             throw new ArgumentOutOfRangeException(
-                nameof(dailyExpenseLimit),
-                "Daily expense limit must be positive when supplied.");
+                nameof(expenseLimits),
+                "Configured expense limits must be positive.");
         }
 
         if (trendDays is < 1 or > MaximumTrendDays)
@@ -182,7 +185,20 @@ public sealed class AnalyticsProjector
                 monthStart.AddMonths(1).AddDays(-1),
                 monthly.Totals.Income,
                 monthly.Totals.Expense),
-            BuildDailyLimit(dailyExpenseLimit, daily.Expense),
+            BuildDailyLimit(expenseLimits.Daily, daily.Expense),
+            new AnalyticsLimitsProgress(
+                BuildLimit(referenceDate, referenceDate, expenseLimits.Daily, daily.Expense),
+                BuildLimit(
+                    weekStart,
+                    weekStart.AddDays(6),
+                    expenseLimits.Weekly,
+                    weekly.Expense),
+                BuildLimit(
+                    monthStart,
+                    monthStart.AddMonths(1).AddDays(-1),
+                    expenseLimits.Monthly,
+                    monthly.Totals.Expense),
+                BuildTrackingStreak(snapshot.DailyTotals, referenceDate)),
             new AnalyticsMonthlyProgress(
                 monthly.Totals.Income,
                 monthly.Totals.Expense,
@@ -300,6 +316,50 @@ public sealed class AnalyticsProjector
             snapshot.LastEventAtUtc,
             snapshot.LastEventAtUtc is null ||
                 asOfUtc.ToUniversalTime() - snapshot.LastEventAtUtc.Value > staleAfter);
+    }
+
+    private static AnalyticsLimitProgress BuildLimit(
+        DateOnly periodStart,
+        DateOnly periodEnd,
+        decimal? limit,
+        decimal spent) =>
+        new(
+            periodStart,
+            periodEnd,
+            limit.HasValue,
+            limit,
+            spent,
+            limit.HasValue ? Math.Max(0m, limit.Value - spent) : null,
+            limit.HasValue ? Percentage(spent, limit.Value) : null);
+
+    private static AnalyticsTrackingStreak BuildTrackingStreak(
+        IReadOnlyDictionary<DateOnly, AnalyticsAggregateTotals> dailyTotals,
+        DateOnly referenceDate)
+    {
+        var lastTrackedDate = dailyTotals
+            .Where(item =>
+                item.Key <= referenceDate &&
+                (item.Value.Income > 0m || item.Value.Expense > 0m))
+            .Select(item => (DateOnly?)item.Key)
+            .Max();
+        var days = 0;
+        var cursor = referenceDate;
+        while (dailyTotals.GetValueOrDefault(cursor) is { } totals &&
+               (totals.Income > 0m || totals.Expense > 0m))
+        {
+            days++;
+            cursor = cursor.AddDays(-1);
+        }
+
+        return new AnalyticsTrackingStreak(
+            days,
+            lastTrackedDate,
+            days switch
+            {
+                >= 7 => "Great consistency. Keep the daily tracking habit.",
+                > 0 => "Nice progress. Keep tracking each day.",
+                _ => "Add a confirmed record to start a tracking streak."
+            });
     }
 
     private static AnalyticsDailyLimit BuildDailyLimit(decimal? limit, decimal spent)

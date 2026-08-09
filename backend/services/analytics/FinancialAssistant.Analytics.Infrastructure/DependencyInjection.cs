@@ -21,6 +21,8 @@ public static class DependencyInjection
         services.AddSingleton<InMemoryAnalyticsDailyLimitProvider>();
         services.AddSingleton<IAnalyticsDailyLimitProvider>(provider =>
             provider.GetRequiredService<InMemoryAnalyticsDailyLimitProvider>());
+        services.AddSingleton<IAnalyticsLimitProvider>(provider =>
+            provider.GetRequiredService<InMemoryAnalyticsDailyLimitProvider>());
         if (string.Equals(options.Events.Mode, "RabbitMq", StringComparison.OrdinalIgnoreCase))
         {
             services.AddSingleton<IAnalyticsEventPublisher, RabbitMqAnalyticsEventPublisher>();

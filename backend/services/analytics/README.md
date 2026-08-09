@@ -27,3 +27,19 @@ instead of inventing a financial value.
 The API requires the trusted gateway secret and authenticated user headers. It
 hashes the user identifier before reading the projection and never exposes owner
 hashes, record/event identifiers, revisions, origins, or storage details.
+
+
+## Limit progress and tracking streaks
+
+The dashboard exposes daily, Monday-to-Sunday weekly, and calendar-month expense
+progress. Limits come only from the server-side settings boundary; each period
+returns its local calendar boundaries, configured state, limit, confirmed spend,
+non-negative remaining amount, and usage percentage rounded to two decimals.
+Missing limits stay explicitly unconfigured.
+
+The tracking streak counts consecutive local dates ending on `referenceDate`
+that contain at least one active confirmed income or expense record. A gap resets
+the current streak to zero. The response includes a short deterministic positive
+message suitable for the mobile dashboard. Time-zone conversion happens before
+the reference date is chosen, so resets follow the requested local calendar and
+daylight-saving changes never move a record between calendar periods.

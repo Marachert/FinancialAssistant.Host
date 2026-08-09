@@ -28,6 +28,14 @@ public static class AnalyticsDashboardMapper
                 readModel.DailyLimit.Spent,
                 readModel.DailyLimit.Remaining,
                 readModel.DailyLimit.UsedPercent),
+            new AnalyticsLimitsProgressResponse(
+                MapLimit(readModel.LimitsProgress.Daily),
+                MapLimit(readModel.LimitsProgress.Weekly),
+                MapLimit(readModel.LimitsProgress.Monthly),
+                new AnalyticsTrackingStreakResponse(
+                    readModel.LimitsProgress.TrackingStreak.CurrentDays,
+                    readModel.LimitsProgress.TrackingStreak.LastTrackedDate,
+                    readModel.LimitsProgress.TrackingStreak.Message)),
             new AnalyticsMonthlyProgressResponse(
                 readModel.MonthlyProgress.Income,
                 readModel.MonthlyProgress.Expense,
@@ -86,6 +94,17 @@ public static class AnalyticsDashboardMapper
             item.BalanceDelta,
             item.IncomeSharePercent,
             item.ExpenseSharePercent);
+
+    private static AnalyticsLimitProgressResponse MapLimit(
+        AnalyticsLimitProgress progress) =>
+        new(
+            progress.PeriodStart,
+            progress.PeriodEnd,
+            progress.IsConfigured,
+            progress.Limit,
+            progress.Spent,
+            progress.Remaining,
+            progress.UsedPercent);
 
     private static AnalyticsPeriodSummaryResponse MapPeriodSummary(
         AnalyticsPeriodSummary summary) =>
