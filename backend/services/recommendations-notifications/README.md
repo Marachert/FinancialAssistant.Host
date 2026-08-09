@@ -32,6 +32,8 @@ Trusted APIs:
 - `GET /api/v1/recommendations?currency=USD`
 - `GET /api/v1/notifications?currency=USD`
 - `PUT /api/v1/notifications/{notificationId}/delivery-status`
+- `GET /api/v1/notification-preferences`
+- `PUT /api/v1/notification-preferences`
 
 Every request requires the trusted gateway secret and user context headers.
 
@@ -76,3 +78,16 @@ committed or logged. See
 `docs/engineering/notification-delivery-adapters.md` for statuses, environment
 variable names, retry behavior, and the requirements for a future provider
 implementation.
+
+## Notification preferences API
+
+New owners default to push and web enabled, all six known notification types
+enabled, and no quiet hours. Trusted GET/PUT endpoints expose an owner-scoped
+mobile-ready contract for channel toggles, enabled notification types, and
+optional local quiet hours. Unknown types and invalid quiet-hour windows are
+rejected.
+
+Channel and type preferences are checked before template preparation, storage,
+or event publication. Quiet hours are preserved as a future delivery-scheduler
+contract; the current non-sending adapter baseline neither sends nor discards
+messages during that window. See `docs/api/notification-preferences-v1.md`.
