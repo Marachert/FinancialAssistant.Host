@@ -68,6 +68,17 @@ public sealed record DashboardEmptyStateResponse(
     bool HasRecommendations,
     bool HasNotifications);
 
+public sealed record DashboardSourceFreshnessResponse(
+    bool IsAvailable,
+    bool IsStale,
+    DateTimeOffset? LastSuccessfulUpdateAtUtc);
+
+public sealed record DashboardFreshnessResponse(
+    DashboardSourceFreshnessResponse Analytics,
+    DashboardSourceFreshnessResponse Score,
+    DashboardSourceFreshnessResponse Recommendations,
+    DashboardSourceFreshnessResponse Notifications);
+
 public sealed record DashboardCompositionResponse(
     string SchemaVersion,
     string Currency,
@@ -81,4 +92,4 @@ public sealed record DashboardCompositionResponse(
     DashboardRecommendationWidgetResponse Recommendations,
     DashboardNotificationBadgeResponse Notifications,
     DashboardEmptyStateResponse EmptyState,
-    AnalyticsFreshnessResponse AnalyticsFreshness);
+    DashboardFreshnessResponse Freshness);
