@@ -16,6 +16,8 @@ public static class RecommendationNotificationApiRoutes
     public const string GatewayNotifications = "/notifications";
     public const string NotificationStatus = "/api/v1/notifications/{notificationId}/delivery-status";
     public const string GatewayNotificationStatus = "/notifications/{notificationId}/delivery-status";
+    public const string NotificationPreferences = "/api/v1/notification-preferences";
+    public const string GatewayNotificationPreferences = "/notification-preferences";
 }
 
 public static class RecommendationNotificationGatewayHeaders
@@ -69,6 +71,23 @@ public sealed record NotificationListResponse(
 public sealed record UpdateNotificationDeliveryStatusRequest(
     string DeliveryStatus,
     DateTimeOffset ChangedAtUtc);
+
+public sealed record NotificationQuietHoursContract(
+    TimeOnly StartsAt,
+    TimeOnly EndsAt,
+    string TimeZoneId);
+
+public sealed record NotificationPreferencesResponse(
+    bool PushEnabled,
+    bool WebEnabled,
+    IReadOnlyList<string> EnabledNotificationTypes,
+    NotificationQuietHoursContract? QuietHours);
+
+public sealed record UpdateNotificationPreferencesRequest(
+    bool PushEnabled,
+    bool WebEnabled,
+    IReadOnlyList<string> EnabledNotificationTypes,
+    NotificationQuietHoursContract? QuietHours);
 
 public sealed record RecommendationNotificationApiErrorResponse(
     string? Title,
