@@ -116,6 +116,35 @@ public sealed class NotificationDeliveryAdapterTests
     }
 
     [Fact]
+    public async Task EnabledPlaceholderWithoutCompleteConfiguration_FailsPermanently()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["RecommendationsNotifications:Delivery:Push:Enabled"] = "true",
+                ["RecommendationsNotifications:Delivery:Push:Provider"] =
+                    "synthetic-provider"
+            })
+            .Build();
+        var services = new ServiceCollection();
+        services.AddRecommendationNotificationInfrastructure(configuration);
+        using var provider = services.BuildServiceProvider();
+        var adapter = provider
+            .GetServices<INotificationDeliveryAdapter>()
+            .Single(item => item.Channel == NotificationChannels.Push);
+
+        var result = await adapter.SendAsync(
+            CreatePrepared(NotificationChannels.Push),
+            CancellationToken.None);
+
+        Assert.Equal(NotificationDeliveryStatuses.Failed, result.Status);
+        Assert.False(result.IsTransientFailure);
+        Assert.Equal(
+            NotificationDeliveryFailureCodes.ProviderNotConfigured,
+            result.FailureCode);
+    }
+
+    [Fact]
     public void DeliveryStatuses_AreExplicitAndRetryScheduledIsNonterminal()
     {
         Assert.True(NotificationDeliveryStatuses.IsKnown(
