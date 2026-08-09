@@ -30,6 +30,9 @@ public static class DependencyInjection
                 provider.GetRequiredService<InMemoryFinancialScoreEventPublisher>());
         }
 
+        services.AddSingleton<InMemoryFinancialScoreProfileSettingsProvider>();
+        services.AddSingleton<IFinancialScoreProfileSettingsProvider>(provider =>
+            provider.GetRequiredService<InMemoryFinancialScoreProfileSettingsProvider>());
         services.AddSingleton<FinancialScoreFinancialEventMessageHandler>();
         services.AddHostedService<FinancialScoreFinancialEventConsumer>();
         return services;

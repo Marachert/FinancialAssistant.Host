@@ -10,16 +10,20 @@ public sealed class FinancialScoreService
     private readonly IFinancialScoreStore store;
     private readonly IFinancialScoreEventPublisher publisher;
     private readonly FinancialScoreCalculator calculator;
+    private readonly IFinancialScoreProfileSettingsProvider profileSettingsProvider;
     private readonly SemaphoreSlim applyGate = new(1, 1);
 
     public FinancialScoreService(
         IFinancialScoreStore store,
         IFinancialScoreEventPublisher publisher,
-        FinancialScoreCalculator calculator)
+        FinancialScoreCalculator calculator,
+        IFinancialScoreProfileSettingsProvider? profileSettingsProvider = null)
     {
         this.store = store;
         this.publisher = publisher;
         this.calculator = calculator;
+        this.profileSettingsProvider = profileSettingsProvider ??
+            UnconfiguredFinancialScoreProfileSettingsProvider.Instance;
     }
 
     public async Task<FinancialScoreCalculation?> ApplyAsync(
@@ -28,7 +32,13 @@ public sealed class FinancialScoreService
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(envelope);
-        _ = FinancialScoreCalculator.CalculateSemanticAdjustment(semanticFactors);
+        if (semanticFactors is { Count: > 0 })
+        {
+            throw new ArgumentException(
+                "Semantic score adjustments are not accepted by financial-score-v2.",
+                nameof(semanticFactors));
+        }
+
         await applyGate.WaitAsync(cancellationToken);
         try
         {
@@ -79,13 +89,17 @@ public sealed class FinancialScoreService
                     envelope.UserIdHash!,
                     currency,
                     cancellationToken);
+                var profileSettings = await profileSettingsProvider.GetAsync(
+                    envelope.UserIdHash!,
+                    currency,
+                    cancellationToken);
                 var calculation = calculator.Calculate(
                     CreateDeterministicId("score", $"{envelope.EventId}|{currency}"),
                     envelope.EventId,
                     envelope.UserIdHash!,
                     currency,
                     snapshot.Records,
-                    semanticFactors,
+                    profileSettings,
                     envelope.Payload.ChangedAtUtc);
                 await store.SaveCalculationAsync(calculation, cancellationToken);
                 await publisher.PublishAsync(MapEvent(envelope, calculation), cancellationToken);
@@ -233,4 +247,24 @@ public sealed class FinancialScoreService
         string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentException("Value is required.", parameterName)
             : value.Trim();
+}
+
+
+internal sealed class UnconfiguredFinancialScoreProfileSettingsProvider :
+    IFinancialScoreProfileSettingsProvider
+{
+    public static UnconfiguredFinancialScoreProfileSettingsProvider Instance { get; } = new();
+
+    private UnconfiguredFinancialScoreProfileSettingsProvider()
+    {
+    }
+
+    public Task<FinancialScoreProfileSettings> GetAsync(
+        string userIdHash,
+        string currency,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(FinancialScoreProfileSettings.Unconfigured);
+    }
 }

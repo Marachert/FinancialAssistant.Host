@@ -35,12 +35,18 @@ public sealed class FinancialScoreServiceBaselineTests
         var calculator = Read(
             "backend/services/financial-score/FinancialAssistant.FinancialScore.Domain/FinancialScoreCalculator.cs");
 
-        Assert.Contains("financial-score-v1", domain, StringComparison.Ordinal);
-        Assert.Contains("MaximumSemanticAdjustment = 5m", domain, StringComparison.Ordinal);
-        Assert.Contains("MaximumSemanticFactorAdjustment = 2m", domain, StringComparison.Ordinal);
-        Assert.Contains("Math.Clamp(raw", calculator, StringComparison.Ordinal);
+        Assert.Contains("financial-score-v2", domain, StringComparison.Ordinal);
+        Assert.Contains("NewUserDefault = 50", domain, StringComparison.Ordinal);
+        Assert.Contains("\"budget_usage\"", calculator, StringComparison.Ordinal);
+        Assert.Contains("\"spending_trend\"", calculator, StringComparison.Ordinal);
+        Assert.Contains("\"income_consistency\"", calculator, StringComparison.Ordinal);
+        Assert.Contains("\"data_completeness\"", calculator, StringComparison.Ordinal);
+        Assert.Contains("\"penalty_cap\"", calculator, StringComparison.Ordinal);
+        Assert.Contains("Math.Clamp(", calculator, StringComparison.Ordinal);
         Assert.DoesNotContain("OpenAI", calculator, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("HttpClient", calculator, StringComparison.Ordinal);
+        Assert.Contains("IFinancialScoreProfileSettingsProvider", Read(
+            "backend/services/financial-score/FinancialAssistant.FinancialScore.Application/IFinancialScoreProfileSettingsProvider.cs"), StringComparison.Ordinal);
     }
 
     [Fact]

@@ -120,7 +120,13 @@ public static class FinancialScoreEndpointExtensions
                 .Select(item => new FinancialScoreFactorResponse(
                     item.Code,
                     item.Contribution,
-                    item.Explanation))
+                    item.Explanation,
+                    item.Inputs
+                        .Select(input => new FinancialScoreFactorInputResponse(
+                            input.Code,
+                            input.Value,
+                            input.Unit))
+                        .ToArray()))
                 .ToArray(),
             calculation.CalculatedAtUtc);
 

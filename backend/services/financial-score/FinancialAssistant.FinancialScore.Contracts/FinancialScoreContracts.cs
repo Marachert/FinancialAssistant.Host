@@ -14,10 +14,16 @@ public static class FinancialScoreGatewayHeaders
     public const string UserId = "X-Gateway-User-Id";
 }
 
+public sealed record FinancialScoreFactorInputResponse(
+    string Code,
+    decimal Value,
+    string Unit);
+
 public sealed record FinancialScoreFactorResponse(
     string Code,
     decimal Contribution,
-    string Explanation);
+    string Explanation,
+    IReadOnlyList<FinancialScoreFactorInputResponse> Inputs);
 
 public sealed record FinancialScoreResponse(
     string CalculationId,

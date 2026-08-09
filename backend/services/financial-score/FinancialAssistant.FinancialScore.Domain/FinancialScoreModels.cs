@@ -2,12 +2,11 @@ namespace FinancialAssistant.FinancialScore.Domain;
 
 public static class FinancialScoreFormula
 {
-    public const string Version = "financial-score-v1";
+    public const string Version = "financial-score-v2";
     public const int Minimum = 0;
     public const int Maximum = 100;
+    public const int NewUserDefault = 50;
     public const decimal BaseScore = 50m;
-    public const decimal MaximumSemanticAdjustment = 5m;
-    public const decimal MaximumSemanticFactorAdjustment = 2m;
 }
 
 public static class FinancialScoreRecordTypes
@@ -34,14 +33,29 @@ public sealed record FinancialScoreRecordProjection(
     DateTimeOffset ChangedAtUtc,
     string EventId);
 
+public sealed record FinancialScoreProfileSettings(
+    decimal MonthlyBudgetAmount,
+    bool ProfileOnboardingCompleted,
+    bool PreferencesOnboardingCompleted)
+{
+    public static FinancialScoreProfileSettings Unconfigured { get; } =
+        new(0m, false, false);
+}
+
 public sealed record FinancialScoreSemanticFactor(
     string Code,
     decimal Adjustment);
 
+public sealed record FinancialScoreFactorInput(
+    string Code,
+    decimal Value,
+    string Unit);
+
 public sealed record FinancialScoreFactor(
     string Code,
     decimal Contribution,
-    string Explanation);
+    string Explanation,
+    IReadOnlyList<FinancialScoreFactorInput> Inputs);
 
 public sealed record FinancialScoreCalculation(
     string CalculationId,

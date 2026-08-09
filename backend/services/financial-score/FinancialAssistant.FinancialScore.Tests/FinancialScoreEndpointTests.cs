@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FinancialAssistant.FinancialScore.Application;
 using FinancialAssistant.FinancialScore.Contracts;
+using FinancialAssistant.FinancialScore.Domain;
 using FinancialAssistant.FinancialScore.Infrastructure;
 using FinancialAssistant.Shared.Contracts.Events;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,8 +59,9 @@ public sealed class FinancialScoreEndpointTests :
         Assert.Equal(HttpStatusCode.OK, currentResponse.StatusCode);
         Assert.NotNull(current);
         Assert.Equal("USD", current.Currency);
-        Assert.Equal("financial-score-v1", current.FormulaVersion);
-        Assert.Equal(4, current.Factors.Count);
+        Assert.Equal(FinancialScoreFormula.Version, current.FormulaVersion);
+        Assert.Equal(5, current.Factors.Count);
+        Assert.All(current.Factors, factor => Assert.NotNull(factor.Inputs));
 
         using var historyRequest = new HttpRequestMessage(
             HttpMethod.Get,

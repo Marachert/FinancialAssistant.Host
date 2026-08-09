@@ -4,16 +4,17 @@ The Financial Score Service calculates a deterministic, explainable personal fin
 
 ## Ownership
 
-- Formula version: `financial-score-v1`.
-- Score range: 0 through 100.
+- Formula version: `financial-score-v2`.
+- Score range: 0 through 100; users without confirmed records start at neutral 50.
 - Backend calculation is authoritative.
-- Confirmed income and expense events are the only financial inputs.
-- Optional semantic factors are numeric adjustments bounded to `[-2, 2]` each and `[-5, 5]` in total. They cannot supply or override the final score.
-- Every calculation stores factor contributions and publishes `score.calculated.v1` with a deterministic event ID.
+- Confirmed income and expense events plus explicit Profile settings are the only inputs.
+- Factors cover monthly budget usage, 30-day spending trend, three-month income consistency, data completeness, and explicit penalty/cap policies.
+- Non-empty semantic adjustments are rejected. An LLM or external provider cannot supply or override any contribution or final score.
+- Every calculation stores factor contributions and safe factual explanation inputs and publishes `score.calculated.v1` with a deterministic event ID.
 
 ## POC storage
 
-The checked-in adapter stores projections and score history in memory for a single-process POC. `IFinancialScoreStore` is the persistence boundary for a durable production adapter. No paid OCR, LLM, database, or messaging service is invoked by the default development configuration.
+The checked-in adapters store projections, Profile-settings snapshots, and score history in memory for a single-process POC. `IFinancialScoreStore` and `IFinancialScoreProfileSettingsProvider` are the boundaries for durable production adapters. Profile settings must be synchronized from an authorized Profile API or minimal event, never by querying Profile storage directly. No paid OCR, LLM, database, or messaging service is invoked by the default development configuration.
 
 ## HTTP API
 
@@ -24,7 +25,7 @@ GET /financial-score/current?currency=USD
 GET /financial-score/history?currency=USD&limit=20&beforeUtc=2026-08-20T12:00:00Z&beforeCalculationId=score-example
 ```
 
-The service also maps the canonical internal paths under `/api/v1/financial-score`. Both route sets require the configured gateway secret and user context headers.
+The service also maps the canonical internal paths under `/api/v1/financial-score`. Both route sets require the configured gateway secret and user context headers. Factor responses include safe structured explanation inputs.
 
 ## Runtime events
 
