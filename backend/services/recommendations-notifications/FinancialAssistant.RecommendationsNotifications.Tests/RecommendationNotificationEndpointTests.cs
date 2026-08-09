@@ -177,10 +177,25 @@ public sealed class RecommendationNotificationEndpointTests
             },
             updated.EnabledNotificationTypes);
         Assert.Equal(quietHours, updated.QuietHours);
-        Assert.Equal(updated, reread);
+        Assert.NotNull(reread);
+        Assert.Equal(updated.PushEnabled, reread.PushEnabled);
+        Assert.Equal(updated.WebEnabled, reread.WebEnabled);
+        Assert.Equal(
+            updated.EnabledNotificationTypes,
+            reread.EnabledNotificationTypes);
+        Assert.Equal(updated.QuietHours, reread.QuietHours);
         Assert.True(other!.PushEnabled);
         Assert.True(other.WebEnabled);
         Assert.Equal(NotificationTriggerCodes.All, other.EnabledNotificationTypes);
         Assert.Null(other.QuietHours);
+
+        var invalidResponse = await client.PutAsJsonAsync(
+            RecommendationNotificationApiRoutes.NotificationPreferences,
+            new UpdateNotificationPreferencesRequest(
+                true,
+                true,
+                ["unknown-notification-type"],
+                null));
+        Assert.Equal(HttpStatusCode.BadRequest, invalidResponse.StatusCode);
     }
 }
