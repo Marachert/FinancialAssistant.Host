@@ -37,10 +37,11 @@ public sealed record NotificationQuietHours(
 public sealed record NotificationPreferences(
     bool PushEnabled,
     bool WebEnabled,
-    NotificationQuietHours? QuietHours = null)
+    NotificationQuietHours? QuietHours = null,
+    IReadOnlyList<string>? DisabledNotificationTypes = null)
 {
     public static NotificationPreferences AllEnabled { get; } =
-        new(true, true);
+        new(true, true, null, Array.Empty<string>());
 
     public bool IsEnabled(string channel) =>
         channel switch
@@ -49,6 +50,12 @@ public sealed record NotificationPreferences(
             NotificationChannels.Web => WebEnabled,
             _ => false
         };
+
+    public bool IsEnabled(string channel, string notificationType) =>
+        IsEnabled(channel) &&
+        DisabledNotificationTypes?.Contains(
+            notificationType,
+            StringComparer.Ordinal) != true;
 }
 
 public static class NotificationDeliveryStatuses
