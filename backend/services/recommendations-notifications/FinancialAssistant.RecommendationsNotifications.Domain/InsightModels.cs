@@ -54,9 +54,13 @@ public sealed record NotificationPreferences(
 public static class NotificationDeliveryStatuses
 {
     public const string Prepared = "prepared";
+    public const string RetryScheduled = "retry-scheduled";
     public const string Delivered = "delivered";
     public const string Failed = "failed";
     public const string Suppressed = "suppressed";
+
+    public static bool IsKnown(string value) =>
+        value is Prepared or RetryScheduled or Delivered or Failed or Suppressed;
 
     public static bool IsTerminal(string value) =>
         value is Delivered or Failed or Suppressed;
