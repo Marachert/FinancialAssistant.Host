@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-09T09:47:30+03:00
+Last updated: 2026-08-09T10:12:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-132 closure is **68.4%**:
-**134 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-133 closure is **68.9%**:
+**135 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,20 +13,20 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-132 - P6.T6 Implement financial score calculation and history API
+- FIN-133 - P6.T7 Create Recommendation Service project baseline
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/136
+  https://github.com/Marachert/FinancialAssistant.Host/pull/138
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/1adef73e5e7d950fe6d39da8931599ce0ff3f3f2
-- previous readiness: 133 / 196, or 67.9%
-- current readiness: 134 / 196, or 68.4%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/556cdcd1b14e8716f1183b4f5a68e5a3b5f5f64b
+- previous readiness: 134 / 196, or 68.4%
+- current readiness: 135 / 196, or 68.9%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-132 - canonical implementation delivered by PR #136
-- previous readiness: 133 / 196, or 67.9%
-- current readiness: 134 / 196, or 68.4%
+- FIN-133 - canonical implementation delivered by PR #138
+- previous readiness: 134 / 196, or 68.4%
+- current readiness: 135 / 196, or 68.9%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -35,18 +35,18 @@ Closing these duplicates does not change the numerator or denominator.
 
 Current delivery:
 
-- FIN-132 is Done after PR #136 completed the trusted current/history score APIs
-- a first current-score request atomically persists and returns the neutral
-  formula-v2 score 50 without publishing a synthetic financial event
-- history accepts an inclusive `fromUtc`/`toUtc` period and composes it with
-  the existing stable timestamp/calculation-ID cursor
-- normalized period bounds and structured explanation factors are returned for
-  client score trend UI
-- Backend CI #413 passed privacy, format, Release build, and all solution tests
-  on final head `8788cd17356f5cc7ebc17241d4e9d33b1496ace3`
+- FIN-133 is Done after PR #138 completed the recovered Recommendation Service
+  baseline with a reachable backend-owned status lifecycle
+- authenticated owner-scoped dismissal performs `active -> dismissed`
+- newer accepted facts automatically perform `active -> expired` for
+  superseded recommendations; terminal states cannot reactivate
+- trusted responses expose lifecycle state and timestamp; tests cover owner
+  isolation, dismissal, supersession, and attempted reactivation
+- Backend CI #419 passed privacy, format, Release build, and all solution tests
+  on final head `846661aa0bae6de4baf501ee9ffc32f6920b03b2`
 - no paid provider or external dependency was added
-- parent FIN-27 remains In Progress with 9 of 20 canonical children Done; the
-  next ranked unfinished canonical leaf is FIN-133
+- parent FIN-27 remains In Progress with 10 of 20 canonical children Done; the
+  next ranked unfinished canonical leaf is FIN-134
 
 ## Epic Progress
 
@@ -58,11 +58,11 @@ Current delivery:
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
-| FIN-27 | P6 Analytics, score, recommendations, and notifications | 9 | 20 | 45.0% |
+| FIN-27 | P6 Analytics, score, recommendations, and notifications | 10 | 20 | 50.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **134** | **196** | **68.4%** |
+| **Total** | **Canonical POC leaf scope** | **135** | **196** | **68.9%** |
 
 ## First-User-Test Gates
 
@@ -154,3 +154,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-02T21:29:00+03:00 | FIN-130 | Recovered Financial Score baseline from merged PR 123 | 67.3% | +0.5 pp |
 | 2026-08-09T09:34:00+03:00 | FIN-131 | Closure delivered by PR 134 | 67.9% | +0.6 pp |
 | 2026-08-09T09:47:30+03:00 | FIN-132 | Closure delivered by PR 136 | 68.4% | +0.5 pp |
+| 2026-08-09T10:12:00+03:00 | FIN-133 | Closure delivered by PR 138 | 68.9% | +0.5 pp |
