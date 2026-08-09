@@ -84,6 +84,12 @@ docs/engineering/recommendations-notifications-v1.md
 docs/api/recommendations-notifications-v1.md
 ```
 
+Insights validation coverage:
+
+```text
+docs/engineering/insights-validation-test-plan.md
+```
+
 Financial core validation coverage:
 
 ```text
