@@ -124,9 +124,82 @@ public sealed class FinancialScoreService
             NormalizeCurrency(currency),
             cancellationToken);
 
+    public async Task<FinancialScoreCalculation> GetCurrentOrCreateDefaultAsync(
+        string userIdHash,
+        string currency,
+        CancellationToken cancellationToken)
+    {
+        var normalizedUserIdHash = NormalizeRequired(userIdHash, nameof(userIdHash));
+        var normalizedCurrency = NormalizeCurrency(currency);
+        var current = await store.GetCurrentAsync(
+            normalizedUserIdHash,
+            normalizedCurrency,
+            cancellationToken);
+        if (current is not null)
+        {
+            return current;
+        }
+
+        await applyGate.WaitAsync(cancellationToken);
+        try
+        {
+            current = await store.GetCurrentAsync(
+                normalizedUserIdHash,
+                normalizedCurrency,
+                cancellationToken);
+            if (current is not null)
+            {
+                return current;
+            }
+
+            var profileSettings = await profileSettingsProvider.GetAsync(
+                normalizedUserIdHash,
+                normalizedCurrency,
+                cancellationToken);
+            var sourceEventId = CreateDeterministicId(
+                "score-default-source",
+                $"{normalizedUserIdHash}|{normalizedCurrency}");
+            var calculation = calculator.Calculate(
+                CreateDeterministicId(
+                    "score-default",
+                    $"{normalizedUserIdHash}|{normalizedCurrency}|{FinancialScoreFormula.Version}"),
+                sourceEventId,
+                normalizedUserIdHash,
+                normalizedCurrency,
+                Array.Empty<FinancialScoreRecordProjection>(),
+                profileSettings,
+                DateTimeOffset.UtcNow);
+            await store.SaveCalculationAsync(calculation, cancellationToken);
+            return calculation;
+        }
+        finally
+        {
+            applyGate.Release();
+        }
+    }
+
     public Task<IReadOnlyList<FinancialScoreCalculation>> GetHistoryAsync(
         string userIdHash,
         string currency,
+        DateTimeOffset? beforeUtc,
+        string? beforeCalculationId,
+        int limit,
+        CancellationToken cancellationToken) =>
+        GetHistoryAsync(
+            userIdHash,
+            currency,
+            fromUtc: null,
+            toUtc: null,
+            beforeUtc: beforeUtc,
+            beforeCalculationId: beforeCalculationId,
+            limit: limit,
+            cancellationToken: cancellationToken);
+
+    public Task<IReadOnlyList<FinancialScoreCalculation>> GetHistoryAsync(
+        string userIdHash,
+        string currency,
+        DateTimeOffset? fromUtc,
+        DateTimeOffset? toUtc,
         DateTimeOffset? beforeUtc,
         string? beforeCalculationId,
         int limit,
@@ -135,6 +208,18 @@ public sealed class FinancialScoreService
         if (limit is < 1 or > 100)
         {
             throw new ArgumentOutOfRangeException(nameof(limit), "Limit must be between 1 and 100.");
+        }
+
+        if ((fromUtc is null) != (toUtc is null))
+        {
+            throw new ArgumentException(
+                "History period start and end must be supplied together.");
+        }
+
+        if (fromUtc > toUtc)
+        {
+            throw new ArgumentException(
+                "History period start must be before or equal to its end.");
         }
 
         if ((beforeUtc is null) != string.IsNullOrWhiteSpace(beforeCalculationId))
@@ -146,6 +231,8 @@ public sealed class FinancialScoreService
         return store.GetHistoryAsync(
             NormalizeRequired(userIdHash, nameof(userIdHash)),
             NormalizeCurrency(currency),
+            fromUtc?.ToUniversalTime(),
+            toUtc?.ToUniversalTime(),
             beforeUtc?.ToUniversalTime(),
             beforeCalculationId?.Trim(),
             limit + 1,

@@ -36,6 +36,8 @@ public sealed record FinancialScoreResponse(
 public sealed record FinancialScoreHistoryResponse(
     IReadOnlyList<FinancialScoreResponse> Items,
     int Limit,
+    DateTimeOffset? FromUtc,
+    DateTimeOffset? ToUtc,
     bool HasMore,
     DateTimeOffset? NextBeforeUtc,
     string? NextBeforeCalculationId);

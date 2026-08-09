@@ -234,6 +234,82 @@ public sealed class FinancialScoreServiceTests
             CancellationToken.None));
     }
 
+    [Fact]
+    public async Task CurrentDefault_IsPersistedAndIncludedByInclusivePeriod()
+    {
+        var publisher = new InMemoryFinancialScoreEventPublisher();
+        var service = new FinancialScoreService(
+            new InMemoryFinancialScoreStore(),
+            publisher,
+            new FinancialScoreCalculator());
+
+        var first = await service.GetCurrentOrCreateDefaultAsync(
+            "synthetic-new-owner-hash",
+            "usd",
+            CancellationToken.None);
+        var second = await service.GetCurrentOrCreateDefaultAsync(
+            "synthetic-new-owner-hash",
+            "USD",
+            CancellationToken.None);
+        var history = await service.GetHistoryAsync(
+            "synthetic-new-owner-hash",
+            "USD",
+            first.CalculatedAtUtc,
+            first.CalculatedAtUtc,
+            beforeUtc: null,
+            beforeCalculationId: null,
+            limit: 20,
+            CancellationToken.None);
+
+        Assert.Equal(first, second);
+        Assert.Equal(FinancialScoreFormula.NewUserDefault, first.Score);
+        Assert.Single(history);
+        Assert.Equal(first, history[0]);
+        Assert.Empty(publisher.Published);
+    }
+
+    [Fact]
+    public async Task HistoryPeriod_ExcludesCalculationsOutsideRequestedRange()
+    {
+        var service = new FinancialScoreService(
+            new InMemoryFinancialScoreStore(),
+            new InMemoryFinancialScoreEventPublisher(),
+            new FinancialScoreCalculator());
+        var firstTimestamp = new DateTimeOffset(2026, 8, 19, 12, 0, 0, TimeSpan.Zero);
+        var secondTimestamp = firstTimestamp.AddDays(1);
+        await service.ApplyAsync(
+            CreateEvent("period-a", 0, FinancialRecordEventTypes.ExpenseCreated, 10m, changedAt: firstTimestamp),
+            null,
+            CancellationToken.None);
+        var expected = await service.ApplyAsync(
+            CreateEvent("period-b", 0, FinancialRecordEventTypes.ExpenseCreated, 20m, changedAt: secondTimestamp),
+            null,
+            CancellationToken.None);
+
+        var history = await service.GetHistoryAsync(
+            "synthetic-owner-hash",
+            "USD",
+            secondTimestamp,
+            secondTimestamp,
+            beforeUtc: null,
+            beforeCalculationId: null,
+            limit: 20,
+            CancellationToken.None);
+
+        Assert.Single(history);
+        Assert.Equal(expected, history[0]);
+        await Assert.ThrowsAsync<ArgumentException>(async () =>
+            await service.GetHistoryAsync(
+                "synthetic-owner-hash",
+                "USD",
+                secondTimestamp,
+                firstTimestamp,
+                beforeUtc: null,
+                beforeCalculationId: null,
+                limit: 20,
+                CancellationToken.None));
+    }
+
     internal static IntegrationEventEnvelope<FinancialRecordChangedV1> CreateEvent(
         string recordId,
         long revision,

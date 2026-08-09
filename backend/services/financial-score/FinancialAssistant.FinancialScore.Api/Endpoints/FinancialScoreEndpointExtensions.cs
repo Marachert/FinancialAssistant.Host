@@ -23,8 +23,7 @@ public static class FinancialScoreEndpointExtensions
             .WithName(name)
             .Produces<FinancialScoreResponse>()
             .Produces<FinancialScoreApiErrorResponse>(StatusCodes.Status400BadRequest)
-            .Produces<FinancialScoreApiErrorResponse>(StatusCodes.Status401Unauthorized)
-            .Produces<FinancialScoreApiErrorResponse>(StatusCodes.Status404NotFound);
+            .Produces<FinancialScoreApiErrorResponse>(StatusCodes.Status401Unauthorized);
     }
 
     private static void MapHistory(IEndpointRouteBuilder app, string route, string name)
@@ -50,18 +49,11 @@ public static class FinancialScoreEndpointExtensions
 
         try
         {
-            var score = await service.GetCurrentAsync(
+            var score = await service.GetCurrentOrCreateDefaultAsync(
                 FinancialScoreOwnerHasher.Hash(userId!),
                 ReadRequiredQuery(context, "currency"),
                 cancellationToken);
-            return score is null
-                ? Problem(
-                    context,
-                    "Financial score is not available.",
-                    "A score is calculated after the first confirmed financial record event.",
-                    "financial_score_not_found",
-                    StatusCodes.Status404NotFound)
-                : Results.Ok(Map(score));
+            return Results.Ok(Map(score));
         }
         catch (ArgumentException exception)
         {
@@ -84,11 +76,15 @@ public static class FinancialScoreEndpointExtensions
         try
         {
             var limit = ReadOptionalInteger(context, "limit") ?? 20;
+            var fromUtc = ReadOptionalTimestamp(context, "fromUtc");
+            var toUtc = ReadOptionalTimestamp(context, "toUtc");
             var beforeUtc = ReadOptionalTimestamp(context, "beforeUtc");
             var beforeCalculationId = ReadOptionalQuery(context, "beforeCalculationId");
             var history = await service.GetHistoryAsync(
                 FinancialScoreOwnerHasher.Hash(userId!),
                 ReadRequiredQuery(context, "currency"),
+                fromUtc,
+                toUtc,
                 beforeUtc,
                 beforeCalculationId,
                 limit,
@@ -100,6 +96,8 @@ public static class FinancialScoreEndpointExtensions
                 new FinancialScoreHistoryResponse(
                     items,
                     limit,
+                    fromUtc?.ToUniversalTime(),
+                    toUtc?.ToUniversalTime(),
                     hasMore,
                     next?.CalculatedAtUtc,
                     next?.CalculationId));

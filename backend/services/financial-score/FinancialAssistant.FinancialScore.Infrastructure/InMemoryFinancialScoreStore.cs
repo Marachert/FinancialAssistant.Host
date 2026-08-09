@@ -121,6 +121,8 @@ public sealed class InMemoryFinancialScoreStore : IFinancialScoreStore
     public Task<IReadOnlyList<FinancialScoreCalculation>> GetHistoryAsync(
         string userIdHash,
         string currency,
+        DateTimeOffset? fromUtc,
+        DateTimeOffset? toUtc,
         DateTimeOffset? beforeUtc,
         string? beforeCalculationId,
         int limit,
@@ -130,6 +132,7 @@ public sealed class InMemoryFinancialScoreStore : IFinancialScoreStore
         lock (gate)
         {
             IReadOnlyList<FinancialScoreCalculation> result = Query(userIdHash, currency)
+                .Where(item => IsWithinPeriod(item, fromUtc, toUtc))
                 .Where(item => IsBeforeCursor(item, beforeUtc, beforeCalculationId))
                 .OrderByDescending(item => item.CalculatedAtUtc)
                 .ThenByDescending(item => item.CalculationId, StringComparer.Ordinal)
@@ -152,6 +155,13 @@ public sealed class InMemoryFinancialScoreStore : IFinancialScoreStore
 
     private static string ScopeKey(string userIdHash, string currency) =>
         $"{userIdHash}|{currency.ToUpperInvariant()}";
+
+    private static bool IsWithinPeriod(
+        FinancialScoreCalculation calculation,
+        DateTimeOffset? fromUtc,
+        DateTimeOffset? toUtc) =>
+        (fromUtc is null || calculation.CalculatedAtUtc >= fromUtc.Value) &&
+        (toUtc is null || calculation.CalculatedAtUtc <= toUtc.Value);
 
     private static bool IsBeforeCursor(
         FinancialScoreCalculation calculation,
