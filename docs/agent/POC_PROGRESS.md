@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-09T10:39:00+03:00
+Last updated: 2026-08-09T10:51:30+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-135 duplicate closure is **69.4%**:
-**136 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-136 closure is **69.9%**:
+**137 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,21 +13,21 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-134 - P6.T8 Implement MVP recommendation rules
+- FIN-136 - P6.T9 Create Notification Service project baseline
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/140
+  https://github.com/Marachert/FinancialAssistant.Host/pull/143
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/74f1944c4b929e25c4cba64a9410bb72115fd601
-- previous readiness: 135 / 196, or 68.9%
-- current readiness: 136 / 196, or 69.4%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/07fd27d38e0356c8301a77609072c3f9492b2623
+- previous readiness: 136 / 196, or 69.4%
+- current readiness: 137 / 196, or 69.9%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-135 - exact duplicate of canonical FIN-134, linked and closed in Jira
+- FIN-136 - Notification Service preferences gap implemented and closed in Jira
 - previous readiness: 136 / 196, or 69.4%
-- current readiness: 136 / 196, or 69.4%
-- change: +0.0 percentage points
+- current readiness: 137 / 196, or 69.9%
+- change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
 duplicate of FIN-124, FIN-127 is an exact later duplicate of FIN-126, and
@@ -36,13 +36,14 @@ not change the numerator or denominator.
 
 Current delivery:
 
-- FIN-135 is Jira-linked to canonical FIN-134 as an exact later duplicate and
-  is Done with evidence against implementation PR #140
-- duplicate closure adds no canonical numerator, denominator, branch, or code
-- canonical POC readiness remains 136/196 (69.4%), a +0.0 percentage-point change
-- parent FIN-27 remains In Progress at 11 of 20 canonical children Done (55.0%)
+- FIN-136 is Done with verified implementation PR #143 and Jira evidence comment
+  10798
+- owner-scoped push/web preferences are enforced before notification preparation
+  and publication, with both channels enabled by default
+- canonical POC readiness is 137/196 (69.9%), a +0.5 percentage-point change
+- parent FIN-27 remains In Progress at 12 of 20 canonical children Done (60.0%)
 - first-user testing remains Not Ready
-- the next ranked unfinished canonical leaf is FIN-136
+- the next ranked unfinished canonical leaf is FIN-137
 
 ## Epic Progress
 
@@ -54,11 +55,11 @@ Current delivery:
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
-| FIN-27 | P6 Analytics, score, recommendations, and notifications | 11 | 20 | 55.0% |
+| FIN-27 | P6 Analytics, score, recommendations, and notifications | 12 | 20 | 60.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **136** | **196** | **69.4%** |
+| **Total** | **Canonical POC leaf scope** | **137** | **196** | **69.9%** |
 
 ## First-User-Test Gates
 
@@ -153,3 +154,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-09T10:12:00+03:00 | FIN-133 | Closure delivered by PR 138 | 68.9% | +0.5 pp |
 | 2026-08-09T10:32:00+03:00 | FIN-134 | Closure delivered by PR 140 | 69.4% | +0.5 pp |
 | 2026-08-09T10:39:00+03:00 | FIN-135 | Exact duplicate of FIN-134; Jira-linked and Done | 69.4% | +0.0 pp |
+| 2026-08-09T10:51:30+03:00 | FIN-136 | Closure delivered by PR 143 | 69.9% | +0.5 pp |
