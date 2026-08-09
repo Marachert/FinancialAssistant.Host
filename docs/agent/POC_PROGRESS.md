@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-09T12:14:07+03:00
+Last updated: 2026-08-09T12:31:43+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-138 closure is **70.9%**:
-**139 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-139 closure is **71.4%**:
+**140 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,38 +13,39 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-138 - P6.T11 Define limits progress and streaks model
+- FIN-139 - P6.T12 Implement notification delivery adapter baseline
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/147
+  https://github.com/Marachert/FinancialAssistant.Host/pull/149
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/bd6abef22ae2e02d487a14b9f780a95994b4a576
-- previous readiness: 138 / 196, or 70.4%
-- current readiness: 139 / 196, or 70.9%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/e77931f28a5b617ee77325bc7773794a7de64692
+- previous readiness: 139 / 196, or 70.9%
+- current readiness: 140 / 196, or 71.4%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-138 - limits progress and tracking streaks implemented and closed in Jira
-- previous readiness: 138 / 196, or 70.4%
-- current readiness: 139 / 196, or 70.9%
+- FIN-139 - notification delivery adapter baseline implemented and closed in Jira
+- previous readiness: 139 / 196, or 70.9%
+- current readiness: 140 / 196, or 71.4%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
 duplicate of FIN-124, FIN-127 is an exact later duplicate of FIN-126, and
-FIN-135 is an exact later duplicate of FIN-134, and FIN-220 is an exact later
-duplicate of FIN-138. Closing these duplicates does not change the numerator or
-denominator.
+FIN-135 is an exact later duplicate of FIN-134, FIN-220 is an exact later
+duplicate of FIN-138, and FIN-141, FIN-142, and FIN-143 are exact later
+duplicates of FIN-140. Closing these duplicates does not change the numerator
+or denominator.
 
 Current delivery:
 
-- FIN-138 is Done with verified implementation PR #147 and Jira evidence comment
-  10804
-- deterministic confirmed-record daily, weekly, and monthly limit progress now
-  includes explainable tracking streaks and explicit local-calendar reset rules
-- canonical POC readiness is 139/196 (70.9%), a +0.5 percentage-point change
-- parent FIN-27 remains In Progress at 14 of 20 canonical children Done (70.0%)
+- FIN-139 is Done with verified implementation PR #149 and Jira evidence comment
+  10807
+- provider-neutral push and web delivery boundaries now expose explicit status,
+  configuration, and bounded retry behavior without calling a paid provider
+- canonical POC readiness is 140/196 (71.4%), a +0.5 percentage-point change
+- parent FIN-27 remains In Progress at 15 of 20 canonical children Done (75.0%)
 - first-user testing remains Not Ready
-- the next expected unfinished canonical leaf is FIN-139, subject to a fresh Jira
+- the next expected unfinished canonical leaf is FIN-140, subject to a fresh Jira
   rank and duplicate check
 
 ## Epic Progress
@@ -57,11 +58,11 @@ Current delivery:
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
-| FIN-27 | P6 Analytics, score, recommendations, and notifications | 14 | 20 | 70.0% |
+| FIN-27 | P6 Analytics, score, recommendations, and notifications | 15 | 20 | 75.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **139** | **196** | **70.9%** |
+| **Total** | **Canonical POC leaf scope** | **140** | **196** | **71.4%** |
 
 ## First-User-Test Gates
 
@@ -159,3 +160,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-09T10:51:30+03:00 | FIN-136 | Closure delivered by PR 143 | 69.9% | +0.5 pp |
 | 2026-08-09T11:06:00+03:00 | FIN-137 | Closure delivered by PR 145 | 70.4% | +0.5 pp |
 | 2026-08-09T12:14:07+03:00 | FIN-138 | Closure delivered by PR 147 | 70.9% | +0.5 pp |
+| 2026-08-09T12:31:43+03:00 | FIN-139 | Closure delivered by PR 149 | 71.4% | +0.5 pp |
