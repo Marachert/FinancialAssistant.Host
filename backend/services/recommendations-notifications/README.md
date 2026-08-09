@@ -59,3 +59,20 @@ as a scheduling placeholder; deferred delivery is intentionally left to the
 future delivery adapter. Trigger templates use generic lock-screen-safe wording:
 they never include amounts, categories, receipt contents, owner identifiers, or
 raw source-event data.
+
+## Notification delivery adapters
+
+`NotificationDeliveryService` routes prepared messages through provider-neutral
+`INotificationDeliveryAdapter` implementations. The registered mobile push and
+web adapters are intentionally non-sending placeholders: disabled channels are
+suppressed, incomplete configuration fails permanently, and even complete
+placeholder configuration cannot claim delivery. Only explicitly transient
+provider failures are eligible for the bounded fixed-delay retry policy.
+
+Provider, endpoint, credential, channel enablement, and retry values bind from
+the `RecommendationsNotifications:Delivery` configuration section. Production
+credentials must be supplied through environment variables and are never
+committed or logged. See
+`docs/engineering/notification-delivery-adapters.md` for statuses, environment
+variable names, retry behavior, and the requirements for a future provider
+implementation.
