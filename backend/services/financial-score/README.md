@@ -32,3 +32,9 @@ The service also maps the canonical internal paths under `/api/v1/financial-scor
 Set `FinancialScore:Events:Mode=RabbitMq` and provide `FinancialScore:Events:ConnectionString` to enable the durable quorum consumer and publisher. The default `InMemoryDevelopment` mode is isolated and free of external service cost.
 
 RabbitMQ mode declares exact financial-event bindings plus durable 5-second, 30-second, and 5-minute retry queues on `fa.retry`. Currency moves recalculate both affected scopes, duplicate source events republish their deterministic stored result, and current-score reads follow accepted arrival order rather than cross-service source timestamps.
+
+## Validation plan
+
+The synthetic formula, factor, history, new-user, archived/out-of-window, and
+negative release cases are defined in
+`docs/engineering/insights-validation-test-plan.md`.
