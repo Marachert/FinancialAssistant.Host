@@ -10,6 +10,7 @@ public static class RecommendationSeverities
 public static class RecommendationStatuses
 {
     public const string Active = "active";
+    public const string Read = "read";
     public const string Dismissed = "dismissed";
     public const string Expired = "expired";
 
@@ -18,7 +19,8 @@ public static class RecommendationStatuses
 
     public static bool CanTransition(string current, string next) =>
         current == next ||
-        (current == Active && IsTerminal(next));
+        (current == Active && next == Read) ||
+        (!IsTerminal(current) && IsTerminal(next));
 }
 
 public static class NotificationChannels
@@ -45,7 +47,18 @@ public sealed record AnalyticsInsightFacts(
     decimal? DailyExpenseLimit,
     decimal DailyExpenseSpent,
     string? TopExpenseCategoryId,
-    DateTimeOffset UpdatedAtUtc);
+    DateTimeOffset UpdatedAtUtc,
+    decimal TopExpenseCategoryAmount = 0m,
+    decimal UncategorizedExpenseTotal = 0m);
+
+public sealed record RecommendationProfileSettings(
+    bool IsAvailable,
+    bool IsComplete,
+    decimal? MonthlyBudgetLimit)
+{
+    public static RecommendationProfileSettings Unavailable { get; } =
+        new(false, false, null);
+}
 
 public sealed record ScoreInsightFacts(
     int Score,
@@ -56,7 +69,8 @@ public sealed record InsightSnapshot(
     string UserIdHash,
     string Currency,
     AnalyticsInsightFacts? Analytics,
-    ScoreInsightFacts? Score);
+    ScoreInsightFacts? Score,
+    RecommendationProfileSettings? Profile = null);
 
 public sealed record RecommendationFact(
     string Code,

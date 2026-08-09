@@ -154,7 +154,34 @@ public sealed class AnalyticsProjectorTests
         Assert.Equal(40m, published.Payload.MonthlyExpenseTotal);
         Assert.Equal(40m, published.Payload.DailyExpenseSpent);
         Assert.Equal("expense.groceries", published.Payload.TopExpenseCategoryId);
+        Assert.Equal(40m, published.Payload.TopExpenseCategoryAmount);
+        Assert.Equal(0m, published.Payload.UncategorizedExpenseTotal);
         Assert.Null(published.Payload.DailyExpenseLimit);
+    }
+
+    [Fact]
+    public async Task UncategorizedExpenseFact_IsPublished()
+    {
+        var publisher = new InMemoryAnalyticsEventPublisher();
+        var projector = new AnalyticsProjector(
+            new InMemoryAnalyticsReadModelStore(),
+            publisher);
+
+        await projector.ApplyAsync(
+            CreateEvent(
+                "published-uncategorized",
+                FinancialRecordEventTypes.ExpenseCreated,
+                25m,
+                null,
+                new DateOnly(2026, 8, 20)),
+            CancellationToken.None);
+
+        var published = Assert.Single(publisher.Published);
+        Assert.Equal(
+            AnalyticsCategoryIds.Uncategorized,
+            published.Payload.TopExpenseCategoryId);
+        Assert.Equal(25m, published.Payload.TopExpenseCategoryAmount);
+        Assert.Equal(25m, published.Payload.UncategorizedExpenseTotal);
     }
 
     [Fact]

@@ -8,6 +8,10 @@ public static class RecommendationNotificationApiRoutes
         "/api/v1/recommendations/{recommendationId}/dismissal";
     public const string GatewayRecommendationDismissal =
         "/recommendations/{recommendationId}/dismissal";
+    public const string RecommendationRead =
+        "/api/v1/recommendations/{recommendationId}/read";
+    public const string GatewayRecommendationRead =
+        "/recommendations/{recommendationId}/read";
     public const string Notifications = "/api/v1/notifications";
     public const string GatewayNotifications = "/notifications";
     public const string NotificationStatus = "/api/v1/notifications/{notificationId}/delivery-status";
@@ -41,6 +45,9 @@ public sealed record RecommendationListResponse(
     IReadOnlyList<RecommendationResponse> Items);
 
 public sealed record DismissRecommendationRequest(
+    DateTimeOffset ChangedAtUtc);
+
+public sealed record MarkRecommendationReadRequest(
     DateTimeOffset ChangedAtUtc);
 
 public sealed record NotificationResponse(

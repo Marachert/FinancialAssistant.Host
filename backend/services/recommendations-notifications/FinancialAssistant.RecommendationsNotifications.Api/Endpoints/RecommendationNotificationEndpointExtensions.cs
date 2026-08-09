@@ -26,6 +26,14 @@ public static class RecommendationNotificationEndpointExtensions
             app,
             RecommendationNotificationApiRoutes.GatewayRecommendationDismissal,
             "DismissRecommendationFromGateway");
+        MapRecommendationRead(
+            app,
+            RecommendationNotificationApiRoutes.RecommendationRead,
+            "MarkRecommendationRead");
+        MapRecommendationRead(
+            app,
+            RecommendationNotificationApiRoutes.GatewayRecommendationRead,
+            "MarkRecommendationReadFromGateway");
         MapNotifications(
             app,
             RecommendationNotificationApiRoutes.Notifications,
@@ -65,6 +73,24 @@ public static class RecommendationNotificationEndpointExtensions
         string name)
     {
         app.MapPut(route, DismissRecommendationAsync)
+            .WithName(name)
+            .Produces<RecommendationResponse>()
+            .Produces<RecommendationNotificationApiErrorResponse>(
+                StatusCodes.Status400BadRequest)
+            .Produces<RecommendationNotificationApiErrorResponse>(
+                StatusCodes.Status401Unauthorized)
+            .Produces<RecommendationNotificationApiErrorResponse>(
+                StatusCodes.Status404NotFound)
+            .Produces<RecommendationNotificationApiErrorResponse>(
+                StatusCodes.Status409Conflict);
+    }
+
+    private static void MapRecommendationRead(
+        IEndpointRouteBuilder app,
+        string route,
+        string name)
+    {
+        app.MapPut(route, MarkRecommendationReadAsync)
             .WithName(name)
             .Produces<RecommendationResponse>()
             .Produces<RecommendationNotificationApiErrorResponse>(
@@ -177,6 +203,51 @@ public static class RecommendationNotificationEndpointExtensions
             return Problem(
                 context,
                 "Recommendation dismissal conflicts with current state.",
+                exception.Message,
+                "recommendation_status_conflict",
+                StatusCodes.Status409Conflict);
+        }
+    }
+
+    private static async Task<IResult> MarkRecommendationReadAsync(
+        string recommendationId,
+        MarkRecommendationReadRequest request,
+        HttpContext context,
+        RecommendationService service,
+        RecommendationNotificationGatewayAuthenticator authenticator,
+        CancellationToken cancellationToken)
+    {
+        var error = Authenticate(context, authenticator, out var userId);
+        if (error is not null)
+        {
+            return error;
+        }
+
+        try
+        {
+            var updated = await service.MarkReadAsync(
+                RecommendationNotificationOwnerHasher.Hash(userId!),
+                recommendationId,
+                request.ChangedAtUtc,
+                cancellationToken);
+            return updated is null
+                ? Problem(
+                    context,
+                    "Recommendation was not found.",
+                    "The recommendation does not exist in the authenticated user scope.",
+                    "recommendation_not_found",
+                    StatusCodes.Status404NotFound)
+                : Results.Ok(MapRecommendation(updated));
+        }
+        catch (ArgumentException exception)
+        {
+            return Invalid(context, exception.Message);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Problem(
+                context,
+                "Recommendation read update conflicts with current state.",
                 exception.Message,
                 "recommendation_status_conflict",
                 StatusCodes.Status409Conflict);

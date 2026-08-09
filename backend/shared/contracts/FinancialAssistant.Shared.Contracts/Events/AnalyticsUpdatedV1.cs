@@ -14,4 +14,6 @@ public sealed record AnalyticsUpdatedV1(
     decimal? DailyExpenseLimit,
     decimal DailyExpenseSpent,
     string? TopExpenseCategoryId,
-    DateTimeOffset UpdatedAtUtc);
+    DateTimeOffset UpdatedAtUtc,
+    decimal TopExpenseCategoryAmount = 0m,
+    decimal UncategorizedExpenseTotal = 0m);

@@ -12,7 +12,24 @@ currency, source event, and rule code. Event replay is idempotent.
 
 ## Recommendation lifecycle
 
-Every generated recommendation starts `active` with `statusChangedAtUtc` equal to its generation time. The authenticated dismissal endpoint performs the `active -> dismissed` transition, while replacement by newer accepted facts performs `active -> expired`. Idempotent same-state writes are allowed, terminal recommendations never reactivate, and owner scope is enforced by the store. The trusted recommendation response exposes both lifecycle fields. This lifecycle is backend-owned and cannot be changed by a wording provider.
+Every generated recommendation starts `active` with `statusChangedAtUtc` equal to its generation time. The authenticated read endpoint performs `active -> read`; dismissal performs `active|read -> dismissed`; and replacement by newer accepted facts performs `active|read -> expired`. Idempotent same-state writes are allowed, terminal recommendations never reactivate, and owner scope is enforced by the store. The trusted recommendation response exposes both lifecycle fields. This lifecycle is backend-owned and cannot be changed by a wording provider.
+
+## MVP recommendation rules
+
+| Code | Deterministic trigger |
+| --- | --- |
+| `high-spending-category` | largest confirmed expense category is at least 40% of monthly confirmed expenses |
+| `monthly-budget-nearing-limit` | confirmed monthly expenses use at least 80% of the Profile-owned monthly budget |
+| `missing-income` | confirmed monthly expenses exist and confirmed monthly income is zero |
+| `incomplete-profile` | Profile settings are available and explicitly incomplete |
+| `uncategorized-expenses` | confirmed uncategorized expense total is greater than zero |
+| `positive-budget-progress` | complete Profile settings exist, confirmed income exceeds expenses, and budget use is at most 75% with no risk rule active |
+
+Analytics publishes category amounts from confirmed active projections. Monthly
+budget and completeness come from `IRecommendationProfileSettingsProvider`,
+whose checked-in POC adapter is in-memory. Unknown Profile state does not
+produce an incomplete-profile recommendation. Recommendation codes are
+deduplicated before persistence and publication.
 
 `IRecommendationWordingProvider` can later provide bounded wording. It
 receives an already-authoritative recommendation and can return only title and

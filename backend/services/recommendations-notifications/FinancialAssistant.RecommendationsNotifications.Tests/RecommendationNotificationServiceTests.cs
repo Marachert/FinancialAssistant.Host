@@ -171,20 +171,27 @@ public sealed class RecommendationNotificationServiceTests
             CancellationToken.None);
         var recommendation = generated[0];
 
-        var otherOwner = await fixture.Recommendations.DismissAsync(
+        var otherOwner = await fixture.Recommendations.MarkReadAsync(
             "owner-b",
+            recommendation.RecommendationId,
+            Now.AddMinutes(1),
+            CancellationToken.None);
+        var read = await fixture.Recommendations.MarkReadAsync(
+            "owner-a",
             recommendation.RecommendationId,
             Now.AddMinutes(1),
             CancellationToken.None);
         var dismissed = await fixture.Recommendations.DismissAsync(
             "owner-a",
             recommendation.RecommendationId,
-            Now.AddMinutes(1),
+            Now.AddMinutes(2),
             CancellationToken.None);
 
         Assert.Null(otherOwner);
+        Assert.Equal(RecommendationStatuses.Read, read!.Status);
+        Assert.Equal(Now.AddMinutes(1), read.StatusChangedAtUtc);
         Assert.Equal(RecommendationStatuses.Dismissed, dismissed!.Status);
-        Assert.Equal(Now.AddMinutes(1), dismissed.StatusChangedAtUtc);
+        Assert.Equal(Now.AddMinutes(2), dismissed.StatusChangedAtUtc);
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             fixture.Store.UpdateRecommendationStatusAsync(
                 "owner-a",
@@ -228,6 +235,31 @@ public sealed class RecommendationNotificationServiceTests
     }
 
     [Fact]
+    public async Task ProfileSettings_DriveBudgetAndCompletenessRules()
+    {
+        var fixture = new ServiceFixture();
+        fixture.ProfileSettings.Set(
+            "owner-a",
+            "USD",
+            new RecommendationProfileSettings(true, false, 1_000m));
+
+        var recommendations = await fixture.Recommendations.ProcessAnalyticsAsync(
+            AnalyticsEnvelope(
+                "analytics-profile-rules",
+                "owner-a",
+                1_000m,
+                850m,
+                topExpenseCategoryAmount: 400m,
+                uncategorizedExpenseTotal: 50m),
+            CancellationToken.None);
+
+        Assert.Contains(recommendations, item => item.Code == "monthly-budget-nearing-limit");
+        Assert.Contains(recommendations, item => item.Code == "incomplete-profile");
+        Assert.Contains(recommendations, item => item.Code == "high-spending-category");
+        Assert.Contains(recommendations, item => item.Code == "uncategorized-expenses");
+    }
+
+    [Fact]
     public async Task ScoreEvent_UsesBackendScoreWithoutChangingIt()
     {
         var fixture = new ServiceFixture();
@@ -265,7 +297,9 @@ public sealed class RecommendationNotificationServiceTests
         string owner,
         decimal income,
         decimal expense,
-        DateTimeOffset? updatedAt = null) =>
+        DateTimeOffset? updatedAt = null,
+        decimal topExpenseCategoryAmount = 0m,
+        decimal uncategorizedExpenseTotal = 0m) =>
         new(
             eventId,
             $"{eventId}-occurrence",
@@ -284,7 +318,9 @@ public sealed class RecommendationNotificationServiceTests
                 100m,
                 20m,
                 "food",
-                updatedAt ?? Now));
+                updatedAt ?? Now,
+                topExpenseCategoryAmount,
+                uncategorizedExpenseTotal));
 
     private sealed class ServiceFixture
     {
@@ -297,11 +333,13 @@ public sealed class RecommendationNotificationServiceTests
                 new NotificationTemplateCatalog(),
                 NotificationPublisher);
             RecommendationPublisher = new InMemoryRecommendationEventPublisher(Notifications);
+            ProfileSettings = new InMemoryRecommendationProfileSettingsProvider();
             Recommendations = new RecommendationService(
                 Store,
                 new RecommendationGenerator(),
                 new DeterministicRecommendationWordingProvider(),
-                RecommendationPublisher);
+                RecommendationPublisher,
+                ProfileSettings);
         }
 
         public InMemoryRecommendationNotificationStore Store { get; }
@@ -309,6 +347,8 @@ public sealed class RecommendationNotificationServiceTests
         public InMemoryNotificationEventPublisher NotificationPublisher { get; }
 
         public InMemoryRecommendationEventPublisher RecommendationPublisher { get; }
+
+        public InMemoryRecommendationProfileSettingsProvider ProfileSettings { get; }
 
         public RecommendationService Recommendations { get; }
 

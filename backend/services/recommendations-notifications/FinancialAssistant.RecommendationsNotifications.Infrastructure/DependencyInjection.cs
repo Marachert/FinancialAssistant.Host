@@ -20,6 +20,9 @@ public static class DependencyInjection
         services.AddSingleton<InMemoryRecommendationNotificationStore>();
         services.AddSingleton<IRecommendationNotificationStore>(provider =>
             provider.GetRequiredService<InMemoryRecommendationNotificationStore>());
+        services.AddSingleton<InMemoryRecommendationProfileSettingsProvider>();
+        services.AddSingleton<IRecommendationProfileSettingsProvider>(provider =>
+            provider.GetRequiredService<InMemoryRecommendationProfileSettingsProvider>());
         if (string.Equals(options.Events.Mode, "RabbitMq", StringComparison.OrdinalIgnoreCase))
         {
             services.AddSingleton<RabbitMqRecommendationNotificationEventPublisher>();
