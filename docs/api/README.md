@@ -28,6 +28,7 @@ OpenAPI artifacts may be added here or generated from service-owned source contr
 
 - [Financial Summary API v1](financial-summary-v1.md)
 - [Analytics Dashboard API v1](analytics-dashboard-v1.md)
+- [Dashboard Composition Contract v1](dashboard-composition-v1.md)
 - [Analytics Category Breakdown API v1](analytics-category-breakdown-v1.md)
 - [Financial Score API v1](financial-score-v1.md)
 - [Recommendations and Notifications API v1](recommendations-notifications-v1.md)
