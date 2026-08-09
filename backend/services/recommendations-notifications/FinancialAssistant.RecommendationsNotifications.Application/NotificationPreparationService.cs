@@ -35,6 +35,8 @@ public sealed class NotificationPreparationService
             payload.Body,
             payload.Facts.Select(item => new RecommendationFact(item.Code, item.Value)).ToArray(),
             envelope.EventId,
+            payload.GeneratedAtUtc.ToUniversalTime(),
+            RecommendationStatuses.Active,
             payload.GeneratedAtUtc.ToUniversalTime());
         var prepared = new[]
         {
