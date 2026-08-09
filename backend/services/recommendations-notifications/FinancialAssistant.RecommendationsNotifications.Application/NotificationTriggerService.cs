@@ -43,7 +43,7 @@ public sealed class NotificationTriggerService
                 cancellationToken);
         var prepared = candidates
             .SelectMany(candidate => Channels
-                .Where(preferences.IsEnabled)
+                .Where(channel => preferences.IsEnabled(channel, candidate.Code))
                 .Select(channel => templates.Prepare(candidate, channel)))
             .ToArray();
         var accepted = await store.SaveNotificationsIfNewAsync(

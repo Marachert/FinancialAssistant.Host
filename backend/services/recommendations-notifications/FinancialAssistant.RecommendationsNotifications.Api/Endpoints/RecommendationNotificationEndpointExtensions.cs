@@ -50,6 +50,16 @@ public static class RecommendationNotificationEndpointExtensions
             app,
             RecommendationNotificationApiRoutes.GatewayNotificationStatus,
             "UpdateNotificationDeliveryStatusFromGateway");
+        MapNotificationPreferences(
+            app,
+            RecommendationNotificationApiRoutes.NotificationPreferences,
+            "GetNotificationPreferences",
+            "UpdateNotificationPreferences");
+        MapNotificationPreferences(
+            app,
+            RecommendationNotificationApiRoutes.GatewayNotificationPreferences,
+            "GetNotificationPreferencesFromGateway",
+            "UpdateNotificationPreferencesFromGateway");
         return app;
     }
 
@@ -133,6 +143,26 @@ public static class RecommendationNotificationEndpointExtensions
                 StatusCodes.Status404NotFound)
             .Produces<RecommendationNotificationApiErrorResponse>(
                 StatusCodes.Status409Conflict);
+    }
+
+    private static void MapNotificationPreferences(
+        IEndpointRouteBuilder app,
+        string route,
+        string getName,
+        string updateName)
+    {
+        app.MapGet(route, GetNotificationPreferencesAsync)
+            .WithName(getName)
+            .Produces<NotificationPreferencesResponse>()
+            .Produces<RecommendationNotificationApiErrorResponse>(
+                StatusCodes.Status401Unauthorized);
+        app.MapPut(route, UpdateNotificationPreferencesAsync)
+            .WithName(updateName)
+            .Produces<NotificationPreferencesResponse>()
+            .Produces<RecommendationNotificationApiErrorResponse>(
+                StatusCodes.Status400BadRequest)
+            .Produces<RecommendationNotificationApiErrorResponse>(
+                StatusCodes.Status401Unauthorized);
     }
 
     private static async Task<IResult> GetRecommendationsAsync(
@@ -328,6 +358,78 @@ public static class RecommendationNotificationEndpointExtensions
                 StatusCodes.Status409Conflict);
         }
     }
+
+    private static async Task<IResult> GetNotificationPreferencesAsync(
+        HttpContext context,
+        NotificationPreferenceService service,
+        RecommendationNotificationGatewayAuthenticator authenticator,
+        CancellationToken cancellationToken)
+    {
+        var error = Authenticate(context, authenticator, out var userId);
+        if (error is not null)
+        {
+            return error;
+        }
+
+        var preferences = await service.GetAsync(
+            RecommendationNotificationOwnerHasher.Hash(userId!),
+            cancellationToken);
+        return Results.Ok(MapNotificationPreferences(preferences));
+    }
+
+    private static async Task<IResult> UpdateNotificationPreferencesAsync(
+        UpdateNotificationPreferencesRequest request,
+        HttpContext context,
+        NotificationPreferenceService service,
+        RecommendationNotificationGatewayAuthenticator authenticator,
+        CancellationToken cancellationToken)
+    {
+        var error = Authenticate(context, authenticator, out var userId);
+        if (error is not null)
+        {
+            return error;
+        }
+
+        try
+        {
+            var quietHours = request.QuietHours is null
+                ? null
+                : new NotificationQuietHours(
+                    request.QuietHours.StartsAt,
+                    request.QuietHours.EndsAt,
+                    request.QuietHours.TimeZoneId);
+            var preferences = await service.UpdateAsync(
+                RecommendationNotificationOwnerHasher.Hash(userId!),
+                request.PushEnabled,
+                request.WebEnabled,
+                request.EnabledNotificationTypes,
+                quietHours,
+                cancellationToken);
+            return Results.Ok(MapNotificationPreferences(preferences));
+        }
+        catch (ArgumentException exception)
+        {
+            return Invalid(context, exception.Message);
+        }
+    }
+
+    private static NotificationPreferencesResponse MapNotificationPreferences(
+        NotificationPreferences preferences) =>
+        new(
+            preferences.PushEnabled,
+            preferences.WebEnabled,
+            NotificationTriggerCodes.All
+                .Where(type =>
+                    preferences.DisabledNotificationTypes?.Contains(
+                        type,
+                        StringComparer.Ordinal) != true)
+                .ToArray(),
+            preferences.QuietHours is null
+                ? null
+                : new NotificationQuietHoursContract(
+                    preferences.QuietHours.StartsAt,
+                    preferences.QuietHours.EndsAt,
+                    preferences.QuietHours.TimeZoneId));
 
     private static RecommendationResponse MapRecommendation(
         FinancialRecommendation recommendation) =>

@@ -102,6 +102,7 @@ The admin monitoring group requires a valid bearer token and the configured admi
 | `score` | `/score`, `/score/{**gatewayPath}` | GET | `authenticated` | Financial Score Service | `placeholder` |
 | `recommendations` | `/recommendations`, `/recommendations/{**gatewayPath}` | GET | `authenticated` | Recommendation Service | `placeholder` |
 | `notifications` | `/notifications`, `/notifications/{**gatewayPath}` | GET, POST, PATCH | `authenticated` | Notification Service | `placeholder` |
+| `notification-preferences` | `/notification-preferences` | GET, PUT | `authenticated` | Notification Service | `placeholder` |
 | `admin-monitoring` | `/admin/monitoring`, `/admin/monitoring/{**gatewayPath}` | GET | `admin` | Monitoring Admin Service | `placeholder` |
 
 The route table is intentionally technical. Client applications should use the stable public paths and never call internal destination addresses directly.
@@ -367,6 +368,7 @@ The gateway authenticates and routes requests. It does not build prompts, call t
 
 ```text
 /notifications
+/notification-preferences
 ```
 
 ### Owner

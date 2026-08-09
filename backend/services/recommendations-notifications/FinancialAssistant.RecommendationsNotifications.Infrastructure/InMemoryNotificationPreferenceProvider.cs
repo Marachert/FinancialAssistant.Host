@@ -25,15 +25,27 @@ public sealed class InMemoryNotificationPreferenceProvider :
         }
     }
 
-    public void Set(
+    public Task<NotificationPreferences> UpdateAsync(
         string userIdHash,
-        NotificationPreferences value)
+        NotificationPreferences value,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(value);
         lock (gate)
         {
             preferences[NormalizeOwner(userIdHash)] = value;
+            return Task.FromResult(value);
         }
+    }
+
+    public void Set(
+        string userIdHash,
+        NotificationPreferences value)
+    {
+        UpdateAsync(userIdHash, value, CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
     }
 
     private static string NormalizeOwner(string value) =>

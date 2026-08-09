@@ -16,6 +16,7 @@ public static class DependencyInjection
         services.AddSingleton<NotificationPreparationService>();
         services.AddSingleton<NotificationTriggerService>();
         services.AddSingleton<NotificationDeliveryService>();
+        services.AddSingleton<NotificationPreferenceService>();
         return services;
     }
 }

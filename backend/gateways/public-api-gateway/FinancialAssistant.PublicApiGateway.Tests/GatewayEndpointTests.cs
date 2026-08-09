@@ -35,7 +35,7 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
         var routes = document.RootElement.GetProperty("routes");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(13, routes.GetArrayLength());
+        Assert.Equal(14, routes.GetArrayLength());
         Assert.Contains(routes.EnumerateArray(), route =>
             route.GetProperty("routeKey").GetString() == "auth"
             && route.GetProperty("serviceOwner").GetString() == "Auth Service"
@@ -53,6 +53,13 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
         Assert.Contains(routes.EnumerateArray(), route =>
             route.GetProperty("routeKey").GetString() == "admin-monitoring"
             && route.GetProperty("accessPolicy").GetString() == "admin");
+        Assert.Contains(routes.EnumerateArray(), route =>
+            route.GetProperty("routeKey").GetString() == "notification-preferences"
+            && route.GetProperty("serviceOwner").GetString() == "Notification Service"
+            && route.GetProperty("accessPolicy").GetString() == "authenticated"
+            && route.GetProperty("methods").EnumerateArray()
+                .Select(method => method.GetString())
+                .SequenceEqual(["GET", "PUT"]));
         Assert.DoesNotContain("internalDestination", content, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("auth-service", content, StringComparison.OrdinalIgnoreCase);
     }
@@ -68,10 +75,27 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("ready", root.GetProperty("status").GetString());
-        Assert.Equal(13, root.GetProperty("routeCount").GetInt32());
+        Assert.Equal(14, root.GetProperty("routeCount").GetInt32());
         Assert.Equal(12, root.GetProperty("destinationCount").GetInt32());
         Assert.Equal(2, root.GetProperty("enabledDestinationCount").GetInt32());
         Assert.Equal("placeholder", root.GetProperty("securityMode").GetString());
+    }
+
+    [Theory]
+    [InlineData("GET")]
+    [InlineData("PUT")]
+    public async Task NotificationPreferencesRoute_AllowsTrustedContractMethods(
+        string method)
+    {
+        using var client = CreateClient();
+        using var request = new HttpRequestMessage(
+            new HttpMethod(method),
+            "/notification-preferences");
+
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.NotImplemented, response.StatusCode);
+        Assert.Equal("authenticated", GetHeader(response, "X-Gateway-Access-Policy"));
     }
 
     [Fact]

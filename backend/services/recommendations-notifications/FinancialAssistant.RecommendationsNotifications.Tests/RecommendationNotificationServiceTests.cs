@@ -156,6 +156,60 @@ public sealed class RecommendationNotificationServiceTests
     }
 
     [Fact]
+    public async Task NotificationTypes_FilterTriggersAndRecommendationMessages()
+    {
+        var fixture = new ServiceFixture();
+        var preferences = new NotificationPreferenceService(
+            fixture.NotificationPreferences);
+        await preferences.UpdateAsync(
+            "owner-a",
+            true,
+            true,
+            [NotificationTriggerCodes.BudgetExceeded],
+            null,
+            CancellationToken.None);
+
+        var triggered = await fixture.Triggers.ProcessAsync(
+            new NotificationTriggerFacts(
+                "owner-a",
+                "USD",
+                new DateOnly(2026, 8, 2),
+                false,
+                1_000m,
+                1_100m,
+                60,
+                70,
+                true,
+                true,
+                "type-filter-source",
+                "type-filter-correlation",
+                Now),
+            CancellationToken.None);
+        var recommendations = await fixture.Recommendations.ProcessAnalyticsAsync(
+            AnalyticsEnvelope(
+                "analytics-type-filter",
+                "owner-a",
+                1_000m,
+                900m),
+            CancellationToken.None);
+        var stored = await fixture.Notifications.GetAsync(
+            "owner-a",
+            "USD",
+            CancellationToken.None);
+
+        Assert.Equal(2, triggered.Count);
+        Assert.All(
+            triggered,
+            item => Assert.Contains(
+                NotificationTriggerCodes.BudgetExceeded,
+                item.TemplateCode,
+                StringComparison.Ordinal));
+        Assert.NotEmpty(recommendations);
+        Assert.Equal(triggered.Count, stored.Count);
+        Assert.Equal(triggered.Count, fixture.NotificationPublisher.Published.Count);
+    }
+
+    [Fact]
     public async Task NotificationPreferences_KeepQuietHoursPlaceholder()
     {
         var fixture = new ServiceFixture();
