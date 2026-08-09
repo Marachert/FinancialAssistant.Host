@@ -30,6 +30,17 @@ public sealed record RecommendationFactResponse(
     string Code,
     decimal Value);
 
+public sealed record RecommendationActionLinkResponse(
+    string Code,
+    string Route);
+
+public sealed record RecommendationExplanationResponse(
+    string LocalizationKey,
+    string Text,
+    string Confidence,
+    RecommendationActionLinkResponse Action,
+    bool IsWordingEnhanced);
+
 public sealed record RecommendationResponse(
     string RecommendationId,
     string Currency,
@@ -37,6 +48,7 @@ public sealed record RecommendationResponse(
     string Severity,
     string Title,
     string Body,
+    RecommendationExplanationResponse Explanation,
     IReadOnlyList<RecommendationFactResponse> Facts,
     DateTimeOffset GeneratedAtUtc,
     string Status,
