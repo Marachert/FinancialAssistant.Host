@@ -8,13 +8,17 @@ public sealed class MobilePushNotificationDeliveryAdapter(
     IOptions<RecommendationNotificationServiceOptions> options)
     : PlaceholderNotificationDeliveryAdapter(
         NotificationChannels.Push,
-        options.Value.Delivery.Push);
+        options.Value.Delivery.Push)
+{
+}
 
 public sealed class WebNotificationDeliveryAdapter(
     IOptions<RecommendationNotificationServiceOptions> options)
     : PlaceholderNotificationDeliveryAdapter(
         NotificationChannels.Web,
-        options.Value.Delivery.Web);
+        options.Value.Delivery.Web)
+{
+}
 
 public abstract class PlaceholderNotificationDeliveryAdapter(
     string channel,
