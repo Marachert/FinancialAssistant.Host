@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-09T10:12:00+03:00
+Last updated: 2026-08-09T10:32:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-133 closure is **68.9%**:
-**135 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-134 closure is **69.4%**:
+**136 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,20 +13,20 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-133 - P6.T7 Create Recommendation Service project baseline
+- FIN-134 - P6.T8 Implement MVP recommendation rules
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/138
+  https://github.com/Marachert/FinancialAssistant.Host/pull/140
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/556cdcd1b14e8716f1183b4f5a68e5a3b5f5f64b
-- previous readiness: 134 / 196, or 68.4%
-- current readiness: 135 / 196, or 68.9%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/74f1944c4b929e25c4cba64a9410bb72115fd601
+- previous readiness: 135 / 196, or 68.9%
+- current readiness: 136 / 196, or 69.4%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-133 - canonical implementation delivered by PR #138
-- previous readiness: 134 / 196, or 68.4%
-- current readiness: 135 / 196, or 68.9%
+- FIN-134 - canonical implementation delivered by PR #140
+- previous readiness: 135 / 196, or 68.9%
+- current readiness: 136 / 196, or 69.4%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -35,18 +35,18 @@ Closing these duplicates does not change the numerator or denominator.
 
 Current delivery:
 
-- FIN-133 is Done after PR #138 completed the recovered Recommendation Service
-  baseline with a reachable backend-owned status lifecycle
-- authenticated owner-scoped dismissal performs `active -> dismissed`
-- newer accepted facts automatically perform `active -> expired` for
-  superseded recommendations; terminal states cannot reactivate
-- trusted responses expose lifecycle state and timestamp; tests cover owner
-  isolation, dismissal, supersession, and attempted reactivation
-- Backend CI #419 passed privacy, format, Release build, and all solution tests
-  on final head `846661aa0bae6de4baf501ee9ffc32f6920b03b2`
+- FIN-134 is Done after PR #140 added all six deterministic MVP recommendation
+  rules from confirmed analytics and explicit Profile settings
+- analytics events expose top-category and uncategorized confirmed expense totals
+- recommendation codes are deduplicated before persistence/publication
+- owner-scoped `read` composes with dismissal and automatic expiry while
+  terminal lifecycle protections remain enforced
+- Backend CI #423 passed privacy, format, Release build, and all solution tests
+  on final head `b78db2cac19e513a8a7e8a43b3cc3f5dd828b022`
 - no paid provider or external dependency was added
-- parent FIN-27 remains In Progress with 10 of 20 canonical children Done; the
-  next ranked unfinished canonical leaf is FIN-134
+- parent FIN-27 remains In Progress with 11 of 20 canonical children Done
+- FIN-135 is an exact later duplicate of FIN-134 and is next for Jira duplicate
+  resolution; it does not add canonical scope
 
 ## Epic Progress
 
@@ -58,11 +58,11 @@ Current delivery:
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
-| FIN-27 | P6 Analytics, score, recommendations, and notifications | 10 | 20 | 50.0% |
+| FIN-27 | P6 Analytics, score, recommendations, and notifications | 11 | 20 | 55.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 0 | 18 | 0.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **135** | **196** | **68.9%** |
+| **Total** | **Canonical POC leaf scope** | **136** | **196** | **69.4%** |
 
 ## First-User-Test Gates
 
@@ -155,3 +155,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-09T09:34:00+03:00 | FIN-131 | Closure delivered by PR 134 | 67.9% | +0.6 pp |
 | 2026-08-09T09:47:30+03:00 | FIN-132 | Closure delivered by PR 136 | 68.4% | +0.5 pp |
 | 2026-08-09T10:12:00+03:00 | FIN-133 | Closure delivered by PR 138 | 68.9% | +0.5 pp |
+| 2026-08-09T10:32:00+03:00 | FIN-134 | Closure delivered by PR 140 | 69.4% | +0.5 pp |
