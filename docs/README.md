@@ -65,6 +65,7 @@ Analytics dashboard projection and API:
 
 ```text
 docs/engineering/analytics-dashboard-read-model.md
+docs/engineering/analytics-rebuild-backfill.md
 docs/api/analytics-dashboard-v1.md
 docs/api/analytics-category-breakdown-v1.md
 ```
