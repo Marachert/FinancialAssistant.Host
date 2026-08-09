@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FinancialAssistant.RecommendationsNotifications.Application;
 using FinancialAssistant.RecommendationsNotifications.Contracts;
+using FinancialAssistant.RecommendationsNotifications.Domain;
 using FinancialAssistant.Shared.Contracts.Events;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -109,5 +110,77 @@ public sealed class RecommendationNotificationEndpointTests
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
         var updated = await updateResponse.Content.ReadFromJsonAsync<NotificationResponse>();
         Assert.Equal("delivered", updated!.DeliveryStatus);
+    }
+
+    [Fact]
+    public async Task NotificationPreferences_DefaultUpdateAndOwnerScope_AreStable()
+    {
+        await using var factory = new RecommendationNotificationWebApplicationFactory();
+        using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Add(
+            RecommendationNotificationGatewayHeaders.Authentication,
+            RecommendationNotificationWebApplicationFactory.SharedSecret);
+        client.DefaultRequestHeaders.Add(
+            RecommendationNotificationGatewayHeaders.UserId,
+            "preference-owner-a");
+
+        var defaultResponse = await client.GetAsync(
+            RecommendationNotificationApiRoutes.NotificationPreferences);
+        var defaults = await defaultResponse.Content
+            .ReadFromJsonAsync<NotificationPreferencesResponse>();
+        var quietHours = new NotificationQuietHoursContract(
+            new TimeOnly(22, 0),
+            new TimeOnly(7, 0),
+            "Etc/UTC");
+        var updateResponse = await client.PutAsJsonAsync(
+            RecommendationNotificationApiRoutes.NotificationPreferences,
+            new UpdateNotificationPreferencesRequest(
+                false,
+                true,
+                [
+                    NotificationTriggerCodes.BudgetExceeded,
+                    NotificationTriggerCodes.ScoreImproved
+                ],
+                quietHours));
+        var updated = await updateResponse.Content
+            .ReadFromJsonAsync<NotificationPreferencesResponse>();
+        var rereadResponse = await client.GetAsync(
+            RecommendationNotificationApiRoutes.NotificationPreferences);
+        var reread = await rereadResponse.Content
+            .ReadFromJsonAsync<NotificationPreferencesResponse>();
+
+        using var otherClient = factory.CreateClient();
+        otherClient.DefaultRequestHeaders.Add(
+            RecommendationNotificationGatewayHeaders.Authentication,
+            RecommendationNotificationWebApplicationFactory.SharedSecret);
+        otherClient.DefaultRequestHeaders.Add(
+            RecommendationNotificationGatewayHeaders.UserId,
+            "preference-owner-b");
+        var otherResponse = await otherClient.GetAsync(
+            RecommendationNotificationApiRoutes.NotificationPreferences);
+        var other = await otherResponse.Content
+            .ReadFromJsonAsync<NotificationPreferencesResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, defaultResponse.StatusCode);
+        Assert.True(defaults!.PushEnabled);
+        Assert.True(defaults.WebEnabled);
+        Assert.Equal(NotificationTriggerCodes.All, defaults.EnabledNotificationTypes);
+        Assert.Null(defaults.QuietHours);
+        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+        Assert.False(updated!.PushEnabled);
+        Assert.True(updated.WebEnabled);
+        Assert.Equal(
+            new[]
+            {
+                NotificationTriggerCodes.BudgetExceeded,
+                NotificationTriggerCodes.ScoreImproved
+            },
+            updated.EnabledNotificationTypes);
+        Assert.Equal(quietHours, updated.QuietHours);
+        Assert.Equal(updated, reread);
+        Assert.True(other!.PushEnabled);
+        Assert.True(other.WebEnabled);
+        Assert.Equal(NotificationTriggerCodes.All, other.EnabledNotificationTypes);
+        Assert.Null(other.QuietHours);
     }
 }
