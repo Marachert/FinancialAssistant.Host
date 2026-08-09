@@ -10,6 +10,7 @@ public sealed class RecommendationService
     private readonly IRecommendationNotificationStore store;
     private readonly RecommendationGenerator generator;
     private readonly IRecommendationWordingProvider wordingProvider;
+    private readonly RecommendationExplanationService explanationService;
     private readonly IRecommendationEventPublisher publisher;
     private readonly IRecommendationProfileSettingsProvider? profileSettingsProvider;
     private readonly SemaphoreSlim processGate = new(1, 1);
@@ -19,11 +20,15 @@ public sealed class RecommendationService
         RecommendationGenerator generator,
         IRecommendationWordingProvider wordingProvider,
         IRecommendationEventPublisher publisher,
-        IRecommendationProfileSettingsProvider? profileSettingsProvider = null)
+        IRecommendationProfileSettingsProvider? profileSettingsProvider = null,
+        RecommendationExplanationService? explanationService = null)
     {
         this.store = store;
         this.generator = generator;
         this.wordingProvider = wordingProvider;
+        this.explanationService = explanationService ??
+            new RecommendationExplanationService(
+                new UnavailableRecommendationExplanationWordingProvider());
         this.publisher = publisher;
         this.profileSettingsProvider = profileSettingsProvider;
     }
@@ -182,10 +187,14 @@ public sealed class RecommendationService
         foreach (var recommendation in generated)
         {
             var wording = await wordingProvider.CreateAsync(recommendation, cancellationToken);
+            var explanation = await explanationService.CreateAsync(
+                recommendation,
+                cancellationToken);
             var safe = recommendation with
             {
                 Title = ValidateWording(wording.Title, MaximumTitleLength, "title"),
-                Body = ValidateWording(wording.Body, MaximumBodyLength, "body")
+                Body = ValidateWording(wording.Body, MaximumBodyLength, "body"),
+                Explanation = explanation
             };
             recommendations.Add(safe);
         }

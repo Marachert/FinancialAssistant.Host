@@ -12,6 +12,10 @@ public static class DependencyInjection
         services.AddSingleton<NotificationTemplateCatalog>();
         services.AddSingleton<NotificationTriggerEvaluator>();
         services.AddSingleton<IRecommendationWordingProvider, DeterministicRecommendationWordingProvider>();
+        services.AddSingleton<
+            IRecommendationExplanationWordingProvider,
+            UnavailableRecommendationExplanationWordingProvider>();
+        services.AddSingleton<RecommendationExplanationService>();
         services.AddSingleton<RecommendationService>();
         services.AddSingleton<NotificationPreparationService>();
         services.AddSingleton<NotificationTriggerService>();

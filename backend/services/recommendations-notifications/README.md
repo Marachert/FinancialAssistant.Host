@@ -23,6 +23,12 @@ No external AI or delivery provider is called. `IRecommendationWordingProvider`
 is a wording-only boundary and defaults to deterministic text. Backend facts,
 recommendation codes, severity, and notification state remain authoritative.
 
+Each recommendation also receives a deterministic explanation with a
+localization key, evidence confidence, and allowlisted mobile action. The
+optional `IRecommendationExplanationWordingProvider` can return display text
+only; the checked-in implementation is unavailable, so safe fallback text is
+used without any provider call.
+
 Development storage and publisher adapters are in-memory and are not
 crash-durable. RabbitMQ mode uses publisher confirms, a quorum consumer queue,
 three delayed retries, and a terminal dead-letter queue.

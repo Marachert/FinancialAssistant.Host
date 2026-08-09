@@ -121,7 +121,8 @@ public sealed record FinancialRecommendation(
     string SourceEventId,
     DateTimeOffset GeneratedAtUtc,
     string Status,
-    DateTimeOffset StatusChangedAtUtc);
+    DateTimeOffset StatusChangedAtUtc,
+    RecommendationExplanation? Explanation = null);
 
 public sealed record PreparedNotification(
     string NotificationId,

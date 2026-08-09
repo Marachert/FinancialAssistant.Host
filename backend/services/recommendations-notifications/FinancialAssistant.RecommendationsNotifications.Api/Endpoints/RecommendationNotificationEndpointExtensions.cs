@@ -440,6 +440,17 @@ public static class RecommendationNotificationEndpointExtensions
             recommendation.Severity,
             recommendation.Title,
             recommendation.Body,
+            recommendation.Explanation is { } explanation
+                ? new RecommendationExplanationResponse(
+                    explanation.LocalizationKey,
+                    explanation.Text,
+                    explanation.Confidence,
+                    new RecommendationActionLinkResponse(
+                        explanation.Action.Code,
+                        explanation.Action.Route),
+                    explanation.IsWordingEnhanced)
+                : throw new InvalidOperationException(
+                    "A generated recommendation must include an explanation."),
             recommendation.Facts
                 .Select(item => new RecommendationFactResponse(item.Code, item.Value))
                 .ToArray(),
