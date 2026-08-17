@@ -1,6 +1,6 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-17T10:10:00+03:00
+Last updated: 2026-08-17T18:57:00+03:00
 
 ## Current Snapshot
 
@@ -187,4 +187,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-09T16:26:30+03:00 | FIN-150 | Exact duplicate of FIN-147; Jira-linked and Done | 74.1% | +0.0 pp |
 | 2026-08-09T16:30:00+03:00 | FIN-151 | Exact duplicate of FIN-147; Jira-linked and Done | 74.1% | +0.0 pp |
 | 2026-08-16T10:06:00+03:00 | FIN-153 | Exact duplicate of FIN-152; Jira-linked and Done | 74.1% | +0.0 pp |
-| 2026-08-17T10:10:00+03:00 | FIN-154 | Exact duplicate of FIN-152; Jira-linked and Done | 74.1% | +0.0 pp |
+| 2026-08-17T18:57:00+03:00 | FIN-154 | Exact duplicate of FIN-152; Jira-linked and Done | 74.1% | +0.0 pp |
