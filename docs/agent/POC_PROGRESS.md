@@ -1,6 +1,6 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-17T19:31:00+03:00
+Last updated: 2026-08-17T19:37:00+03:00
 
 ## Current Snapshot
 
@@ -24,13 +24,13 @@ Latest canonical closure:
 
 Latest Jira closure:
 
-- FIN-157 - exact later duplicate of FIN-155, linked and closed in Jira
+- FIN-220 - exact later duplicate of FIN-138, linked and closed in Jira
 - canonical implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/161
+  https://github.com/Marachert/FinancialAssistant.Host/pull/147
 - canonical implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/ceab006f43c47ce26ec438a98165fe4b0fe772cd
+  https://github.com/Marachert/FinancialAssistant.Host/commit/bd6abef22ae2e02d487a14b9f780a95994b4a576
 - canonical progress PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/162
+  https://github.com/Marachert/FinancialAssistant.Host/pull/148
 - previous readiness: 146 / 197, or 74.1%
 - current readiness: 146 / 197, or 74.1%
 - change: +0.0 percentage points
@@ -47,16 +47,16 @@ change the numerator or denominator.
 
 Current delivery:
 
-- FIN-157 is Done as a Jira-linked exact duplicate of canonical FIN-155, with
-  Jira evidence comment 10939
-- canonical implementation is verified in PR #161 and corrected progress PR #162
+- FIN-220 is Done as a Jira-linked exact duplicate of canonical FIN-138, with
+  Jira evidence comment 10943
+- canonical implementation is verified in PR #147 and progress PR #148
 - canonical POC readiness remains 146/197 (74.1%), a +0.0 percentage-point
   change for this duplicate closure
-- FIN-27 canonical POC scope is 21 of 21 Done (100.0%); the Jira parent
-  remains In Progress until every raw duplicate child is linked and Done
+- FIN-27 canonical POC scope is 21 of 21 Done (100.0%), and all raw Jira
+  children are now Done
+- FIN-27 remains In Progress until this progress record is merged and a fresh
+  parent Definition of Done and hierarchy audit passes
 - first-user testing remains Not Ready because runtime and P7-P9 gates remain open
-- the next ranked unfinished raw leaf is FIN-220, an exact later duplicate of
-  FIN-138, subject to a fresh Jira duplicate and link audit
 
 ## Epic Progress
 
@@ -189,3 +189,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-17T18:57:00+03:00 | FIN-154 | Exact duplicate of FIN-152; Jira-linked and Done | 74.1% | +0.0 pp |
 | 2026-08-17T19:25:30+03:00 | FIN-156 | Exact duplicate of FIN-155; Jira-linked and Done | 74.1% | +0.0 pp |
 | 2026-08-17T19:31:00+03:00 | FIN-157 | Exact duplicate of FIN-155; Jira-linked and Done | 74.1% | +0.0 pp |
+| 2026-08-17T19:37:00+03:00 | FIN-220 | Exact duplicate of FIN-138; Jira-linked and Done | 74.1% | +0.0 pp |
