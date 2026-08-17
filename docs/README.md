@@ -91,6 +91,13 @@ docs/engineering/insights-validation-test-plan.md
 docs/engineering/insights-release-readiness-checklist.md
 ```
 
+Mobile PoC experience and UI kit:
+
+```text
+docs/product/mobile-poc-ux.md
+docs/product/mobile-ui-kit.md
+```
+
 Financial core validation coverage:
 
 ```text
@@ -100,6 +107,7 @@ docs/engineering/financial-core-validation-test-plan.md
 ## Canonical folders
 
 ```text
+docs/product/       Product behavior, user flows, and client design contracts
 docs/architecture/  System context, service boundaries, ownership, and architecture decisions
 docs/api/           Client-facing REST contracts and service integration APIs
 docs/events/        RabbitMQ event contracts and asynchronous delivery rules

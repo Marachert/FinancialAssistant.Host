@@ -28,6 +28,21 @@ It must not:
 
 The backend remains the source of truth. AI-assisted and OCR-assisted results must be shown as drafts when user confirmation is required.
 
+## Product design baseline
+
+React Native implementation follows:
+
+```text
+docs/product/mobile-poc-ux.md
+docs/product/mobile-ui-kit.md
+```
+
+The UX contract defines routes, states, platform behavior, accessibility,
+privacy wording, and backend dependencies. The UI kit defines semantic tokens
+and reusable component behavior. Implementation tickets may refine those
+contracts only when the change remains consistent across iOS and Android and is
+recorded in the same pull request.
+
 ## Planned structure
 
 ```text
