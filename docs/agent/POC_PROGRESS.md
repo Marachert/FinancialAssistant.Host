@@ -1,6 +1,6 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-17T18:57:00+03:00
+Last updated: 2026-08-17T19:25:30+03:00
 
 ## Current Snapshot
 
@@ -24,13 +24,13 @@ Latest canonical closure:
 
 Latest Jira closure:
 
-- FIN-154 - exact later duplicate of FIN-152, linked and closed in Jira
+- FIN-156 - exact later duplicate of FIN-155, linked and closed in Jira
 - canonical implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/159
+  https://github.com/Marachert/FinancialAssistant.Host/pull/161
 - canonical implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/526a59c41f0fdd6e42d838bb8a16f1967ca34114
+  https://github.com/Marachert/FinancialAssistant.Host/commit/ceab006f43c47ce26ec438a98165fe4b0fe772cd
 - canonical progress PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/160
+  https://github.com/Marachert/FinancialAssistant.Host/pull/162
 - previous readiness: 146 / 197, or 74.1%
 - current readiness: 146 / 197, or 74.1%
 - change: +0.0 percentage points
@@ -47,16 +47,15 @@ change the numerator or denominator.
 
 Current delivery:
 
-- FIN-154 is Done as a Jira-linked exact duplicate of canonical FIN-152, with
-  Jira evidence comment 10931
-- canonical implementation is verified in PR #159 and its progress record in
-  PR #160
+- FIN-156 is Done as a Jira-linked exact duplicate of canonical FIN-155, with
+  Jira evidence comment 10935
+- canonical implementation is verified in PR #161 and corrected progress PR #162
 - canonical POC readiness remains 146/197 (74.1%), a +0.0 percentage-point
   change for this duplicate closure
 - FIN-27 canonical POC scope is 21 of 21 Done (100.0%); the Jira parent
   remains In Progress until every raw duplicate child is linked and Done
 - first-user testing remains Not Ready because runtime and P7-P9 gates remain open
-- the next ranked unfinished raw leaf is FIN-156, an exact later duplicate of
+- the next ranked unfinished raw leaf is FIN-157, an exact later duplicate of
   FIN-155, subject to a fresh Jira duplicate and link audit
 
 ## Epic Progress
@@ -188,3 +187,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-09T16:30:00+03:00 | FIN-151 | Exact duplicate of FIN-147; Jira-linked and Done | 74.1% | +0.0 pp |
 | 2026-08-16T10:06:00+03:00 | FIN-153 | Exact duplicate of FIN-152; Jira-linked and Done | 74.1% | +0.0 pp |
 | 2026-08-17T18:57:00+03:00 | FIN-154 | Exact duplicate of FIN-152; Jira-linked and Done | 74.1% | +0.0 pp |
+| 2026-08-17T19:25:30+03:00 | FIN-156 | Exact duplicate of FIN-155; Jira-linked and Done | 74.1% | +0.0 pp |
