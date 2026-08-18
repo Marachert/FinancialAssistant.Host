@@ -1,0 +1,40 @@
+name: Mobile CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci-mobile-verify:
+    name: Mobile type, lint, and structure checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: mobile/app-react-native
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+
+      - name: Install mobile dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Verify mobile foundation
+        run: npm run verify
