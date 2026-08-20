@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 import * as Crypto from 'expo-crypto';
 
-import { createApiClient, createClientContext } from '@/api/client';
+import { ApiProblem, createApiClient, createClientContext } from '@/api/client';
 import { clearSession, readSession, writeSession } from '@/security/sessionStore';
 
 import type { AuthCredentials, AuthSession } from './authTypes';
@@ -23,10 +23,19 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSessionValue] = useState<AuthSession | null>(null);
 
   const setSession = useCallback(async (next: AuthSession | null) => {
-    setSessionValue(next);
-    if (next) await writeSession(next);
-    else await clearSession();
-    setState(next ? 'authenticated' : 'anonymous');
+    if (next) {
+      await writeSession(next);
+      setSessionValue(next);
+      setState('authenticated');
+      return;
+    }
+
+    try {
+      await clearSession();
+    } finally {
+      setSessionValue(null);
+      setState('anonymous');
+    }
   }, []);
 
   const api = useMemo(
@@ -36,21 +45,30 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     let active = true;
-    void readSession().then(async (stored) => {
-      if (!active) return;
-      setSessionValue(stored);
-      if (!stored) {
-        setState('anonymous');
-        return;
-      }
-      try {
-        const restoreApi = createApiClient({ getSession: () => stored, setSession });
-        await restoreApi.request('/auth/v1/me');
-        if (active) setState('authenticated');
-      } catch {
-        if (active) await setSession(null);
-      }
-    });
+    void readSession()
+      .then(async (stored) => {
+        if (!active) return;
+        setSessionValue(stored);
+        if (!stored) {
+          setState('anonymous');
+          return;
+        }
+        try {
+          const restoreApi = createApiClient({ getSession: () => stored, setSession });
+          await restoreApi.request('/auth/v1/me');
+          if (active) setState('authenticated');
+        } catch (reason) {
+          if (!active) return;
+          if (reason instanceof ApiProblem && [400, 401, 403].includes(reason.status)) await setSession(null);
+          else setState('authenticated');
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setSessionValue(null);
+          setState('anonymous');
+        }
+      });
     return () => {
       active = false;
     };

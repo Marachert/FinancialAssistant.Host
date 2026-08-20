@@ -83,7 +83,11 @@ export function createApiClient(sessionAccess: SessionAccess) {
       headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken, client: await createClientContext() }),
     });
-    if (!response.ok) return null;
+    if ([400, 401, 403].includes(response.status)) return null;
+    if (!response.ok) {
+      const problem = await readProblem(response);
+      throw new ApiProblem(problem?.detail || problem?.title || 'Session refresh is temporarily unavailable.', response.status, problem);
+    }
     return (await response.json()) as AuthSession;
   };
 
