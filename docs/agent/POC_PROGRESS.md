@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-17T19:58:15+03:00
+Last updated: 2026-08-20T19:03:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-32 closure is **74.6%**:
-**147 of 197 canonical POC leaf tickets are Done**.
+POC readiness after FIN-33 closure is **75.1%**:
+**148 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,25 +13,27 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-32 - Design mobile UX flows and UI kit for PoC
+- FIN-33 - Implement React Native app foundation and auth screens
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/176
+  https://github.com/Marachert/FinancialAssistant.Host/pull/178
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/5ef63418716652a37c0a1202fb6e635a2b66a280
-- previous readiness: 146 / 197, or 74.1%
-- current readiness: 147 / 197, or 74.6%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/936fcb1498b0b53fb4207355a28f7a7bf2089a07
+- previous readiness: 147 / 197, or 74.6%
+- current readiness: 148 / 197, or 75.1%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-32 - mobile PoC UX and UI-kit design baseline, closed after verified merge
+- FIN-33 - React Native auth foundation, closed after verified merge
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/176
+  https://github.com/Marachert/FinancialAssistant.Host/pull/178
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/5ef63418716652a37c0a1202fb6e635a2b66a280
-- exact-head Backend CI: #509
-- previous readiness: 146 / 197, or 74.1%
-- current readiness: 147 / 197, or 74.6%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/936fcb1498b0b53fb4207355a28f7a7bf2089a07
+- final implementation head: `bccf5acb5e3f80eaa5cab4559f8fdce5d1d9b8cb`
+- exact-head Mobile CI: #5
+- exact-head Backend CI: #517
+- previous readiness: 147 / 197, or 74.6%
+- current readiness: 148 / 197, or 75.1%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -46,19 +48,21 @@ change the numerator or denominator.
 
 Current delivery:
 
-- FIN-32 is Done after verified merge of implementation PR #176 at
-  `5ef63418716652a37c0a1202fb6e635a2b66a280`
-- exact-head Backend CI #509 passed privacy, format, Release build, and all
-  solution tests; final review and blocking channels were clear
-- canonical POC readiness is 147/197 (74.6%), a +0.5 percentage-point change
-- FIN-31 P7 progress is 1/18 (5.6%) and the epic remains In Progress because
+- FIN-33 is Done after verified merge of implementation PR #178 at
+  `936fcb1498b0b53fb4207355a28f7a7bf2089a07`
+- exact-head Mobile CI #5 and Backend CI #517 passed; privacy, format, Release
+  build, repository contract tests, solution tests, and final review channels
+  were clear
+- canonical POC readiness is 148/197 (75.1%), a +0.5 percentage-point change
+- FIN-31 P7 progress is 2/18 (11.1%) and the epic remains In Progress because
   ranked implementation leaves remain unfinished
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
-- first-user testing remains Not Ready because usable client implementation,
-  runtime P6, P8, and P9 gates remain open
-- the next ranked unfinished leaf is FIN-33, subject to a fresh hierarchy and
-  duplicate audit after this progress record merges
+- first-user testing remains Not Ready because core mobile capture/dashboard
+  flows and runtime P6, P8, and P9 gates remain open
+- no paid provider or review credits were used
+- the next ranked unfinished leaf is expected to be FIN-34, subject to a fresh
+  hierarchy and duplicate audit after this progress record merges
 
 ## Epic Progress
 
@@ -71,10 +75,10 @@ Current delivery:
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
-| FIN-31 | P7 Mobile app UX and React Native implementation | 1 | 18 | 5.6% |
+| FIN-31 | P7 Mobile app UX and React Native implementation | 2 | 18 | 11.1% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **147** | **197** | **74.6%** |
+| **Total** | **Canonical POC leaf scope** | **148** | **197** | **75.1%** |
 
 ## First-User-Test Gates
 
@@ -93,9 +97,9 @@ satisfied:
 - the Windows PoC deployment stack is repeatable and the first-user environment
   is verified.
 
-Current blocking areas are P6, P7, P8, and P9. P7 now has an implementation-ready
-UX and UI-kit baseline, but it does not yet have a usable React Native client
-flow that can be handed to first users.
+Current blocking areas are P6, P7, P8, and P9. P7 now has an implemented React
+Native authentication foundation, but transaction capture, confirmation, dashboard,
+receipt, settings, and release-ready end-to-end client flows remain unfinished.
 
 ## Calculation Contract
 
@@ -193,3 +197,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-17T19:31:00+03:00 | FIN-157 | Exact duplicate of FIN-155; Jira-linked and Done | 74.1% | +0.0 pp |
 | 2026-08-17T19:37:00+03:00 | FIN-220 | Exact duplicate of FIN-138; Jira-linked and Done | 74.1% | +0.0 pp |
 | 2026-08-17T19:58:15+03:00 | FIN-32 | Closure delivered by PR 176 | 74.6% | +0.5 pp |
+| 2026-08-20T19:03:00+03:00 | FIN-33 | Closure delivered by PR 178 | 75.1% | +0.5 pp |
