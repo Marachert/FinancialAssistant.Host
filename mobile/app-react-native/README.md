@@ -1,60 +1,70 @@
 # React Native Mobile Application
 
-This folder is the canonical workspace for the Financial Assistant Android and iOS client.
+This folder contains the Financial Assistant iOS and Android client. FIN-33
+establishes the Expo Router application, authenticated navigation, typed
+Identity API integration, and secure session handling.
 
-## Responsibilities
+## Prerequisites
 
-The mobile application owns client-side presentation and device integration for:
+- Node.js 22.13 or later
+- npm
+- Expo Go or a local iOS/Android development environment
+- the Public API Gateway running locally or in an approved test environment
 
-* universal money input;
-* transaction and receipt draft confirmation;
-* daily, weekly, and monthly financial views;
-* score, recommendations, progress, and achievements;
-* mobile push notifications;
-* camera and file selection for receipt intake;
-* secure storage of short-lived client authentication state.
+No paid provider is required to install, verify, or run these authentication
+screens.
+
+## Configure
+
+Create a local `.env` from `.env.example` and set only the public gateway URL:
+
+```text
+EXPO_PUBLIC_API_URL=http://localhost:8080
+```
+
+Expo public variables are embedded in the client bundle. Never put tokens,
+passwords, API keys, provider credentials, or production secrets in them.
+
+Android emulators normally reach a host gateway through `http://10.0.2.2:8080`.
+iOS simulators can normally use `http://localhost:8080`. Physical devices need
+an approved reachable HTTPS endpoint or a local network address appropriate to
+the development environment.
+
+## Install and verify
+
+```powershell
+npm install --no-audit --no-fund
+npm run verify
+```
+
+`verify` runs strict TypeScript checks, Expo ESLint rules, and repository-owned
+structural/security checks.
+
+## Run
+
+```powershell
+npm run android
+npm run ios
+```
+
+The app restores tokens only from platform secure storage, validates a restored
+session with `GET /auth/v1/me`, rotates tokens through `POST /auth/v1/refresh`,
+and clears local state after logout even when server revocation fails.
 
 ## Boundaries
 
-The mobile client must call backend capabilities only through the Public API Gateway.
+The client calls backend capabilities only through the Public API Gateway. It
+must not calculate authoritative balances, limits, scores, or totals; call
+internal services directly; persist tokens in plain-text storage; or log user
+credentials, receipt data, OCR text, or financial content.
 
-It must not:
+The backend remains the source of truth. OCR or LLM output stays probabilistic
+input and must be presented as an editable draft until the backend confirms an
+authoritative financial entity.
 
-* calculate authoritative balances, limits, scores, or financial totals;
-* treat OCR or LLM output as confirmed transaction data;
-* call internal service addresses, RabbitMQ, Elasticsearch, or object storage directly;
-* persist access tokens in plain-text application storage;
-* embed production secrets or provider credentials.
-
-The backend remains the source of truth. AI-assisted and OCR-assisted results must be shown as drafts when user confirmation is required.
-
-## Product design baseline
-
-React Native implementation follows:
+Product behavior and reusable visual rules are defined in:
 
 ```text
 docs/product/mobile-poc-ux.md
 docs/product/mobile-ui-kit.md
 ```
-
-The UX contract defines routes, states, platform behavior, accessibility,
-privacy wording, and backend dependencies. The UI kit defines semantic tokens
-and reusable component behavior. Implementation tickets may refine those
-contracts only when the change remains consistent across iOS and Android and is
-recorded in the same pull request.
-
-## Planned structure
-
-```text
-mobile/app-react-native/
-  src/
-    app/
-    features/
-    shared/
-    navigation/
-    api/
-  android/
-  ios/
-```
-
-Application scaffolding and dependency selection belong to a dedicated frontend implementation task. FIN-47 establishes only the canonical source boundary.
