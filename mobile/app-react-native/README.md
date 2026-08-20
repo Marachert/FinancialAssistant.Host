@@ -58,7 +58,7 @@ must not calculate authoritative balances, limits, scores, or totals; call
 internal services directly; persist tokens in plain-text storage; or log user
 credentials, receipt data, OCR text, or financial content.
 
-The backend remains the source of truth. OCR and AI output stays probabilistic
+The backend remains the source of truth. OCR or LLM output stays probabilistic
 input and must be presented as an editable draft until the backend confirms an
 authoritative financial entity.
 
