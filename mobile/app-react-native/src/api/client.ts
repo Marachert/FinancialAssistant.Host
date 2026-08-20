@@ -10,7 +10,10 @@ type SessionAccess = {
   setSession: (session: AuthSession | null) => Promise<void>;
 };
 
-type RequestOptions = RequestInit & { authenticated?: boolean };
+type RequestOptions = RequestInit & {
+  authenticated?: boolean;
+  refreshOnUnauthorized?: boolean;
+};
 
 export class ApiProblem extends Error {
   constructor(
@@ -42,13 +45,15 @@ export async function createClientContext(): Promise<ClientContext> {
 }
 
 export function createApiClient(sessionAccess: SessionAccess) {
+  let refreshInFlight: Promise<AuthSession | null> | null = null;
+
   const request = async <T>(
     path: string,
     options: RequestOptions = {},
     allowRefresh = true,
     sessionOverride?: AuthSession,
   ): Promise<T> => {
-    const { authenticated = true, ...requestInit } = options;
+    const { authenticated = true, refreshOnUnauthorized = true, ...requestInit } = options;
     const session = sessionOverride || sessionAccess.getSession();
     const headers = new Headers(requestInit.headers);
     headers.set('Accept', 'application/json');
@@ -59,8 +64,11 @@ export function createApiClient(sessionAccess: SessionAccess) {
 
     const response = await fetch(`${getApiBaseUrl()}${path}`, { ...requestInit, headers });
 
-    if (response.status === 401 && allowRefresh && session?.refreshToken) {
-      const refreshed = await refresh(session.refreshToken);
+    if (response.status === 401 && allowRefresh && refreshOnUnauthorized && session?.refreshToken) {
+      refreshInFlight ??= refresh(session.refreshToken).finally(() => {
+        refreshInFlight = null;
+      });
+      const refreshed = await refreshInFlight;
       if (refreshed) {
         await sessionAccess.setSession(refreshed);
         return request<T>(path, options, false, refreshed);

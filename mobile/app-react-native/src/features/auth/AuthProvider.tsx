@@ -94,6 +94,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       if (current) {
         await api.request<void>('/auth/v1/logout', {
           method: 'POST',
+          refreshOnUnauthorized: false,
           body: JSON.stringify({ refreshToken: current.refreshToken, client: await createClientContext() }),
         });
       }

@@ -27,25 +27,43 @@ export function ScreenScaffold({ children }: PropsWithChildren) {
   );
 }
 
-export function TextField({ label, error, ...props }: TextInputProps & { label: string; error?: string }) {
+type TextFieldProps = TextInputProps & {
+  label: string;
+  error?: string;
+  trailingAction?: { label: string; onPress: () => void };
+};
+
+export function TextField({ label, error, trailingAction, ...props }: TextFieldProps) {
   const [focused, setFocused] = useState(false);
   return (
     <View style={styles.fieldGroup}>
       <Text style={[typography.bodyStrong, styles.label]}>{label}</Text>
-      <TextInput
-        {...props}
-        accessibilityLabel={label}
-        accessibilityState={{ disabled: props.editable === false }}
-        onBlur={(event) => {
-          setFocused(false);
-          props.onBlur?.(event);
-        }}
-        onFocus={(event) => {
-          setFocused(true);
-          props.onFocus?.(event);
-        }}
-        style={[styles.input, focused && styles.inputFocused, Boolean(error) && styles.inputInvalid, props.style]}
-      />
+      <View style={[styles.inputShell, focused && styles.inputFocused, Boolean(error) && styles.inputInvalid]}>
+        <TextInput
+          {...props}
+          accessibilityLabel={label}
+          accessibilityState={{ disabled: props.editable === false }}
+          onBlur={(event) => {
+            setFocused(false);
+            props.onBlur?.(event);
+          }}
+          onFocus={(event) => {
+            setFocused(true);
+            props.onFocus?.(event);
+          }}
+          style={[styles.input, props.style]}
+        />
+        {trailingAction ? (
+          <Pressable
+            accessibilityLabel={trailingAction.label}
+            accessibilityRole="button"
+            onPress={trailingAction.onPress}
+            style={styles.fieldAction}
+          >
+            <Text style={styles.fieldActionLabel}>{trailingAction.label}</Text>
+          </Pressable>
+        ) : null}
+      </View>
       <Text accessibilityLiveRegion="polite" style={[typography.small, error ? styles.error : styles.help]}>
         {error || ' '}
       </Text>
@@ -90,9 +108,12 @@ const styles = StyleSheet.create({
   screen: { flexGrow: 1, padding: theme.spacing.lg, gap: theme.spacing.lg, justifyContent: 'center' },
   fieldGroup: { gap: theme.spacing.xs },
   label: { color: theme.colors.textPrimary },
-  input: { minHeight: 48, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radius.control, backgroundColor: theme.colors.surface, paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.md, color: theme.colors.textPrimary, ...typography.body },
+  inputShell: { minHeight: 48, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radius.control, backgroundColor: theme.colors.surface },
+  input: { minHeight: 46, flex: 1, paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.md, color: theme.colors.textPrimary, ...typography.body },
   inputFocused: { borderColor: theme.colors.action, borderWidth: 2 },
   inputInvalid: { borderColor: theme.colors.critical },
+  fieldAction: { minWidth: 48, minHeight: 44, alignItems: 'center', justifyContent: 'center', paddingHorizontal: theme.spacing.sm },
+  fieldActionLabel: { ...typography.small, color: theme.colors.action, fontWeight: '600' },
   help: { color: theme.colors.textSecondary },
   error: { color: theme.colors.critical },
   primaryButton: { minHeight: 48, borderRadius: theme.radius.control, backgroundColor: theme.colors.action, alignItems: 'center', justifyContent: 'center', paddingHorizontal: theme.spacing.lg },

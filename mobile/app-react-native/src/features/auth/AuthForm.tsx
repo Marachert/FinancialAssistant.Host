@@ -19,6 +19,7 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export function AuthForm({ mode, onSubmit, onAlternate }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>();
   const registrationKey = useRef(mode === 'register' ? Crypto.randomUUID() : undefined);
@@ -52,7 +53,19 @@ export function AuthForm({ mode, onSubmit, onAlternate }: Props) {
       {error ? <StatusBanner>{error}</StatusBanner> : null}
       <View>
         <TextField autoCapitalize="none" autoComplete="email" keyboardType="email-address" label="Email" onChangeText={setEmail} value={email} error={emailError} />
-        <TextField autoCapitalize="none" autoComplete={mode === 'register' ? 'new-password' : 'current-password'} label="Password" onChangeText={setPassword} secureTextEntry value={password} error={passwordError} />
+        <TextField
+          autoCapitalize="none"
+          autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+          error={passwordError}
+          label="Password"
+          onChangeText={setPassword}
+          secureTextEntry={!passwordVisible}
+          trailingAction={{
+            label: passwordVisible ? 'Hide' : 'Show',
+            onPress: () => setPasswordVisible((visible) => !visible),
+          }}
+          value={password}
+        />
       </View>
       <PrimaryButton disabled={disabled} label={title} loading={submitting} onPress={() => void submit()} />
       <LinkButton label={mode === 'register' ? 'Already have an account? Sign in' : 'New here? Create account'} onPress={onAlternate} />
