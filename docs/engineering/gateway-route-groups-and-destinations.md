@@ -40,6 +40,8 @@ The term **public route group** means a route exposed through the public gateway
 | `profile-me` | `/users/me` and `/users/me/{**gatewayPath}` | GET, PUT, PATCH | authenticated | Profile Service | `profile-service` |
 | `categories` | `/categories` and `/categories/{**gatewayPath}` | GET, POST, PUT, PATCH | authenticated | Category Service | `category-service` |
 | `transaction-intake` | `/transactions/intake` and child paths | POST | authenticated | Transaction Intake Service | `transaction-intake-service` |
+| `transaction-draft-review` | `/transactions/drafts/{id}` | GET, PUT | authenticated | Transaction Intake Service | `transaction-intake-service` |
+| `transaction-receipt-draft` | `/transactions/drafts/receipts/{receiptId}` | GET | authenticated | Transaction Intake Service | `transaction-intake-service` |
 | `transaction-draft-confirm` | `/transactions/drafts/{id}/confirm` | POST | authenticated | Transaction Intake Service | `transaction-intake-service` |
 | `receipts` | `/receipts` and `/receipts/{**gatewayPath}` | GET, POST | authenticated | Receipt File Intake Service | `receipt-file-intake-service` |
 | `incomes` | `/incomes` and `/incomes/{**gatewayPath}` | GET, POST, PUT | authenticated | Income Service | `income-service` |
