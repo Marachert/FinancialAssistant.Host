@@ -35,7 +35,7 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
         var routes = document.RootElement.GetProperty("routes");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(14, routes.GetArrayLength());
+        Assert.Equal(16, routes.GetArrayLength());
         Assert.Contains(routes.EnumerateArray(), route =>
             route.GetProperty("routeKey").GetString() == "auth"
             && route.GetProperty("serviceOwner").GetString() == "Auth Service"
@@ -75,7 +75,7 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("ready", root.GetProperty("status").GetString());
-        Assert.Equal(14, root.GetProperty("routeCount").GetInt32());
+        Assert.Equal(16, root.GetProperty("routeCount").GetInt32());
         Assert.Equal(12, root.GetProperty("destinationCount").GetInt32());
         Assert.Equal(2, root.GetProperty("enabledDestinationCount").GetInt32());
         Assert.Equal("placeholder", root.GetProperty("securityMode").GetString());

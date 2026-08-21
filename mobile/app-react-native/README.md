@@ -2,7 +2,9 @@
 
 This folder contains the Financial Assistant iOS and Android client. FIN-33
 establishes the Expo Router application, authenticated navigation, typed
-Identity API integration, and secure session handling.
+Identity API integration, and secure session handling. FIN-34 adds the core
+transaction capture, receipt upload, editable draft review, and explicit
+backend confirmation journey.
 
 ## Prerequisites
 
@@ -12,7 +14,8 @@ Identity API integration, and secure session handling.
 - the Public API Gateway running locally or in an approved test environment
 
 No paid provider is required to install, verify, or run these authentication
-screens.
+and capture screens. Receipt OCR remains disabled unless an operator explicitly
+configures an approved provider in the backend environment.
 
 ## Configure
 
@@ -50,6 +53,14 @@ npm run ios
 The app restores tokens only from platform secure storage, validates a restored
 session with `GET /auth/v1/me`, rotates tokens through `POST /auth/v1/refresh`,
 and clears local state after logout even when server revocation fails.
+
+Signed-in users can create a draft through `POST /transactions/intake`, upload
+one JPEG, PNG, or WebP receipt through `POST /receipts`, poll its safe status,
+resolve the owner-scoped OCR draft through
+`GET /transactions/drafts/receipts/{receiptId}`, edit all financial fields,
+and confirm through `POST /transactions/drafts/{draftId}/confirm`. Retry keys
+are retained for the current phrase or receipt, receipt polling is bounded and
+cancellable, and no receipt bytes or free-form financial text are logged.
 
 ## Boundaries
 

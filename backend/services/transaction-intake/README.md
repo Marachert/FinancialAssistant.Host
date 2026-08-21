@@ -18,6 +18,8 @@ POST /api/v1/transactions/intake
 POST /transactions/intake
 GET|PUT /api/v1/transactions/drafts/{draftId}
 GET|PUT /transactions/drafts/{draftId}
+GET /api/v1/transactions/drafts/receipts/{receiptId}
+GET /transactions/drafts/receipts/{receiptId}
 POST /api/v1/transactions/drafts/{draftId}/reject
 POST /transactions/drafts/{draftId}/reject
 POST /api/v1/transactions/drafts/{draftId}/confirm
@@ -35,6 +37,12 @@ value in `Gateway__DownstreamAuthentication__SharedSecret`; it strips client
 attempts to supply this header and injects its own value only for protected
 destinations. Never place the shared secret, user input, or idempotency values in
 source control or logs.
+
+The authenticated receipt-draft lookup returns only the owning user's
+`receipt_ocr` draft after OCR completion. A temporary `404` means that no
+reviewable draft is available yet; clients may poll with a bounded interval.
+The route returns normalized suggestion fields and never returns receipt bytes
+or raw OCR text.
 
 Receipt Processing delivers `ocr.completed.v1` to the internal `/internal/events/ocr-completed` endpoint. Configure both services with the same environment-provided `ReceiptProcessing__Events__SharedSecret` of 32 to 256 characters. The endpoint is not routed through the public gateway and rejects requests without the dedicated service credential.
 

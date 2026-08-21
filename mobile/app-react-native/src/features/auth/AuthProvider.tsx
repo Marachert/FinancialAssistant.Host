@@ -13,6 +13,7 @@ type AuthContextValue = {
   session: AuthSession | null;
   signIn: (credentials: AuthCredentials) => Promise<void>;
   register: (credentials: AuthCredentials) => Promise<void>;
+  request: ReturnType<typeof createApiClient>['request'];
   signOut: () => Promise<void>;
 };
 
@@ -109,9 +110,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
       session,
       signIn: (credentials) => authenticate('/auth/v1/sign-in', credentials),
       register: (credentials) => authenticate('/auth/v1/register', credentials),
+      request: api.request,
       signOut,
     }),
-    [authenticate, session, signOut, state],
+    [api.request, authenticate, session, signOut, state],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

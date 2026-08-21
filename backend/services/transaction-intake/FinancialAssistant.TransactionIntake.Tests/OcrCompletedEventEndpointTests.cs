@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FinancialAssistant.ReceiptProcessing.Contracts;
 using FinancialAssistant.TransactionIntake.Application.Abstractions;
+using FinancialAssistant.TransactionIntake.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FinancialAssistant.TransactionIntake.Tests;
@@ -58,6 +59,33 @@ public sealed class OcrCompletedEventEndpointTests :
     }
 
     [Fact]
+    public async Task ReceiptDraftReview_ReturnsTheCompletedDraftOnlyToItsOwner()
+    {
+        var integrationEvent = CreateEvent("receipt_mobile_review");
+        using var eventRequest = CreateRequest(integrationEvent);
+        using var eventResponse = await client.SendAsync(eventRequest);
+        Assert.Equal(HttpStatusCode.NoContent, eventResponse.StatusCode);
+
+        using var ownerRequest = CreateReceiptDraftRequest(
+            integrationEvent.ReceiptId,
+            integrationEvent.UserId);
+        using var ownerResponse = await client.SendAsync(ownerRequest);
+        var draft = await ownerResponse.Content.ReadFromJsonAsync<TransactionDraftResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, ownerResponse.StatusCode);
+        Assert.NotNull(draft);
+        Assert.Equal("receipt_ocr", draft.InputSource);
+        Assert.Equal(integrationEvent.ReceiptId, draft.Suggestion.SourceReferenceId);
+        Assert.True(draft.RequiresReview);
+
+        using var otherRequest = CreateReceiptDraftRequest(
+            integrationEvent.ReceiptId,
+            "synthetic-other-user");
+        using var otherResponse = await client.SendAsync(otherRequest);
+        Assert.Equal(HttpStatusCode.NotFound, otherResponse.StatusCode);
+    }
+
+    [Fact]
     public async Task EventEndpoint_RejectsConflictingRedelivery()
     {
         var integrationEvent = CreateEvent("receipt_http_conflict");
@@ -88,6 +116,25 @@ public sealed class OcrCompletedEventEndpointTests :
         request.Headers.Add(
             ReceiptProcessingHeaders.EventAuthentication,
             TransactionIntakeWebApplicationFactory.ReceiptEventSecret);
+        return request;
+    }
+
+    private static HttpRequestMessage CreateReceiptDraftRequest(
+        string receiptId,
+        string userId)
+    {
+        var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            TransactionIntakeApiRoutes.GatewayReviewReceiptDraft.Replace(
+                "{receiptId}",
+                receiptId,
+                StringComparison.Ordinal));
+        request.Headers.TryAddWithoutValidation(
+            TransactionIntakeHeaders.GatewayAuthentication,
+            TransactionIntakeWebApplicationFactory.GatewaySecret);
+        request.Headers.TryAddWithoutValidation(
+            TransactionIntakeHeaders.GatewayUserId,
+            userId);
         return request;
     }
 

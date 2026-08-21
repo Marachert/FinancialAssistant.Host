@@ -10,6 +10,10 @@ public static class TransactionIntakeApiRoutes
 
     public const string GatewayReviewDraft = "/transactions/drafts/{draftId}";
 
+    public const string ReviewReceiptDraft = "/api/v1/transactions/drafts/receipts/{receiptId}";
+
+    public const string GatewayReviewReceiptDraft = "/transactions/drafts/receipts/{receiptId}";
+
     public const string ConfirmDraft = "/api/v1/transactions/drafts/{draftId}/confirm";
 
     public const string GatewayConfirmDraft = "/transactions/drafts/{draftId}/confirm";

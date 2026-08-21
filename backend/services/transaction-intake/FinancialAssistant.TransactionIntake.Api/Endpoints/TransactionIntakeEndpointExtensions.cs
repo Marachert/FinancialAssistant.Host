@@ -13,11 +13,23 @@ public static class TransactionIntakeEndpointExtensions
         MapIntakeRoute(app, TransactionIntakeApiRoutes.GatewayIntake, "CreateTransactionDraftFromGateway");
         MapReviewRoutes(app, TransactionIntakeApiRoutes.ReviewDraft, "TransactionDraft");
         MapReviewRoutes(app, TransactionIntakeApiRoutes.GatewayReviewDraft, "TransactionDraftFromGateway");
+        MapReceiptReviewRoute(app, TransactionIntakeApiRoutes.ReviewReceiptDraft, "ReceiptTransactionDraft");
+        MapReceiptReviewRoute(app, TransactionIntakeApiRoutes.GatewayReviewReceiptDraft, "ReceiptTransactionDraftFromGateway");
         MapConfirmRoute(app, TransactionIntakeApiRoutes.ConfirmDraft, "ConfirmTransactionDraft");
         MapConfirmRoute(app, TransactionIntakeApiRoutes.GatewayConfirmDraft, "ConfirmTransactionDraftFromGateway");
         MapRejectRoute(app, TransactionIntakeApiRoutes.RejectDraft, "RejectTransactionDraft");
         MapRejectRoute(app, TransactionIntakeApiRoutes.GatewayRejectDraft, "RejectTransactionDraftFromGateway");
         return app;
+    }
+
+    private static void MapReceiptReviewRoute(IEndpointRouteBuilder app, string pattern, string name)
+    {
+        app.MapGet(pattern, HandleReceiptReviewAsync)
+            .WithName(name)
+            .Produces<TransactionDraftResponse>(StatusCodes.Status200OK)
+            .Produces<TransactionIntakeErrorResponse>(StatusCodes.Status400BadRequest)
+            .Produces<TransactionIntakeErrorResponse>(StatusCodes.Status401Unauthorized)
+            .Produces<TransactionIntakeErrorResponse>(StatusCodes.Status404NotFound);
     }
 
     private static void MapReviewRoutes(IEndpointRouteBuilder app, string pattern, string name)
@@ -172,6 +184,43 @@ public static class TransactionIntakeEndpointExtensions
                 "Transaction draft review is invalid.",
                 exception.Message,
                 "invalid_transaction_draft_review",
+                StatusCodes.Status400BadRequest);
+        }
+    }
+
+    private static async Task<IResult> HandleReceiptReviewAsync(
+        HttpContext httpContext,
+        string receiptId,
+        ITransactionDraftReviewService reviewService,
+        TransactionIntakeGatewayAuthenticator gatewayAuthenticator,
+        CancellationToken cancellationToken)
+    {
+        var authenticationError = AuthenticateDraftRequest(
+            httpContext,
+            gatewayAuthenticator,
+            out var userId);
+        if (authenticationError is not null)
+        {
+            return authenticationError;
+        }
+
+        try
+        {
+            var draft = await reviewService.ReviewReceiptAsync(
+                userId!,
+                receiptId,
+                cancellationToken);
+            return draft is null
+                ? DraftNotFound(httpContext)
+                : Results.Ok(draft);
+        }
+        catch (ArgumentException exception)
+        {
+            return Problem(
+                httpContext,
+                "Receipt draft review is invalid.",
+                exception.Message,
+                "invalid_receipt_draft_review",
                 StatusCodes.Status400BadRequest);
         }
     }
