@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FinancialAssistant.ReceiptProcessing.Contracts;
 using FinancialAssistant.TransactionIntake.Application.Abstractions;
+using FinancialAssistant.TransactionIntake.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FinancialAssistant.TransactionIntake.Tests;
