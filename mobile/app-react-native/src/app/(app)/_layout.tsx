@@ -1,5 +1,11 @@
 import { Stack } from 'expo-router';
 
+import { CaptureProvider } from '@/features/capture/CaptureProvider';
+
 export default function SignedInLayout() {
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <CaptureProvider>
+      <Stack screenOptions={{ headerShown: false }} />
+    </CaptureProvider>
+  );
 }

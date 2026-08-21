@@ -9,6 +9,11 @@ public interface ITransactionDraftReviewService
         string draftId,
         CancellationToken cancellationToken);
 
+    Task<TransactionDraftResponse?> ReviewReceiptAsync(
+        string userId,
+        string receiptId,
+        CancellationToken cancellationToken);
+
     Task<TransactionDraftResponse?> UpdateAsync(
         string userId,
         string draftId,

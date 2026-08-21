@@ -10,7 +10,7 @@ type SessionAccess = {
   setSession: (session: AuthSession | null) => Promise<void>;
 };
 
-type RequestOptions = RequestInit & {
+export type RequestOptions = RequestInit & {
   authenticated?: boolean;
   refreshOnUnauthorized?: boolean;
 };
@@ -57,7 +57,9 @@ export function createApiClient(sessionAccess: SessionAccess) {
     const session = sessionOverride || sessionAccess.getSession();
     const headers = new Headers(requestInit.headers);
     headers.set('Accept', 'application/json');
-    if (requestInit.body) headers.set('Content-Type', 'application/json');
+    if (requestInit.body && !headers.has('Content-Type') && !(requestInit.body instanceof FormData)) {
+      headers.set('Content-Type', 'application/json');
+    }
     if (authenticated && session) {
       headers.set('Authorization', `${session.tokenType || 'Bearer'} ${session.accessToken}`);
     }

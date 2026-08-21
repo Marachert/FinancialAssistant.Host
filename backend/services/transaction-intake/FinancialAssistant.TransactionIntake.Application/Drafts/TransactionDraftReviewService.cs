@@ -32,6 +32,18 @@ public sealed class TransactionDraftReviewService : ITransactionDraftReviewServi
         return draft is null ? null : ToResponse(draft);
     }
 
+    public async Task<TransactionDraftResponse?> ReviewReceiptAsync(
+        string userId,
+        string receiptId,
+        CancellationToken cancellationToken)
+    {
+        var stored = await draftStore.GetAsync(
+            NormalizeRequired(userId, nameof(userId)),
+            $"ocr-{NormalizeRequired(receiptId, nameof(receiptId))}",
+            cancellationToken);
+        return stored is null ? null : ToResponse(stored.Draft);
+    }
+
     public async Task<TransactionDraftResponse?> UpdateAsync(
         string userId,
         string draftId,
