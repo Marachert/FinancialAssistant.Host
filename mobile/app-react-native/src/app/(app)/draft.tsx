@@ -37,6 +37,10 @@ function formFromDraft(draft: TransactionDraft): FormState {
   };
 }
 
+function isConfirmationReplayState(status: string) {
+  return status === 'confirming' || status === 'confirmed';
+}
+
 export default function DraftReviewScreen() {
   const { api, draft, setDraft, confirmed, setConfirmed, reset } = useCapture();
   const [form, setForm] = useState<FormState | null>(draft ? formFromDraft(draft) : null);
@@ -59,6 +63,12 @@ export default function DraftReviewScreen() {
     setBusy(true);
     setError(null);
     try {
+      if (isConfirmationReplayState(draft.status)) {
+        const result = await api.confirmDraft(draft.id);
+        setConfirmed(result);
+        return;
+      }
+
       const reviewed = await api.updateDraft(draft.id, {
         expectedRevision: draft.revision,
         type: form.type,
@@ -82,6 +92,11 @@ export default function DraftReviewScreen() {
           const latest = await api.getDraft(draft.id);
           setDraft(latest);
           setForm(formFromDraft(latest));
+          if (isConfirmationReplayState(latest.status)) {
+            const result = await api.confirmDraft(latest.id);
+            setConfirmed(result);
+            return;
+          }
           setError('The draft changed on the server. Latest values are shown; review them again.');
         } catch {
           setError('The draft changed on the server and could not be refreshed. Try again.');
