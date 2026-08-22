@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-21T19:58:00+03:00
+Last updated: 2026-08-22T19:10:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-34 closure is **75.6%**:
-**149 of 197 canonical POC leaf tickets are Done**.
+POC readiness after FIN-35 closure is **76.1%**:
+**150 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,27 +13,27 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-34 - Implement mobile single input, draft confirmation, and receipt upload flows
+- FIN-35 - Implement mobile dashboard, score, recommendations, and settings screens
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/180
+  https://github.com/Marachert/FinancialAssistant.Host/pull/182
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/035bbfb56acaa46625cc15fd49b3b10995a64530
-- previous readiness: 148 / 197, or 75.1%
-- current readiness: 149 / 197, or 75.6%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/924e5038095d745fe1e85a8db4577412a63b9ae2
+- previous readiness: 149 / 197, or 75.6%
+- current readiness: 150 / 197, or 76.1%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-34 - Mobile transaction capture and confirmation, closed after verified merge
+- FIN-35 - Mobile dashboard, score, recommendations, and settings, closed after verified merge
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/180
+  https://github.com/Marachert/FinancialAssistant.Host/pull/182
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/035bbfb56acaa46625cc15fd49b3b10995a64530
-- final implementation head: `add1ad9ae15418f5122acb71ab84242d121fa8a5`
-- exact-head Mobile CI: #12
-- exact-head Backend CI: #524
-- previous readiness: 148 / 197, or 75.1%
-- current readiness: 149 / 197, or 75.6%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/924e5038095d745fe1e85a8db4577412a63b9ae2
+- final implementation head: `1a5721003aceb53df4f1d86b8c1f48da0d9a088f`
+- exact-head Mobile CI: #18
+- exact-head Backend CI: #530
+- previous readiness: 149 / 197, or 75.6%
+- current readiness: 150 / 197, or 76.1%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -48,22 +48,22 @@ change the numerator or denominator.
 
 Current delivery:
 
-- FIN-34 is Done after verified merge of implementation PR #180 at
-  `035bbfb56acaa46625cc15fd49b3b10995a64530`
-- exact-head Mobile CI #12 and Backend CI #524 passed; privacy, format, Release
+- FIN-35 is Done after verified merge of implementation PR #182 at
+  `924e5038095d745fe1e85a8db4577412a63b9ae2`
+- exact-head Mobile CI #18 and Backend CI #530 passed; privacy, format, Release
   build, repository contract tests, solution tests, and final review channels
   were clear
-- both valid P1 review findings were fixed, answered with evidence, and resolved
+- all four valid review findings were fixed, answered with evidence, and resolved
   before merge
-- canonical POC readiness is 149/197 (75.6%), a +0.5 percentage-point change
-- FIN-31 P7 progress is 3/18 (16.7%) and the epic remains In Progress because
+- canonical POC readiness is 150/197 (76.1%), a +0.5 percentage-point change
+- FIN-31 P7 progress is 4/18 (22.2%) and the epic remains In Progress because
   ranked implementation leaves remain unfinished
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
-- first-user testing remains Not Ready because mobile dashboard/settings and
+- first-user testing remains Not Ready because additional mobile work and
   runtime P6, P8, and P9 gates remain open
 - no paid provider or review credits were used
-- the next ranked unfinished leaf is expected to be FIN-35, subject to a fresh
+- the next ranked unfinished leaf is expected to be FIN-158, subject to a fresh
   hierarchy and duplicate audit after this progress record merges
 
 ## Epic Progress
@@ -77,10 +77,10 @@ Current delivery:
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
-| FIN-31 | P7 Mobile app UX and React Native implementation | 3 | 18 | 16.7% |
+| FIN-31 | P7 Mobile app UX and React Native implementation | 4 | 18 | 22.2% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **149** | **197** | **75.6%** |
+| **Total** | **Canonical POC leaf scope** | **150** | **197** | **76.1%** |
 
 ## First-User-Test Gates
 
@@ -99,10 +99,11 @@ satisfied:
 - the Windows PoC deployment stack is repeatable and the first-user environment
   is verified.
 
-Current blocking areas are P6, P7, P8, and P9. P7 now has authentication plus
-free-form transaction capture, receipt upload, editable draft review, and backend
-confirmation. Dashboard, score/recommendation, settings, offline, and release-ready
-end-to-end client flows remain unfinished.
+Current blocking areas are runtime P6, P7, P8, and P9. P7 now has authentication,
+free-form transaction capture, receipt upload, editable draft review, backend
+confirmation, dashboard, score/recommendation, and settings screens. Remaining
+ranked mobile work includes onboarding, charts, inbox, resilient offline states,
+and release-ready end-to-end validation.
 
 ## Calculation Contract
 
@@ -202,3 +203,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-17T19:58:15+03:00 | FIN-32 | Closure delivered by PR 176 | 74.6% | +0.5 pp |
 | 2026-08-20T19:03:00+03:00 | FIN-33 | Closure delivered by PR 178 | 75.1% | +0.5 pp |
 | 2026-08-21T19:58:00+03:00 | FIN-34 | Closure delivered by PR 180 | 75.6% | +0.5 pp |
+| 2026-08-22T19:10:00+03:00 | FIN-35 | Closure delivered by PR 182 | 76.1% | +0.5 pp |
