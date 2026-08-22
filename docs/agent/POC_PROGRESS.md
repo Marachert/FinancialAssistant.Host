@@ -1,10 +1,10 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-22T19:27:00+03:00
+Last updated: 2026-08-22T19:35:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-158 closure is **76.6%**:
+POC readiness after FIN-159 duplicate closure is **76.6%**:
 **151 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
@@ -24,16 +24,16 @@ Latest canonical closure:
 
 Latest Jira closure:
 
-- FIN-158 - Mobile UX flow scope, recovered from the verified FIN-32 delivery
+- FIN-159 - Exact later duplicate of canonical FIN-158, Jira-linked and Done
 - implementation PR:
   https://github.com/Marachert/FinancialAssistant.Host/pull/176
 - implementation merge commit:
   https://github.com/Marachert/FinancialAssistant.Host/commit/5ef63418716652a37c0a1202fb6e635a2b66a280
 - final implementation head: `ddd738c7ae2b05e9f4642bb2173789dd37e5f4fd`
 - exact-head Backend CI: #509
-- previous readiness: 150 / 197, or 76.1%
+- previous readiness: 151 / 197, or 76.6%
 - current readiness: 151 / 197, or 76.6%
-- change: +0.5 percentage points
+- change: +0.0 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
 duplicate of FIN-124, FIN-127 is an exact later duplicate of FIN-126, and
@@ -42,18 +42,18 @@ duplicate of FIN-138, and FIN-141, FIN-142, and FIN-143 are exact later
 duplicates of FIN-140, FIN-146 is an exact later duplicate of FIN-145, and
 FIN-148, FIN-149, FIN-150, and FIN-151 are exact later duplicates of FIN-147,
 FIN-153 and FIN-154 are exact later duplicates of FIN-152, and FIN-156 and
-FIN-157 are exact later duplicates of FIN-155. Closing these duplicates does not
-change the numerator or denominator.
+FIN-157 are exact later duplicates of FIN-155. FIN-159 is an exact later
+duplicate of FIN-158. Closing these duplicates does not change the numerator or
+denominator.
 
 Current delivery:
 
-- FIN-158 is Done after recovery from merged implementation PR #176 at
-  `5ef63418716652a37c0a1202fb6e635a2b66a280`
-- Backend CI #509 passed; the merged flow map and UI kit cover all FIN-158
-  Definition of Done items
-- FIN-159, FIN-160, and FIN-161 are exact later duplicate candidates with the
-  same parent, summary, description, scope, and Definition of Done
-- canonical POC readiness is 151/197 (76.6%), a +0.5 percentage-point change
+- FIN-159 is Done and Jira-linked as an exact duplicate of canonical FIN-158
+- canonical implementation remains merged PR #176 at
+  `5ef63418716652a37c0a1202fb6e635a2b66a280`, Backend CI #509 green
+- FIN-160 and FIN-161 remain exact later duplicate candidates with the same
+  parent, summary, description, scope, and Definition of Done
+- canonical POC readiness remains 151/197 (76.6%), a +0.0 percentage-point change
 - FIN-31 P7 progress is 5/18 (27.8%) and the epic remains In Progress because
   ranked implementation leaves remain unfinished
 - FIN-27 remains In Progress because its event-driven notification delivery
@@ -61,7 +61,7 @@ Current delivery:
 - first-user testing remains Not Ready because additional mobile work and
   runtime P6, P8, and P9 gates remain open
 - no paid provider or review credits were used
-- the next ranked unfinished leaf is expected to be FIN-159 for duplicate
+- the next ranked unfinished leaf is expected to be FIN-160 for duplicate
   resolution, subject to a fresh audit after this progress record merges
 
 ## Epic Progress
@@ -203,3 +203,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-21T19:58:00+03:00 | FIN-34 | Closure delivered by PR 180 | 75.6% | +0.5 pp |
 | 2026-08-22T19:10:00+03:00 | FIN-35 | Closure delivered by PR 182 | 76.1% | +0.5 pp |
 | 2026-08-22T19:27:00+03:00 | FIN-158 | Recovered mobile UX flow baseline from merged PR 176 | 76.6% | +0.5 pp |
+| 2026-08-22T19:35:00+03:00 | FIN-159 | Exact duplicate of FIN-158; Jira-linked and Done | 76.6% | +0.0 pp |
