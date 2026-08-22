@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { router } from 'expo-router';
 import { ActivityIndicator, StyleSheet, Switch, Text, View } from 'react-native';
 
@@ -79,29 +79,31 @@ export default function SettingsScreen() {
   const form = formOverride ?? (profile ? formFromProfile(profile) : null);
   const [notifications, setNotifications] = useState<NotificationPreferences | null>(null);
   const [notificationError, setNotificationError] = useState<string | null>(null);
+  const [notificationLoading, setNotificationLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-    void api.getNotificationPreferences()
-      .then((value) => {
-        if (active) setNotifications(value);
-      })
-      .catch((reason) => {
-        if (active) {
-          setNotificationError(
-            reason instanceof ApiProblem
-              ? reason.message
-              : 'Notification preferences could not be loaded.',
-          );
-        }
-      });
-    return () => {
-      active = false;
-    };
+  const loadNotifications = useCallback(async () => {
+    setNotificationLoading(true);
+    setNotificationError(null);
+    try {
+      setNotifications(await api.getNotificationPreferences());
+    } catch (reason) {
+      setNotificationError(
+        reason instanceof ApiProblem
+          ? reason.message
+          : 'Notification preferences could not be loaded.',
+      );
+    } finally {
+      setNotificationLoading(false);
+    }
   }, [api]);
+
+  useEffect(() => {
+    const initialLoad = setTimeout(() => void loadNotifications(), 0);
+    return () => clearTimeout(initialLoad);
+  }, [loadNotifications]);
 
   const setField = <Field extends keyof SettingsForm>(field: Field, value: SettingsForm[Field]) => {
     setFormOverride((current) => ({ ...current ?? form!, [field]: value }));
@@ -156,6 +158,13 @@ export default function SettingsScreen() {
       </View>
       {error ? <StatusBanner>{error}</StatusBanner> : null}
       {notificationError ? <StatusBanner tone="warning">{notificationError}</StatusBanner> : null}
+      {notificationError ? (
+        <SecondaryButton
+          label="Retry notifications"
+          disabled={notificationLoading}
+          onPress={() => void loadNotifications()}
+        />
+      ) : null}
       {saved ? <StatusBanner tone="success">Settings saved.</StatusBanner> : null}
 
       {!form && state === 'loading' ? (

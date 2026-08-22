@@ -62,6 +62,8 @@ if (!combined.includes('RefreshControl')) failures.push('Insight screens require
 if (!combined.includes('<Switch')) failures.push('Settings require accessible binary controls.');
 if (!combined.includes('Promise.allSettled')) failures.push('Independent insight failures must preserve available data.');
 if (!combined.includes('if (notifications) saves.push')) failures.push('Unavailable notification settings must not block profile saves.');
+if (!combined.includes('Retry notifications')) failures.push('Notification preferences require an explicit retry path.');
+if (combined.includes('maximumFractionDigits: 0')) failures.push('Currency formatting must preserve standard fractional precision.');
 if (/['"`]\/api\/v1\//.test(combined)) failures.push('Mobile source must call only public gateway aliases.');
 if (/EXPO_PUBLIC_(?!API_URL)/.test(envExample)) failures.push('Only the public gateway URL may be exposed in the example environment.');
 if (/(TOKEN|SECRET|PASSWORD|KEY)=\S+/i.test(envExample)) failures.push('The example environment contains a credential-like value.');
