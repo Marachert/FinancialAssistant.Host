@@ -101,7 +101,7 @@ The admin monitoring group requires a valid bearer token and the configured admi
 | `incomes` | `/incomes`, `/incomes/{**gatewayPath}` | GET, POST, PUT | `authenticated` | Income Service | `active` |
 | `expenses` | `/expenses`, `/expenses/{**gatewayPath}` | GET, POST, PUT | `authenticated` | Expense Service | `active` |
 | `analytics` | `/analytics`, `/analytics/{**gatewayPath}` | GET | `authenticated` | Analytics Service | `placeholder` |
-| `score` | `/score`, `/score/{**gatewayPath}` | GET | `authenticated` | Financial Score Service | `placeholder` |
+| `score` | `/financial-score`, `/financial-score/{**gatewayPath}` | GET | `authenticated` | Financial Score Service | `placeholder` |
 | `recommendations` | `/recommendations`, `/recommendations/{**gatewayPath}` | GET | `authenticated` | Recommendation Service | `placeholder` |
 | `notifications` | `/notifications`, `/notifications/{**gatewayPath}` | GET, POST, PATCH | `authenticated` | Notification Service | `placeholder` |
 | `notification-preferences` | `/notification-preferences` | GET, PUT | `authenticated` | Notification Service | `placeholder` |
@@ -325,7 +325,7 @@ The gateway authenticates and routes GET requests. It does not aggregate transac
 ### Public prefix
 
 ```text
-/score
+/financial-score
 ```
 
 ### Owner
