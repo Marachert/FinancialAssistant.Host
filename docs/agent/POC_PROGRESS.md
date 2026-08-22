@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-22T20:12:00+03:00
+Last updated: 2026-08-22T20:18:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-165 recovered closure is **77.7%**:
-**153 of 197 canonical POC leaf tickets are Done**.
+POC readiness after FIN-166 recovered closure is **78.2%**:
+**154 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,26 +13,26 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-165 - P7.T3 Create React Native app foundation
+- FIN-166 - P7.T4 Implement mobile authentication screens
 - delivery PR:
   https://github.com/Marachert/FinancialAssistant.Host/pull/178
 - delivery merge commit:
   https://github.com/Marachert/FinancialAssistant.Host/commit/936fcb1498b0b53fb4207355a28f7a7bf2089a07
-- previous readiness: 152 / 197, or 77.2%
-- current readiness: 153 / 197, or 77.7%
+- previous readiness: 153 / 197, or 77.7%
+- current readiness: 154 / 197, or 78.2%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-165 - Recovered canonical delivery from merged PR #178 and Done
+- FIN-166 - Recovered canonical delivery from merged PR #178 and Done
 - implementation PR:
   https://github.com/Marachert/FinancialAssistant.Host/pull/178
 - implementation merge commit:
   https://github.com/Marachert/FinancialAssistant.Host/commit/936fcb1498b0b53fb4207355a28f7a7bf2089a07
 - final implementation head: `bccf5acb5e3f80eaa5cab4559f8fdce5d1d9b8cb`
 - exact-head CI: Backend #517 and Mobile #5
-- previous readiness: 152 / 197, or 77.2%
-- current readiness: 153 / 197, or 77.7%
+- previous readiness: 153 / 197, or 77.7%
+- current readiness: 154 / 197, or 78.2%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -49,22 +49,22 @@ or denominator.
 
 Current delivery:
 
-- FIN-165 is Done after a fresh audit recovered its complete React Native app
-  foundation from merged PR #178
+- FIN-166 is Done after a fresh audit recovered its complete mobile
+  authentication implementation from merged PR #178
 - canonical implementation is merged PR #178 at
   `936fcb1498b0b53fb4207355a28f7a7bf2089a07`, Backend CI #517 and Mobile CI #5 green
-- FIN-166 is the next canonical authentication candidate; FIN-167 and FIN-168
-  are exact later duplicate candidates
-- canonical POC readiness is 153/197 (77.7%), a +0.5 percentage-point change
-- FIN-31 P7 progress is 7/18 (38.9%) and the epic remains In Progress because
+- FIN-167 and FIN-168 remain exact later duplicate candidates with the same
+  parent, summary, description, scope, and Definition of Done
+- canonical POC readiness is 154/197 (78.2%), a +0.5 percentage-point change
+- FIN-31 P7 progress is 8/18 (44.4%) and the epic remains In Progress because
   ranked implementation leaves remain unfinished
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because additional mobile work and
   runtime P6, P8, and P9 gates remain open
 - no paid provider or review credits were used
-- the next ranked unfinished leaf is expected to be FIN-166 for a fresh
-  canonical delivery audit after this progress record merges
+- the next ranked unfinished leaf is expected to be FIN-167 for duplicate
+  resolution, subject to a fresh audit after this progress record merges
 
 ## Epic Progress
 
@@ -77,10 +77,10 @@ Current delivery:
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
-| FIN-31 | P7 Mobile app UX and React Native implementation | 7 | 18 | 38.9% |
+| FIN-31 | P7 Mobile app UX and React Native implementation | 8 | 18 | 44.4% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **153** | **197** | **77.7%** |
+| **Total** | **Canonical POC leaf scope** | **154** | **197** | **78.2%** |
 
 ## First-User-Test Gates
 
@@ -212,3 +212,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-22T20:00:00+03:00 | FIN-163 | Exact duplicate of FIN-162; Jira-linked and Done | 77.2% | +0.0 pp |
 | 2026-08-22T20:06:00+03:00 | FIN-164 | Exact duplicate of FIN-162; Jira-linked and Done | 77.2% | +0.0 pp |
 | 2026-08-22T20:12:00+03:00 | FIN-165 | Recovered React Native app foundation from merged PR 178 | 77.7% | +0.5 pp |
+| 2026-08-22T20:18:00+03:00 | FIN-166 | Recovered mobile authentication screens from merged PR 178 | 78.2% | +0.5 pp |
