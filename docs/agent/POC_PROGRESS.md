@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-22T19:10:00+03:00
+Last updated: 2026-08-22T19:27:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-35 closure is **76.1%**:
-**150 of 197 canonical POC leaf tickets are Done**.
+POC readiness after FIN-158 closure is **76.6%**:
+**151 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,27 +13,26 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-35 - Implement mobile dashboard, score, recommendations, and settings screens
+- FIN-158 - P7.T1 Define mobile UX scope and primary user flows
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/182
+  https://github.com/Marachert/FinancialAssistant.Host/pull/176
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/924e5038095d745fe1e85a8db4577412a63b9ae2
-- previous readiness: 149 / 197, or 75.6%
-- current readiness: 150 / 197, or 76.1%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/5ef63418716652a37c0a1202fb6e635a2b66a280
+- previous readiness: 150 / 197, or 76.1%
+- current readiness: 151 / 197, or 76.6%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-35 - Mobile dashboard, score, recommendations, and settings, closed after verified merge
+- FIN-158 - Mobile UX flow scope, recovered from the verified FIN-32 delivery
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/182
+  https://github.com/Marachert/FinancialAssistant.Host/pull/176
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/924e5038095d745fe1e85a8db4577412a63b9ae2
-- final implementation head: `1a5721003aceb53df4f1d86b8c1f48da0d9a088f`
-- exact-head Mobile CI: #18
-- exact-head Backend CI: #530
-- previous readiness: 149 / 197, or 75.6%
-- current readiness: 150 / 197, or 76.1%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/5ef63418716652a37c0a1202fb6e635a2b66a280
+- final implementation head: `ddd738c7ae2b05e9f4642bb2173789dd37e5f4fd`
+- exact-head Backend CI: #509
+- previous readiness: 150 / 197, or 76.1%
+- current readiness: 151 / 197, or 76.6%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -48,23 +47,22 @@ change the numerator or denominator.
 
 Current delivery:
 
-- FIN-35 is Done after verified merge of implementation PR #182 at
-  `924e5038095d745fe1e85a8db4577412a63b9ae2`
-- exact-head Mobile CI #18 and Backend CI #530 passed; privacy, format, Release
-  build, repository contract tests, solution tests, and final review channels
-  were clear
-- all four valid review findings were fixed, answered with evidence, and resolved
-  before merge
-- canonical POC readiness is 150/197 (76.1%), a +0.5 percentage-point change
-- FIN-31 P7 progress is 4/18 (22.2%) and the epic remains In Progress because
+- FIN-158 is Done after recovery from merged implementation PR #176 at
+  `5ef63418716652a37c0a1202fb6e635a2b66a280`
+- Backend CI #509 passed; the merged flow map and UI kit cover all FIN-158
+  Definition of Done items
+- FIN-159, FIN-160, and FIN-161 are exact later duplicate candidates with the
+  same parent, summary, description, scope, and Definition of Done
+- canonical POC readiness is 151/197 (76.6%), a +0.5 percentage-point change
+- FIN-31 P7 progress is 5/18 (27.8%) and the epic remains In Progress because
   ranked implementation leaves remain unfinished
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because additional mobile work and
   runtime P6, P8, and P9 gates remain open
 - no paid provider or review credits were used
-- the next ranked unfinished leaf is expected to be FIN-158, subject to a fresh
-  hierarchy and duplicate audit after this progress record merges
+- the next ranked unfinished leaf is expected to be FIN-159 for duplicate
+  resolution, subject to a fresh audit after this progress record merges
 
 ## Epic Progress
 
@@ -77,10 +75,10 @@ Current delivery:
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
-| FIN-31 | P7 Mobile app UX and React Native implementation | 4 | 18 | 22.2% |
+| FIN-31 | P7 Mobile app UX and React Native implementation | 5 | 18 | 27.8% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **150** | **197** | **76.1%** |
+| **Total** | **Canonical POC leaf scope** | **151** | **197** | **76.6%** |
 
 ## First-User-Test Gates
 
@@ -204,3 +202,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-20T19:03:00+03:00 | FIN-33 | Closure delivered by PR 178 | 75.1% | +0.5 pp |
 | 2026-08-21T19:58:00+03:00 | FIN-34 | Closure delivered by PR 180 | 75.6% | +0.5 pp |
 | 2026-08-22T19:10:00+03:00 | FIN-35 | Closure delivered by PR 182 | 76.1% | +0.5 pp |
+| 2026-08-22T19:27:00+03:00 | FIN-158 | Recovered mobile UX flow baseline from merged PR 176 | 76.6% | +0.5 pp |
