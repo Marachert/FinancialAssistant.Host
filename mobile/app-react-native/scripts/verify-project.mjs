@@ -60,6 +60,8 @@ if (!combined.includes('/users/me/preferences')) failures.push('Profile preferen
 if (!combined.includes('/notification-preferences')) failures.push('Notification preferences route is missing.');
 if (!combined.includes('RefreshControl')) failures.push('Insight screens require pull-to-refresh.');
 if (!combined.includes('<Switch')) failures.push('Settings require accessible binary controls.');
+if (!combined.includes('Promise.allSettled')) failures.push('Independent insight failures must preserve available data.');
+if (!combined.includes('if (notifications) saves.push')) failures.push('Unavailable notification settings must not block profile saves.');
 if (/['"`]\/api\/v1\//.test(combined)) failures.push('Mobile source must call only public gateway aliases.');
 if (/EXPO_PUBLIC_(?!API_URL)/.test(envExample)) failures.push('Only the public gateway URL may be exposed in the example environment.');
 if (/(TOKEN|SECRET|PASSWORD|KEY)=\S+/i.test(envExample)) failures.push('The example environment contains a credential-like value.');

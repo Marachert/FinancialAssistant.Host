@@ -110,7 +110,7 @@ export default function SettingsScreen() {
   };
 
   const save = async () => {
-    if (!form || !profile || !notifications) return;
+    if (!form || !profile) return;
     const currency = form.currencyCode.trim().toUpperCase();
     const monthlyBudget = Number(form.monthlyBudgetAmount);
     if (!/^[A-Z]{3}$/.test(currency) || !Number.isFinite(monthlyBudget) || monthlyBudget < 0) {
@@ -121,7 +121,7 @@ export default function SettingsScreen() {
     setError(null);
     setSaved(false);
     try {
-      await Promise.all([
+      const saves: Promise<unknown>[] = [
         api.updateProfile({
           locale: form.locale.trim(),
           timeZone: form.timeZone.trim(),
@@ -135,8 +135,9 @@ export default function SettingsScreen() {
           profileOnboardingCompleted: profile.profileOnboardingCompleted,
           preferencesOnboardingCompleted: true,
         }),
-        api.updateNotificationPreferences(notifications),
-      ]);
+      ];
+      if (notifications) saves.push(api.updateNotificationPreferences(notifications));
+      await Promise.all(saves);
       setSaved(true);
       await refresh();
       setFormOverride(null);
@@ -227,7 +228,7 @@ export default function SettingsScreen() {
             ) : null}
           </View>
 
-          <PrimaryButton label="Save settings" loading={busy} disabled={!notifications} onPress={() => void save()} />
+          <PrimaryButton label="Save settings" loading={busy} onPress={() => void save()} />
         </>
       ) : (
         state === 'error' ? <SecondaryButton label="Retry settings" onPress={() => void refresh()} /> : null

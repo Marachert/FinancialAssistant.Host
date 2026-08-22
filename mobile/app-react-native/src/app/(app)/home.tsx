@@ -66,7 +66,7 @@ export default function HomeScreen() {
         </View>
       ) : null}
 
-      {dashboard && score ? (
+      {dashboard ? (
         <>
           {dashboard.freshness.isStale ? (
             <StatusBanner tone="warning">Some totals are still catching up. Last known values are shown.</StatusBanner>
@@ -119,7 +119,11 @@ export default function HomeScreen() {
             ) : null}
           </View>
 
-          <View style={styles.section}>
+        </>
+      ) : null}
+
+      {score ? (
+        <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={[typography.heading, styles.title]}>Financial score</Text>
               <LinkButton label="View factors" onPress={() => router.push('/score')} />
@@ -130,8 +134,10 @@ export default function HomeScreen() {
             </View>
             <ProgressBar value={score.score} />
           </View>
+      ) : null}
 
-          <View style={styles.section}>
+      {dashboard || score || recommendations.length ? (
+        <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={[typography.heading, styles.title]}>Latest recommendation</Text>
               <LinkButton label="View all" onPress={() => router.push('/recommendations')} />
@@ -145,7 +151,6 @@ export default function HomeScreen() {
               <Text style={[typography.body, styles.supporting]}>No recommendations right now.</Text>
             )}
           </View>
-        </>
       ) : null}
 
       {state === 'error' && !dashboard ? (

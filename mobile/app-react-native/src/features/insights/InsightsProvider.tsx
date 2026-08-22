@@ -61,16 +61,26 @@ export function InsightsProvider({ children }: PropsWithChildren) {
     setState((current) => current === 'ready' ? current : 'loading');
     try {
       const nextProfile = await api.getProfile();
-      const [nextDashboard, nextScore, nextRecommendations] = await Promise.all([
+      setProfile(nextProfile);
+      const [dashboardResult, scoreResult, recommendationsResult] = await Promise.allSettled([
         api.getDashboard(nextProfile.currencyCode, nextProfile.timeZone),
         api.getScore(nextProfile.currencyCode),
         api.getRecommendations(nextProfile.currencyCode),
       ]);
-      setProfile(nextProfile);
-      setDashboard(nextDashboard);
-      setScore(nextScore);
-      setRecommendations(nextRecommendations.items);
-      setState('ready');
+      if (dashboardResult.status === 'fulfilled') setDashboard(dashboardResult.value);
+      if (scoreResult.status === 'fulfilled') setScore(scoreResult.value);
+      if (recommendationsResult.status === 'fulfilled') {
+        setRecommendations(recommendationsResult.value.items);
+      }
+
+      const failure = [dashboardResult, scoreResult, recommendationsResult]
+        .find((result) => result.status === 'rejected');
+      if (failure?.status === 'rejected') {
+        setError(errorMessage(failure.reason));
+        setState('error');
+      } else {
+        setState('ready');
+      }
     } catch (reason) {
       setError(errorMessage(reason));
       setState('error');
