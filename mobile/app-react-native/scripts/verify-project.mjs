@@ -11,6 +11,9 @@ const requiredFiles = [
   'src/app/(app)/home.tsx',
   'src/app/(app)/add.tsx',
   'src/app/(app)/draft.tsx',
+  'src/app/(app)/score.tsx',
+  'src/app/(app)/recommendations.tsx',
+  'src/app/(app)/settings.tsx',
   'src/api/client.ts',
   'src/features/auth/AuthForm.tsx',
   'src/features/auth/AuthProvider.tsx',
@@ -18,6 +21,10 @@ const requiredFiles = [
   'src/features/capture/captureApi.ts',
   'src/features/capture/CaptureProvider.tsx',
   'src/features/capture/captureTypes.ts',
+  'src/features/insights/insightsApi.ts',
+  'src/features/insights/InsightsProvider.tsx',
+  'src/features/insights/insightsTypes.ts',
+  'src/shared/ui.tsx',
 ];
 
 const contents = await Promise.all(requiredFiles.map(async (path) => [path, await readFile(resolve(root, path), 'utf8')]));
@@ -46,6 +53,17 @@ if (!combined.includes('ocr_completed')) failures.push('OCR suggestion polling i
 if (!combined.includes('ocr_failed')) failures.push('OCR failure handling is missing.');
 if (!combined.includes('expo-image-picker')) failures.push('Camera receipt selection is missing.');
 if (!combined.includes('expo-document-picker')) failures.push('File receipt selection is missing.');
+if (!combined.includes('/analytics/dashboard')) failures.push('Dashboard analytics route is missing.');
+if (!combined.includes('/financial-score/current')) failures.push('Financial score route is missing.');
+if (!combined.includes('/recommendations')) failures.push('Recommendation route is missing.');
+if (!combined.includes('/users/me/preferences')) failures.push('Profile preferences route is missing.');
+if (!combined.includes('/notification-preferences')) failures.push('Notification preferences route is missing.');
+if (!combined.includes('RefreshControl')) failures.push('Insight screens require pull-to-refresh.');
+if (!combined.includes('<Switch')) failures.push('Settings require accessible binary controls.');
+if (!combined.includes('Promise.allSettled')) failures.push('Independent insight failures must preserve available data.');
+if (!combined.includes('if (notifications) saves.push')) failures.push('Unavailable notification settings must not block profile saves.');
+if (!combined.includes('Retry notifications')) failures.push('Notification preferences require an explicit retry path.');
+if (combined.includes('maximumFractionDigits: 0')) failures.push('Currency formatting must preserve standard fractional precision.');
 if (/['"`]\/api\/v1\//.test(combined)) failures.push('Mobile source must call only public gateway aliases.');
 if (/EXPO_PUBLIC_(?!API_URL)/.test(envExample)) failures.push('Only the public gateway URL may be exposed in the example environment.');
 if (/(TOKEN|SECRET|PASSWORD|KEY)=\S+/i.test(envExample)) failures.push('The example environment contains a credential-like value.');

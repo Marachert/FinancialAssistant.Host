@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  RefreshControl,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -15,13 +16,29 @@ import {
 
 import { theme, typography } from '@/app/theme';
 
-export function ScreenScaffold({ children, centered = true }: PropsWithChildren<{ centered?: boolean }>) {
+export function ScreenScaffold({
+  children,
+  centered = true,
+  refreshing = false,
+  onRefresh,
+}: PropsWithChildren<{
+  centered?: boolean;
+  refreshing?: boolean;
+  onRefresh?: () => void;
+}>) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView style={styles.fill} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
           contentContainerStyle={[styles.screen, centered && styles.screenCentered]}
           keyboardShouldPersistTaps="handled"
+          refreshControl={onRefresh ? (
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={theme.colors.action}
+            />
+          ) : undefined}
         >
           {children}
         </ScrollView>

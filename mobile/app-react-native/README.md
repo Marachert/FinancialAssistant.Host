@@ -4,7 +4,8 @@ This folder contains the Financial Assistant iOS and Android client. FIN-33
 establishes the Expo Router application, authenticated navigation, typed
 Identity API integration, and secure session handling. FIN-34 adds the core
 transaction capture, receipt upload, editable draft review, and explicit
-backend confirmation journey.
+backend confirmation journey. FIN-35 adds the signed-in dashboard, explainable
+financial score, recommendations, and profile and notification settings.
 
 ## Prerequisites
 
@@ -14,8 +15,9 @@ backend confirmation journey.
 - the Public API Gateway running locally or in an approved test environment
 
 No paid provider is required to install, verify, or run these authentication
-and capture screens. Receipt OCR remains disabled unless an operator explicitly
-configures an approved provider in the backend environment.
+and financial insight screens. Receipt OCR and optional LLM wording remain
+disabled unless an operator explicitly configures an approved provider in the
+backend environment.
 
 ## Configure
 
@@ -61,6 +63,15 @@ resolve the owner-scoped OCR draft through
 and confirm through `POST /transactions/drafts/{draftId}/confirm`. Retry keys
 are retained for the current phrase or receipt, receipt polling is bounded and
 cancellable, and no receipt bytes or free-form financial text are logged.
+
+The dashboard reads authoritative summaries through `GET /analytics/dashboard`,
+the current score through `GET /financial-score/current`, and recommendations
+through `GET /recommendations`. Settings use `GET /users/me`,
+`PUT /users/me/preferences`, and `GET` or `PUT /notification-preferences`.
+Disabled backend capabilities are shown as recoverable unavailable states, and
+users can pull to refresh after an operator enables the corresponding service.
+The client displays score factors and recommendation evidence returned by the
+backend; it does not calculate or replace those deterministic results.
 
 ## Boundaries
 
