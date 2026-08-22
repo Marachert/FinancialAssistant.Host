@@ -1,10 +1,10 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-22T20:30:00+03:00
+Last updated: 2026-08-22T20:36:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-168 duplicate closure is **78.2%**:
+POC readiness after FIN-169 duplicate closure is **78.2%**:
 **154 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
@@ -24,7 +24,7 @@ Latest canonical closure:
 
 Latest Jira closure:
 
-- FIN-168 - Exact later duplicate of canonical FIN-166, Jira-linked and Done
+- FIN-169 - Exact later duplicate of canonical FIN-166, Jira-linked and Done
 - implementation PR:
   https://github.com/Marachert/FinancialAssistant.Host/pull/178
 - implementation merge commit:
@@ -44,16 +44,17 @@ FIN-148, FIN-149, FIN-150, and FIN-151 are exact later duplicates of FIN-147,
 FIN-153 and FIN-154 are exact later duplicates of FIN-152, and FIN-156 and
 FIN-157 are exact later duplicates of FIN-155. FIN-159, FIN-160, and FIN-161 are
 exact later duplicates of FIN-158, and FIN-163 and FIN-164 are exact later
-duplicates of FIN-162, and FIN-167 and FIN-168 are exact later duplicates of
-FIN-166. Closing these duplicates does not change the numerator or denominator.
+duplicates of FIN-162, and FIN-167, FIN-168, and FIN-169 are exact later
+duplicates of FIN-166. Closing these duplicates does not change the numerator
+or denominator.
 
 Current delivery:
 
-- FIN-168 is Done and Jira-linked as an exact duplicate of canonical FIN-166
+- FIN-169 is Done and Jira-linked as an exact duplicate of canonical FIN-166
 - canonical implementation is merged PR #178 at
   `936fcb1498b0b53fb4207355a28f7a7bf2089a07`, Backend CI #517 and Mobile CI #5 green
-- FIN-169 is the next same-title authentication candidate pending a fresh
-  hierarchy and exact-content audit
+- the FIN-166/FIN-167/FIN-168/FIN-169 authentication duplicate group is fully
+  resolved
 - canonical POC readiness remains 154/197 (78.2%), a +0.0 percentage-point change
 - FIN-31 P7 progress is 8/18 (44.4%) and the epic remains In Progress because
   ranked implementation leaves remain unfinished
@@ -62,8 +63,8 @@ Current delivery:
 - first-user testing remains Not Ready because additional mobile work and
   runtime P6, P8, and P9 gates remain open
 - no paid provider or review credits were used
-- the next ranked unfinished leaf is expected to be FIN-169 for duplicate
-  resolution, subject to a fresh audit after this progress record merges
+- the next ranked unfinished leaf is expected to be FIN-170 for a fresh
+  canonical delivery audit after this progress record merges
 
 ## Epic Progress
 
@@ -214,3 +215,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-22T20:18:00+03:00 | FIN-166 | Recovered mobile authentication screens from merged PR 178 | 78.2% | +0.5 pp |
 | 2026-08-22T20:24:00+03:00 | FIN-167 | Exact duplicate of FIN-166; Jira-linked and Done | 78.2% | +0.0 pp |
 | 2026-08-22T20:30:00+03:00 | FIN-168 | Exact duplicate of FIN-166; Jira-linked and Done | 78.2% | +0.0 pp |
+| 2026-08-22T20:36:00+03:00 | FIN-169 | Exact duplicate of FIN-166; Jira-linked and Done | 78.2% | +0.0 pp |
