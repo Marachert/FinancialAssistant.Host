@@ -30,8 +30,8 @@ Latest Jira closure:
 - implementation merge commit:
   https://github.com/Marachert/FinancialAssistant.Host/commit/924e5038095d745fe1e85a8db4577412a63b9ae2
 - final implementation head: `1a5721003aceb53df4f1d86b8c1f48da0d9a088f`
-- exact-head Mobile CI: #17
-- exact-head Backend CI: #529
+- exact-head Mobile CI: #18
+- exact-head Backend CI: #530
 - previous readiness: 149 / 197, or 75.6%
 - current readiness: 150 / 197, or 76.1%
 - change: +0.5 percentage points
@@ -50,7 +50,7 @@ Current delivery:
 
 - FIN-35 is Done after verified merge of implementation PR #182 at
   `924e5038095d745fe1e85a8db4577412a63b9ae2`
-- exact-head Mobile CI #17 and Backend CI #529 passed; privacy, format, Release
+- exact-head Mobile CI #18 and Backend CI #530 passed; privacy, format, Release
   build, repository contract tests, solution tests, and final review channels
   were clear
 - all four valid review findings were fixed, answered with evidence, and resolved
