@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-22T19:49:00+03:00
+Last updated: 2026-08-22T19:55:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-161 duplicate closure is **76.6%**:
-**151 of 197 canonical POC leaf tickets are Done**.
+POC readiness after FIN-162 recovered closure is **77.2%**:
+**152 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,18 +13,18 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-158 - P7.T1 Define mobile UX scope and primary user flows
+- FIN-162 - P7.T2 Create mobile design system baseline
 - delivery PR:
   https://github.com/Marachert/FinancialAssistant.Host/pull/176
 - delivery merge commit:
   https://github.com/Marachert/FinancialAssistant.Host/commit/5ef63418716652a37c0a1202fb6e635a2b66a280
-- previous readiness: 150 / 197, or 76.1%
-- current readiness: 151 / 197, or 76.6%
-- change: +0.5 percentage points
+- previous readiness: 151 / 197, or 76.6%
+- current readiness: 152 / 197, or 77.2%
+- change: +0.6 percentage points
 
 Latest Jira closure:
 
-- FIN-161 - Exact later duplicate of canonical FIN-158, Jira-linked and Done
+- FIN-162 - Recovered canonical delivery from merged PR #176 and Done
 - implementation PR:
   https://github.com/Marachert/FinancialAssistant.Host/pull/176
 - implementation merge commit:
@@ -32,8 +32,8 @@ Latest Jira closure:
 - final implementation head: `ddd738c7ae2b05e9f4642bb2173789dd37e5f4fd`
 - exact-head Backend CI: #509
 - previous readiness: 151 / 197, or 76.6%
-- current readiness: 151 / 197, or 76.6%
-- change: +0.0 percentage points
+- current readiness: 152 / 197, or 77.2%
+- change: +0.6 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
 duplicate of FIN-124, FIN-127 is an exact later duplicate of FIN-126, and
@@ -48,20 +48,22 @@ numerator or denominator.
 
 Current delivery:
 
-- FIN-161 is Done and Jira-linked as an exact duplicate of canonical FIN-158
+- FIN-162 is Done after a fresh audit recovered its complete design-system
+  baseline from merged PR #176
 - canonical implementation remains merged PR #176 at
   `5ef63418716652a37c0a1202fb6e635a2b66a280`, Backend CI #509 green
-- the FIN-158/FIN-159/FIN-160/FIN-161 T1 duplicate group is fully resolved
-- canonical POC readiness remains 151/197 (76.6%), a +0.0 percentage-point change
-- FIN-31 P7 progress is 5/18 (27.8%) and the epic remains In Progress because
+- FIN-163 and FIN-164 remain exact later duplicate candidates with the same
+  parent, summary, description, scope, and Definition of Done
+- canonical POC readiness is 152/197 (77.2%), a +0.6 percentage-point change
+- FIN-31 P7 progress is 6/18 (33.3%) and the epic remains In Progress because
   ranked implementation leaves remain unfinished
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because additional mobile work and
   runtime P6, P8, and P9 gates remain open
 - no paid provider or review credits were used
-- the next ranked unfinished leaf is expected to be FIN-162 for a fresh
-  canonical delivery audit after this progress record merges
+- the next ranked unfinished leaf is expected to be FIN-163 for duplicate
+  resolution, subject to a fresh audit after this progress record merges
 
 ## Epic Progress
 
@@ -74,10 +76,10 @@ Current delivery:
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
-| FIN-31 | P7 Mobile app UX and React Native implementation | 5 | 18 | 27.8% |
+| FIN-31 | P7 Mobile app UX and React Native implementation | 6 | 18 | 33.3% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **151** | **197** | **76.6%** |
+| **Total** | **Canonical POC leaf scope** | **152** | **197** | **77.2%** |
 
 ## First-User-Test Gates
 
@@ -205,3 +207,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-22T19:35:00+03:00 | FIN-159 | Exact duplicate of FIN-158; Jira-linked and Done | 76.6% | +0.0 pp |
 | 2026-08-22T19:42:00+03:00 | FIN-160 | Exact duplicate of FIN-158; Jira-linked and Done | 76.6% | +0.0 pp |
 | 2026-08-22T19:49:00+03:00 | FIN-161 | Exact duplicate of FIN-158; Jira-linked and Done | 76.6% | +0.0 pp |
+| 2026-08-22T19:55:00+03:00 | FIN-162 | Recovered mobile design-system baseline from merged PR 176 | 77.2% | +0.6 pp |
