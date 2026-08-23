@@ -26,6 +26,13 @@ public sealed class TransactionIntakeGatewayConfigurationTests
             receiptDraftRoute,
             "/transactions/drafts/receipts/{receiptId}",
             ["GET"]);
+
+        var rejectDraftRoute = routes.Single(route =>
+            route.GetProperty("RouteKey").GetString() == "transaction-draft-reject");
+        AssertRoute(
+            rejectDraftRoute,
+            "/transactions/drafts/{id}/reject",
+            ["POST"]);
     }
 
     private static void AssertRoute(
