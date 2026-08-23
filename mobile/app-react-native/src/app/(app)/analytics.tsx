@@ -251,4 +251,3 @@ const styles = StyleSheet.create({
   barTrack: { height: 12, overflow: 'hidden', borderRadius: theme.radius.control, backgroundColor: theme.colors.surfaceSubtle },
   barValue: { height: 12, backgroundColor: theme.colors.info },
 });
-
