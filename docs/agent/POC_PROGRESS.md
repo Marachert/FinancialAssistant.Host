@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-23T11:25:00+03:00
+Last updated: 2026-08-23T11:56:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-177 duplicate closure is **79.2%**:
-**156 of 197 canonical POC leaf tickets are Done**.
+POC readiness after FIN-178 recovered closure is **79.7%**:
+**157 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,27 +13,27 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-174 - P7.T6 Implement mobile dashboard screen
+- FIN-178 - P7.T7 Implement free-form financial input screen
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/201
+  https://github.com/Marachert/FinancialAssistant.Host/pull/180
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/0561aa5d2d389096b196b3eee4b2ce88a410594c
-- previous readiness: 155 / 197, or 78.7%
-- current readiness: 156 / 197, or 79.2%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/035bbfb56acaa46625cc15fd49b3b10995a64530
+- previous readiness: 156 / 197, or 79.2%
+- current readiness: 157 / 197, or 79.7%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-177 - Exact later duplicate of canonical FIN-174, Jira-linked and Done
+- FIN-178 - P7.T7 Implement free-form financial input screen, recovered and Done
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/201
+  https://github.com/Marachert/FinancialAssistant.Host/pull/180
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/0561aa5d2d389096b196b3eee4b2ce88a410594c
-- final implementation head: `fe9c86bbdb440994f7aef77c54c174c61964308a`
-- exact-head CI: Backend #569 and Mobile #57
+  https://github.com/Marachert/FinancialAssistant.Host/commit/035bbfb56acaa46625cc15fd49b3b10995a64530
+- final implementation head: `add1ad9ae15418f5122acb71ab84242d121fa8a5`
+- exact-head CI: Backend #525 and Mobile #13
 - previous readiness: 156 / 197, or 79.2%
-- current readiness: 156 / 197, or 79.2%
-- change: +0.0 percentage points
+- current readiness: 157 / 197, or 79.7%
+- change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
 duplicate of FIN-124, FIN-127 is an exact later duplicate of FIN-126, and
@@ -51,20 +51,21 @@ FIN-174. Closing these duplicates does not change the numerator or denominator.
 
 Current delivery:
 
-- FIN-177 is Done and Jira-linked as an exact duplicate of canonical FIN-174
-- canonical implementation remains merged PR #201 at
-  `0561aa5d2d389096b196b3eee4b2ce88a410594c`, Backend CI #569 and Mobile CI #57 green
-- canonical POC readiness remains 156/197 (79.2%), a +0.0 percentage-point change
-- FIN-31 P7 progress is 10/18 (55.6%) and the epic remains In Progress because
+- FIN-178 is Done after a recovered delivery audit of merged PR #180
+- canonical implementation is merged at
+  `035bbfb56acaa46625cc15fd49b3b10995a64530`, Backend CI #525 and Mobile CI #13 green
+- canonical POC readiness is 157/197 (79.7%), a +0.5 percentage-point change
+- FIN-31 P7 progress is 11/18 (61.1%) and the epic remains In Progress because
   ranked implementation leaves remain unfinished
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because additional mobile work and
   runtime P6, P8, and P9 gates remain open
 - no paid provider or review credits were used
-- FIN-177 duplicate link 10156 points to canonical FIN-174
-- the next ranked unfinished leaf is expected to be FIN-178 for a fresh
-  exact-duplicate audit after this progress record merges
+- FIN-178 delivers draft-only free-form capture with validation, pending/error
+  states, and explicit review-before-confirmation UX
+- the next ranked unfinished leaf is expected to be FIN-179 for a fresh audit
+  after this progress record merges
 
 ## Epic Progress
 
@@ -77,10 +78,10 @@ Current delivery:
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
-| FIN-31 | P7 Mobile app UX and React Native implementation | 10 | 18 | 55.6% |
+| FIN-31 | P7 Mobile app UX and React Native implementation | 11 | 18 | 61.1% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **156** | **197** | **79.2%** |
+| **Total** | **Canonical POC leaf scope** | **157** | **197** | **79.7%** |
 
 ## First-User-Test Gates
 
@@ -224,3 +225,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-23T11:09:00+03:00 | FIN-175 | Exact duplicate of FIN-174; Jira-linked and Done | 79.2% | +0.0 pp |
 | 2026-08-23T11:18:00+03:00 | FIN-176 | Exact duplicate of FIN-174; Jira-linked and Done | 79.2% | +0.0 pp |
 | 2026-08-23T11:25:00+03:00 | FIN-177 | Exact duplicate of FIN-174; Jira-linked and Done | 79.2% | +0.0 pp |
+| 2026-08-23T11:56:00+03:00 | FIN-178 | Recovered free-form capture from merged PR 180 | 79.7% | +0.5 pp |
