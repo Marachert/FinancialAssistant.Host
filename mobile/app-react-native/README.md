@@ -69,6 +69,9 @@ The dashboard reads authoritative summaries through `GET /analytics/dashboard`,
 the current score through `GET /financial-score/current`, and recommendations
 through `GET /recommendations`. Settings use `GET /users/me`,
 `PUT /users/me/preferences`, and `GET` or `PUT /notification-preferences`.
+The notification inbox reads prepared owner-scoped messages through
+`GET /notifications?currency={currency}` and records the first read timestamp
+through `PUT /notifications/{notificationId}/read`.
 New profiles complete a short setup for currency, locale, time zone, an optional
 monthly budget, and notification consent. Device locale and time zone values are
 prefilled when available. The operating-system notification prompt is requested
@@ -77,6 +80,8 @@ does not block completion. Both backend onboarding flags must be complete before
 the signed-in navigator opens the dashboard.
 Disabled backend capabilities are shown as recoverable unavailable states, and
 users can pull to refresh after an operator enables the corresponding service.
+Account delivery preferences remain separate from operating-system permission;
+when device permission is blocked, Settings provides a direct recovery action.
 The client displays score factors and recommendation evidence returned by the
 backend; it does not calculate or replace those deterministic results.
 
