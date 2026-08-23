@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { friendlyApiError } from '@/api/client';
 import { theme, typography } from '@/app/theme';
 import { useInsights } from '@/features/insights/InsightsProvider';
 import type {
@@ -12,6 +13,7 @@ import type {
 } from '@/features/insights/insightsTypes';
 import {
   LinkButton,
+  LoadingSkeleton,
   ScreenScaffold,
   SecondaryButton,
   SegmentedControl,
@@ -37,9 +39,7 @@ function categoryName(categoryId: string) {
 }
 
 function errorMessage(reason: unknown) {
-  return reason instanceof Error
-    ? reason.message
-    : 'Analytics could not be loaded. Try again.';
+  return friendlyApiError(reason, 'Analytics could not be loaded. Try again.');
 }
 
 function CategoryBar({ item, currency }: { item: AnalyticsCategoryBreakdownItem; currency: string }) {
@@ -136,6 +136,7 @@ export default function AnalyticsScreen() {
   const categories = breakdown?.topExpenseCategories ?? [];
   const currency = dashboard?.currency ?? breakdown?.currency;
   const isStale = Boolean(dashboard?.freshness.isStale || breakdown?.freshness.isStale);
+  const hasActivity = Boolean(summary && (summary.incomeTotal !== 0 || summary.expenseTotal !== 0));
 
   return (
     <ScreenScaffold
@@ -164,10 +165,7 @@ export default function AnalyticsScreen() {
       ) : null}
 
       {loading && !dashboard ? (
-        <View accessibilityLiveRegion="polite" style={styles.loading}>
-          <ActivityIndicator color={theme.colors.action} />
-          <Text style={[typography.body, styles.supporting]}>Loading analytics...</Text>
-        </View>
+        <LoadingSkeleton label="Loading analytics" rows={3} />
       ) : null}
 
       {summary && dashboard ? (
@@ -197,6 +195,9 @@ export default function AnalyticsScreen() {
                 </Text>
               </View>
             </View>
+            {!hasActivity ? (
+              <StatusBanner tone="info">No confirmed activity for this period yet. Add a transaction to build your analytics.</StatusBanner>
+            ) : null}
           </View>
 
         </>
@@ -212,7 +213,7 @@ export default function AnalyticsScreen() {
           ) : null}
         </View>
         {loading && !breakdown ? (
-          <ActivityIndicator accessibilityLabel="Loading categories" color={theme.colors.action} />
+          <LoadingSkeleton label="Loading spending categories" rows={2} />
         ) : categories.length && currency ? (
           <View accessibilityRole="summary" style={styles.chart}>
             {categories.map((item) => (
@@ -238,7 +239,6 @@ const styles = StyleSheet.create({
   supporting: { color: theme.colors.textSecondary },
   positive: { color: theme.colors.positive },
   critical: { color: theme.colors.critical },
-  loading: { minHeight: 180, alignItems: 'center', justifyContent: 'center', gap: theme.spacing.md },
   section: { gap: theme.spacing.md, paddingVertical: theme.spacing.sm },
   sectionCopy: { gap: theme.spacing.xs },
   metricGrid: { flexDirection: 'row', flexWrap: 'wrap', borderTopWidth: 1, borderColor: theme.colors.border },
