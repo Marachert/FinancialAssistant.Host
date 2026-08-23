@@ -219,4 +219,3 @@ const styles = StyleSheet.create({
   quickActions: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm },
   quickAction: { minWidth: 148, flex: 1 },
 });
-
