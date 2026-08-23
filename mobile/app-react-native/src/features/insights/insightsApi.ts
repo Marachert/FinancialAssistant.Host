@@ -1,7 +1,9 @@
 import type { RequestOptions } from '@/api/client';
 
 import type {
+  AnalyticsCategoryBreakdown,
   AnalyticsDashboard,
+  AnalyticsPeriod,
   FinancialScore,
   NotificationPreferences,
   ProfileUpdate,
@@ -30,6 +32,11 @@ export function createInsightsApi(request: Request) {
         `/analytics/dashboard?currency=${query(currency)}&timeZoneId=${query(timeZone)}&trendDays=7`,
       ),
 
+    getCategoryBreakdown: (currency: string, timeZone: string, period: AnalyticsPeriod) =>
+      request<AnalyticsCategoryBreakdown>(
+        `/analytics/category-breakdown?currency=${query(currency)}&timeZoneId=${query(timeZone)}&period=${period}&top=5`,
+      ),
+
     getScore: (currency: string) =>
       request<FinancialScore>(`/financial-score/current?currency=${query(currency)}`),
 
@@ -46,3 +53,4 @@ export function createInsightsApi(request: Request) {
       }),
   };
 }
+
