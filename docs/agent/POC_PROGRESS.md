@@ -1,10 +1,10 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-23T10:37:00+03:00
+Last updated: 2026-08-23T10:43:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-172 duplicate closure is **78.7%**:
+POC readiness after FIN-173 duplicate closure is **78.7%**:
 **155 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
@@ -24,7 +24,7 @@ Latest canonical closure:
 
 Latest Jira closure:
 
-- FIN-172 - Exact later duplicate of canonical FIN-170, Jira-linked and Done
+- FIN-173 - Exact later duplicate of canonical FIN-170, Jira-linked and Done
 - implementation PR:
   https://github.com/Marachert/FinancialAssistant.Host/pull/196
 - implementation merge commit:
@@ -45,12 +45,12 @@ FIN-153 and FIN-154 are exact later duplicates of FIN-152, and FIN-156 and
 FIN-157 are exact later duplicates of FIN-155. FIN-159, FIN-160, and FIN-161 are
 exact later duplicates of FIN-158, and FIN-163 and FIN-164 are exact later
 duplicates of FIN-162, and FIN-167, FIN-168, and FIN-169 are exact later
-duplicates of FIN-166. FIN-171 and FIN-172 are exact later duplicates of
-FIN-170. Closing these duplicates does not change the numerator or denominator.
+duplicates of FIN-166. FIN-171, FIN-172, and FIN-173 are exact later duplicates
+of FIN-170. Closing these duplicates does not change the numerator or denominator.
 
 Current delivery:
 
-- FIN-172 is Done and Jira-linked as an exact duplicate of canonical FIN-170
+- FIN-173 is Done and Jira-linked as an exact duplicate of canonical FIN-170
 - canonical implementation is merged PR #196 at
   `532ce3ec668bcb19a071a9c911df5abd45c2ec75`, Backend CI #559 and Mobile CI #47 green
 - canonical POC readiness remains 155/197 (78.7%), a +0.0 percentage-point change
@@ -61,8 +61,9 @@ Current delivery:
 - first-user testing remains Not Ready because additional mobile work and
   runtime P6, P8, and P9 gates remain open
 - no paid provider or review credits were used
-- the next ranked unfinished leaf is expected to be FIN-173 for a fresh
-  duplicate comparison after this progress record merges
+- the FIN-170/FIN-171/FIN-172/FIN-173 onboarding duplicate group is fully resolved
+- the next ranked unfinished leaf is expected to be FIN-174 for a fresh
+  canonical dashboard audit after this progress record merges
 
 ## Epic Progress
 
@@ -217,3 +218,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-23T10:23:00+03:00 | FIN-170 | Closure delivered by PR 196 | 78.7% | +0.5 pp |
 | 2026-08-23T10:31:00+03:00 | FIN-171 | Exact duplicate of FIN-170; Jira-linked and Done | 78.7% | +0.0 pp |
 | 2026-08-23T10:37:00+03:00 | FIN-172 | Exact duplicate of FIN-170; Jira-linked and Done | 78.7% | +0.0 pp |
+| 2026-08-23T10:43:00+03:00 | FIN-173 | Exact duplicate of FIN-170; Jira-linked and Done | 78.7% | +0.0 pp |
