@@ -46,6 +46,45 @@ export type AnalyticsDashboard = {
     balanceDelta: number;
     expenseToIncomePercent: number | null;
   };
+  categoryTotals: {
+    categoryId: string;
+    incomeTotal: number;
+    expenseTotal: number;
+    balanceDelta: number;
+  }[];
+  recentTrend: {
+    date: string;
+    incomeTotal: number;
+    expenseTotal: number;
+    balanceDelta: number;
+  }[];
+  freshness: {
+    isStale: boolean;
+    lastEventAtUtc: string | null;
+  };
+};
+
+export type AnalyticsPeriod = 'daily' | 'weekly' | 'monthly';
+
+export type AnalyticsCategoryBreakdownItem = {
+  categoryId: string;
+  incomeTotal: number;
+  expenseTotal: number;
+  balanceDelta: number;
+  incomeSharePercent: number;
+  expenseSharePercent: number;
+};
+
+export type AnalyticsCategoryBreakdown = {
+  currency: string;
+  timeZoneId: string;
+  referenceDate: string;
+  period: AnalyticsPeriod;
+  periodStart: string;
+  periodEnd: string;
+  categories: AnalyticsCategoryBreakdownItem[];
+  topIncomeCategories: AnalyticsCategoryBreakdownItem[];
+  topExpenseCategories: AnalyticsCategoryBreakdownItem[];
   freshness: {
     isStale: boolean;
     lastEventAtUtc: string | null;
@@ -132,3 +171,4 @@ export type NotificationPreferences = {
     timeZoneId: string;
   } | null;
 };
+
