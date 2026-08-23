@@ -10,6 +10,7 @@ const requiredFiles = [
   'src/app/(auth)/sign-in.tsx',
   'src/app/(auth)/register.tsx',
   'src/app/(app)/home.tsx',
+  'src/app/(app)/analytics.tsx',
   'src/app/(app)/onboarding.tsx',
   'src/app/(app)/add.tsx',
   'src/app/(app)/draft.tsx',
@@ -59,14 +60,20 @@ if (!combined.includes('ocr_failed')) failures.push('OCR failure handling is mis
 if (!combined.includes('expo-image-picker')) failures.push('Camera receipt selection is missing.');
 if (!combined.includes('expo-document-picker')) failures.push('File receipt selection is missing.');
 if (!combined.includes('/analytics/dashboard')) failures.push('Dashboard analytics route is missing.');
+if (!combined.includes('/analytics/category-breakdown')) failures.push('Analytics category breakdown route is missing.');
 if (!combined.includes('/financial-score/current')) failures.push('Financial score route is missing.');
 if (!combined.includes('/recommendations')) failures.push('Recommendation route is missing.');
 if (!combined.includes('/users/me/preferences')) failures.push('Profile preferences route is missing.');
 if (!combined.includes('/notification-preferences')) failures.push('Notification preferences route is missing.');
 if (!combined.includes('RefreshControl')) failures.push('Insight screens require pull-to-refresh.');
 if (!combined.includes('label="Dashboard period"')) failures.push('Dashboard period selection is missing.');
+if (!combined.includes('label="Analytics period"')) failures.push('Analytics period selection is missing.');
+if (!combined.includes("Daily: 'daily'") || !combined.includes("Weekly: 'weekly'") || !combined.includes("Monthly: 'monthly'")) failures.push('Analytics periods are incomplete.');
 if (!combined.includes('dashboard.weeklySummary') || !combined.includes('dashboard.monthlySummary')) failures.push('Dashboard period summaries are incomplete.');
 if (!combined.includes('No activity for this period yet.')) failures.push('Dashboard empty state is missing.');
+if (!combined.includes('No spending categories for this period yet.')) failures.push('Analytics category empty state is missing.');
+if (!combined.includes('Loading analytics...')) failures.push('Analytics loading state is missing.');
+if (!combined.includes('Retry analytics')) failures.push('Analytics error recovery is missing.');
 if (!combined.includes('label="Upload receipt"')) failures.push('Dashboard receipt quick action is missing.');
 if (!combined.includes('<Switch')) failures.push('Settings require accessible binary controls.');
 if (!combined.includes('Promise.allSettled')) failures.push('Independent insight failures must preserve available data.');
@@ -87,3 +94,4 @@ if (failures.length > 0) {
 }
 
 process.stdout.write(`Verified ${requiredFiles.length} mobile foundation files and public configuration.\n`);
+
