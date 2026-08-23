@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-23T15:05:00+03:00
+Last updated: 2026-08-23T15:37:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-185 delivery is **82.2%**:
-**162 of 197 canonical POC leaf tickets are Done**.
+POC readiness after FIN-186 delivery is **82.7%**:
+**163 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,28 +13,26 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-185 - P7.T13 Implement mobile API client and state management
+- FIN-186 - P7.T14 Add mobile loading empty offline and error states
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/178
+  https://github.com/Marachert/FinancialAssistant.Host/pull/217
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/936fcb1498b0b53fb4207355a28f7a7bf2089a07
-- previous readiness: 161 / 197, or 81.7%
-- current readiness: 162 / 197, or 82.2%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/f527676da6212ef91e0d2bacd73c5066d551865f
+- previous readiness: 162 / 197, or 82.2%
+- current readiness: 163 / 197, or 82.7%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-185 - P7.T13 Implement mobile API client and state management, recovered and Done
+- FIN-186 - P7.T14 Add mobile loading empty offline and error states, merged and Done
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/178
+  https://github.com/Marachert/FinancialAssistant.Host/pull/217
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/936fcb1498b0b53fb4207355a28f7a7bf2089a07
-- final implementation head: `bccf5acb5e3f80eaa5cab4559f8fdce5d1d9b8cb`
-- exact-head CI: Backend run 32388977167 and Mobile run 32388977182
-- supporting state deliveries: PR #180 (`035bbfb56acaa46625cc15fd49b3b10995a64530`)
-  and PR #182 (`924e5038095d745fe1e85a8db4577412a63b9ae2`)
-- previous readiness: 161 / 197, or 81.7%
-- current readiness: 162 / 197, or 82.2%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/f527676da6212ef91e0d2bacd73c5066d551865f
+- final implementation head: `9dd984464d5e723c85fd652fdbebf0b888420d34`
+- exact-head CI: Backend run 32639699120 and Mobile run 32639699170
+- previous readiness: 162 / 197, or 82.2%
+- current readiness: 163 / 197, or 82.7%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -55,23 +53,21 @@ numerator or denominator.
 
 Current delivery:
 
-- FIN-185 is recovered Done from guarded merged PRs #178, #180, and #182
-- the canonical API/Auth implementation is merged at
-  `936fcb1498b0b53fb4207355a28f7a7bf2089a07`, with Capture and Insights state
-  completed by merges `035bbfb56acaa46625cc15fd49b3b10995a64530` and
-  `924e5038095d745fe1e85a8db4577412a63b9ae2`
-- canonical POC readiness is 162/197 (82.2%), a +0.5 percentage-point change
-- FIN-31 P7 progress is 16/18 (88.9%) and the epic remains In Progress because
-  ranked implementation leaves remain unfinished
+- FIN-186 is Done through guarded merged PR #217
+- the implementation is merged at `f527676da6212ef91e0d2bacd73c5066d551865f`
+  after exact-head Backend and Mobile CI and a clear review-channel audit
+- canonical POC readiness is 163/197 (82.7%), a +0.5 percentage-point change
+- FIN-31 P7 progress is 17/18 (94.4%) and the epic remains In Progress because
+  FIN-189 remains unfinished
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because additional mobile work and
   runtime P6, P8, and P9 gates remain open
 - no paid provider or review credits were used
-- FIN-185 provides typed feature APIs, bearer injection, serialized refresh,
-  problem mapping, secure session handling, shared Auth/Capture/Insights state,
-  and consistent friendly loading, refresh, and error patterns
-- the next ranked unfinished leaf is FIN-186 for a fresh audit
+- FIN-186 provides live offline detection/recheck, shared loading skeletons,
+  explicit dashboard and analytics empty states, friendly error mapping, and
+  complete critical retry paths
+- the next ranked unfinished leaf is FIN-189 for a fresh audit
   after this progress record merges
 
 ## Epic Progress
@@ -85,10 +81,10 @@ Current delivery:
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
-| FIN-31 | P7 Mobile app UX and React Native implementation | 16 | 18 | 88.9% |
+| FIN-31 | P7 Mobile app UX and React Native implementation | 17 | 18 | 94.4% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **162** | **197** | **82.2%** |
+| **Total** | **Canonical POC leaf scope** | **163** | **197** | **82.7%** |
 
 ## First-User-Test Gates
 
@@ -111,8 +107,9 @@ Current blocking areas are runtime P6, P7, P8, and P9. P7 now has authentication
 free-form transaction capture, receipt upload, editable draft review, backend
 rejection and confirmation, onboarding/profile setup, dashboard,
 score/recommendation, settings, analytics/category-chart screens, and the
-notification inbox. Remaining ranked mobile work includes resilient offline
-states and release-ready end-to-end validation.
+notification inbox, resilient offline/error states, and shared loading/empty
+patterns. Remaining ranked mobile work is release-ready smoke and regression
+validation.
 
 ## Calculation Contract
 
@@ -240,3 +237,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-23T13:37:00+03:00 | FIN-182 | Closure delivered by PR 212 | 81.2% | +0.5 pp |
 | 2026-08-23T14:54:00+03:00 | FIN-184 | Closure delivered by PR 214 | 81.7% | +0.5 pp |
 | 2026-08-23T15:05:00+03:00 | FIN-185 | Recovered API and state foundation from PRs 178, 180, and 182 | 82.2% | +0.5 pp |
+| 2026-08-23T15:37:00+03:00 | FIN-186 | Closure delivered by PR 217 | 82.7% | +0.5 pp |
