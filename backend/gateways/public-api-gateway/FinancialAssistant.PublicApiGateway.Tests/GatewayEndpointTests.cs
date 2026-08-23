@@ -98,6 +98,22 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
         Assert.Equal("authenticated", GetHeader(response, "X-Gateway-Access-Policy"));
     }
 
+    [Theory]
+    [InlineData("GET", "/notifications")]
+    [InlineData("PUT", "/notifications/synthetic-notification/read")]
+    public async Task NotificationInboxRoute_AllowsTrustedContractMethods(
+        string method,
+        string path)
+    {
+        using var client = CreateClient();
+        using var request = new HttpRequestMessage(new HttpMethod(method), path);
+
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.NotImplemented, response.StatusCode);
+        Assert.Equal("authenticated", GetHeader(response, "X-Gateway-Access-Policy"));
+    }
+
     [Fact]
     public async Task DraftRejectRoute_AllowsPost()
     {
