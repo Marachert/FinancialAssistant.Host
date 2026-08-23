@@ -97,6 +97,7 @@ The admin monitoring group requires a valid bearer token and the configured admi
 | `transaction-draft-review` | `/transactions/drafts/{id}` | GET, PUT | `authenticated` | Transaction Intake Service | `placeholder` |
 | `transaction-receipt-draft` | `/transactions/drafts/receipts/{receiptId}` | GET | `authenticated` | Transaction Intake Service | `placeholder` |
 | `transaction-draft-confirm` | `/transactions/drafts/{id}/confirm` | POST | `authenticated` | Transaction Intake Service | `placeholder` |
+| `transaction-draft-reject` | `/transactions/drafts/{id}/reject` | POST | `authenticated` | Transaction Intake Service | `placeholder` |
 | `receipts` | `/receipts`, `/receipts/{**gatewayPath}` | GET, POST | `authenticated` | Receipt File Intake Service | `placeholder` |
 | `incomes` | `/incomes`, `/incomes/{**gatewayPath}` | GET, POST, PUT | `authenticated` | Income Service | `active` |
 | `expenses` | `/expenses`, `/expenses/{**gatewayPath}` | GET, POST, PUT | `authenticated` | Expense Service | `active` |
