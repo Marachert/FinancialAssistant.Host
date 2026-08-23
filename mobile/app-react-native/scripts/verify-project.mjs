@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const requiredFiles = [
+  'package.json',
   'app.json',
   'src/app/_layout.tsx',
   'src/app/(app)/_layout.tsx',
@@ -70,7 +71,7 @@ if (!combined.includes('/notifications?currency=')) failures.push('Notification 
 if (!combined.includes('markNotificationRead')) failures.push('Notification mark-read action is missing.');
 if (!combined.includes('readAtUtc')) failures.push('Notification read state is missing.');
 if (!combined.includes('No notifications yet.')) failures.push('Notification inbox empty state is missing.');
-if (!combined.includes('Loading notifications...')) failures.push('Notification inbox loading state is missing.');
+if (!combined.includes('label="Loading notifications"')) failures.push('Notification inbox skeleton state is missing.');
 if (!combined.includes('Open device settings')) failures.push('Denied notification permission recovery is missing.');
 if (!combined.includes('Notifications.requestPermissionsAsync')) failures.push('Settings notification permission request is missing.');
 if (!combined.includes('RefreshControl')) failures.push('Insight screens require pull-to-refresh.');
@@ -80,8 +81,17 @@ if (!combined.includes("Daily: 'daily'") || !combined.includes("Weekly: 'weekly'
 if (!combined.includes('dashboard.weeklySummary') || !combined.includes('dashboard.monthlySummary')) failures.push('Dashboard period summaries are incomplete.');
 if (!combined.includes('No activity for this period yet.')) failures.push('Dashboard empty state is missing.');
 if (!combined.includes('No spending categories for this period yet.')) failures.push('Analytics category empty state is missing.');
-if (!combined.includes('Loading analytics...')) failures.push('Analytics loading state is missing.');
+if (!combined.includes('label="Loading analytics"')) failures.push('Analytics skeleton state is missing.');
 if (!combined.includes('Retry analytics')) failures.push('Analytics error recovery is missing.');
+if (!combined.includes('expo-network')) failures.push('Live network-state detection is missing.');
+if (!combined.includes('useNetworkState')) failures.push('Network change subscription is missing.');
+if (!combined.includes('You are offline')) failures.push('Clear offline messaging is missing.');
+if (!combined.includes('Check again')) failures.push('Offline recovery action is missing.');
+if ((combined.match(/<LoadingSkeleton/g) ?? []).length < 7) failures.push('Critical screens require shared loading skeletons.');
+if (!combined.includes('friendlyApiError')) failures.push('Friendly API error mapping is missing.');
+for (const retryLabel of ['Retry overview', 'Retry analytics', 'Retry score', 'Retry recommendations', 'Retry notifications', 'Retry settings']) {
+  if (!combined.includes(retryLabel)) failures.push(`${retryLabel} action is missing.`);
+}
 if (!combined.includes('label="Upload receipt"')) failures.push('Dashboard receipt quick action is missing.');
 if (!combined.includes('<Switch')) failures.push('Settings require accessible binary controls.');
 if (!combined.includes('Promise.allSettled')) failures.push('Independent insight failures must preserve available data.');
