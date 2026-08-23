@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { router } from 'expo-router';
-import { ActivityIndicator, StyleSheet, Switch, Text, View } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import { ActivityIndicator, Linking, Platform, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { ApiProblem } from '@/api/client';
 import { theme, typography } from '@/app/theme';
@@ -26,6 +27,11 @@ type SettingsForm = {
   aiPersonalizationEnabled: boolean;
   budgetNotificationsEnabled: boolean;
   weeklySummaryNotificationsEnabled: boolean;
+};
+
+type DevicePermission = {
+  status: 'granted' | 'denied' | 'undetermined' | 'unavailable';
+  canAskAgain: boolean;
 };
 
 function formFromProfile(profile: UserProfile): SettingsForm {
@@ -80,6 +86,12 @@ export default function SettingsScreen() {
   const [notifications, setNotifications] = useState<NotificationPreferences | null>(null);
   const [notificationError, setNotificationError] = useState<string | null>(null);
   const [notificationLoading, setNotificationLoading] = useState(false);
+  const [devicePermission, setDevicePermission] = useState<DevicePermission>({
+    status: 'undetermined',
+    canAskAgain: true,
+  });
+  const [permissionBusy, setPermissionBusy] = useState(false);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -100,10 +112,54 @@ export default function SettingsScreen() {
     }
   }, [api]);
 
+  const loadDevicePermission = useCallback(async () => {
+    if (Platform.OS === 'web') {
+      setDevicePermission({ status: 'unavailable', canAskAgain: false });
+      return;
+    }
+
+    try {
+      const permission = await Notifications.getPermissionsAsync();
+      setDevicePermission({
+        status: permission.granted
+          ? 'granted'
+          : permission.status === 'denied'
+            ? 'denied'
+            : 'undetermined',
+        canAskAgain: permission.canAskAgain,
+      });
+    } catch {
+      setPermissionError('Device notification permission could not be checked.');
+    }
+  }, []);
+
   useEffect(() => {
-    const initialLoad = setTimeout(() => void loadNotifications(), 0);
+    const initialLoad = setTimeout(() => {
+      void loadNotifications();
+      void loadDevicePermission();
+    }, 0);
     return () => clearTimeout(initialLoad);
-  }, [loadNotifications]);
+  }, [loadDevicePermission, loadNotifications]);
+
+  const requestDevicePermission = async () => {
+    setPermissionBusy(true);
+    setPermissionError(null);
+    try {
+      const permission = await Notifications.requestPermissionsAsync();
+      setDevicePermission({
+        status: permission.granted
+          ? 'granted'
+          : permission.status === 'denied'
+            ? 'denied'
+            : 'undetermined',
+        canAskAgain: permission.canAskAgain,
+      });
+    } catch {
+      setPermissionError('Device notification permission could not be requested.');
+    } finally {
+      setPermissionBusy(false);
+    }
+  };
 
   const setField = <Field extends keyof SettingsForm>(field: Field, value: SettingsForm[Field]) => {
     setFormOverride((current) => ({ ...current ?? form!, [field]: value }));
@@ -158,6 +214,7 @@ export default function SettingsScreen() {
       </View>
       {error ? <StatusBanner>{error}</StatusBanner> : null}
       {notificationError ? <StatusBanner tone="warning">{notificationError}</StatusBanner> : null}
+      {permissionError ? <StatusBanner tone="warning">{permissionError}</StatusBanner> : null}
       {notificationError ? (
         <SecondaryButton
           label="Retry notifications"
@@ -202,7 +259,10 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.section}>
-            <Text style={[typography.heading, styles.title]}>Notifications</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={[typography.heading, styles.title]}>Notifications</Text>
+              <LinkButton label="Inbox" onPress={() => router.push('/notifications')} />
+            </View>
             <ToggleRow
               label="Budget alerts"
               supporting="Receive alerts as configured spending limits approach."
@@ -233,6 +293,38 @@ export default function SettingsScreen() {
                   disabled={busy}
                   onChange={(value) => setNotifications((current) => current ? { ...current, webEnabled: value } : current)}
                 />
+                <View style={styles.devicePermission}>
+                  <Text style={[typography.bodyStrong, styles.title]}>This device</Text>
+                  <Text style={[typography.small, styles.supporting]}>
+                    {devicePermission.status === 'granted'
+                      ? 'Notification permission is allowed.'
+                      : devicePermission.status === 'denied'
+                        ? 'Notification permission is blocked on this device.'
+                        : devicePermission.status === 'unavailable'
+                          ? 'Device permission is managed outside this app.'
+                          : 'Notification permission has not been granted yet.'}
+                  </Text>
+                  {notifications.pushEnabled && devicePermission.status !== 'granted' ? (
+                    <StatusBanner tone="info">
+                      Push is enabled in your account, but this device cannot show it until permission is allowed.
+                    </StatusBanner>
+                  ) : null}
+                  {devicePermission.status !== 'granted' &&
+                  devicePermission.status !== 'unavailable' &&
+                  devicePermission.canAskAgain ? (
+                    <SecondaryButton
+                      label="Allow on this device"
+                      disabled={permissionBusy}
+                      onPress={() => void requestDevicePermission()}
+                    />
+                  ) : null}
+                  {devicePermission.status === 'denied' && !devicePermission.canAskAgain ? (
+                    <SecondaryButton
+                      label="Open device settings"
+                      onPress={() => void Linking.openSettings()}
+                    />
+                  ) : null}
+                </View>
               </>
             ) : null}
           </View>
@@ -253,6 +345,8 @@ const styles = StyleSheet.create({
   supporting: { color: theme.colors.textSecondary },
   loading: { minHeight: 160, alignItems: 'center', justifyContent: 'center', gap: theme.spacing.md },
   section: { gap: theme.spacing.md, paddingBottom: theme.spacing.md, borderBottomWidth: 1, borderColor: theme.colors.border },
+  sectionHeader: { minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing.md },
+  devicePermission: { gap: theme.spacing.sm, paddingTop: theme.spacing.sm },
   toggleRow: { minHeight: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing.md },
   toggleCopy: { flex: 1, gap: theme.spacing.xs },
 });
