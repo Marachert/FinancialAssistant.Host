@@ -171,3 +171,22 @@ export type NotificationPreferences = {
     timeZoneId: string;
   } | null;
 };
+
+export type NotificationItem = {
+  notificationId: string;
+  recommendationId: string;
+  currency: string;
+  channel: string;
+  templateCode: string;
+  title: string;
+  body: string;
+  deliveryStatus: string;
+  preparedAtUtc: string;
+  statusChangedAtUtc: string | null;
+  readAtUtc: string | null;
+};
+
+export type NotificationList = {
+  currency: string;
+  items: NotificationItem[];
+};
