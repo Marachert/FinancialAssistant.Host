@@ -6,6 +6,7 @@ Identity API integration, and secure session handling. FIN-34 adds the core
 transaction capture, receipt upload, editable draft review, and explicit
 backend confirmation journey. FIN-35 adds the signed-in dashboard, explainable
 financial score, recommendations, and profile and notification settings.
+FIN-170 adds the post-registration profile setup and initial-navigation gate.
 
 ## Prerequisites
 
@@ -68,6 +69,12 @@ The dashboard reads authoritative summaries through `GET /analytics/dashboard`,
 the current score through `GET /financial-score/current`, and recommendations
 through `GET /recommendations`. Settings use `GET /users/me`,
 `PUT /users/me/preferences`, and `GET` or `PUT /notification-preferences`.
+New profiles complete a short setup for currency, locale, time zone, an optional
+monthly budget, and notification consent. Device locale and time zone values are
+prefilled when available. The operating-system notification prompt is requested
+only after explicit opt-in on the final step; skipping the budget or notifications
+does not block completion. Both backend onboarding flags must be complete before
+the signed-in navigator opens the dashboard.
 Disabled backend capabilities are shown as recoverable unavailable states, and
 users can pull to refresh after an operator enables the corresponding service.
 The client displays score factors and recommendation evidence returned by the
