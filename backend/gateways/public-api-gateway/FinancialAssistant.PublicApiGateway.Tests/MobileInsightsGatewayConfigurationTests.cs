@@ -47,6 +47,14 @@ public sealed class MobileInsightsGatewayConfigurationTests
             "/recommendations",
             "/recommendations/{**gatewayPath}",
             "GET");
+        AssertRoute(
+            routes["notifications"],
+            "/notifications",
+            "/notifications/{**gatewayPath}",
+            "GET",
+            "PUT",
+            "POST",
+            "PATCH");
         AssertRoute(routes["notification-preferences"], "/notification-preferences", null, "GET", "PUT");
     }
 
