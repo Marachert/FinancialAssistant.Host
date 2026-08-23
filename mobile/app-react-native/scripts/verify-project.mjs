@@ -16,6 +16,7 @@ const requiredFiles = [
   'src/app/(app)/draft.tsx',
   'src/app/(app)/score.tsx',
   'src/app/(app)/recommendations.tsx',
+  'src/app/(app)/notifications.tsx',
   'src/app/(app)/settings.tsx',
   'src/api/client.ts',
   'src/features/auth/AuthForm.tsx',
@@ -65,6 +66,13 @@ if (!combined.includes('/financial-score/current')) failures.push('Financial sco
 if (!combined.includes('/recommendations')) failures.push('Recommendation route is missing.');
 if (!combined.includes('/users/me/preferences')) failures.push('Profile preferences route is missing.');
 if (!combined.includes('/notification-preferences')) failures.push('Notification preferences route is missing.');
+if (!combined.includes('/notifications?currency=')) failures.push('Notification inbox route is missing.');
+if (!combined.includes('markNotificationRead')) failures.push('Notification mark-read action is missing.');
+if (!combined.includes('readAtUtc')) failures.push('Notification read state is missing.');
+if (!combined.includes('No notifications yet.')) failures.push('Notification inbox empty state is missing.');
+if (!combined.includes('Loading notifications...')) failures.push('Notification inbox loading state is missing.');
+if (!combined.includes('Open device settings')) failures.push('Denied notification permission recovery is missing.');
+if (!combined.includes('Notifications.requestPermissionsAsync')) failures.push('Settings notification permission request is missing.');
 if (!combined.includes('RefreshControl')) failures.push('Insight screens require pull-to-refresh.');
 if (!combined.includes('label="Dashboard period"')) failures.push('Dashboard period selection is missing.');
 if (!combined.includes('label="Analytics period"')) failures.push('Analytics period selection is missing.');
