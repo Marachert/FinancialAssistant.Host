@@ -94,4 +94,3 @@ if (failures.length > 0) {
 }
 
 process.stdout.write(`Verified ${requiredFiles.length} mobile foundation files and public configuration.\n`);
-
