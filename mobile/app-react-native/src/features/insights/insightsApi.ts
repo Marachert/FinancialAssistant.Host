@@ -5,6 +5,8 @@ import type {
   AnalyticsDashboard,
   AnalyticsPeriod,
   FinancialScore,
+  NotificationItem,
+  NotificationList,
   NotificationPreferences,
   ProfileUpdate,
   RecommendationList,
@@ -51,5 +53,17 @@ export function createInsightsApi(request: Request) {
         method: 'PUT',
         body: JSON.stringify(preferences),
       }),
+
+    getNotifications: (currency: string) =>
+      request<NotificationList>(`/notifications?currency=${query(currency)}`),
+
+    markNotificationRead: (notificationId: string) =>
+      request<NotificationItem>(
+        `/notifications/${query(notificationId)}/read`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({ changedAtUtc: new Date().toISOString() }),
+        },
+      ),
   };
 }

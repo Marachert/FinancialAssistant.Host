@@ -70,6 +70,12 @@ public interface IRecommendationNotificationStore
         string deliveryStatus,
         DateTimeOffset changedAtUtc,
         CancellationToken cancellationToken);
+
+    Task<PreparedNotification?> MarkNotificationReadAsync(
+        string userIdHash,
+        string notificationId,
+        DateTimeOffset changedAtUtc,
+        CancellationToken cancellationToken);
 }
 
 public interface IRecommendationWordingProvider

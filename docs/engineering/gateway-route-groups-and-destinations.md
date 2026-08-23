@@ -50,7 +50,7 @@ The term **public route group** means a route exposed through the public gateway
 | `analytics` | `/analytics` and child paths | GET | authenticated | Analytics Service | `analytics-service` |
 | `score` | `/financial-score` and child paths | GET | authenticated | Financial Score Service | `financial-score-service` |
 | `recommendations` | `/recommendations` and child paths | GET | authenticated | Recommendation Service | `recommendation-service` |
-| `notifications` | `/notifications` and child paths | GET, POST, PATCH | authenticated | Notification Service | `notification-service` |
+| `notifications` | `/notifications` and child paths | GET, PUT, POST, PATCH | authenticated | Notification Service | `notification-service` |
 | `admin-monitoring` | `/admin/monitoring` and child paths | GET | admin | Monitoring Admin Service | `monitoring-admin-service` |
 
 Route methods are explicit. An empty method list is rejected during startup rather than silently enabling a broad default set.

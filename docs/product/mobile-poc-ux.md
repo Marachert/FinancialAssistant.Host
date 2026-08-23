@@ -247,6 +247,7 @@ differences belong to interaction mechanics, not business meaning.
 | Category breakdown | docs/api/analytics-category-breakdown-v1.md |
 | Score and history | docs/api/financial-score-v1.md |
 | Recommendations | docs/api/recommendations-notifications-v1.md |
+| Notification inbox and read state | docs/api/recommendations-notifications-v1.md |
 | Notification settings | docs/api/notification-preferences-v1.md |
 
 If a required API shape is absent, the implementation ticket records the gap

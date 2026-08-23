@@ -121,6 +121,24 @@ public sealed class NotificationPreparationService
             cancellationToken);
     }
 
+    public Task<PreparedNotification?> MarkReadAsync(
+        string userIdHash,
+        string notificationId,
+        DateTimeOffset changedAtUtc,
+        CancellationToken cancellationToken)
+    {
+        if (changedAtUtc == default)
+        {
+            throw new ArgumentException("A read timestamp is required.", nameof(changedAtUtc));
+        }
+
+        return store.MarkNotificationReadAsync(
+            NormalizeRequired(userIdHash),
+            NormalizeRequired(notificationId),
+            changedAtUtc.ToUniversalTime(),
+            cancellationToken);
+    }
+
     private static void Validate(IntegrationEventEnvelope<RecommendationGeneratedV1> envelope)
     {
         ArgumentNullException.ThrowIfNull(envelope);

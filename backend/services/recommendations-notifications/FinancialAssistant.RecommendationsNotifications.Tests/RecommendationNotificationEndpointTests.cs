@@ -88,6 +88,17 @@ public sealed class RecommendationNotificationEndpointTests
         var notifications = await notificationResponse.Content
             .ReadFromJsonAsync<NotificationListResponse>();
         var first = notifications!.Items[0];
+        Assert.Null(first.ReadAtUtc);
+        var markReadResponse = await client.PutAsJsonAsync(
+            RecommendationNotificationApiRoutes.NotificationRead
+                .Replace("{notificationId}", first.NotificationId, StringComparison.Ordinal),
+            new MarkNotificationReadRequest(Now.AddMinutes(3)));
+        var markedRead = await markReadResponse.Content.ReadFromJsonAsync<NotificationResponse>();
+        var repeatedReadResponse = await client.PutAsJsonAsync(
+            RecommendationNotificationApiRoutes.NotificationRead
+                .Replace("{notificationId}", first.NotificationId, StringComparison.Ordinal),
+            new MarkNotificationReadRequest(Now.AddMinutes(4)));
+        var repeatedRead = await repeatedReadResponse.Content.ReadFromJsonAsync<NotificationResponse>();
         var updateResponse = await client.PutAsJsonAsync(
             RecommendationNotificationApiRoutes.NotificationStatus
                 .Replace("{notificationId}", first.NotificationId, StringComparison.Ordinal),
@@ -107,9 +118,26 @@ public sealed class RecommendationNotificationEndpointTests
         Assert.Equal("dismissed", dismissed!.Status);
         Assert.Equal(Now.AddMinutes(2), dismissed.StatusChangedAtUtc);
         Assert.Equal(HttpStatusCode.OK, notificationResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, markReadResponse.StatusCode);
+        Assert.Equal(Now.AddMinutes(3), markedRead!.ReadAtUtc);
+        Assert.Equal(HttpStatusCode.OK, repeatedReadResponse.StatusCode);
+        Assert.Equal(Now.AddMinutes(3), repeatedRead!.ReadAtUtc);
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
         var updated = await updateResponse.Content.ReadFromJsonAsync<NotificationResponse>();
         Assert.Equal("delivered", updated!.DeliveryStatus);
+
+        using var otherClient = factory.CreateClient();
+        otherClient.DefaultRequestHeaders.Add(
+            RecommendationNotificationGatewayHeaders.Authentication,
+            RecommendationNotificationWebApplicationFactory.SharedSecret);
+        otherClient.DefaultRequestHeaders.Add(
+            RecommendationNotificationGatewayHeaders.UserId,
+            "user-2");
+        var otherOwnerResponse = await otherClient.PutAsJsonAsync(
+            RecommendationNotificationApiRoutes.NotificationRead
+                .Replace("{notificationId}", first.NotificationId, StringComparison.Ordinal),
+            new MarkNotificationReadRequest(Now.AddMinutes(5)));
+        Assert.Equal(HttpStatusCode.NotFound, otherOwnerResponse.StatusCode);
     }
 
     [Fact]

@@ -37,6 +37,7 @@ Trusted APIs:
 
 - `GET /api/v1/recommendations?currency=USD`
 - `GET /api/v1/notifications?currency=USD`
+- `PUT /api/v1/notifications/{notificationId}/read`
 - `PUT /api/v1/notifications/{notificationId}/delivery-status`
 - `GET /api/v1/notification-preferences`
 - `PUT /api/v1/notification-preferences`

@@ -136,4 +136,5 @@ public sealed record PreparedNotification(
     string DeliveryStatus,
     string SourceEventId,
     DateTimeOffset PreparedAtUtc,
-    DateTimeOffset? StatusChangedAtUtc);
+    DateTimeOffset? StatusChangedAtUtc,
+    DateTimeOffset? ReadAtUtc = null);

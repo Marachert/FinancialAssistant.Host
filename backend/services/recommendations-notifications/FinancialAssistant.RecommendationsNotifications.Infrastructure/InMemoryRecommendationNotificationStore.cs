@@ -317,6 +317,32 @@ public sealed class InMemoryRecommendationNotificationStore : IRecommendationNot
         }
     }
 
+    public Task<PreparedNotification?> MarkNotificationReadAsync(
+        string userIdHash,
+        string notificationId,
+        DateTimeOffset changedAtUtc,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        lock (gate)
+        {
+            if (!notifications.TryGetValue(notificationId, out var existing) ||
+                existing.UserIdHash != userIdHash)
+            {
+                return Task.FromResult<PreparedNotification?>(null);
+            }
+
+            if (existing.ReadAtUtc is not null)
+            {
+                return Task.FromResult<PreparedNotification?>(existing);
+            }
+
+            var updated = existing with { ReadAtUtc = changedAtUtc };
+            notifications[notificationId] = updated;
+            return Task.FromResult<PreparedNotification?>(updated);
+        }
+    }
+
     private static string Scope(string userIdHash, string currency) =>
         $"{userIdHash}|{currency}";
 

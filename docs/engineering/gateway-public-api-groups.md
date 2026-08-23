@@ -104,7 +104,7 @@ The admin monitoring group requires a valid bearer token and the configured admi
 | `analytics` | `/analytics`, `/analytics/{**gatewayPath}` | GET | `authenticated` | Analytics Service | `placeholder` |
 | `score` | `/financial-score`, `/financial-score/{**gatewayPath}` | GET | `authenticated` | Financial Score Service | `placeholder` |
 | `recommendations` | `/recommendations`, `/recommendations/{**gatewayPath}` | GET | `authenticated` | Recommendation Service | `placeholder` |
-| `notifications` | `/notifications`, `/notifications/{**gatewayPath}` | GET, POST, PATCH | `authenticated` | Notification Service | `placeholder` |
+| `notifications` | `/notifications`, `/notifications/{**gatewayPath}` | GET, PUT, POST, PATCH | `authenticated` | Notification Service | `placeholder` |
 | `notification-preferences` | `/notification-preferences` | GET, PUT | `authenticated` | Notification Service | `placeholder` |
 | `admin-monitoring` | `/admin/monitoring`, `/admin/monitoring/{**gatewayPath}` | GET | `admin` | Monitoring Admin Service | `placeholder` |
 

@@ -50,6 +50,14 @@ public static class RecommendationNotificationEndpointExtensions
             app,
             RecommendationNotificationApiRoutes.GatewayNotificationStatus,
             "UpdateNotificationDeliveryStatusFromGateway");
+        MapNotificationRead(
+            app,
+            RecommendationNotificationApiRoutes.NotificationRead,
+            "MarkNotificationRead");
+        MapNotificationRead(
+            app,
+            RecommendationNotificationApiRoutes.GatewayNotificationRead,
+            "MarkNotificationReadFromGateway");
         MapNotificationPreferences(
             app,
             RecommendationNotificationApiRoutes.NotificationPreferences,
@@ -163,6 +171,22 @@ public static class RecommendationNotificationEndpointExtensions
                 StatusCodes.Status400BadRequest)
             .Produces<RecommendationNotificationApiErrorResponse>(
                 StatusCodes.Status401Unauthorized);
+    }
+
+    private static void MapNotificationRead(
+        IEndpointRouteBuilder app,
+        string route,
+        string name)
+    {
+        app.MapPut(route, MarkNotificationReadAsync)
+            .WithName(name)
+            .Produces<NotificationResponse>()
+            .Produces<RecommendationNotificationApiErrorResponse>(
+                StatusCodes.Status400BadRequest)
+            .Produces<RecommendationNotificationApiErrorResponse>(
+                StatusCodes.Status401Unauthorized)
+            .Produces<RecommendationNotificationApiErrorResponse>(
+                StatusCodes.Status404NotFound);
     }
 
     private static async Task<IResult> GetRecommendationsAsync(
@@ -377,6 +401,42 @@ public static class RecommendationNotificationEndpointExtensions
         return Results.Ok(MapNotificationPreferences(preferences));
     }
 
+    private static async Task<IResult> MarkNotificationReadAsync(
+        string notificationId,
+        MarkNotificationReadRequest request,
+        HttpContext context,
+        NotificationPreparationService service,
+        RecommendationNotificationGatewayAuthenticator authenticator,
+        CancellationToken cancellationToken)
+    {
+        var error = Authenticate(context, authenticator, out var userId);
+        if (error is not null)
+        {
+            return error;
+        }
+
+        try
+        {
+            var updated = await service.MarkReadAsync(
+                RecommendationNotificationOwnerHasher.Hash(userId!),
+                notificationId,
+                request.ChangedAtUtc,
+                cancellationToken);
+            return updated is null
+                ? Problem(
+                    context,
+                    "Notification was not found.",
+                    "The notification does not exist in the authenticated user scope.",
+                    "notification_not_found",
+                    StatusCodes.Status404NotFound)
+                : Results.Ok(MapNotification(updated));
+        }
+        catch (ArgumentException exception)
+        {
+            return Invalid(context, exception.Message);
+        }
+    }
+
     private static async Task<IResult> UpdateNotificationPreferencesAsync(
         UpdateNotificationPreferencesRequest request,
         HttpContext context,
@@ -470,7 +530,8 @@ public static class RecommendationNotificationEndpointExtensions
             notification.Body,
             notification.DeliveryStatus,
             notification.PreparedAtUtc,
-            notification.StatusChangedAtUtc);
+            notification.StatusChangedAtUtc,
+            notification.ReadAtUtc);
 
     private static string ReadCurrency(HttpContext context)
     {

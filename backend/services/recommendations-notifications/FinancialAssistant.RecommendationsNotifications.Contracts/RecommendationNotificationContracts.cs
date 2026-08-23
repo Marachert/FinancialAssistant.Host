@@ -16,6 +16,8 @@ public static class RecommendationNotificationApiRoutes
     public const string GatewayNotifications = "/notifications";
     public const string NotificationStatus = "/api/v1/notifications/{notificationId}/delivery-status";
     public const string GatewayNotificationStatus = "/notifications/{notificationId}/delivery-status";
+    public const string NotificationRead = "/api/v1/notifications/{notificationId}/read";
+    public const string GatewayNotificationRead = "/notifications/{notificationId}/read";
     public const string NotificationPreferences = "/api/v1/notification-preferences";
     public const string GatewayNotificationPreferences = "/notification-preferences";
 }
@@ -74,7 +76,8 @@ public sealed record NotificationResponse(
     string Body,
     string DeliveryStatus,
     DateTimeOffset PreparedAtUtc,
-    DateTimeOffset? StatusChangedAtUtc);
+    DateTimeOffset? StatusChangedAtUtc,
+    DateTimeOffset? ReadAtUtc = null);
 
 public sealed record NotificationListResponse(
     string Currency,
@@ -82,6 +85,9 @@ public sealed record NotificationListResponse(
 
 public sealed record UpdateNotificationDeliveryStatusRequest(
     string DeliveryStatus,
+    DateTimeOffset ChangedAtUtc);
+
+public sealed record MarkNotificationReadRequest(
     DateTimeOffset ChangedAtUtc);
 
 public sealed record NotificationQuietHoursContract(

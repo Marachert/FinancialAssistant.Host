@@ -46,7 +46,14 @@ cannot be reactivated.
 ## Notifications
 
 `GET /api/v1/notifications?currency=USD` returns push and web
-preparations with template code and delivery status.
+preparations with template code, delivery status, and nullable `readAtUtc`.
+The gateway alias is `GET /notifications?currency=USD`. Items are ordered by
+preparation time and remain owner/currency scoped.
+
+`PUT /api/v1/notifications/{notificationId}/read` and the gateway alias
+`PUT /notifications/{notificationId}/read` record the authenticated owner's
+first read time. The request contains an initialized `changedAtUtc`. Replays are
+idempotent and preserve the first read timestamp; another owner receives `404`.
 
 `PUT /api/v1/notifications/{notificationId}/delivery-status` accepts a
 terminal status of `delivered`, `failed`, or `suppressed`
