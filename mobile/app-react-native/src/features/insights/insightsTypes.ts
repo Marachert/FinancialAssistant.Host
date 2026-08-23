@@ -171,4 +171,3 @@ export type NotificationPreferences = {
     timeZoneId: string;
   } | null;
 };
-
