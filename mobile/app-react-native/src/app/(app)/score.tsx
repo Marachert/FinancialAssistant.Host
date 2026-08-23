@@ -1,9 +1,9 @@
 import { router } from 'expo-router';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { theme, typography } from '@/app/theme';
 import { useInsights } from '@/features/insights/InsightsProvider';
-import { LinkButton, ScreenScaffold, SecondaryButton, StatusBanner } from '@/shared/ui';
+import { LinkButton, LoadingSkeleton, ScreenScaffold, SecondaryButton, StatusBanner } from '@/shared/ui';
 
 function label(code: string) {
   return code.replaceAll('_', ' ').replaceAll('-', ' ');
@@ -21,10 +21,7 @@ export default function ScoreScreen() {
       </View>
       {error ? <StatusBanner>{error}</StatusBanner> : null}
       {state === 'loading' && !score ? (
-        <View style={styles.loading}>
-          <ActivityIndicator color={theme.colors.action} />
-          <Text style={[typography.body, styles.supporting]}>Loading score...</Text>
-        </View>
+        <LoadingSkeleton label="Loading financial score" rows={3} />
       ) : null}
       {score ? (
         <>
@@ -78,7 +75,6 @@ const styles = StyleSheet.create({
   supporting: { color: theme.colors.textSecondary },
   positive: { color: theme.colors.positive },
   critical: { color: theme.colors.critical },
-  loading: { minHeight: 160, alignItems: 'center', justifyContent: 'center', gap: theme.spacing.md },
   summary: { gap: theme.spacing.sm, paddingVertical: theme.spacing.md, borderBottomWidth: 1, borderColor: theme.colors.border },
   progressTrack: { height: 10, overflow: 'hidden', borderRadius: theme.radius.control, backgroundColor: theme.colors.surfaceSubtle },
   progressValue: { height: 10, backgroundColor: theme.colors.action },
