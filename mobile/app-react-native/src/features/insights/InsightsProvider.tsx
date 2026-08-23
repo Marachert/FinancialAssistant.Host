@@ -15,6 +15,7 @@ import { createInsightsApi } from './insightsApi';
 import type {
   AnalyticsDashboard,
   FinancialScore,
+  ProfileUpdate,
   Recommendation,
   UserProfile,
 } from './insightsTypes';
@@ -31,6 +32,7 @@ type InsightsContextValue = {
   score: FinancialScore | null;
   recommendations: Recommendation[];
   refresh: () => Promise<void>;
+  saveProfile: (update: ProfileUpdate) => Promise<UserProfile>;
 };
 
 const InsightsContext = createContext<InsightsContextValue | null>(null);
@@ -89,6 +91,12 @@ export function InsightsProvider({ children }: PropsWithChildren) {
     }
   }, [api]);
 
+  const saveProfile = useCallback(async (update: ProfileUpdate) => {
+    const savedProfile = await api.updateProfile(update);
+    setProfile(savedProfile);
+    return savedProfile;
+  }, [api]);
+
   useEffect(() => {
     const initialRefresh = setTimeout(() => void refresh(), 0);
     return () => clearTimeout(initialRefresh);
@@ -105,8 +113,9 @@ export function InsightsProvider({ children }: PropsWithChildren) {
       score,
       recommendations,
       refresh,
+      saveProfile,
     }),
-    [api, dashboard, error, profile, recommendations, refresh, refreshing, score, state],
+    [api, dashboard, error, profile, recommendations, refresh, refreshing, saveProfile, score, state],
   );
 
   return <InsightsContext.Provider value={value}>{children}</InsightsContext.Provider>;

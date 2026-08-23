@@ -6,9 +6,11 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const requiredFiles = [
   'app.json',
   'src/app/_layout.tsx',
+  'src/app/(app)/_layout.tsx',
   'src/app/(auth)/sign-in.tsx',
   'src/app/(auth)/register.tsx',
   'src/app/(app)/home.tsx',
+  'src/app/(app)/onboarding.tsx',
   'src/app/(app)/add.tsx',
   'src/app/(app)/draft.tsx',
   'src/app/(app)/score.tsx',
@@ -63,6 +65,10 @@ if (!combined.includes('<Switch')) failures.push('Settings require accessible bi
 if (!combined.includes('Promise.allSettled')) failures.push('Independent insight failures must preserve available data.');
 if (!combined.includes('if (notifications) saves.push')) failures.push('Unavailable notification settings must not block profile saves.');
 if (!combined.includes('Retry notifications')) failures.push('Notification preferences require an explicit retry path.');
+if (!combined.includes('requestPermissionsAsync')) failures.push('Onboarding notification permission request is missing.');
+if (!/profile\?\.profileOnboardingCompleted\s*&&\s*profile\.preferencesOnboardingCompleted/.test(combined)) failures.push('Initial navigation must require completed onboarding.');
+if (!combined.includes('profileOnboardingCompleted: true') || !combined.includes('preferencesOnboardingCompleted: true')) failures.push('Onboarding completion state is not persisted.');
+if (!combined.includes('Skip budget')) failures.push('Optional budget setup requires an explicit skip path.');
 if (combined.includes('maximumFractionDigits: 0')) failures.push('Currency formatting must preserve standard fractional precision.');
 if (/['"`]\/api\/v1\//.test(combined)) failures.push('Mobile source must call only public gateway aliases.');
 if (/EXPO_PUBLIC_(?!API_URL)/.test(envExample)) failures.push('Only the public gateway URL may be exposed in the example environment.');
