@@ -60,5 +60,11 @@ export function createCaptureApi(request: Request) {
         `/transactions/drafts/${encodeURIComponent(draftId)}/confirm`,
         { method: 'POST' },
       ),
+
+    rejectDraft: (draftId: string) =>
+      request<TransactionDraft>(
+        `/transactions/drafts/${encodeURIComponent(draftId)}/reject`,
+        { method: 'POST' },
+      ),
   };
 }
