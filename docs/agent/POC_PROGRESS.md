@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-23T12:05:00+03:00
+Last updated: 2026-08-23T12:13:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-179 duplicate closure is **79.7%**:
-**157 of 197 canonical POC leaf tickets are Done**.
+POC readiness after FIN-180 recovered closure is **80.2%**:
+**158 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,18 +13,18 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-178 - P7.T7 Implement free-form financial input screen
+- FIN-180 - P7.T8 Implement receipt upload screen
 - delivery PR:
   https://github.com/Marachert/FinancialAssistant.Host/pull/180
 - delivery merge commit:
   https://github.com/Marachert/FinancialAssistant.Host/commit/035bbfb56acaa46625cc15fd49b3b10995a64530
-- previous readiness: 156 / 197, or 79.2%
-- current readiness: 157 / 197, or 79.7%
+- previous readiness: 157 / 197, or 79.7%
+- current readiness: 158 / 197, or 80.2%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-179 - Exact later duplicate of canonical FIN-178, Jira-linked and Done
+- FIN-180 - P7.T8 Implement receipt upload screen, recovered and Done
 - implementation PR:
   https://github.com/Marachert/FinancialAssistant.Host/pull/180
 - implementation merge commit:
@@ -32,8 +32,8 @@ Latest Jira closure:
 - final implementation head: `add1ad9ae15418f5122acb71ab84242d121fa8a5`
 - exact-head CI: Backend #525 and Mobile #13
 - previous readiness: 157 / 197, or 79.7%
-- current readiness: 157 / 197, or 79.7%
-- change: +0.0 percentage points
+- current readiness: 158 / 197, or 80.2%
+- change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
 duplicate of FIN-124, FIN-127 is an exact later duplicate of FIN-126, and
@@ -53,19 +53,20 @@ numerator or denominator.
 
 Current delivery:
 
-- FIN-179 is Done and Jira-linked as an exact duplicate of canonical FIN-178
-- canonical implementation remains merged PR #180 at
+- FIN-180 is Done after a recovered delivery audit of merged PR #180
+- canonical implementation is merged at
   `035bbfb56acaa46625cc15fd49b3b10995a64530`, Backend CI #525 and Mobile CI #13 green
-- canonical POC readiness remains 157/197 (79.7%), a +0.0 percentage-point change
-- FIN-31 P7 progress is 11/18 (61.1%) and the epic remains In Progress because
+- canonical POC readiness is 158/197 (80.2%), a +0.5 percentage-point change
+- FIN-31 P7 progress is 12/18 (66.7%) and the epic remains In Progress because
   ranked implementation leaves remain unfinished
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because additional mobile work and
   runtime P6, P8, and P9 gates remain open
 - no paid provider or review credits were used
-- FIN-179 duplicate link 10157 points to canonical FIN-178
-- the next ranked unfinished leaf is expected to be FIN-180 for a fresh audit
+- FIN-180 delivers receipt capture/selection, preview, upload, polling, privacy,
+  error, cancellation, and confirmation-boundary UX
+- the next ranked unfinished leaf is expected to be FIN-181 for a fresh audit
   after this progress record merges
 
 ## Epic Progress
@@ -79,10 +80,10 @@ Current delivery:
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
-| FIN-31 | P7 Mobile app UX and React Native implementation | 11 | 18 | 61.1% |
+| FIN-31 | P7 Mobile app UX and React Native implementation | 12 | 18 | 66.7% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **157** | **197** | **79.7%** |
+| **Total** | **Canonical POC leaf scope** | **158** | **197** | **80.2%** |
 
 ## First-User-Test Gates
 
@@ -228,3 +229,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-23T11:25:00+03:00 | FIN-177 | Exact duplicate of FIN-174; Jira-linked and Done | 79.2% | +0.0 pp |
 | 2026-08-23T11:56:00+03:00 | FIN-178 | Recovered free-form capture from merged PR 180 | 79.7% | +0.5 pp |
 | 2026-08-23T12:05:00+03:00 | FIN-179 | Exact duplicate of FIN-178; Jira-linked and Done | 79.7% | +0.0 pp |
+| 2026-08-23T12:13:00+03:00 | FIN-180 | Recovered receipt upload from merged PR 180 | 80.2% | +0.5 pp |
