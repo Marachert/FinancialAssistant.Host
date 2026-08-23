@@ -1,9 +1,9 @@
 import { router } from 'expo-router';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { theme, typography } from '@/app/theme';
 import { useInsights } from '@/features/insights/InsightsProvider';
-import { LinkButton, ScreenScaffold, SecondaryButton, StatusBanner } from '@/shared/ui';
+import { LinkButton, LoadingSkeleton, ScreenScaffold, SecondaryButton, StatusBanner } from '@/shared/ui';
 
 export default function RecommendationsScreen() {
   const { state, refreshing, error, recommendations, refresh } = useInsights();
@@ -16,10 +16,7 @@ export default function RecommendationsScreen() {
       </View>
       {error ? <StatusBanner>{error}</StatusBanner> : null}
       {state === 'loading' && !recommendations.length ? (
-        <View style={styles.loading}>
-          <ActivityIndicator color={theme.colors.action} />
-          <Text style={[typography.body, styles.supporting]}>Loading recommendations...</Text>
-        </View>
+        <LoadingSkeleton label="Loading recommendations" rows={3} />
       ) : null}
       {state !== 'loading' && !recommendations.length ? (
         <View style={styles.empty}>
@@ -58,7 +55,6 @@ const styles = StyleSheet.create({
   header: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md },
   title: { color: theme.colors.textPrimary },
   supporting: { color: theme.colors.textSecondary },
-  loading: { minHeight: 160, alignItems: 'center', justifyContent: 'center', gap: theme.spacing.md },
   empty: { minHeight: 160, justifyContent: 'center', gap: theme.spacing.sm, paddingVertical: theme.spacing.xl },
   list: { gap: theme.spacing.md },
   item: { gap: theme.spacing.sm, padding: theme.spacing.md, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radius.control, backgroundColor: theme.colors.surface },

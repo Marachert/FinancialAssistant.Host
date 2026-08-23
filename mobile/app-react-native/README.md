@@ -7,6 +7,8 @@ transaction capture, receipt upload, editable draft review, and explicit
 backend confirmation journey. FIN-35 adds the signed-in dashboard, explainable
 financial score, recommendations, and profile and notification settings.
 FIN-170 adds the post-registration profile setup and initial-navigation gate.
+FIN-186 adds shared loading skeletons, explicit empty and friendly error states,
+screen-level retry actions, and a live offline banner with manual recheck.
 
 ## Prerequisites
 
@@ -80,6 +82,12 @@ does not block completion. Both backend onboarding flags must be complete before
 the signed-in navigator opens the dashboard.
 Disabled backend capabilities are shown as recoverable unavailable states, and
 users can pull to refresh after an operator enables the corresponding service.
+The app listens to the device network state through `expo-network`. When the
+device is offline, every scaffolded screen shows a clear banner without hiding
+already loaded financial information; users can recheck connectivity and retry
+the affected screen after reconnecting. Critical data screens use stable shared
+skeletons during initial loading and avoid rendering backend problem details or
+technical exception text as user-facing errors.
 Account delivery preferences remain separate from operating-system permission;
 when device permission is blocked, Settings provides a direct recovery action.
 The client displays score factors and recommendation evidence returned by the

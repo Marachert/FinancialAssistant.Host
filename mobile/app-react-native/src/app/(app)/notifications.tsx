@@ -1,22 +1,21 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { ApiProblem } from '@/api/client';
+import { friendlyApiError } from '@/api/client';
 import { theme, typography } from '@/app/theme';
 import { useInsights } from '@/features/insights/InsightsProvider';
 import type { NotificationItem } from '@/features/insights/insightsTypes';
 import {
   LinkButton,
+  LoadingSkeleton,
   ScreenScaffold,
   SecondaryButton,
   StatusBanner,
 } from '@/shared/ui';
 
 function message(reason: unknown) {
-  return reason instanceof ApiProblem
-    ? reason.message
-    : 'Notifications could not be loaded. Try again.';
+  return friendlyApiError(reason, 'Notifications could not be loaded. Try again.');
 }
 
 function preparedTime(value: string) {
@@ -76,7 +75,7 @@ export default function NotificationsScreen() {
         item.notificationId === notificationId ? updated : item
       )));
     } catch (reason) {
-      setError(reason instanceof ApiProblem ? reason.message : 'The notification could not be marked as read.');
+      setError(friendlyApiError(reason, 'The notification could not be marked as read. Try again.'));
     } finally {
       setMarkingId(null);
     }
@@ -102,10 +101,7 @@ export default function NotificationsScreen() {
 
       {error ? <StatusBanner>{error}</StatusBanner> : null}
       {loading ? (
-        <View accessibilityLiveRegion="polite" style={styles.loading}>
-          <ActivityIndicator color={theme.colors.action} />
-          <Text style={[typography.body, styles.supporting]}>Loading notifications...</Text>
-        </View>
+        <LoadingSkeleton label="Loading notifications" rows={3} />
       ) : null}
 
       {!loading && items.length === 0 ? (
@@ -154,7 +150,6 @@ const styles = StyleSheet.create({
   title: { color: theme.colors.textPrimary },
   supporting: { color: theme.colors.textSecondary },
   unread: { color: theme.colors.info, fontWeight: '600' },
-  loading: { minHeight: 180, alignItems: 'center', justifyContent: 'center', gap: theme.spacing.md },
   notification: { minHeight: 150, gap: theme.spacing.sm, paddingVertical: theme.spacing.lg, paddingLeft: theme.spacing.md, borderBottomWidth: 1, borderColor: theme.colors.border },
   notificationUnread: { borderLeftWidth: 4, borderLeftColor: theme.colors.info },
   notificationHeader: { minHeight: 24, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: theme.spacing.md },

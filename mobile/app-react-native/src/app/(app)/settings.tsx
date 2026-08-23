@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { router } from 'expo-router';
 import * as Notifications from 'expo-notifications';
-import { ActivityIndicator, Linking, Platform, StyleSheet, Switch, Text, View } from 'react-native';
+import { Linking, Platform, StyleSheet, Switch, Text, View } from 'react-native';
 
-import { ApiProblem } from '@/api/client';
+import { friendlyApiError } from '@/api/client';
 import { theme, typography } from '@/app/theme';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useInsights } from '@/features/insights/InsightsProvider';
 import type { NotificationPreferences, UserProfile } from '@/features/insights/insightsTypes';
 import {
   LinkButton,
+  LoadingSkeleton,
   PrimaryButton,
   ScreenScaffold,
   SecondaryButton,
@@ -102,11 +103,7 @@ export default function SettingsScreen() {
     try {
       setNotifications(await api.getNotificationPreferences());
     } catch (reason) {
-      setNotificationError(
-        reason instanceof ApiProblem
-          ? reason.message
-          : 'Notification preferences could not be loaded.',
-      );
+      setNotificationError(friendlyApiError(reason, 'Notification preferences could not be loaded. Try again.'));
     } finally {
       setNotificationLoading(false);
     }
@@ -200,7 +197,7 @@ export default function SettingsScreen() {
       await refresh();
       setFormOverride(null);
     } catch (reason) {
-      setError(reason instanceof ApiProblem ? reason.message : 'Settings could not be saved. Try again.');
+      setError(friendlyApiError(reason, 'Settings could not be saved. Try again.'));
     } finally {
       setBusy(false);
     }
@@ -225,10 +222,7 @@ export default function SettingsScreen() {
       {saved ? <StatusBanner tone="success">Settings saved.</StatusBanner> : null}
 
       {!form && state === 'loading' ? (
-        <View style={styles.loading}>
-          <ActivityIndicator color={theme.colors.action} />
-          <Text style={[typography.body, styles.supporting]}>Loading settings...</Text>
-        </View>
+        <LoadingSkeleton label="Loading settings" rows={4} />
       ) : null}
 
       {form ? (
@@ -343,7 +337,6 @@ const styles = StyleSheet.create({
   header: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md },
   title: { color: theme.colors.textPrimary },
   supporting: { color: theme.colors.textSecondary },
-  loading: { minHeight: 160, alignItems: 'center', justifyContent: 'center', gap: theme.spacing.md },
   section: { gap: theme.spacing.md, paddingBottom: theme.spacing.md, borderBottomWidth: 1, borderColor: theme.colors.border },
   sectionHeader: { minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing.md },
   devicePermission: { gap: theme.spacing.sm, paddingTop: theme.spacing.sm },

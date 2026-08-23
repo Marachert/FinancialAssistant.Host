@@ -8,7 +8,7 @@ import {
   type PropsWithChildren,
 } from 'react';
 
-import { ApiProblem } from '@/api/client';
+import { ApiProblem, friendlyApiError } from '@/api/client';
 import { useAuth } from '@/features/auth/AuthProvider';
 
 import { createInsightsApi } from './insightsApi';
@@ -41,9 +41,7 @@ function errorMessage(reason: unknown) {
   if (reason instanceof ApiProblem && reason.status === 501) {
     return 'Insights are not enabled in this environment yet.';
   }
-  return reason instanceof ApiProblem
-    ? reason.message
-    : 'Your financial overview could not be refreshed. Try again.';
+  return friendlyApiError(reason, 'Your financial overview could not be refreshed. Try again.');
 }
 
 export function InsightsProvider({ children }: PropsWithChildren) {

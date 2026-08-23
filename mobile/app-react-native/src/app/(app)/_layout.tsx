@@ -1,11 +1,11 @@
 import { Stack, router, usePathname } from 'expo-router';
 import { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { theme, typography } from '@/app/theme';
 import { CaptureProvider } from '@/features/capture/CaptureProvider';
 import { InsightsProvider, useInsights } from '@/features/insights/InsightsProvider';
-import { PrimaryButton, ScreenScaffold, StatusBanner } from '@/shared/ui';
+import { LoadingSkeleton, PrimaryButton, ScreenScaffold, StatusBanner } from '@/shared/ui';
 
 function SignedInNavigator() {
   const pathname = usePathname();
@@ -25,9 +25,9 @@ function SignedInNavigator() {
 
   if ((!profile && state === 'loading') || needsRedirect) {
     return (
-      <View accessibilityLabel="Loading profile" accessibilityRole="progressbar" style={styles.loading}>
-        <ActivityIndicator color={theme.colors.action} size="large" />
-      </View>
+      <ScreenScaffold>
+        <LoadingSkeleton label="Loading profile" rows={4} />
+      </ScreenScaffold>
     );
   }
 
@@ -55,6 +55,5 @@ export default function SignedInLayout() {
 }
 
 const styles = StyleSheet.create({
-  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.canvas },
   title: { color: theme.colors.textPrimary },
 });

@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { theme, typography } from '@/app/theme';
 import { useInsights } from '@/features/insights/InsightsProvider';
 import {
   LinkButton,
+  LoadingSkeleton,
   PrimaryButton,
   ScreenScaffold,
   SecondaryButton,
@@ -80,10 +81,7 @@ export default function HomeScreen() {
 
       {error ? <StatusBanner>{error}</StatusBanner> : null}
       {state === 'loading' && !dashboard ? (
-        <View accessibilityLiveRegion="polite" style={styles.loading}>
-          <ActivityIndicator color={theme.colors.action} />
-          <Text style={[typography.body, styles.supporting]}>Loading your overview...</Text>
-        </View>
+        <LoadingSkeleton label="Loading your overview" rows={3} />
       ) : null}
 
       {dashboard && summary && limit ? (
@@ -205,7 +203,6 @@ const styles = StyleSheet.create({
   supporting: { color: theme.colors.textSecondary },
   positive: { color: theme.colors.positive },
   critical: { color: theme.colors.critical },
-  loading: { minHeight: 160, alignItems: 'center', justifyContent: 'center', gap: theme.spacing.md },
   heroMetric: { gap: theme.spacing.sm, paddingVertical: theme.spacing.md, borderBottomWidth: 1, borderColor: theme.colors.border },
   section: { gap: theme.spacing.md, paddingVertical: theme.spacing.sm },
   sectionHeader: { minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing.sm },

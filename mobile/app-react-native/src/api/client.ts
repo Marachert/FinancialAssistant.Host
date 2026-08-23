@@ -26,6 +26,20 @@ export class ApiProblem extends Error {
   }
 }
 
+export function friendlyApiError(reason: unknown, fallback: string) {
+  if (reason instanceof TypeError && /network request failed|failed to fetch|load failed/i.test(reason.message)) {
+    return 'We could not connect. Check your internet connection and try again.';
+  }
+
+  if (!(reason instanceof ApiProblem)) return fallback;
+  if ([401, 403].includes(reason.status)) return 'Your session has expired. Sign in again to continue.';
+  if (reason.status === 404) return 'This information is not available yet. Try again shortly.';
+  if (reason.status === 409) return 'This information changed. Refresh and try again.';
+  if (reason.status === 429) return 'Too many requests were made. Wait a moment and try again.';
+  if (reason.status >= 500) return 'The service is temporarily unavailable. Try again shortly.';
+  return fallback;
+}
+
 async function readProblem(response: Response): Promise<ProblemDetails | undefined> {
   const contentType = response.headers.get('content-type') || '';
   if (!contentType.includes('json')) return undefined;

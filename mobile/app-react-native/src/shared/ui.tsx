@@ -1,3 +1,4 @@
+import * as Network from 'expo-network';
 import { useState, type PropsWithChildren, type ReactNode } from 'react';
 import {
   ActivityIndicator,
@@ -28,6 +29,7 @@ export function ScreenScaffold({
 }>) {
   return (
     <SafeAreaView style={styles.safeArea}>
+      <OfflineBanner />
       <KeyboardAvoidingView style={styles.fill} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
           contentContainerStyle={[styles.screen, centered && styles.screenCentered]}
@@ -44,6 +46,64 @@ export function ScreenScaffold({
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+}
+
+function OfflineBanner() {
+  const liveState = Network.useNetworkState();
+  const liveKey = `${liveState.type}:${liveState.isConnected}:${liveState.isInternetReachable}`;
+  const [checkedState, setCheckedState] = useState<{
+    liveKey: string;
+    state: Network.NetworkState;
+  } | null>(null);
+  const [checking, setChecking] = useState(false);
+
+  const state = checkedState?.liveKey === liveKey ? checkedState.state : liveState;
+  const offline = state.isConnected === false || state.isInternetReachable === false;
+  if (!offline) return null;
+
+  const checkAgain = async () => {
+    setChecking(true);
+    try {
+      setCheckedState({ liveKey, state: await Network.getNetworkStateAsync() });
+    } catch {
+      setCheckedState({ liveKey, state: liveState });
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  return (
+    <View accessibilityRole="alert" style={styles.offlineBanner}>
+      <View style={styles.offlineCopy}>
+        <Text style={[typography.bodyStrong, styles.offlineTitle]}>You are offline</Text>
+        <Text style={[typography.small, styles.offlineText]}>Reconnect to update your financial information.</Text>
+      </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ busy: checking, disabled: checking }}
+        disabled={checking}
+        onPress={() => void checkAgain()}
+        style={({ pressed }) => [styles.offlineAction, pressed && styles.offlineActionPressed]}
+      >
+        <Text style={[typography.bodyStrong, styles.offlineActionText]}>{checking ? 'Checking...' : 'Check again'}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+export function LoadingSkeleton({ label = 'Loading content', rows = 3 }: { label?: string; rows?: number }) {
+  return (
+    <View accessibilityLabel={label} accessibilityRole="progressbar" style={styles.skeleton}>
+      <View style={[styles.skeletonLine, styles.skeletonHeading]} />
+      {Array.from({ length: rows }, (_, index) => (
+        <View
+          key={index}
+          style={[styles.skeletonLine, index === rows - 1 && styles.skeletonShort]}
+        />
+      ))}
+      <View style={styles.skeletonPanel} />
+    </View>
   );
 }
 
@@ -170,6 +230,13 @@ export function SegmentedControl({
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   safeArea: { flex: 1, backgroundColor: theme.colors.canvas },
+  offlineBanner: { minHeight: 72, flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md, paddingHorizontal: theme.spacing.lg, paddingVertical: theme.spacing.sm, borderBottomWidth: 1, borderColor: theme.colors.warning, backgroundColor: '#FFF4E5' },
+  offlineCopy: { flex: 1, gap: theme.spacing.xs },
+  offlineTitle: { color: theme.colors.warning },
+  offlineText: { color: theme.colors.textPrimary },
+  offlineAction: { minHeight: 44, justifyContent: 'center', paddingHorizontal: theme.spacing.sm },
+  offlineActionPressed: { backgroundColor: theme.colors.surface },
+  offlineActionText: { color: theme.colors.action },
   screen: { flexGrow: 1, padding: theme.spacing.lg, gap: theme.spacing.lg },
   screenCentered: { justifyContent: 'center' },
   fieldGroup: { gap: theme.spacing.xs },
@@ -205,4 +272,9 @@ const styles = StyleSheet.create({
   segmentSelected: { backgroundColor: theme.colors.action },
   segmentLabel: { color: theme.colors.textPrimary },
   segmentLabelSelected: { color: theme.colors.onAction },
+  skeleton: { minHeight: 180, gap: theme.spacing.md, justifyContent: 'center', paddingVertical: theme.spacing.md },
+  skeletonLine: { height: 16, borderRadius: theme.radius.control, backgroundColor: theme.colors.surfaceSubtle },
+  skeletonHeading: { width: '58%', height: 28 },
+  skeletonShort: { width: '72%' },
+  skeletonPanel: { height: 72, borderRadius: theme.radius.control, backgroundColor: theme.colors.surfaceSubtle },
 });
