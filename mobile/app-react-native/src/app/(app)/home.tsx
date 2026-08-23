@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { router } from 'expo-router';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
@@ -8,8 +9,12 @@ import {
   PrimaryButton,
   ScreenScaffold,
   SecondaryButton,
+  SegmentedControl,
   StatusBanner,
 } from '@/shared/ui';
+
+const periods = ['Today', 'Week', 'Month'] as const;
+type DashboardPeriod = (typeof periods)[number];
 
 function money(value: number, currency: string) {
   return new Intl.NumberFormat(undefined, {
@@ -32,6 +37,7 @@ function ProgressBar({ value, tone = 'action' }: { value: number; tone?: 'action
 }
 
 export default function HomeScreen() {
+  const [period, setPeriod] = useState<DashboardPeriod>('Today');
   const {
     state,
     refreshing,
@@ -42,6 +48,21 @@ export default function HomeScreen() {
     refresh,
   } = useInsights();
   const recommendation = recommendations.find((item) => item.status === 'active') ?? recommendations[0];
+  const summary = dashboard
+    ? period === 'Today'
+      ? dashboard.dailySummary
+      : period === 'Week'
+        ? dashboard.weeklySummary
+        : dashboard.monthlySummary
+    : null;
+  const limit = dashboard
+    ? period === 'Today'
+      ? dashboard.dailyLimit
+      : period === 'Week'
+        ? dashboard.limitsProgress.weekly
+        : dashboard.limitsProgress.monthly
+    : null;
+  const hasActivity = Boolean(summary && (summary.incomeTotal !== 0 || summary.expenseTotal !== 0));
 
   return (
     <ScreenScaffold
@@ -51,7 +72,7 @@ export default function HomeScreen() {
     >
       <View style={styles.header}>
         <View style={styles.headerCopy}>
-          <Text accessibilityRole="header" style={[typography.title, styles.title]}>Today</Text>
+          <Text accessibilityRole="header" style={[typography.title, styles.title]}>Overview</Text>
           <Text style={[typography.small, styles.supporting]}>Financial Assistant</Text>
         </View>
         <LinkButton label="Settings" onPress={() => router.push('/settings')} />
@@ -65,56 +86,63 @@ export default function HomeScreen() {
         </View>
       ) : null}
 
-      {dashboard ? (
+      {dashboard && summary && limit ? (
         <>
           {dashboard.freshness.isStale ? (
             <StatusBanner tone="warning">Some totals are still catching up. Last known values are shown.</StatusBanner>
           ) : null}
 
+          <SegmentedControl
+            label="Dashboard period"
+            options={periods}
+            value={period}
+            onChange={(value) => setPeriod(value as DashboardPeriod)}
+          />
+
           <View style={styles.heroMetric}>
-            <Text style={[typography.small, styles.supporting]}>Today spent</Text>
+            <Text style={[typography.small, styles.supporting]}>{period} spent</Text>
             <Text style={[typography.display, styles.title]}>
-              {money(dashboard.dailySummary.expenseTotal, dashboard.currency)}
+              {money(summary.expenseTotal, dashboard.currency)}
             </Text>
-            {dashboard.dailyLimit.isConfigured && dashboard.dailyLimit.limit !== null ? (
+            {limit.isConfigured && limit.limit !== null ? (
               <>
                 <ProgressBar
-                  value={dashboard.dailyLimit.usedPercent ?? 0}
-                  tone={(dashboard.dailyLimit.usedPercent ?? 0) >= 80 ? 'warning' : 'action'}
+                  value={limit.usedPercent ?? 0}
+                  tone={(limit.usedPercent ?? 0) >= 80 ? 'warning' : 'action'}
                 />
                 <Text style={[typography.small, styles.supporting]}>
-                  {`${money(Math.max(0, dashboard.dailyLimit.remaining ?? 0), dashboard.currency)} left from today's limit`}
+                  {`${money(Math.max(0, limit.remaining ?? 0), dashboard.currency)} left from this limit`}
                 </Text>
               </>
             ) : (
-              <Text style={[typography.small, styles.supporting]}>No daily limit configured</Text>
+              <Text style={[typography.small, styles.supporting]}>No limit configured for this period</Text>
             )}
           </View>
 
           <View style={styles.section}>
-            <Text style={[typography.heading, styles.title]}>This month</Text>
+            <Text style={[typography.heading, styles.title]}>{period} summary</Text>
             <View style={styles.metricGrid}>
               <View style={styles.metric}>
                 <Text style={[typography.caption, styles.supporting]}>Income</Text>
                 <Text style={[typography.bodyStrong, styles.positive]}>
-                  {money(dashboard.monthlyProgress.incomeTotal, dashboard.currency)}
+                  {money(summary.incomeTotal, dashboard.currency)}
                 </Text>
               </View>
               <View style={styles.metric}>
                 <Text style={[typography.caption, styles.supporting]}>Expenses</Text>
                 <Text style={[typography.bodyStrong, styles.title]}>
-                  {money(dashboard.monthlyProgress.expenseTotal, dashboard.currency)}
+                  {money(summary.expenseTotal, dashboard.currency)}
                 </Text>
               </View>
               <View style={styles.metric}>
                 <Text style={[typography.caption, styles.supporting]}>Balance change</Text>
-                <Text style={[typography.bodyStrong, dashboard.monthlyProgress.balanceDelta >= 0 ? styles.positive : styles.critical]}>
-                  {money(dashboard.monthlyProgress.balanceDelta, dashboard.currency)}
+                <Text style={[typography.bodyStrong, summary.balanceDelta >= 0 ? styles.positive : styles.critical]}>
+                  {money(summary.balanceDelta, dashboard.currency)}
                 </Text>
               </View>
             </View>
-            {dashboard.limitsProgress.monthly.isConfigured ? (
-              <ProgressBar value={dashboard.limitsProgress.monthly.usedPercent ?? 0} />
+            {!hasActivity ? (
+              <StatusBanner tone="info">No activity for this period yet. Add a transaction or upload a receipt to begin.</StatusBanner>
             ) : null}
           </View>
 
@@ -155,7 +183,14 @@ export default function HomeScreen() {
       {state === 'error' && !dashboard ? (
         <SecondaryButton label="Retry overview" onPress={() => void refresh()} />
       ) : null}
-      <PrimaryButton label="Add transaction" onPress={() => router.push('/add')} />
+      <View style={styles.quickActions}>
+        <View style={styles.quickAction}>
+          <PrimaryButton label="Add transaction" onPress={() => router.push('/add')} />
+        </View>
+        <View style={styles.quickAction}>
+          <SecondaryButton label="Upload receipt" onPress={() => router.push('/add')} />
+        </View>
+      </View>
     </ScreenScaffold>
   );
 }
@@ -178,4 +213,6 @@ const styles = StyleSheet.create({
   progressValue: { height: 8, backgroundColor: theme.colors.action },
   progressWarning: { backgroundColor: theme.colors.warning },
   recommendation: { gap: theme.spacing.sm, borderLeftWidth: 4, borderColor: theme.colors.info, paddingLeft: theme.spacing.md, paddingVertical: theme.spacing.xs },
+  quickActions: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm },
+  quickAction: { minWidth: 148, flex: 1 },
 });
