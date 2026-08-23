@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Redirect, router } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 
 import { ApiProblem } from '@/api/client';
 import { theme, typography } from '@/app/theme';
@@ -44,8 +44,9 @@ function isConfirmationReplayState(status: string) {
 export default function DraftReviewScreen() {
   const { api, draft, setDraft, confirmed, setConfirmed, reset } = useCapture();
   const [form, setForm] = useState<FormState | null>(draft ? formFromDraft(draft) : null);
-  const [busy, setBusy] = useState(false);
+  const [action, setAction] = useState<'idle' | 'confirming' | 'rejecting'>('idle');
   const [error, setError] = useState<string | null>(null);
+  const busy = action !== 'idle';
 
   if (!draft || !form) return <Redirect href="/add" />;
 
@@ -60,7 +61,7 @@ export default function DraftReviewScreen() {
       setError('Check amount, currency, category, and date before confirming.');
       return;
     }
-    setBusy(true);
+    setAction('confirming');
     setError(null);
     try {
       if (isConfirmationReplayState(draft.status)) {
@@ -109,8 +110,37 @@ export default function DraftReviewScreen() {
         );
       }
     } finally {
-      setBusy(false);
+      setAction('idle');
     }
+  };
+
+  const reject = async () => {
+    setAction('rejecting');
+    setError(null);
+    try {
+      await api.rejectDraft(draft.id);
+      reset();
+      router.replace('/add');
+    } catch (reason) {
+      setError(
+        reason instanceof ApiProblem
+          ? reason.message
+          : 'The draft could not be discarded. It is still available; try again.',
+      );
+    } finally {
+      setAction('idle');
+    }
+  };
+
+  const requestRejection = () => {
+    Alert.alert(
+      'Discard this draft?',
+      'The suggested transaction will be rejected and cannot be confirmed later.',
+      [
+        { text: 'Keep reviewing', style: 'cancel' },
+        { text: 'Discard draft', style: 'destructive', onPress: () => void reject() },
+      ],
+    );
   };
 
   if (confirmed) {
@@ -161,7 +191,12 @@ export default function DraftReviewScreen() {
       <TextField label="Merchant or source (optional)" value={form.merchant} onChangeText={(value) => setField('merchant', value)} editable={!busy} />
       <TextField label="Date (YYYY-MM-DD)" value={form.date} onChangeText={(value) => setField('date', value)} editable={!busy} />
       <TextField label="Note (optional)" value={form.note} onChangeText={(value) => setField('note', value)} multiline editable={!busy} />
-      <PrimaryButton label="Confirm transaction" loading={busy} onPress={() => void confirm()} />
+      <PrimaryButton label="Confirm transaction" loading={action === 'confirming'} disabled={busy} onPress={() => void confirm()} />
+      <SecondaryButton
+        label={action === 'rejecting' ? 'Discarding draft...' : 'Discard draft'}
+        disabled={busy}
+        onPress={requestRejection}
+      />
       <SecondaryButton label="Back to edit input" disabled={busy} onPress={() => router.back()} />
     </ScreenScaffold>
   );
