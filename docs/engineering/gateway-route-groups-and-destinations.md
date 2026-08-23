@@ -43,6 +43,7 @@ The term **public route group** means a route exposed through the public gateway
 | `transaction-draft-review` | `/transactions/drafts/{id}` | GET, PUT | authenticated | Transaction Intake Service | `transaction-intake-service` |
 | `transaction-receipt-draft` | `/transactions/drafts/receipts/{receiptId}` | GET | authenticated | Transaction Intake Service | `transaction-intake-service` |
 | `transaction-draft-confirm` | `/transactions/drafts/{id}/confirm` | POST | authenticated | Transaction Intake Service | `transaction-intake-service` |
+| `transaction-draft-reject` | `/transactions/drafts/{id}/reject` | POST | authenticated | Transaction Intake Service | `transaction-intake-service` |
 | `receipts` | `/receipts` and `/receipts/{**gatewayPath}` | GET, POST | authenticated | Receipt File Intake Service | `receipt-file-intake-service` |
 | `incomes` | `/incomes` and `/incomes/{**gatewayPath}` | GET, POST, PUT | authenticated | Income Service | `income-service` |
 | `expenses` | `/expenses` and `/expenses/{**gatewayPath}` | GET, POST, PUT | authenticated | Expense Service | `expense-service` |
