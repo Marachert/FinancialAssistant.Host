@@ -47,6 +47,9 @@ if (!combined.includes('/receipts')) failures.push('Gateway receipt upload route
 if (!combined.includes('/transactions/drafts/receipts/')) failures.push('Owner-scoped receipt draft lookup is missing.');
 if (!combined.includes('expectedRevision')) failures.push('Draft optimistic concurrency is missing.');
 if (!combined.includes('/confirm')) failures.push('Backend draft confirmation is missing.');
+if (!combined.includes('/reject')) failures.push('Backend draft rejection is missing.');
+if (!combined.includes('api.rejectDraft(draft.id)')) failures.push('Draft discard must reject the backend draft.');
+if (!combined.includes("'Discard this draft?'")) failures.push('Draft rejection requires explicit confirmation.');
 if (!combined.includes('isConfirmationReplayState(latest.status)')) failures.push('Lost confirmation response recovery is missing.');
 if (!combined.includes('api.confirmDraft(latest.id)')) failures.push('Idempotent confirmation replay is missing.');
 if (!combined.includes('FormData')) failures.push('Multipart receipt upload is missing.');
