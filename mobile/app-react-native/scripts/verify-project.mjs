@@ -61,6 +61,10 @@ if (!combined.includes('/recommendations')) failures.push('Recommendation route 
 if (!combined.includes('/users/me/preferences')) failures.push('Profile preferences route is missing.');
 if (!combined.includes('/notification-preferences')) failures.push('Notification preferences route is missing.');
 if (!combined.includes('RefreshControl')) failures.push('Insight screens require pull-to-refresh.');
+if (!combined.includes('label="Dashboard period"')) failures.push('Dashboard period selection is missing.');
+if (!combined.includes('dashboard.weeklySummary') || !combined.includes('dashboard.monthlySummary')) failures.push('Dashboard period summaries are incomplete.');
+if (!combined.includes('No activity for this period yet.')) failures.push('Dashboard empty state is missing.');
+if (!combined.includes('label="Upload receipt"')) failures.push('Dashboard receipt quick action is missing.');
 if (!combined.includes('<Switch')) failures.push('Settings require accessible binary controls.');
 if (!combined.includes('Promise.allSettled')) failures.push('Independent insight failures must preserve available data.');
 if (!combined.includes('if (notifications) saves.push')) failures.push('Unavailable notification settings must not block profile saves.');
