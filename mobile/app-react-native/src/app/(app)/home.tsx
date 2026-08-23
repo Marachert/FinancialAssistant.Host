@@ -120,7 +120,10 @@ export default function HomeScreen() {
           </View>
 
           <View style={styles.section}>
-            <Text style={[typography.heading, styles.title]}>{period} summary</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={[typography.heading, styles.title]}>{period} summary</Text>
+              <LinkButton label="Analytics" onPress={() => router.push('/analytics')} />
+            </View>
             <View style={styles.metricGrid}>
               <View style={styles.metric}>
                 <Text style={[typography.caption, styles.supporting]}>Income</Text>
