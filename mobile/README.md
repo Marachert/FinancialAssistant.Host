@@ -18,3 +18,9 @@ mobile/app-react-native/
 - Push notification handling.
 
 The mobile client calls backend capabilities only through the Public API Gateway. Backend deterministic logic remains authoritative for financial data and calculations.
+
+Release-candidate validation is defined in:
+
+```text
+docs/engineering/mobile-smoke-regression-test-plan.md
+```
