@@ -52,7 +52,8 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
             && route.GetProperty("status").GetString() == "active");
         Assert.Contains(routes.EnumerateArray(), route =>
             route.GetProperty("routeKey").GetString() == "admin-monitoring"
-            && route.GetProperty("accessPolicy").GetString() == "admin");
+            && route.GetProperty("accessPolicy").GetString() == "admin"
+            && route.GetProperty("status").GetString() == "active");
         Assert.Contains(routes.EnumerateArray(), route =>
             route.GetProperty("routeKey").GetString() == "notification-preferences"
             && route.GetProperty("serviceOwner").GetString() == "Notification Service"
@@ -77,7 +78,7 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
         Assert.Equal("ready", root.GetProperty("status").GetString());
         Assert.Equal(17, root.GetProperty("routeCount").GetInt32());
         Assert.Equal(12, root.GetProperty("destinationCount").GetInt32());
-        Assert.Equal(2, root.GetProperty("enabledDestinationCount").GetInt32());
+        Assert.Equal(3, root.GetProperty("enabledDestinationCount").GetInt32());
         Assert.Equal("placeholder", root.GetProperty("securityMode").GetString());
     }
 
