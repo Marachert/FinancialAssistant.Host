@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FinancialAssistant.Mcp.Infrastructure</RootNamespace>
+    <AssemblyName>FinancialAssistant.Mcp.Infrastructure</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.Mcp.Application/FinancialAssistant.Mcp.Application.csproj" />
+    <ProjectReference Include="../FinancialAssistant.Mcp.Contracts/FinancialAssistant.Mcp.Contracts.csproj" />
+    <ProjectReference Include="../../monitoring/FinancialAssistant.Monitoring.Contracts/FinancialAssistant.Monitoring.Contracts.csproj" />
+    <ProjectReference Include="../../audit/FinancialAssistant.Audit.Contracts/FinancialAssistant.Audit.Contracts.csproj" />
+    <ProjectReference Include="../../../shared/contracts/FinancialAssistant.Shared.Contracts/FinancialAssistant.Shared.Contracts.csproj" />
+  </ItemGroup>
+</Project>

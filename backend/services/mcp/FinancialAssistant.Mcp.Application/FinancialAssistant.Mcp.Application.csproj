@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FinancialAssistant.Mcp.Application</RootNamespace>
+    <AssemblyName>FinancialAssistant.Mcp.Application</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.Mcp.Contracts/FinancialAssistant.Mcp.Contracts.csproj" />
+  </ItemGroup>
+</Project>

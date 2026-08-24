@@ -104,6 +104,13 @@ docs/api/audit-admin-v1.md
 backend/services/audit/README.md
 ```
 
+Role-controlled internal MCP Server:
+
+```text
+docs/api/mcp-server-v1.md
+backend/services/mcp/README.md
+```
+
 Mobile PoC experience and UI kit:
 
 ```text

@@ -34,6 +34,7 @@ docs/README.md                       Documentation map
 | File storage | MinIO for receipt and file binaries |
 | Mobile | React Native boundary for Android and iOS |
 | Web admin | Internal monitoring UI boundary |
+| Internal MCP | Role-controlled read-only operational and documentation tools |
 | AI and OCR | External providers used for parsing, explanations, recommendations, and UX assistance |
 
 Core rules:
