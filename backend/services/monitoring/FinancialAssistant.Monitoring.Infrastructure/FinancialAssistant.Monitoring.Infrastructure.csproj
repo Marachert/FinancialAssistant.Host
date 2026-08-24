@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FinancialAssistant.Monitoring.Infrastructure</RootNamespace>
+    <AssemblyName>FinancialAssistant.Monitoring.Infrastructure</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.Monitoring.Application/FinancialAssistant.Monitoring.Application.csproj" />
+    <ProjectReference Include="../FinancialAssistant.Monitoring.Contracts/FinancialAssistant.Monitoring.Contracts.csproj" />
+  </ItemGroup>
+</Project>
