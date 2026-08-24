@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-24T18:50:11+03:00
+Last updated: 2026-08-24T19:22:06+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-40 delivery is **84.8%**:
-**167 of 197 canonical POC leaf tickets are Done**.
+POC readiness after FIN-41 delivery is **85.3%**:
+**168 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,27 +13,27 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-40 - Implement MCP Server v1 with allowlisted internal tools
+- FIN-41 - Implement backend integration, E2E, contract, and privacy tests
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/225
+  https://github.com/Marachert/FinancialAssistant.Host/pull/227
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/ac366bac5d1983aadfaf7468eb103b0f12530bee
-- previous readiness: 166 / 197, or 84.3%
-- current readiness: 167 / 197, or 84.8%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/10a5241d63cc93c553b62bfa4f50c403c539e886
+- previous readiness: 167 / 197, or 84.8%
+- current readiness: 168 / 197, or 85.3%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-40 - Implement MCP Server v1 with allowlisted internal tools, merged and
+- FIN-41 - Implement backend integration, E2E, contract, and privacy tests, merged and
   Done
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/225
+  https://github.com/Marachert/FinancialAssistant.Host/pull/227
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/ac366bac5d1983aadfaf7468eb103b0f12530bee
-- final implementation head: `a3893ef607d101aab625265e6305c2438796e9a7`
-- exact-head CI: Backend run 32746810220 and Mobile run 32746810295
-- previous readiness: 166 / 197, or 84.3%
-- current readiness: 167 / 197, or 84.8%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/10a5241d63cc93c553b62bfa4f50c403c539e886
+- final implementation head: `70c04cad2622fc32344397783c619991450a56b2`
+- exact-head CI: Backend run 32750008586 and Mobile run 32750008438
+- previous readiness: 167 / 197, or 84.8%
+- current readiness: 168 / 197, or 85.3%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -54,21 +54,22 @@ numerator or denominator.
 
 Current delivery:
 
-- FIN-40 is Done through guarded merged PR #225
-- the implementation is merged at `ac366bac5d1983aadfaf7468eb103b0f12530bee`
+- FIN-41 is Done through guarded merged PR #227
+- the implementation is merged at `10a5241d63cc93c553b62bfa4f50c403c539e886`
   after exact-head Backend and Mobile CI and a clear review-channel audit
-- canonical POC readiness is 167/197 (84.8%), a +0.5 percentage-point change
+- canonical POC readiness is 168/197 (85.3%), a +0.5 percentage-point change
 - FIN-31 P7 progress is 18/18 (100.0%); all 33 direct children and the epic are
   verified Done
 - FIN-36 P8 progress is 3/13 (23.1%); the epic remains In Progress
+- FIN-38 P9 progress is 1/20 (5.0%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
   remain open
 - no paid provider or review credits were used
-- FIN-40 provides a six-tool role-controlled MCP Server with privacy-safe audit
-  evidence and no arbitrary storage, shell, URL, or production-write capability
-- the next ranked unfinished leaf is FIN-41 for a fresh hierarchy and scope audit
+- FIN-41 provides an executable synthetic first-user backend flow plus OpenAPI,
+  event-envelope, Elasticsearch mapping/ownership, and operational privacy gates
+- the next ranked unfinished leaf is FIN-42 for a fresh hierarchy and scope audit
   after this progress record merges
 
 ## Epic Progress
@@ -84,8 +85,8 @@ Current delivery:
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 3 | 13 | 23.1% |
-| FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **167** | **197** | **84.8%** |
+| FIN-38 | P9 Testing, Windows deployment, and release readiness | 1 | 20 | 5.0% |
+| **Total** | **Canonical POC leaf scope** | **168** | **197** | **85.3%** |
 
 ## First-User-Test Gates
 
@@ -243,3 +244,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-24T17:11:00+03:00 | FIN-37 | Closure delivered by PR 221 | 83.8% | +0.6 pp |
 | 2026-08-24T17:51:00+03:00 | FIN-39 | Closure delivered by PR 223 | 84.3% | +0.5 pp |
 | 2026-08-24T18:50:11+03:00 | FIN-40 | Closure delivered by PR 225 | 84.8% | +0.5 pp |
+| 2026-08-24T19:22:06+03:00 | FIN-41 | Closure delivered by PR 227 | 85.3% | +0.5 pp |
