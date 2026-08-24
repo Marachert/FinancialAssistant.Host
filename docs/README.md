@@ -111,6 +111,13 @@ docs/api/mcp-server-v1.md
 backend/services/mcp/README.md
 ```
 
+Executable backend release test gate:
+
+```text
+docs/engineering/backend-release-test-suite.md
+tests/FinancialAssistant.Release.Tests/README.md
+```
+
 Mobile PoC experience and UI kit:
 
 ```text
