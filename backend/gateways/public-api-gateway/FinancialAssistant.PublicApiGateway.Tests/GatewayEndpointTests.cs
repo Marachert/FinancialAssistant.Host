@@ -35,7 +35,7 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
         var routes = document.RootElement.GetProperty("routes");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(17, routes.GetArrayLength());
+        Assert.Equal(18, routes.GetArrayLength());
         Assert.Contains(routes.EnumerateArray(), route =>
             route.GetProperty("routeKey").GetString() == "auth"
             && route.GetProperty("serviceOwner").GetString() == "Auth Service"
@@ -52,6 +52,11 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
             && route.GetProperty("status").GetString() == "active");
         Assert.Contains(routes.EnumerateArray(), route =>
             route.GetProperty("routeKey").GetString() == "admin-monitoring"
+            && route.GetProperty("accessPolicy").GetString() == "admin"
+            && route.GetProperty("status").GetString() == "active");
+        Assert.Contains(routes.EnumerateArray(), route =>
+            route.GetProperty("routeKey").GetString() == "admin-audit"
+            && route.GetProperty("serviceOwner").GetString() == "Audit Service"
             && route.GetProperty("accessPolicy").GetString() == "admin"
             && route.GetProperty("status").GetString() == "active");
         Assert.Contains(routes.EnumerateArray(), route =>
@@ -76,9 +81,9 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("ready", root.GetProperty("status").GetString());
-        Assert.Equal(17, root.GetProperty("routeCount").GetInt32());
-        Assert.Equal(12, root.GetProperty("destinationCount").GetInt32());
-        Assert.Equal(3, root.GetProperty("enabledDestinationCount").GetInt32());
+        Assert.Equal(18, root.GetProperty("routeCount").GetInt32());
+        Assert.Equal(13, root.GetProperty("destinationCount").GetInt32());
+        Assert.Equal(4, root.GetProperty("enabledDestinationCount").GetInt32());
         Assert.Equal("placeholder", root.GetProperty("securityMode").GetString());
     }
 
