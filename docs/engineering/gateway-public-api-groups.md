@@ -106,7 +106,7 @@ The admin monitoring group requires a valid bearer token and the configured admi
 | `recommendations` | `/recommendations`, `/recommendations/{**gatewayPath}` | GET | `authenticated` | Recommendation Service | `placeholder` |
 | `notifications` | `/notifications`, `/notifications/{**gatewayPath}` | GET, PUT, POST, PATCH | `authenticated` | Notification Service | `placeholder` |
 | `notification-preferences` | `/notification-preferences` | GET, PUT | `authenticated` | Notification Service | `placeholder` |
-| `admin-monitoring` | `/admin/monitoring`, `/admin/monitoring/{**gatewayPath}` | GET | `admin` | Monitoring Admin Service | `placeholder` |
+| `admin-monitoring` | `/admin/monitoring`, `/admin/monitoring/{**gatewayPath}` | GET | `admin` | Monitoring Admin Service | `active` |
 
 The route table is intentionally technical. Client applications should use the stable public paths and never call internal destination addresses directly.
 
