@@ -24,6 +24,13 @@ docs/engineering/contributing.md
 docs/engineering/ci.md
 ```
 
+Windows Server PoC deployment and recovery:
+
+```text
+docs/delivery/windows-server-poc-deployment.md
+infra/windows-poc/README.md
+```
+
 Platform storage conventions:
 
 ```text

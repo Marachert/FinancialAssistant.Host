@@ -122,6 +122,9 @@ created resource names and read-back verification commands.
 | RabbitMQ UI unavailable | Container still starting or port conflict | Run `docker compose logs rabbitmq` |
 | MinIO health fails | Container still starting or port conflict | Run `docker compose logs minio` |
 
-## Future follow-up
+## Production-like PoC follow-up
 
-When backend service containers are added, update `monitoring/prometheus.yml` with service `/metrics` scrape targets.
+Backend service containers belong to the separate
+[Windows Server PoC stack](../windows-poc/README.md). Update the shared
+`monitoring/prometheus.yml` with service `/metrics` scrape targets only when the
+backend hosts expose a reviewed metrics endpoint.

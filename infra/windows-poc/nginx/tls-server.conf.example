@@ -1,0 +1,17 @@
+# Mount certificates as Docker secrets or read-only host files outside the repository.
+# Include this server block from a site-specific nginx.conf after replacing names.
+server {
+    listen 8443 ssl;
+    server_name finance.example.invalid;
+
+    ssl_certificate /run/secrets/tls_certificate;
+    ssl_certificate_key /run/secrets/tls_private_key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    location / {
+        proxy_pass http://public_api_gateway;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+    }
+}

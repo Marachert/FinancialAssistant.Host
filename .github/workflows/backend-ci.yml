@@ -24,6 +24,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Validate Windows PoC Compose model
+        run: >-
+          docker compose
+          --env-file infra/windows-poc/.env.poc.example
+          --file infra/windows-poc/compose.yml
+          config --quiet
+
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
