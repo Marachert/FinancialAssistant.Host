@@ -91,6 +91,12 @@ docs/engineering/insights-validation-test-plan.md
 docs/engineering/insights-release-readiness-checklist.md
 ```
 
+Privacy-safe monitoring admin API:
+
+```text
+docs/api/monitoring-admin-v1.md
+```
+
 Mobile PoC experience and UI kit:
 
 ```text
