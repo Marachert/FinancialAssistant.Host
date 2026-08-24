@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FinancialAssistant.Audit.Application</RootNamespace>
+    <AssemblyName>FinancialAssistant.Audit.Application</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.Audit.Contracts/FinancialAssistant.Audit.Contracts.csproj" />
+    <ProjectReference Include="../../../shared/contracts/FinancialAssistant.Shared.Contracts/FinancialAssistant.Shared.Contracts.csproj" />
+  </ItemGroup>
+</Project>

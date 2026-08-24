@@ -128,6 +128,7 @@ which routes it through the application's configured dead-letter exchange.
 | Financial record changed | `fa.events` | `income.created.v1` / `expense.created.v1` and lifecycle variants | `fa.financial-score.financial-events.v1` |
 | Financial score calculated | `fa.events` | `score.calculated.v1` | Authorized recommendation and notification consumers |
 | Token revoked | `fa.events` | `token.revoked.v1` | `fa.audit.identity-events.v1` |
+| Privacy-safe audit event | `fa.events` | `audit.recorded.v1` | `fa.audit.events.v1` |
 
 Income and Expense consumers validate the confirmed transaction type before
 changing service-owned state. A routing match never replaces contract,

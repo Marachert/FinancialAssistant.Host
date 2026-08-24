@@ -97,6 +97,13 @@ Privacy-safe monitoring admin API:
 docs/api/monitoring-admin-v1.md
 ```
 
+Privacy-safe append-only audit API and event contract:
+
+```text
+docs/api/audit-admin-v1.md
+backend/services/audit/README.md
+```
+
 Mobile PoC experience and UI kit:
 
 ```text

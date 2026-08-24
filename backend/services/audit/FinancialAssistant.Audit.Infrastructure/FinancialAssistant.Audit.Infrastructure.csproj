@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FinancialAssistant.Audit.Infrastructure</RootNamespace>
+    <AssemblyName>FinancialAssistant.Audit.Infrastructure</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.Audit.Application/FinancialAssistant.Audit.Application.csproj" />
+    <ProjectReference Include="../FinancialAssistant.Audit.Contracts/FinancialAssistant.Audit.Contracts.csproj" />
+    <ProjectReference Include="../../../shared/contracts/FinancialAssistant.Shared.Contracts/FinancialAssistant.Shared.Contracts.csproj" />
+  </ItemGroup>
+</Project>

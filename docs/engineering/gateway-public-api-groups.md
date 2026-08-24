@@ -4,7 +4,7 @@
 
 FIN-84 documents the public REST capability groups exposed through the Financial Assistant Public API Gateway for Android, iOS, Web, and admin clients.
 
-In this document, **public API** means an API reachable through the public gateway. It does not mean anonymous access. Most groups require an authenticated session, and the monitoring group requires an admin role.
+In this document, **public API** means an API reachable through the public gateway. It does not mean anonymous access. Most groups require an authenticated session, and the monitoring and audit groups require an admin role.
 
 The gateway is the single public HTTP entry point. It routes requests to the backend service that owns the capability, applies technical perimeter controls, and returns the downstream response. It does not own domain data or business rules.
 
@@ -30,7 +30,7 @@ docs/engineering/gateway-access-control.md
 
 ## Current availability
 
-Repository defaults keep unfinished routes in `placeholder` status with disabled destinations. The authenticated Income and Expense routes are `active` with protected destinations enabled because their CRUD contracts and trusted-gateway boundaries are available.
+Repository defaults keep unfinished routes in `placeholder` status with disabled destinations. The authenticated Income and Expense routes and the admin Monitoring and Audit routes are `active` with protected destinations enabled because their contracts and trusted-gateway boundaries are available.
 
 Therefore:
 
@@ -82,9 +82,9 @@ Authenticated groups require a valid Identity-issued bearer access token. The ga
 
 The owning service must still enforce resource ownership and domain authorization. Gateway authentication is not a substitute for service-level authorization.
 
-### Admin group
+### Admin groups
 
-The admin monitoring group requires a valid bearer token and the configured admin role. Client-supplied admin headers have no authority.
+The admin monitoring and audit groups require a valid bearer token and the configured admin role. Client-supplied admin headers have no authority.
 
 ## Configured route contract
 
@@ -107,6 +107,7 @@ The admin monitoring group requires a valid bearer token and the configured admi
 | `notifications` | `/notifications`, `/notifications/{**gatewayPath}` | GET, PUT, POST, PATCH | `authenticated` | Notification Service | `placeholder` |
 | `notification-preferences` | `/notification-preferences` | GET, PUT | `authenticated` | Notification Service | `placeholder` |
 | `admin-monitoring` | `/admin/monitoring`, `/admin/monitoring/{**gatewayPath}` | GET | `admin` | Monitoring Admin Service | `active` |
+| `admin-audit` | `/admin/audit`, `/admin/audit/{**gatewayPath}` | GET | `admin` | Audit Service | `active` |
 
 The route table is intentionally technical. Client applications should use the stable public paths and never call internal destination addresses directly.
 
@@ -414,6 +415,32 @@ It must expose only safe operational data. User data, financial records, receipt
 
 The gateway requires the configured admin role, removes spoofed privileged headers, and forwards the request. It does not generate service-owned monitoring data.
 
+## Admin audit API group
+
+### Public prefix
+
+```text
+/admin/audit
+```
+
+### Owner
+
+Audit Service.
+
+### Capability ownership
+
+Audit owns append-only privacy-safe event metadata, correlation lookup,
+idempotent event ingestion, and retention classification. It stores bounded
+identifiers and optional pseudonymous subject hashes only. Raw personal data,
+financial records, receipt/OCR content, prompts, provider responses, secrets,
+and arbitrary metadata are prohibited.
+
+### Gateway responsibility
+
+The gateway requires the configured admin role, removes spoofed privileged
+headers, injects its downstream trust secret, and forwards the request. It does
+not create, modify, delete, or interpret audit records.
+
 ## Gateway responsibility boundary
 
 The gateway owns:
@@ -430,7 +457,7 @@ The gateway owns:
 
 The gateway does not own:
 
-* account, profile, category, transaction, receipt, analytics, score, recommendation, notification, or monitoring domain state;
+* account, profile, category, transaction, receipt, analytics, score, recommendation, notification, monitoring, or audit domain state;
 * service-owned Elasticsearch indices;
 * financial calculations;
 * resource ownership decisions;
@@ -451,7 +478,7 @@ client
 -> immediate response
 ```
 
-Examples include sign-in, profile reads, category changes, transaction intake, receipt upload acceptance, analytics reads, score reads, recommendation reads, notification preference changes, and admin monitoring reads.
+Examples include sign-in, profile reads, category changes, transaction intake, receipt upload acceptance, analytics reads, score reads, recommendation reads, notification preference changes, admin monitoring reads, and admin audit correlation lookups.
 
 ### Asynchronous RabbitMQ
 

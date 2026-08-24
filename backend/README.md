@@ -20,3 +20,5 @@ services/
 
 Operational visibility is owned by
 `backend/services/monitoring/` and exposes aggregate operational data only.
+
+Append-only privacy-safe event traces are owned by `backend/services/audit/`.
