@@ -48,6 +48,13 @@ npm run verify
 `verify` runs strict TypeScript checks, Expo ESLint rules, and repository-owned
 structural/security checks.
 
+Manual iOS and Android release-candidate smoke, regression, evidence, and
+blocker rules are defined in:
+
+```text
+docs/engineering/mobile-smoke-regression-test-plan.md
+```
+
 ## Run
 
 ```powershell

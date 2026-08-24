@@ -96,6 +96,7 @@ Mobile PoC experience and UI kit:
 ```text
 docs/product/mobile-poc-ux.md
 docs/product/mobile-ui-kit.md
+docs/engineering/mobile-smoke-regression-test-plan.md
 ```
 
 Financial core validation coverage:
