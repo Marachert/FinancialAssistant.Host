@@ -17,3 +17,6 @@ services/
 - REST for public API calls.
 - RabbitMQ for async events.
 - Elasticsearch namespaces are service-owned.
+
+Operational visibility is owned by
+`backend/services/monitoring/` and exposes aggregate operational data only.
