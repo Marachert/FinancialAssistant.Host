@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-24T16:21:00+03:00
+Last updated: 2026-08-24T17:11:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-189 delivery is **83.2%**:
-**164 of 197 canonical POC leaf tickets are Done**.
+POC readiness after FIN-37 delivery is **83.8%**:
+**165 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,27 +13,27 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-189 - P7.T17 Add mobile smoke and regression test plan
+- FIN-37 - Implement Monitoring Service and admin health dashboards
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/219
+  https://github.com/Marachert/FinancialAssistant.Host/pull/221
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/f27f6a25c2fe9b7f112f89af07e23b59a322f884
-- previous readiness: 163 / 197, or 82.7%
-- current readiness: 164 / 197, or 83.2%
-- change: +0.5 percentage points
+  https://github.com/Marachert/FinancialAssistant.Host/commit/89e3760f256e6ed272c3d86ad5c5b20b5c48f91f
+- previous readiness: 164 / 197, or 83.2%
+- current readiness: 165 / 197, or 83.8%
+- change: +0.6 percentage points
 
 Latest Jira closure:
 
-- FIN-189 - P7.T17 Add mobile smoke and regression test plan, merged and Done
+- FIN-37 - Implement Monitoring Service and admin health dashboards, merged and Done
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/219
+  https://github.com/Marachert/FinancialAssistant.Host/pull/221
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/f27f6a25c2fe9b7f112f89af07e23b59a322f884
-- final implementation head: `d891d3d98b4268f92272ff5e7f9b4bdc86a78032`
-- exact-head CI: Backend run 32731618531 and Mobile run 32731618518
-- previous readiness: 163 / 197, or 82.7%
-- current readiness: 164 / 197, or 83.2%
-- change: +0.5 percentage points
+  https://github.com/Marachert/FinancialAssistant.Host/commit/89e3760f256e6ed272c3d86ad5c5b20b5c48f91f
+- final implementation head: `055b9cc842189acfbeddbf21ccef40d9dc2d1bee`
+- exact-head CI: Backend run 32736234051 and Mobile run 32736234066
+- previous readiness: 164 / 197, or 83.2%
+- current readiness: 165 / 197, or 83.8%
+- change: +0.6 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
 duplicate of FIN-124, FIN-127 is an exact later duplicate of FIN-126, and
@@ -53,20 +53,21 @@ numerator or denominator.
 
 Current delivery:
 
-- FIN-189 is Done through guarded merged PR #219
-- the implementation is merged at `f27f6a25c2fe9b7f112f89af07e23b59a322f884`
+- FIN-37 is Done through guarded merged PR #221
+- the implementation is merged at `89e3760f256e6ed272c3d86ad5c5b20b5c48f91f`
   after exact-head Backend and Mobile CI and a clear review-channel audit
-- canonical POC readiness is 164/197 (83.2%), a +0.5 percentage-point change
+- canonical POC readiness is 165/197 (83.8%), a +0.6 percentage-point change
 - FIN-31 P7 progress is 18/18 (100.0%); all 33 direct children and the epic are
   verified Done
+- FIN-36 P8 progress is 1/13 (7.7%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
   remain open
 - no paid provider or review credits were used
-- FIN-189 provides the release-candidate record, Android/iOS matrix, 18 smoke
-  scenarios, 20 regression scenarios, explicit blockers, and evidence rules
-- the next ranked unfinished leaf is FIN-37 for a fresh hierarchy and scope audit
+- FIN-37 provides protected aggregate service, RabbitMQ, Elasticsearch, AI cost,
+  parsing-quality, and UI-funnel operational visibility without raw PII
+- the next ranked unfinished leaf is FIN-39 for a fresh hierarchy and scope audit
   after this progress record merges
 
 ## Epic Progress
@@ -81,9 +82,9 @@ Current delivery:
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
-| FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 0 | 13 | 0.0% |
+| FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 1 | 13 | 7.7% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 0 | 20 | 0.0% |
-| **Total** | **Canonical POC leaf scope** | **164** | **197** | **83.2%** |
+| **Total** | **Canonical POC leaf scope** | **165** | **197** | **83.8%** |
 
 ## First-User-Test Gates
 
@@ -238,3 +239,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-23T15:05:00+03:00 | FIN-185 | Recovered API and state foundation from PRs 178, 180, and 182 | 82.2% | +0.5 pp |
 | 2026-08-23T15:37:00+03:00 | FIN-186 | Closure delivered by PR 217 | 82.7% | +0.5 pp |
 | 2026-08-24T16:21:00+03:00 | FIN-189 | Closure delivered by PR 219; FIN-31 completed | 83.2% | +0.5 pp |
+| 2026-08-24T17:11:00+03:00 | FIN-37 | Closure delivered by PR 221 | 83.8% | +0.6 pp |
