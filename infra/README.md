@@ -9,6 +9,8 @@ repeatable infrastructure bootstrap tooling.
   RabbitMQ, Redis, MinIO, Prometheus, and Grafana.
 - [Elasticsearch sample bootstrap](elasticsearch/bootstrap/README.md) for the
   first Identity Service-owned index template and stable aliases.
+- [Windows Server PoC stack](windows-poc/README.md) for the production-like
+  single-host service topology, reverse proxy, secrets, and backup/restore.
 
 Infrastructure is shared at the platform level, but data ownership is not.
 Each backend service exclusively owns its Elasticsearch namespace, mappings,

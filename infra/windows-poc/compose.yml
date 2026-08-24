@@ -1,0 +1,496 @@
+name: ${COMPOSE_PROJECT_NAME:-financial-assistant-poc}
+
+x-api-environment: &api-environment
+  ASPNETCORE_ENVIRONMENT: Production
+  ASPNETCORE_URLS: http://+:8080
+
+x-api-service: &api-service
+  restart: unless-stopped
+  networks:
+    - internal
+  environment:
+    <<: *api-environment
+  healthcheck:
+    test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/health/ready"]
+    interval: 15s
+    timeout: 5s
+    retries: 12
+    start_period: 20s
+
+x-platform-dependencies: &platform-dependencies
+  elasticsearch:
+    condition: service_healthy
+  rabbitmq:
+    condition: service_healthy
+  redis:
+    condition: service_healthy
+  minio:
+    condition: service_healthy
+
+services:
+  reverse-proxy:
+    image: ${NGINX_IMAGE:?set NGINX_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      public-api-gateway:
+        condition: service_healthy
+    ports:
+      - "${POC_HTTP_PORT:-8080}:8080"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:8080/reverse-proxy-health"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+    networks:
+      - edge
+      - internal
+
+  public-api-gateway:
+    <<: *api-service
+    build:
+      context: ../..
+      dockerfile: infra/windows-poc/backend.Dockerfile
+      args:
+        PROJECT_PATH: backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj
+        APP_DLL: FinancialAssistant.PublicApiGateway.dll
+    environment:
+      <<: *api-environment
+      Gateway__Security__Mode: Jwt
+      Gateway__Security__AccessTokenSigningKey: ${IDENTITY_ACCESS_TOKEN_SIGNING_KEY:?set IDENTITY_ACCESS_TOKEN_SIGNING_KEY}
+      Gateway__DownstreamAuthentication__SharedSecret: ${INTERNAL_GATEWAY_SHARED_SECRET:?set INTERNAL_GATEWAY_SHARED_SECRET}
+      Gateway__DestinationMap__Destinations__0__BaseAddress: http://identity:8080
+      Gateway__DestinationMap__Destinations__0__Enabled: "true"
+      Gateway__DestinationMap__Destinations__1__BaseAddress: http://profile:8080
+      Gateway__DestinationMap__Destinations__1__Enabled: "true"
+      Gateway__DestinationMap__Destinations__2__BaseAddress: http://category:8080
+      Gateway__DestinationMap__Destinations__2__Enabled: "true"
+      Gateway__DestinationMap__Destinations__3__BaseAddress: http://transaction-intake:8080
+      Gateway__DestinationMap__Destinations__3__Enabled: "true"
+      Gateway__DestinationMap__Destinations__4__BaseAddress: http://receipt-processing:8080
+      Gateway__DestinationMap__Destinations__4__Enabled: "true"
+      Gateway__DestinationMap__Destinations__5__BaseAddress: http://income:8080
+      Gateway__DestinationMap__Destinations__5__Enabled: "true"
+      Gateway__DestinationMap__Destinations__6__BaseAddress: http://expense:8080
+      Gateway__DestinationMap__Destinations__6__Enabled: "true"
+      Gateway__DestinationMap__Destinations__7__BaseAddress: http://analytics:8080
+      Gateway__DestinationMap__Destinations__7__Enabled: "true"
+      Gateway__DestinationMap__Destinations__8__BaseAddress: http://financial-score:8080
+      Gateway__DestinationMap__Destinations__8__Enabled: "true"
+      Gateway__DestinationMap__Destinations__9__BaseAddress: http://recommendations-notifications:8080
+      Gateway__DestinationMap__Destinations__9__Enabled: "true"
+      Gateway__DestinationMap__Destinations__10__BaseAddress: http://recommendations-notifications:8080
+      Gateway__DestinationMap__Destinations__10__Enabled: "true"
+      Gateway__DestinationMap__Destinations__11__BaseAddress: http://monitoring:8080
+      Gateway__DestinationMap__Destinations__11__Enabled: "true"
+      Gateway__DestinationMap__Destinations__12__BaseAddress: http://audit:8080
+      Gateway__DestinationMap__Destinations__12__Enabled: "true"
+    depends_on:
+      identity:
+        condition: service_healthy
+      profile:
+        condition: service_healthy
+      category:
+        condition: service_healthy
+      transaction-intake:
+        condition: service_healthy
+      receipt-processing:
+        condition: service_healthy
+      income:
+        condition: service_healthy
+      expense:
+        condition: service_healthy
+      analytics:
+        condition: service_healthy
+      financial-score:
+        condition: service_healthy
+      recommendations-notifications:
+        condition: service_healthy
+      monitoring:
+        condition: service_healthy
+      audit:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  identity:
+    <<: *api-service
+    build:
+      context: ../..
+      dockerfile: infra/windows-poc/backend.Dockerfile
+      args:
+        PROJECT_PATH: backend/services/identity/FinancialAssistant.Identity.Api/FinancialAssistant.Identity.Api.csproj
+        APP_DLL: FinancialAssistant.Identity.Api.dll
+    environment:
+      <<: *api-environment
+      Identity__Storage__Environment: poc
+      Identity__Authentication__RuntimeAdapter: InMemoryDevelopment
+      Identity__Authentication__LookupHmacKey: ${IDENTITY_LOOKUP_HMAC_KEY:?set IDENTITY_LOOKUP_HMAC_KEY}
+      Identity__Authentication__RefreshTokenHashKey: ${IDENTITY_REFRESH_TOKEN_HASH_KEY:?set IDENTITY_REFRESH_TOKEN_HASH_KEY}
+      Identity__Authentication__AccessTokenSigningKey: ${IDENTITY_ACCESS_TOKEN_SIGNING_KEY:?set IDENTITY_ACCESS_TOKEN_SIGNING_KEY}
+      Identity__Providers__IdentifierHmacKey: ${IDENTITY_PROVIDER_HMAC_KEY:?set IDENTITY_PROVIDER_HMAC_KEY}
+      Identity__Events__Mode: RabbitMq
+      Identity__Events__ConnectionString: amqp://${RABBITMQ_USER:?set RABBITMQ_USER}:${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD}@rabbitmq:5672/${RABBITMQ_VHOST:?set RABBITMQ_VHOST}
+      Identity__Events__UserIdHmacKey: ${IDENTITY_EVENT_USER_HMAC_KEY:?set IDENTITY_EVENT_USER_HMAC_KEY}
+    depends_on: *platform-dependencies
+
+  profile:
+    <<: *api-service
+    build:
+      context: ../..
+      dockerfile: infra/windows-poc/backend.Dockerfile
+      args:
+        PROJECT_PATH: backend/services/profile/FinancialAssistant.Profile.Api/FinancialAssistant.Profile.Api.csproj
+        APP_DLL: FinancialAssistant.Profile.Api.dll
+    depends_on: *platform-dependencies
+
+  category:
+    <<: *api-service
+    build:
+      context: ../..
+      dockerfile: infra/windows-poc/backend.Dockerfile
+      args:
+        PROJECT_PATH: backend/services/category/FinancialAssistant.Category.Api/FinancialAssistant.Category.Api.csproj
+        APP_DLL: FinancialAssistant.Category.Api.dll
+    environment:
+      <<: *api-environment
+      Category__Gateway__SharedSecret: ${INTERNAL_GATEWAY_SHARED_SECRET:?set INTERNAL_GATEWAY_SHARED_SECRET}
+    depends_on: *platform-dependencies
+
+  transaction-intake:
+    <<: *api-service
+    build:
+      context: ../..
+      dockerfile: infra/windows-poc/backend.Dockerfile
+      args:
+        PROJECT_PATH: backend/services/transaction-intake/FinancialAssistant.TransactionIntake.Api/FinancialAssistant.TransactionIntake.Api.csproj
+        APP_DLL: FinancialAssistant.TransactionIntake.Api.dll
+    environment:
+      <<: *api-environment
+      TransactionIntake__Gateway__SharedSecret: ${INTERNAL_GATEWAY_SHARED_SECRET:?set INTERNAL_GATEWAY_SHARED_SECRET}
+      ReceiptProcessing__Events__SharedSecret: ${RECEIPT_EVENT_SHARED_SECRET:?set RECEIPT_EVENT_SHARED_SECRET}
+    depends_on: *platform-dependencies
+
+  receipt-processing:
+    <<: *api-service
+    build:
+      context: ../..
+      dockerfile: infra/windows-poc/backend.Dockerfile
+      args:
+        PROJECT_PATH: backend/services/receipt-processing/FinancialAssistant.ReceiptProcessing.Api/FinancialAssistant.ReceiptProcessing.Api.csproj
+        APP_DLL: FinancialAssistant.ReceiptProcessing.Api.dll
+    environment:
+      <<: *api-environment
+      ReceiptProcessing__Gateway__SharedSecret: ${INTERNAL_GATEWAY_SHARED_SECRET:?set INTERNAL_GATEWAY_SHARED_SECRET}
+      ReceiptProcessing__TransactionIntake__BaseAddress: http://transaction-intake:8080
+      ReceiptProcessing__Events__SharedSecret: ${RECEIPT_EVENT_SHARED_SECRET:?set RECEIPT_EVENT_SHARED_SECRET}
+    depends_on: *platform-dependencies
+
+  income:
+    <<: *api-service
+    build:
+      context: ../..
+      dockerfile: infra/windows-poc/backend.Dockerfile
+      args:
+        PROJECT_PATH: backend/services/income/FinancialAssistant.Income.Api/FinancialAssistant.Income.Api.csproj
+        APP_DLL: FinancialAssistant.Income.Api.dll
+    environment:
+      <<: *api-environment
+      Income__Gateway__SharedSecret: ${INTERNAL_GATEWAY_SHARED_SECRET:?set INTERNAL_GATEWAY_SHARED_SECRET}
+    depends_on: *platform-dependencies
+
+  expense:
+    <<: *api-service
+    build:
+      context: ../..
+      dockerfile: infra/windows-poc/backend.Dockerfile
+      args:
+        PROJECT_PATH: backend/services/expense/FinancialAssistant.Expense.Api/FinancialAssistant.Expense.Api.csproj
+        APP_DLL: FinancialAssistant.Expense.Api.dll
+    environment:
+      <<: *api-environment
+      Expense__Gateway__SharedSecret: ${INTERNAL_GATEWAY_SHARED_SECRET:?set INTERNAL_GATEWAY_SHARED_SECRET}
+    depends_on: *platform-dependencies
+
+  ai-orchestration:
+    <<: *api-service
+    build:
+      context: ../..
+      dockerfile: infra/windows-poc/backend.Dockerfile
+      args:
+        PROJECT_PATH: backend/services/ai-orchestration/FinancialAssistant.AiOrchestration.Api/FinancialAssistant.AiOrchestration.Api.csproj
+        APP_DLL: FinancialAssistant.AiOrchestration.Api.dll
+    depends_on: *platform-dependencies
+
+  analytics:
+    <<: *api-service
+    build:
+      context: ../..
+      dockerfile: infra/windows-poc/backend.Dockerfile
+      args:
+        PROJECT_PATH: backend/services/analytics/FinancialAssistant.Analytics.Api/FinancialAssistant.Analytics.Api.csproj
+        APP_DLL: FinancialAssistant.Analytics.Api.dll
+    environment:
+      <<: *api-environment
+      Analytics__Gateway__SharedSecret: ${INTERNAL_GATEWAY_SHARED_SECRET:?set INTERNAL_GATEWAY_SHARED_SECRET}
+      Analytics__Events__Mode: RabbitMq
+      Analytics__Events__ConnectionString: amqp://${RABBITMQ_USER:?set RABBITMQ_USER}:${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD}@rabbitmq:5672/${RABBITMQ_VHOST:?set RABBITMQ_VHOST}
+    depends_on: *platform-dependencies
+
+  financial-score:
+    <<: *api-service
+    build:
+      context: ../..
+      dockerfile: infra/windows-poc/backend.Dockerfile
+      args:
+        PROJECT_PATH: backend/services/financial-score/FinancialAssistant.FinancialScore.Api/FinancialAssistant.FinancialScore.Api.csproj
+        APP_DLL: FinancialAssistant.FinancialScore.Api.dll
+    environment:
+      <<: *api-environment
+      FinancialScore__Gateway__SharedSecret: ${INTERNAL_GATEWAY_SHARED_SECRET:?set INTERNAL_GATEWAY_SHARED_SECRET}
+      FinancialScore__Events__Mode: RabbitMq
+      FinancialScore__Events__ConnectionString: amqp://${RABBITMQ_USER:?set RABBITMQ_USER}:${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD}@rabbitmq:5672/${RABBITMQ_VHOST:?set RABBITMQ_VHOST}
+    depends_on: *platform-dependencies
+
+  recommendations-notifications:
+    <<: *api-service
+    build:
+      context: ../..
+      dockerfile: infra/windows-poc/backend.Dockerfile
+      args:
+        PROJECT_PATH: backend/services/recommendations-notifications/FinancialAssistant.RecommendationsNotifications.Api/FinancialAssistant.RecommendationsNotifications.Api.csproj
+        APP_DLL: FinancialAssistant.RecommendationsNotifications.Api.dll
+    environment:
+      <<: *api-environment
+      RecommendationsNotifications__Gateway__SharedSecret: ${INTERNAL_GATEWAY_SHARED_SECRET:?set INTERNAL_GATEWAY_SHARED_SECRET}
+      RecommendationsNotifications__Events__Mode: RabbitMq
+      RecommendationsNotifications__Events__ConnectionString: amqp://${RABBITMQ_USER:?set RABBITMQ_USER}:${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD}@rabbitmq:5672/${RABBITMQ_VHOST:?set RABBITMQ_VHOST}
+      RecommendationsNotifications__Delivery__Push__Enabled: "false"
+      RecommendationsNotifications__Delivery__Web__Enabled: "false"
+    depends_on: *platform-dependencies
+
+  monitoring:
+    <<: *api-service
+    build:
+      context: ../..
+      dockerfile: infra/windows-poc/backend.Dockerfile
+      args:
+        PROJECT_PATH: backend/services/monitoring/FinancialAssistant.Monitoring.Api/FinancialAssistant.Monitoring.Api.csproj
+        APP_DLL: FinancialAssistant.Monitoring.Api.dll
+    environment:
+      <<: *api-environment
+      Monitoring__Gateway__SharedSecret: ${INTERNAL_GATEWAY_SHARED_SECRET:?set INTERNAL_GATEWAY_SHARED_SECRET}
+      Monitoring__Signals__SharedSecret: ${MONITORING_SIGNAL_SHARED_SECRET:?set MONITORING_SIGNAL_SHARED_SECRET}
+      Monitoring__Services__0__BaseAddress: http://identity:8080
+      Monitoring__Services__1__BaseAddress: http://profile:8080
+      Monitoring__Services__2__BaseAddress: http://category:8080
+      Monitoring__Services__3__BaseAddress: http://transaction-intake:8080
+      Monitoring__Services__4__BaseAddress: http://receipt-processing:8080
+      Monitoring__Services__5__BaseAddress: http://analytics:8080
+      Monitoring__Services__6__BaseAddress: http://financial-score:8080
+      Monitoring__Services__7__BaseAddress: http://recommendations-notifications:8080
+      Monitoring__Services__8__BaseAddress: http://income:8080
+      Monitoring__Services__9__BaseAddress: http://expense:8080
+      Monitoring__Services__10__BaseAddress: http://ai-orchestration:8080
+      Monitoring__Services__11__Name: audit
+      Monitoring__Services__11__BaseAddress: http://audit:8080
+      Monitoring__Services__12__BaseAddress: http://mcp:8080
+      Monitoring__RabbitMq__ManagementBaseAddress: http://rabbitmq:15672
+      Monitoring__RabbitMq__Username: ${RABBITMQ_USER:?set RABBITMQ_USER}
+      Monitoring__RabbitMq__Password: ${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD}
+      Monitoring__Elasticsearch__BaseAddress: http://elasticsearch:9200
+    depends_on: *platform-dependencies
+
+  audit:
+    <<: *api-service
+    build:
+      context: ../..
+      dockerfile: infra/windows-poc/backend.Dockerfile
+      args:
+        PROJECT_PATH: backend/services/audit/FinancialAssistant.Audit.Api/FinancialAssistant.Audit.Api.csproj
+        APP_DLL: FinancialAssistant.Audit.Api.dll
+    environment:
+      <<: *api-environment
+      Audit__Gateway__SharedSecret: ${INTERNAL_GATEWAY_SHARED_SECRET:?set INTERNAL_GATEWAY_SHARED_SECRET}
+      Audit__Services__SharedSecret: ${INTERNAL_SERVICE_SHARED_SECRET:?set INTERNAL_SERVICE_SHARED_SECRET}
+      Audit__Events__Mode: RabbitMq
+      Audit__Events__ConnectionString: amqp://${RABBITMQ_USER:?set RABBITMQ_USER}:${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD}@rabbitmq:5672/${RABBITMQ_VHOST:?set RABBITMQ_VHOST}
+    depends_on: *platform-dependencies
+
+  mcp:
+    <<: *api-service
+    build:
+      context: ../..
+      dockerfile: infra/windows-poc/backend.Dockerfile
+      args:
+        PROJECT_PATH: backend/services/mcp/FinancialAssistant.Mcp.Api/FinancialAssistant.Mcp.Api.csproj
+        APP_DLL: FinancialAssistant.Mcp.Api.dll
+    environment:
+      <<: *api-environment
+      AllowedHosts: "*"
+      Mcp__Authentication__SharedSecret: ${MCP_SHARED_SECRET:?set MCP_SHARED_SECRET}
+      Mcp__Monitoring__BaseAddress: http://monitoring:8080
+      Mcp__Monitoring__SharedSecret: ${INTERNAL_GATEWAY_SHARED_SECRET:?set INTERNAL_GATEWAY_SHARED_SECRET}
+      Mcp__Audit__Mode: Http
+      Mcp__Audit__BaseAddress: http://audit:8080
+      Mcp__Audit__SharedSecret: ${INTERNAL_SERVICE_SHARED_SECRET:?set INTERNAL_SERVICE_SHARED_SECRET}
+    depends_on:
+      monitoring:
+        condition: service_healthy
+      audit:
+        condition: service_healthy
+
+  postgres:
+    image: ${POSTGRES_IMAGE:?set POSTGRES_IMAGE}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE:?set POSTGRES_DATABASE}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - internal
+
+  elasticsearch:
+    image: ${ELASTICSEARCH_IMAGE:?set ELASTICSEARCH_IMAGE}
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      path.repo: /usr/share/elasticsearch/snapshots
+      ES_JAVA_OPTS: ${ELASTICSEARCH_JAVA_OPTS:--Xms1g -Xmx1g}
+    ports:
+      - "127.0.0.1:${ELASTICSEARCH_HOST_PORT:-9200}:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+      - elasticsearch-snapshots:/usr/share/elasticsearch/snapshots
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:9200/_cluster/health >/dev/null"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    networks:
+      - internal
+
+  rabbitmq:
+    image: ${RABBITMQ_IMAGE:?set RABBITMQ_IMAGE}
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?set RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:?set RABBITMQ_VHOST}
+    ports:
+      - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    networks:
+      - internal
+
+  redis:
+    image: ${REDIS_IMAGE:?set REDIS_IMAGE}
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?set REDIS_PASSWORD}"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - internal
+
+  minio:
+    image: ${MINIO_IMAGE:?set MINIO_IMAGE}
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
+    ports:
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - internal
+
+  prometheus:
+    image: ${PROMETHEUS_IMAGE:?set PROMETHEUS_IMAGE}
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ../docker-compose/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - internal
+
+  grafana:
+    image: ${GRAFANA_IMAGE:?set GRAFANA_IMAGE}
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?set GRAFANA_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../docker-compose/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - internal
+
+volumes:
+  postgres-data:
+    name: fa-poc-postgres-data
+  elasticsearch-data:
+    name: fa-poc-elasticsearch-data
+  elasticsearch-snapshots:
+    name: fa-poc-elasticsearch-snapshots
+  rabbitmq-data:
+    name: fa-poc-rabbitmq-data
+  redis-data:
+    name: fa-poc-redis-data
+  minio-data:
+    name: fa-poc-minio-data
+  prometheus-data:
+    name: fa-poc-prometheus-data
+  grafana-data:
+    name: fa-poc-grafana-data
+
+networks:
+  edge:
+    name: fa-poc-edge
+  internal:
+    name: fa-poc-internal
+    internal: true
