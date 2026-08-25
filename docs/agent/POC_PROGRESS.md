@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-24T19:22:06+03:00
+Last updated: 2026-08-24T20:05:25+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-41 delivery is **85.3%**:
-**168 of 197 canonical POC leaf tickets are Done**.
+POC readiness after FIN-42 delivery is **85.8%**:
+**169 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,27 +13,26 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-41 - Implement backend integration, E2E, contract, and privacy tests
+- FIN-42 - Prepare Windows Server PoC deployment stack
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/227
+  https://github.com/Marachert/FinancialAssistant.Host/pull/229
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/10a5241d63cc93c553b62bfa4f50c403c539e886
-- previous readiness: 167 / 197, or 84.8%
-- current readiness: 168 / 197, or 85.3%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/3097a2fd4611ad269547a7f9bcdf3cf628ea60a9
+- previous readiness: 168 / 197, or 85.3%
+- current readiness: 169 / 197, or 85.8%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-41 - Implement backend integration, E2E, contract, and privacy tests, merged and
-  Done
+- FIN-42 - Prepare Windows Server PoC deployment stack, merged and Done
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/227
+  https://github.com/Marachert/FinancialAssistant.Host/pull/229
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/10a5241d63cc93c553b62bfa4f50c403c539e886
-- final implementation head: `70c04cad2622fc32344397783c619991450a56b2`
-- exact-head CI: Backend run 32750008586 and Mobile run 32750008438
-- previous readiness: 167 / 197, or 84.8%
-- current readiness: 168 / 197, or 85.3%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/3097a2fd4611ad269547a7f9bcdf3cf628ea60a9
+- final implementation head: `06cbaea79628daf74cbf146cc241d0f20e5718a6`
+- exact-head CI: Backend run 32754174211 and Mobile run 32754174221
+- previous readiness: 168 / 197, or 85.3%
+- current readiness: 169 / 197, or 85.8%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -54,22 +53,23 @@ numerator or denominator.
 
 Current delivery:
 
-- FIN-41 is Done through guarded merged PR #227
-- the implementation is merged at `10a5241d63cc93c553b62bfa4f50c403c539e886`
+- FIN-42 is Done through guarded merged PR #229
+- the implementation is merged at `3097a2fd4611ad269547a7f9bcdf3cf628ea60a9`
   after exact-head Backend and Mobile CI and a clear review-channel audit
-- canonical POC readiness is 168/197 (85.3%), a +0.5 percentage-point change
+- canonical POC readiness is 169/197 (85.8%), a +0.5 percentage-point change
 - FIN-31 P7 progress is 18/18 (100.0%); all 33 direct children and the epic are
   verified Done
 - FIN-36 P8 progress is 3/13 (23.1%); the epic remains In Progress
-- FIN-38 P9 progress is 1/20 (5.0%); the epic remains In Progress
+- FIN-38 P9 progress is 2/20 (10.0%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
   remain open
 - no paid provider or review credits were used
-- FIN-41 provides an executable synthetic first-user backend flow plus OpenAPI,
-  event-envelope, Elasticsearch mapping/ownership, and operational privacy gates
-- the next ranked unfinished leaf is FIN-42 for a fresh hierarchy and scope audit
+- FIN-42 provides the production-like Windows Server Compose boundary, reverse
+  proxy, secret contract, lifecycle validation, and guarded backup/restore flow;
+  deployment to and verification on an approved host remain open release gates
+- the next ranked unfinished leaf is FIN-43 for a fresh hierarchy and scope audit
   after this progress record merges
 
 ## Epic Progress
@@ -85,8 +85,8 @@ Current delivery:
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 3 | 13 | 23.1% |
-| FIN-38 | P9 Testing, Windows deployment, and release readiness | 1 | 20 | 5.0% |
-| **Total** | **Canonical POC leaf scope** | **168** | **197** | **85.3%** |
+| FIN-38 | P9 Testing, Windows deployment, and release readiness | 2 | 20 | 10.0% |
+| **Total** | **Canonical POC leaf scope** | **169** | **197** | **85.8%** |
 
 ## First-User-Test Gates
 
@@ -245,3 +245,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-24T17:51:00+03:00 | FIN-39 | Closure delivered by PR 223 | 84.3% | +0.5 pp |
 | 2026-08-24T18:50:11+03:00 | FIN-40 | Closure delivered by PR 225 | 84.8% | +0.5 pp |
 | 2026-08-24T19:22:06+03:00 | FIN-41 | Closure delivered by PR 227 | 85.3% | +0.5 pp |
+| 2026-08-24T20:03:11+03:00 | FIN-42 | Closure delivered by PR 229 | 85.8% | +0.5 pp |
