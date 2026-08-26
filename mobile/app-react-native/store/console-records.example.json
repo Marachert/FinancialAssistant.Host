@@ -7,7 +7,9 @@
   "candidate": {
     "version": "0.1.0",
     "iosBuildNumber": "1",
-    "androidVersionCode": 1
+    "androidVersionCode": 1,
+    "commitSha": "REQUIRED_40_CHAR_GIT_COMMIT_SHA",
+    "treeSha": "REQUIRED_40_CHAR_GIT_TREE_SHA"
   },
   "apple": {
     "appRecordCreated": false,

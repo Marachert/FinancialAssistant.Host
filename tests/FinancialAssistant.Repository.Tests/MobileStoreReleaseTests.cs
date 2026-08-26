@@ -54,15 +54,23 @@ public sealed class MobileStoreReleaseTests
         Assert.Equal("0.1.0", candidate.GetProperty("version").GetString());
         Assert.Equal("1", candidate.GetProperty("iosBuildNumber").GetString());
         Assert.Equal(1, candidate.GetProperty("androidVersionCode").GetInt32());
+        Assert.StartsWith("REQUIRED_", candidate.GetProperty("commitSha").GetString(), StringComparison.Ordinal);
+        Assert.StartsWith("REQUIRED_", candidate.GetProperty("treeSha").GetString(), StringComparison.Ordinal);
         Assert.StartsWith("REQUIRED_", template.GetProperty("productionApiUrl").GetString(), StringComparison.Ordinal);
         Assert.False(template.GetProperty("apple").GetProperty("appRecordCreated").GetBoolean());
         Assert.False(template.GetProperty("googlePlay").GetProperty("appRecordCreated").GetBoolean());
         Assert.Contains("console-records.local.json", gitIgnore, StringComparison.Ordinal);
         Assert.Contains("service-account*.json", gitIgnore, StringComparison.Ordinal);
         Assert.Contains("auth-key*.p8", easIgnore, StringComparison.Ordinal);
+        Assert.Contains("template.candidate?.commitSha.startsWith('REQUIRED_')", validator, StringComparison.Ordinal);
+        Assert.Contains("template.googlePlay?.serviceAccountKeyPath.startsWith('REQUIRED_')", validator, StringComparison.Ordinal);
         Assert.Contains("local.candidate?.version === app.version", validator, StringComparison.Ordinal);
         Assert.Contains("local.candidate?.iosBuildNumber === app.ios.buildNumber", validator, StringComparison.Ordinal);
         Assert.Contains("local.candidate?.androidVersionCode === app.android.versionCode", validator, StringComparison.Ordinal);
+        Assert.Contains("local.candidate?.commitSha === gitCandidate.commitSha", validator, StringComparison.Ordinal);
+        Assert.Contains("local.candidate?.treeSha === gitCandidate.treeSha", validator, StringComparison.Ordinal);
+        Assert.Contains("await requireReadableFile(resolvedServiceAccountPath", validator, StringComparison.Ordinal);
+        Assert.Contains("outside the repository", validator, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -93,6 +101,8 @@ public sealed class MobileStoreReleaseTests
         Assert.Contains("verify:release", package, StringComparison.Ordinal);
         Assert.Contains("--strict", runbook, StringComparison.Ordinal);
         Assert.Contains("increment `expo.version`", runbook, StringComparison.Ordinal);
+        Assert.Contains("candidate.commitSha", runbook, StringComparison.Ordinal);
+        Assert.Contains("existing readable file", runbook, StringComparison.Ordinal);
         Assert.Contains("explicit release-owner approval", runbook, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("does not create cloud builds", runbook, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("prevents unapproved spend", runbook, StringComparison.OrdinalIgnoreCase);

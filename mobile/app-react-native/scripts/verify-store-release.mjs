@@ -1,11 +1,15 @@
+import { constants } from 'node:fs';
+import { execFile } from 'node:child_process';
 import { access, readFile, stat } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const strict = process.argv.includes('--strict');
 const failures = [];
 const requiredTypes = ['Email Address', 'User ID', 'Other Financial Info', 'Photos or Videos', 'Other User Content'];
+const run = promisify(execFile);
 
 async function readJson(path) {
   return JSON.parse(await readFile(resolve(root, path), 'utf8'));
@@ -34,6 +38,32 @@ async function readPng(path, alphaRequired) {
   requireValue(width === height && width >= 1024, `${path} must be square and at least 1024 pixels.`);
   requireValue(details.size <= 2_000_000, `${path} must remain below 2 MB.`);
   if (alphaRequired) requireValue([4, 6].includes(bytes[25]), `${path} must contain an alpha channel.`);
+}
+
+async function readGitCandidate() {
+  const options = { cwd: root, encoding: 'utf8', windowsHide: true };
+  const [repository, commit, tree, status] = await Promise.all([
+    run('git', ['rev-parse', '--show-toplevel'], options),
+    run('git', ['rev-parse', 'HEAD'], options),
+    run('git', ['rev-parse', 'HEAD^{tree}'], options),
+    run('git', ['status', '--porcelain', '--untracked-files=no'], options),
+  ]);
+
+  return {
+    repositoryRoot: repository.stdout.trim(),
+    commitSha: commit.stdout.trim(),
+    treeSha: tree.stdout.trim(),
+    clean: status.stdout.trim().length === 0,
+  };
+}
+
+async function requireReadableFile(path, label) {
+  try {
+    await access(path, constants.R_OK);
+    requireValue((await stat(path)).isFile(), `${label} must identify a regular file.`);
+  } catch {
+    failures.push(`${label} must exist and be readable.`);
+  }
 }
 
 const app = (await readJson('app.json')).expo;
@@ -81,6 +111,8 @@ for (const type of requiredTypes) requireValue(disclosures.apple?.some((item) =>
 requireValue(disclosures.apple?.every((item) => item.tracking === false), 'Apple disclosure cannot mark a data type for tracking.');
 requireValue(disclosures.googlePlay?.every((item) => item.shared === false), 'Google Play disclosure cannot mark data as shared.');
 requireValue(template.productionApiUrl.startsWith('REQUIRED_'), 'Console template must not contain a usable gateway URL.');
+requireValue(template.candidate?.commitSha.startsWith('REQUIRED_') && template.candidate?.treeSha.startsWith('REQUIRED_'), 'Console template must not contain candidate Git identities.');
+requireValue(template.googlePlay?.serviceAccountKeyPath.startsWith('REQUIRED_'), 'Console template must not contain a service-account path.');
 requireValue(template.apple?.appRecordCreated === false && template.googlePlay?.appRecordCreated === false, 'Console template must not claim external records exist.');
 
 if (strict) {
@@ -88,12 +120,24 @@ if (strict) {
   try {
     await access(localPath);
     const local = JSON.parse(await readFile(localPath, 'utf8'));
+    let gitCandidate;
+    try {
+      gitCandidate = await readGitCandidate();
+    } catch {
+      failures.push('Strict validation requires an accessible Git worktree.');
+    }
+
     requireHttps(local.productionApiUrl, 'Approved production gateway URL');
     requireValue(!local.productionApiUrl.includes('REQUIRED_'), 'Approved gateway URL is still a placeholder.');
     requireValue(/^[0-9a-f-]{36}$/i.test(local.expo?.projectId), 'EAS project ID is missing.');
     requireValue(local.candidate?.version === app.version, 'Console evidence app version does not match app config.');
     requireValue(local.candidate?.iosBuildNumber === app.ios.buildNumber, 'Console evidence iOS build number does not match app config.');
     requireValue(local.candidate?.androidVersionCode === app.android.versionCode, 'Console evidence Android version code does not match app config.');
+    if (gitCandidate) {
+      requireValue(gitCandidate.clean, 'Tracked worktree changes must be committed before strict validation.');
+      requireValue(local.candidate?.commitSha === gitCandidate.commitSha, 'Console evidence commit does not match HEAD.');
+      requireValue(local.candidate?.treeSha === gitCandidate.treeSha, 'Console evidence tree does not match HEAD.');
+    }
     requireValue(local.apple?.appRecordCreated === true, 'App Store Connect record is not confirmed.');
     requireValue(/^\d+$/.test(local.apple?.appStoreConnectAppId), 'App Store Connect app ID is missing.');
     requireValue(/^[A-Z0-9]{10}$/.test(local.apple?.teamId), 'Apple team ID is missing.');
@@ -103,7 +147,18 @@ if (strict) {
     requireValue(local.googlePlay?.packageName === app.android.package, 'Google Play package does not match app config.');
     requireValue(local.googlePlay?.internalTesterListCreated === true && local.googlePlay?.internalTrackCreated === true, 'Google Play internal testing is not confirmed.');
     requireValue(local.googlePlay?.dataSafetyAnswersSaved === true && local.googlePlay?.metadataSaved === true, 'Google Play data safety or metadata is incomplete.');
-    requireValue(local.googlePlay?.serviceAccountKeyPath && !local.googlePlay.serviceAccountKeyPath.includes('REQUIRED_'), 'Google service-account key path is missing.');
+    const serviceAccountPath = local.googlePlay?.serviceAccountKeyPath;
+    const serviceAccountConfigured = typeof serviceAccountPath === 'string' && !serviceAccountPath.includes('REQUIRED_');
+    requireValue(serviceAccountConfigured, 'Google service-account key path is missing.');
+    if (serviceAccountConfigured && gitCandidate) {
+      const resolvedServiceAccountPath = resolve(serviceAccountPath);
+      const repositoryRelativePath = relative(gitCandidate.repositoryRoot, resolvedServiceAccountPath);
+      const outsideRepository = isAbsolute(repositoryRelativePath) || repositoryRelativePath === '..' || repositoryRelativePath.startsWith(`..${sep}`);
+      requireValue(isAbsolute(serviceAccountPath) && outsideRepository, 'Google service-account key must use an absolute path outside the repository.');
+      if (isAbsolute(serviceAccountPath) && outsideRepository) {
+        await requireReadableFile(resolvedServiceAccountPath, 'Google service-account key');
+      }
+    }
     requireValue(local.releaseOwnerApproval === true, 'Release owner approval is missing.');
   } catch (error) {
     if (error?.code === 'ENOENT') failures.push('Strict validation requires ignored store/console-records.local.json.');

@@ -63,7 +63,18 @@ npx --yes eas-cli@22.4.0 env:create --environment production --name EXPO_PUBLIC_
 
 7. Copy `store/console-records.example.json` to the ignored
    `store/console-records.local.json`. Record only non-secret IDs, paths to keys
-   outside the repository, completed console states, and owner approval.
+   outside the repository, completed console states, and owner approval. Require
+   a clean tracked worktree and record the exact candidate identities:
+
+```powershell
+git status --short
+git rev-parse HEAD
+git rev-parse 'HEAD^{tree}'
+```
+
+   The status output must be empty. Record the two SHAs in `candidate.commitSha`
+   and `candidate.treeSha`. The Google service-account path must be absolute,
+   outside the repository, and identify an existing readable file.
 8. Reconcile `store/privacy-disclosures.json` against the exact native manifest,
    backend environment, every enabled SDK/provider, and actual retention/deletion
    behavior. Save the answers and listing metadata in both consoles.
