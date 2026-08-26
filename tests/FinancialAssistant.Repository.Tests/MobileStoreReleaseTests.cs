@@ -61,7 +61,28 @@ public sealed class MobileStoreReleaseTests
         Assert.False(template.GetProperty("googlePlay").GetProperty("appRecordCreated").GetBoolean());
         Assert.Contains("console-records.local.json", gitIgnore, StringComparison.Ordinal);
         Assert.Contains("service-account*.json", gitIgnore, StringComparison.Ordinal);
-        Assert.Contains("auth-key*.p8", easIgnore, StringComparison.Ordinal);
+        string[] requiredEasCredentialExclusions =
+        [
+            "*.jks",
+            "*.keystore",
+            "*.mobileprovision",
+            "*.p12",
+            "*.pem",
+            "*.pfx",
+            "*.key",
+            "appsettings.Local.json",
+            "appsettings.*.Local.json",
+            "secrets.json",
+            "store/console-records.local.json",
+            "store/service-account*.json",
+            "store/auth-key*.p8",
+        ];
+
+        foreach (var credentialExclusion in requiredEasCredentialExclusions)
+        {
+            Assert.Contains(credentialExclusion, easIgnore, StringComparison.Ordinal);
+        }
+
         Assert.Contains("template.candidate?.commitSha.startsWith('REQUIRED_')", validator, StringComparison.Ordinal);
         Assert.Contains("template.googlePlay?.serviceAccountKeyPath.startsWith('REQUIRED_')", validator, StringComparison.Ordinal);
         Assert.Contains("local.candidate?.version === app.version", validator, StringComparison.Ordinal);

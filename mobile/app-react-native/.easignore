@@ -7,6 +7,17 @@ dist/
 .env
 .env.*
 !.env.example
+# EAS uses this file instead of .gitignore, so repeat local credential exclusions.
+*.jks
+*.keystore
+*.mobileprovision
+*.p12
+*.pem
+*.pfx
+*.key
+appsettings.Local.json
+appsettings.*.Local.json
+secrets.json
 store/console-records.local.json
 store/service-account*.json
 store/auth-key*.p8
