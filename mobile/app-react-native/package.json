@@ -10,7 +10,8 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "verify:structure": "node scripts/verify-project.mjs",
-    "verify": "npm run typecheck && npm run lint && npm run verify:structure"
+    "verify:release": "node scripts/verify-store-release.mjs",
+    "verify": "npm run typecheck && npm run lint && npm run verify:structure && npm run verify:release"
   },
   "dependencies": {
     "expo": "~57.0.9",

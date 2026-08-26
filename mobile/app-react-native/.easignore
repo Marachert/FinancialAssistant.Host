@@ -1,0 +1,12 @@
+.git/
+.expo/
+node_modules/
+coverage/
+dist/
+*.log
+.env
+.env.*
+!.env.example
+store/console-records.local.json
+store/service-account*.json
+store/auth-key*.p8

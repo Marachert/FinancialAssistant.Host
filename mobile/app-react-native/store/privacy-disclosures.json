@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "scope": "Financial Assistant controlled mobile POC",
+  "tracking": false,
+  "thirdPartyAdvertising": false,
+  "dataSharedWithThirdParties": false,
+  "dataEncryptedInTransit": true,
+  "apple": [
+    {
+      "dataType": "Email Address",
+      "linkedToUser": true,
+      "tracking": false,
+      "purposes": ["App Functionality", "Account Management"]
+    },
+    {
+      "dataType": "User ID",
+      "linkedToUser": true,
+      "tracking": false,
+      "purposes": ["App Functionality", "Account Management"]
+    },
+    {
+      "dataType": "Other Financial Info",
+      "linkedToUser": true,
+      "tracking": false,
+      "purposes": ["App Functionality"]
+    },
+    {
+      "dataType": "Photos or Videos",
+      "linkedToUser": true,
+      "tracking": false,
+      "purposes": ["App Functionality"]
+    },
+    {
+      "dataType": "Other User Content",
+      "linkedToUser": true,
+      "tracking": false,
+      "purposes": ["App Functionality"]
+    }
+  ],
+  "googlePlay": [
+    {
+      "category": "Personal info",
+      "dataType": "Email address",
+      "collected": true,
+      "shared": false,
+      "required": true,
+      "purposes": ["App functionality", "Account management"]
+    },
+    {
+      "category": "Financial info",
+      "dataType": "Purchase history and other financial information",
+      "collected": true,
+      "shared": false,
+      "required": true,
+      "purposes": ["App functionality"]
+    },
+    {
+      "category": "Photos and videos",
+      "dataType": "Photos",
+      "collected": true,
+      "shared": false,
+      "required": false,
+      "purposes": ["App functionality"]
+    },
+    {
+      "category": "App activity",
+      "dataType": "Other user-generated content and app interactions",
+      "collected": true,
+      "shared": false,
+      "required": true,
+      "purposes": ["App functionality"]
+    }
+  ],
+  "ownerReviewRequired": [
+    "Reconcile disclosures against the exact production backend, native manifest, and every enabled third-party SDK.",
+    "Confirm retention and deletion periods with the release owner before any public store release.",
+    "Update both stores whenever data collection, sharing, SDKs, AI/OCR providers, or notification delivery changes."
+  ]
+}

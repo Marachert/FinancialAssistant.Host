@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "locale": "en-US",
+  "identity": {
+    "appName": "Financial Assistant",
+    "appleBundleIdentifier": "com.financialassistant.mobile",
+    "googlePackageName": "com.financialassistant.mobile",
+    "primaryCategory": "Finance"
+  },
+  "urls": {
+    "privacyPolicy": "https://github.com/Marachert/FinancialAssistant.Host/blob/main/docs/legal/privacy-policy.md",
+    "support": "https://github.com/Marachert/FinancialAssistant.Host/issues"
+  },
+  "apple": {
+    "subtitle": "Clear money, less input",
+    "promotionalText": "Capture everyday money activity, review every suggestion, and keep authoritative totals transparent.",
+    "description": "Financial Assistant turns free-form money input and receipt images into reviewable drafts. You stay in control: every suggested amount, category, date, and note can be checked before confirmation. Confirmed backend records drive clear income, spending, balance, category, limit, score, and recommendation views.\n\nThe product is an intelligent personal-finance assistant, not a complex accounting system. It minimizes manual input while preserving deterministic calculations and explaining where each result came from. OCR and AI can assist with draft preparation when an approved provider is enabled, but they never become the source of financial truth.\n\nUse Financial Assistant to register securely, complete a short setup, capture one transaction at a time, upload a receipt, review or reject a draft, explore daily, weekly, and monthly activity, read score factors and recommendations, and control notification and privacy preferences. Friendly empty, offline, retry, and permission states keep the first-user experience understandable.",
+    "keywords": "budget,expense,income,receipt,finance,spending,analytics,money,assistant",
+    "reviewNotes": "Use only the synthetic controlled-test account delivered through the private tester channel. The app requires an approved HTTPS Public API Gateway. OCR, AI wording, and external notification delivery remain disabled unless the release owner separately approves their privacy and cost gates. No store reviewer credential belongs in source control or listing text."
+  },
+  "google": {
+    "shortDescription": "Turn everyday money input into clear, reviewable financial records.",
+    "fullDescription": "Financial Assistant helps you capture everyday income and spending with less manual entry while keeping you in control. Enter one free-form transaction or choose a receipt image, review the suggested draft, edit any field, and confirm only when it is correct.\n\nConfirmed backend records power transparent daily, weekly, and monthly summaries, category views, spending limits, financial score factors, and practical recommendations. The mobile app does not invent or recalculate authoritative totals. OCR and AI can prepare suggestions when an approved provider is enabled, but every suggestion remains editable and requires confirmation.\n\nThe controlled first release includes secure registration and sign-in, onboarding, transaction and receipt capture, draft review and rejection, dashboards, analytics, score explanations, recommendations, a notification inbox, preferences, accessible loading and empty states, and clear offline recovery. Financial Assistant is intentionally focused and understandable rather than a complex accounting system.",
+    "releaseNotes": "Initial controlled test release with secure account setup, reviewable transaction and receipt drafts, authoritative financial summaries, insights, preferences, and resilient offline and error states."
+  },
+  "permissions": {
+    "camera": "Allow Financial Assistant to photograph a receipt for review.",
+    "photos": "Allow Financial Assistant to select a receipt image for review.",
+    "notifications": "Allow Financial Assistant to show the budget alerts and weekly summaries you enable."
+  },
+  "screenshots": [
+    "Welcome and secure registration",
+    "First-user onboarding and privacy choice",
+    "Dashboard with synthetic daily summary",
+    "Free-form transaction capture",
+    "Receipt selection and reviewable draft",
+    "Editable draft before confirmation",
+    "Analytics category breakdown",
+    "Financial score explanation",
+    "Recommendations and notification inbox",
+    "Settings, permissions, privacy policy, and support"
+  ]
+}

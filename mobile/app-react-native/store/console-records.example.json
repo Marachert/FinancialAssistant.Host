@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "productionApiUrl": "REQUIRED_APPROVED_HTTPS_GATEWAY_URL",
+  "expo": {
+    "projectId": "REQUIRED_EAS_PROJECT_UUID"
+  },
+  "candidate": {
+    "version": "0.1.0",
+    "iosBuildNumber": "1",
+    "androidVersionCode": 1
+  },
+  "apple": {
+    "appRecordCreated": false,
+    "appStoreConnectAppId": "REQUIRED_NUMERIC_APP_ID",
+    "teamId": "REQUIRED_APPLE_TEAM_ID",
+    "testFlightInternalGroupCreated": false,
+    "privacyAnswersSaved": false,
+    "metadataSaved": false
+  },
+  "googlePlay": {
+    "appRecordCreated": false,
+    "packageName": "com.financialassistant.mobile",
+    "internalTesterListCreated": false,
+    "internalTrackCreated": false,
+    "dataSafetyAnswersSaved": false,
+    "metadataSaved": false,
+    "serviceAccountKeyPath": "REQUIRED_PATH_OUTSIDE_REPOSITORY"
+  },
+  "releaseOwnerApproval": false
+}

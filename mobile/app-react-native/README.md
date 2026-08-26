@@ -55,6 +55,21 @@ blocker rules are defined in:
 docs/engineering/mobile-smoke-regression-test-plan.md
 ```
 
+Store build profiles, listing metadata, privacy disclosures, permission copy,
+and strict account-owner validation are defined in:
+
+```text
+eas.json
+store/
+docs/delivery/mobile-store-release-tracks.md
+```
+
+`npm run verify:release` validates the credential-free repository boundary.
+`npm run verify:release -- --strict` additionally requires the ignored local
+console record and fails until account-owner store and signing gates are real.
+Neither command creates a cloud build, submits a binary, or consumes EAS/store
+credits.
+
 ## Run
 
 ```powershell

@@ -123,6 +123,9 @@ secrets.json
 !**/*.example.pem
 !**/*.pem.example
 *.mobileprovision
+mobile/**/store/console-records.local.json
+mobile/**/store/service-account*.json
+mobile/**/store/auth-key*.p8
 
 # Docker and local infrastructure state
 docker-compose.override.yml

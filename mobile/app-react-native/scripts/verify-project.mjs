@@ -6,6 +6,10 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const requiredFiles = [
   'package.json',
   'app.json',
+  'eas.json',
+  'store/release-metadata.json',
+  'store/privacy-disclosures.json',
+  'store/console-records.example.json',
   'src/app/_layout.tsx',
   'src/app/(app)/_layout.tsx',
   'src/app/(auth)/sign-in.tsx',
@@ -35,6 +39,7 @@ const requiredFiles = [
 const contents = await Promise.all(requiredFiles.map(async (path) => [path, await readFile(resolve(root, path), 'utf8')]));
 const combined = contents.map(([, content]) => content).join('\n');
 const envExample = await readFile(resolve(root, '.env.example'), 'utf8');
+const settings = await readFile(resolve(root, 'src/app/(app)/settings.tsx'), 'utf8');
 
 const failures = [];
 if (!combined.includes('expo-secure-store')) failures.push('SecureStore is required for authentication state.');
@@ -73,6 +78,8 @@ if (!combined.includes('readAtUtc')) failures.push('Notification read state is m
 if (!combined.includes('No notifications yet.')) failures.push('Notification inbox empty state is missing.');
 if (!combined.includes('label="Loading notifications"')) failures.push('Notification inbox skeleton state is missing.');
 if (!combined.includes('Open device settings')) failures.push('Denied notification permission recovery is missing.');
+if (!settings.includes('label="Privacy policy"')) failures.push('Settings must expose the public privacy policy.');
+if (!settings.includes('label="Support"')) failures.push('Settings must expose the public support path.');
 if (!combined.includes('Notifications.requestPermissionsAsync')) failures.push('Settings notification permission request is missing.');
 if (!combined.includes('RefreshControl')) failures.push('Insight screens require pull-to-refresh.');
 if (!combined.includes('label="Dashboard period"')) failures.push('Dashboard period selection is missing.');

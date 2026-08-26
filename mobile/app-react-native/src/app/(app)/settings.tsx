@@ -19,6 +19,9 @@ import {
   TextField,
 } from '@/shared/ui';
 
+const privacyPolicyUrl = 'https://github.com/Marachert/FinancialAssistant.Host/blob/main/docs/legal/privacy-policy.md';
+const supportUrl = 'https://github.com/Marachert/FinancialAssistant.Host/issues';
+
 type SettingsForm = {
   locale: string;
   timeZone: string;
@@ -250,6 +253,10 @@ export default function SettingsScreen() {
               disabled={busy}
               onChange={(value) => setField('aiPersonalizationEnabled', value)}
             />
+            <View style={styles.sectionHeader}>
+              <LinkButton label="Privacy policy" onPress={() => void Linking.openURL(privacyPolicyUrl)} />
+              <LinkButton label="Support" onPress={() => void Linking.openURL(supportUrl)} />
+            </View>
           </View>
 
           <View style={styles.section}>
