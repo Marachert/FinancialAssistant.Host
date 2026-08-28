@@ -30,9 +30,12 @@ type InsightsContextValue = {
   profile: UserProfile | null;
   dashboard: AnalyticsDashboard | null;
   score: FinancialScore | null;
+  scoreHistory: FinancialScore[];
   recommendations: Recommendation[];
   refresh: () => Promise<void>;
   saveProfile: (update: ProfileUpdate) => Promise<UserProfile>;
+  markRecommendationRead: (recommendationId: string) => Promise<Recommendation>;
+  dismissRecommendation: (recommendationId: string) => Promise<Recommendation>;
 };
 
 const InsightsContext = createContext<InsightsContextValue | null>(null);
@@ -53,6 +56,7 @@ export function InsightsProvider({ children }: PropsWithChildren) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [dashboard, setDashboard] = useState<AnalyticsDashboard | null>(null);
   const [score, setScore] = useState<FinancialScore | null>(null);
+  const [scoreHistory, setScoreHistory] = useState<FinancialScore[]>([]);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
 
   const refresh = useCallback(async () => {
@@ -62,18 +66,20 @@ export function InsightsProvider({ children }: PropsWithChildren) {
     try {
       const nextProfile = await api.getProfile();
       setProfile(nextProfile);
-      const [dashboardResult, scoreResult, recommendationsResult] = await Promise.allSettled([
+      const [dashboardResult, scoreResult, historyResult, recommendationsResult] = await Promise.allSettled([
         api.getDashboard(nextProfile.currencyCode, nextProfile.timeZone),
         api.getScore(nextProfile.currencyCode),
+        api.getScoreHistory(nextProfile.currencyCode),
         api.getRecommendations(nextProfile.currencyCode),
       ]);
       if (dashboardResult.status === 'fulfilled') setDashboard(dashboardResult.value);
       if (scoreResult.status === 'fulfilled') setScore(scoreResult.value);
+      if (historyResult.status === 'fulfilled') setScoreHistory(historyResult.value.items);
       if (recommendationsResult.status === 'fulfilled') {
         setRecommendations(recommendationsResult.value.items);
       }
 
-      const failure = [dashboardResult, scoreResult, recommendationsResult]
+      const failure = [dashboardResult, scoreResult, historyResult, recommendationsResult]
         .find((result) => result.status === 'rejected');
       if (failure?.status === 'rejected') {
         setError(errorMessage(failure.reason));
@@ -95,6 +101,22 @@ export function InsightsProvider({ children }: PropsWithChildren) {
     return savedProfile;
   }, [api]);
 
+  const markRecommendationRead = useCallback(async (recommendationId: string) => {
+    const updated = await api.markRecommendationRead(recommendationId);
+    setRecommendations((current) => current.map((item) => (
+      item.recommendationId === updated.recommendationId ? updated : item
+    )));
+    return updated;
+  }, [api]);
+
+  const dismissRecommendation = useCallback(async (recommendationId: string) => {
+    const updated = await api.dismissRecommendation(recommendationId);
+    setRecommendations((current) => current.map((item) => (
+      item.recommendationId === updated.recommendationId ? updated : item
+    )));
+    return updated;
+  }, [api]);
+
   useEffect(() => {
     const initialRefresh = setTimeout(() => void refresh(), 0);
     return () => clearTimeout(initialRefresh);
@@ -109,11 +131,14 @@ export function InsightsProvider({ children }: PropsWithChildren) {
       profile,
       dashboard,
       score,
+      scoreHistory,
       recommendations,
       refresh,
       saveProfile,
+      markRecommendationRead,
+      dismissRecommendation,
     }),
-    [api, dashboard, error, profile, recommendations, refresh, refreshing, saveProfile, score, state],
+    [api, dashboard, dismissRecommendation, error, markRecommendationRead, profile, recommendations, refresh, refreshing, saveProfile, score, scoreHistory, state],
   );
 
   return <InsightsContext.Provider value={value}>{children}</InsightsContext.Provider>;

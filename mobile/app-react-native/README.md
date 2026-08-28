@@ -9,6 +9,8 @@ financial score, recommendations, and profile and notification settings.
 FIN-170 adds the post-registration profile setup and initial-navigation gate.
 FIN-186 adds shared loading skeletons, explicit empty and friendly error states,
 screen-level retry actions, and a live offline banner with manual recheck.
+FIN-183 adds backend score history, recommendation detail, and owner-scoped
+read and dismissal actions without calculating financial state on the client.
 
 ## Prerequisites
 
@@ -90,8 +92,11 @@ are retained for the current phrase or receipt, receipt polling is bounded and
 cancellable, and no receipt bytes or free-form financial text are logged.
 
 The dashboard reads authoritative summaries through `GET /analytics/dashboard`,
-the current score through `GET /financial-score/current`, and recommendations
-through `GET /recommendations`. Settings use `GET /users/me`,
+the current score through `GET /financial-score/current`, score history through
+`GET /financial-score/history`, and recommendations through
+`GET /recommendations`. Recommendation detail records owner-scoped lifecycle
+changes through `PUT /recommendations/{recommendationId}/read` and
+`PUT /recommendations/{recommendationId}/dismissal`. Settings use `GET /users/me`,
 `PUT /users/me/preferences`, and `GET` or `PUT /notification-preferences`.
 The notification inbox reads prepared owner-scoped messages through
 `GET /notifications?currency={currency}` and records the first read timestamp

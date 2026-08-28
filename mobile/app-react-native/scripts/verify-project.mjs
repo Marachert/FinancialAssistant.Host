@@ -21,6 +21,7 @@ const requiredFiles = [
   'src/app/(app)/draft.tsx',
   'src/app/(app)/score.tsx',
   'src/app/(app)/recommendations.tsx',
+  'src/app/(app)/recommendations/[recommendationId].tsx',
   'src/app/(app)/notifications.tsx',
   'src/app/(app)/settings.tsx',
   'src/api/client.ts',
@@ -69,7 +70,13 @@ if (!combined.includes('expo-document-picker')) failures.push('File receipt sele
 if (!combined.includes('/analytics/dashboard')) failures.push('Dashboard analytics route is missing.');
 if (!combined.includes('/analytics/category-breakdown')) failures.push('Analytics category breakdown route is missing.');
 if (!combined.includes('/financial-score/current')) failures.push('Financial score route is missing.');
+if (!combined.includes('/financial-score/history')) failures.push('Financial score history route is missing.');
 if (!combined.includes('/recommendations')) failures.push('Recommendation route is missing.');
+if (!combined.includes('markRecommendationRead')) failures.push('Recommendation mark-read action is missing.');
+if (!combined.includes('dismissRecommendation')) failures.push('Recommendation dismissal action is missing.');
+if (!combined.includes('Recent score trend')) failures.push('Financial score trend is missing.');
+if (!combined.includes("pathname: '/recommendations/[recommendationId]'")) failures.push('Recommendation detail navigation is missing.');
+if (!combined.includes('Suggested next step')) failures.push('Recommendation action detail is missing.');
 if (!combined.includes('/users/me/preferences')) failures.push('Profile preferences route is missing.');
 if (!combined.includes('/notification-preferences')) failures.push('Notification preferences route is missing.');
 if (!combined.includes('/notifications?currency=')) failures.push('Notification inbox route is missing.');
