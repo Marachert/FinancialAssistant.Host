@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-24T20:05:25+03:00
+Last updated: 2026-08-28T18:42:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-42 delivery is **85.8%**:
-**169 of 197 canonical POC leaf tickets are Done**.
+POC readiness after FIN-43 delivery is **86.3%**:
+**170 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,26 +13,27 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-42 - Prepare Windows Server PoC deployment stack
+- FIN-43 - Prepare Apple App Store and Google Play first release tracks
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/229
+  https://github.com/Marachert/FinancialAssistant.Host/pull/231
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/3097a2fd4611ad269547a7f9bcdf3cf628ea60a9
-- previous readiness: 168 / 197, or 85.3%
-- current readiness: 169 / 197, or 85.8%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/5b26f6b8aab1a91bbb4aa0ae6e81b5e8bddecdb1
+- previous readiness: 169 / 197, or 85.8%
+- current readiness: 170 / 197, or 86.3%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-42 - Prepare Windows Server PoC deployment stack, merged and Done
+- FIN-43 - Prepare Apple App Store and Google Play first release tracks, merged
+  and Done
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/229
+  https://github.com/Marachert/FinancialAssistant.Host/pull/231
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/3097a2fd4611ad269547a7f9bcdf3cf628ea60a9
-- final implementation head: `06cbaea79628daf74cbf146cc241d0f20e5718a6`
-- exact-head CI: Backend run 32754174211 and Mobile run 32754174221
-- previous readiness: 168 / 197, or 85.3%
-- current readiness: 169 / 197, or 85.8%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/5b26f6b8aab1a91bbb4aa0ae6e81b5e8bddecdb1
+- final implementation head: `02a2becef372fcee8555389783a11f7e948112fa`
+- exact-head CI: Backend run 32993170765 and Mobile run 32993171092
+- previous readiness: 169 / 197, or 85.8%
+- current readiness: 170 / 197, or 86.3%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -53,23 +54,24 @@ numerator or denominator.
 
 Current delivery:
 
-- FIN-42 is Done through guarded merged PR #229
-- the implementation is merged at `3097a2fd4611ad269547a7f9bcdf3cf628ea60a9`
+- FIN-43 is Done through guarded merged PR #231
+- the implementation is merged at `5b26f6b8aab1a91bbb4aa0ae6e81b5e8bddecdb1`
   after exact-head Backend and Mobile CI and a clear review-channel audit
-- canonical POC readiness is 169/197 (85.8%), a +0.5 percentage-point change
+- canonical POC readiness is 170/197 (86.3%), a +0.5 percentage-point change
 - FIN-31 P7 progress is 18/18 (100.0%); all 33 direct children and the epic are
   verified Done
 - FIN-36 P8 progress is 3/13 (23.1%); the epic remains In Progress
-- FIN-38 P9 progress is 2/20 (10.0%); the epic remains In Progress
+- FIN-38 P9 progress is 3/20 (15.0%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
   remain open
 - no paid provider or review credits were used
-- FIN-42 provides the production-like Windows Server Compose boundary, reverse
-  proxy, secret contract, lifecycle validation, and guarded backup/restore flow;
-  deployment to and verification on an approved host remain open release gates
-- the next ranked unfinished leaf is FIN-43 for a fresh hierarchy and scope audit
+- FIN-43 provides credential-safe iOS/Android identities, store metadata/privacy
+  drafts, internal tester paths, and strict candidate/account-owner gates;
+  external store records, signing, builds, submissions, and tester verification
+  remain owner-controlled release gates
+- the next ranked unfinished leaf will be selected from a fresh Jira hierarchy
   after this progress record merges
 
 ## Epic Progress
@@ -85,8 +87,8 @@ Current delivery:
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 3 | 13 | 23.1% |
-| FIN-38 | P9 Testing, Windows deployment, and release readiness | 2 | 20 | 10.0% |
-| **Total** | **Canonical POC leaf scope** | **169** | **197** | **85.8%** |
+| FIN-38 | P9 Testing, Windows deployment, and release readiness | 3 | 20 | 15.0% |
+| **Total** | **Canonical POC leaf scope** | **170** | **197** | **86.3%** |
 
 ## First-User-Test Gates
 
@@ -111,7 +113,10 @@ rejection and confirmation, onboarding/profile setup, dashboard,
 score/recommendation, settings, analytics/category-chart screens, and the
 notification inbox, resilient offline/error states, and shared loading/empty
 patterns. Its documented release-ready smoke and regression validation covers
-both Android and iOS paths; executing release evidence remains part of P9.
+both Android and iOS paths. FIN-43 now supplies repository-verifiable store
+configuration and controlled internal-test runbooks; external account records,
+signing, builds, submissions, tester installation, and approved-host runtime
+evidence remain part of P9.
 
 ## Calculation Contract
 
@@ -246,3 +251,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-24T18:50:11+03:00 | FIN-40 | Closure delivered by PR 225 | 84.8% | +0.5 pp |
 | 2026-08-24T19:22:06+03:00 | FIN-41 | Closure delivered by PR 227 | 85.3% | +0.5 pp |
 | 2026-08-24T20:03:11+03:00 | FIN-42 | Closure delivered by PR 229 | 85.8% | +0.5 pp |
+| 2026-08-28T18:40:13+03:00 | FIN-43 | Closure delivered by PR 231 | 86.3% | +0.5 pp |
