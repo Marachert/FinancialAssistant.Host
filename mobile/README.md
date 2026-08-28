@@ -24,3 +24,10 @@ Release-candidate validation is defined in:
 ```text
 docs/engineering/mobile-smoke-regression-test-plan.md
 ```
+
+App Store Connect, TestFlight, Google Play internal testing, metadata, privacy,
+and cost-controlled operator steps are defined in:
+
+```text
+docs/delivery/mobile-store-release-tracks.md
+```

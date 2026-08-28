@@ -131,6 +131,8 @@ Mobile PoC experience and UI kit:
 docs/product/mobile-poc-ux.md
 docs/product/mobile-ui-kit.md
 docs/engineering/mobile-smoke-regression-test-plan.md
+docs/delivery/mobile-store-release-tracks.md
+docs/legal/privacy-policy.md
 ```
 
 Financial core validation coverage:

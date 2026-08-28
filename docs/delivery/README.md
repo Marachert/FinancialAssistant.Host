@@ -6,6 +6,7 @@ This folder contains implementation sequencing, release readiness, deployment, v
 
 - [Developer onboarding](developer-onboarding.md)
 - [Local developer smoke test](local-developer-smoke-test.md)
+- [Mobile store release tracks](mobile-store-release-tracks.md)
 
 ## Scope
 

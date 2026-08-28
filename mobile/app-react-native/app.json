@@ -3,16 +3,26 @@
     "name": "Financial Assistant",
     "slug": "financial-assistant",
     "version": "0.1.0",
+    "icon": "./assets/icon.png",
     "orientation": "portrait",
     "scheme": "financialassistant",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.financialassistant.mobile"
+      "bundleIdentifier": "com.financialassistant.mobile",
+      "buildNumber": "1",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
-      "package": "com.financialassistant.mobile"
+      "package": "com.financialassistant.mobile",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F4F8F7"
+      }
     },
     "plugins": [
       "expo-router",
@@ -28,7 +38,8 @@
         "expo-image-picker",
         {
           "cameraPermission": "Allow Financial Assistant to photograph a receipt for review.",
-          "photosPermission": "Allow Financial Assistant to select a receipt image for review."
+          "photosPermission": "Allow Financial Assistant to select a receipt image for review.",
+          "microphonePermission": false
         }
       ]
     ],
