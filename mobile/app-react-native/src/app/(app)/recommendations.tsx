@@ -36,11 +36,16 @@ export default function RecommendationsScreen() {
             <Text style={[typography.caption, styles.supporting]}>
               Confidence: {recommendation.explanation.confidence}
             </Text>
-            {recommendation.facts.map((fact) => (
-              <Text key={fact.code} style={[typography.caption, styles.supporting]}>
-                {fact.code.replaceAll('_', ' ')}: {fact.value}
-              </Text>
-            ))}
+            <View style={styles.itemFooter}>
+              <Text style={[typography.caption, styles.status]}>{recommendation.status}</Text>
+              <LinkButton
+                label="View details"
+                onPress={() => router.push({
+                  pathname: '/recommendations/[recommendationId]',
+                  params: { recommendationId: recommendation.recommendationId },
+                })}
+              />
+            </View>
           </View>
         ))}
       </View>
@@ -61,4 +66,6 @@ const styles = StyleSheet.create({
   itemHeader: { minHeight: 28, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: theme.spacing.md },
   itemTitle: { flex: 1, color: theme.colors.textPrimary },
   severity: { color: theme.colors.info, textTransform: 'uppercase' },
+  status: { color: theme.colors.textSecondary, textTransform: 'capitalize' },
+  itemFooter: { minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing.md },
 });

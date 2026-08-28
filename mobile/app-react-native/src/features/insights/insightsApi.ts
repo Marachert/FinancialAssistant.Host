@@ -5,10 +5,12 @@ import type {
   AnalyticsDashboard,
   AnalyticsPeriod,
   FinancialScore,
+  FinancialScoreHistory,
   NotificationItem,
   NotificationList,
   NotificationPreferences,
   ProfileUpdate,
+  Recommendation,
   RecommendationList,
   UserProfile,
 } from './insightsTypes';
@@ -42,8 +44,25 @@ export function createInsightsApi(request: Request) {
     getScore: (currency: string) =>
       request<FinancialScore>(`/financial-score/current?currency=${query(currency)}`),
 
+    getScoreHistory: (currency: string, limit = 12) =>
+      request<FinancialScoreHistory>(
+        `/financial-score/history?currency=${query(currency)}&limit=${limit}`,
+      ),
+
     getRecommendations: (currency: string) =>
       request<RecommendationList>(`/recommendations?currency=${query(currency)}`),
+
+    markRecommendationRead: (recommendationId: string) =>
+      request<Recommendation>(`/recommendations/${query(recommendationId)}/read`, {
+        method: 'PUT',
+        body: JSON.stringify({ changedAtUtc: new Date().toISOString() }),
+      }),
+
+    dismissRecommendation: (recommendationId: string) =>
+      request<Recommendation>(`/recommendations/${query(recommendationId)}/dismissal`, {
+        method: 'PUT',
+        body: JSON.stringify({ changedAtUtc: new Date().toISOString() }),
+      }),
 
     getNotificationPreferences: () =>
       request<NotificationPreferences>('/notification-preferences'),

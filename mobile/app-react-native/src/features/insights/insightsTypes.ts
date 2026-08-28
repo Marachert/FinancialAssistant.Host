@@ -105,6 +105,16 @@ export type FinancialScore = {
   calculatedAtUtc: string;
 };
 
+export type FinancialScoreHistory = {
+  items: FinancialScore[];
+  limit: number;
+  fromUtc: string | null;
+  toUtc: string | null;
+  hasMore: boolean;
+  nextBeforeUtc: string | null;
+  nextBeforeCalculationId: string | null;
+};
+
 export type Recommendation = {
   recommendationId: string;
   currency: string;

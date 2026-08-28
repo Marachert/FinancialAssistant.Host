@@ -10,8 +10,13 @@ function label(code: string) {
 }
 
 export default function ScoreScreen() {
-  const { state, refreshing, error, score, refresh } = useInsights();
+  const { state, refreshing, error, profile, score, scoreHistory, refresh } = useInsights();
   const width = `${Math.min(100, Math.max(0, score?.score ?? 0))}%` as `${number}%`;
+  const chronologicalHistory = [...scoreHistory].reverse();
+  const dateFormatter = new Intl.DateTimeFormat(profile?.locale || undefined, {
+    month: 'short',
+    day: 'numeric',
+  });
 
   return (
     <ScreenScaffold centered={false} refreshing={refreshing} onRefresh={() => void refresh()}>
@@ -60,6 +65,33 @@ export default function ScoreScreen() {
               <Text style={[typography.body, styles.supporting]}>Score factors will appear after confirmed activity is processed.</Text>
             )}
           </View>
+          <View style={styles.trend}>
+            <Text style={[typography.heading, styles.title]}>Recent score trend</Text>
+            <Text style={[typography.small, styles.supporting]}>
+              Backend-calculated snapshots, oldest to newest
+            </Text>
+            {chronologicalHistory.length ? chronologicalHistory.map((item) => {
+              const itemWidth = `${Math.min(100, Math.max(0, item.score))}%` as `${number}%`;
+              const date = dateFormatter.format(new Date(item.calculatedAtUtc));
+              return (
+                <View
+                  key={item.calculationId}
+                  accessibilityLabel={`${date}, score ${item.score} out of 100`}
+                  style={styles.trendRow}
+                >
+                  <Text style={[typography.caption, styles.trendDate]}>{date}</Text>
+                  <View style={styles.trendTrack}>
+                    <View style={[styles.trendValue, { width: itemWidth }]} />
+                  </View>
+                  <Text style={[typography.bodyStrong, styles.trendScore]}>{item.score}</Text>
+                </View>
+              );
+            }) : (
+              <Text style={[typography.body, styles.supporting]}>
+                Score history will appear after confirmed activity is processed.
+              </Text>
+            )}
+          </View>
         </>
       ) : null}
       {state === 'error' && !score ? (
@@ -82,4 +114,10 @@ const styles = StyleSheet.create({
   factor: { gap: theme.spacing.sm, paddingVertical: theme.spacing.md, borderBottomWidth: 1, borderColor: theme.colors.border },
   factorHeader: { minHeight: 28, flexDirection: 'row', justifyContent: 'space-between', gap: theme.spacing.md },
   factorName: { flex: 1, color: theme.colors.textPrimary, textTransform: 'capitalize' },
+  trend: { gap: theme.spacing.md, paddingTop: theme.spacing.md, borderTopWidth: 1, borderColor: theme.colors.border },
+  trendRow: { minHeight: 36, flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm },
+  trendDate: { width: 52, color: theme.colors.textSecondary },
+  trendTrack: { height: 10, flex: 1, overflow: 'hidden', borderRadius: theme.radius.control, backgroundColor: theme.colors.surfaceSubtle },
+  trendValue: { height: 10, backgroundColor: theme.colors.info },
+  trendScore: { width: 28, textAlign: 'right', color: theme.colors.textPrimary },
 });
