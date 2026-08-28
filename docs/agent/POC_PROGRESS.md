@@ -1,10 +1,10 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-28T18:42:00+03:00
+Last updated: 2026-08-28T19:23:39+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-43 delivery is **86.3%**:
+POC readiness after FIN-183 delivery is **86.3%**:
 **170 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
@@ -24,17 +24,17 @@ Latest canonical closure:
 
 Latest Jira closure:
 
-- FIN-43 - Prepare Apple App Store and Google Play first release tracks, merged
-  and Done
+- FIN-183 - P7.T11 Implement score and recommendations screens, merged and Done
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/231
+  https://github.com/Marachert/FinancialAssistant.Host/pull/233
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/5b26f6b8aab1a91bbb4aa0ae6e81b5e8bddecdb1
-- final implementation head: `02a2becef372fcee8555389783a11f7e948112fa`
-- exact-head CI: Backend run 32993170765 and Mobile run 32993171092
-- previous readiness: 169 / 197, or 85.8%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/505435808f1824590a48056a397317ca0cd092f3
+- final implementation head: `560d9cf939753a6d327155c9f2176f7ee69e5c64`
+- exact-head CI: Backend run 33189397176 and Mobile run 33189397184
+- previous readiness: 170 / 197, or 86.3%
 - current readiness: 170 / 197, or 86.3%
-- change: +0.5 percentage points
+- change: +0.0 percentage points because FIN-183 has no Jira parent field and
+  is outside the canonical epic hierarchy used by this ledger
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
 duplicate of FIN-124, FIN-127 is an exact later duplicate of FIN-126, and
@@ -52,12 +52,18 @@ FIN-174. Closing these duplicates does not change the numerator or denominator.
 FIN-179 is an exact later duplicate of FIN-178 and also does not change the
 numerator or denominator.
 
+FIN-183 is a Jira-ranked leaf with no parent field. Its implementation is not a
+duplicate, but it is outside the canonical epic hierarchy defined by the
+calculation contract, so its closure also leaves the numerator and denominator
+unchanged.
+
 Current delivery:
 
-- FIN-43 is Done through guarded merged PR #231
-- the implementation is merged at `5b26f6b8aab1a91bbb4aa0ae6e81b5e8bddecdb1`
+- FIN-183 is Done through guarded merged PR #233
+- the implementation is merged at `505435808f1824590a48056a397317ca0cd092f3`
   after exact-head Backend and Mobile CI and a clear review-channel audit
-- canonical POC readiness is 170/197 (86.3%), a +0.5 percentage-point change
+- canonical POC readiness is 170/197 (86.3%), a +0.0 percentage-point change
+  because FIN-183 is outside the canonical Jira parent hierarchy
 - FIN-31 P7 progress is 18/18 (100.0%); all 33 direct children and the epic are
   verified Done
 - FIN-36 P8 progress is 3/13 (23.1%); the epic remains In Progress
@@ -67,10 +73,8 @@ Current delivery:
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
   remain open
 - no paid provider or review credits were used
-- FIN-43 provides credential-safe iOS/Android identities, store metadata/privacy
-  drafts, internal tester paths, and strict candidate/account-owner gates;
-  external store records, signing, builds, submissions, and tester verification
-  remain owner-controlled release gates
+- FIN-183 provides backend-backed score history, recommendation detail, safe
+  suggested-action navigation, and owner-scoped read and dismissal actions
 - the next ranked unfinished leaf will be selected from a fresh Jira hierarchy
   after this progress record merges
 
@@ -111,8 +115,9 @@ Current blocking areas are runtime P6, P8, and P9. P7 now has authentication,
 free-form transaction capture, receipt upload, editable draft review, backend
 rejection and confirmation, onboarding/profile setup, dashboard,
 score/recommendation, settings, analytics/category-chart screens, and the
-notification inbox, resilient offline/error states, and shared loading/empty
-patterns. Its documented release-ready smoke and regression validation covers
+notification inbox, recommendation detail and lifecycle actions, resilient
+offline/error states, and shared loading/empty patterns. Its documented
+release-ready smoke and regression validation covers
 both Android and iOS paths. FIN-43 now supplies repository-verifiable store
 configuration and controlled internal-test runbooks; external account records,
 signing, builds, submissions, tester installation, and approved-host runtime
@@ -252,3 +257,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-24T19:22:06+03:00 | FIN-41 | Closure delivered by PR 227 | 85.3% | +0.5 pp |
 | 2026-08-24T20:03:11+03:00 | FIN-42 | Closure delivered by PR 229 | 85.8% | +0.5 pp |
 | 2026-08-28T18:40:13+03:00 | FIN-43 | Closure delivered by PR 231 | 86.3% | +0.5 pp |
+| 2026-08-28T19:23:39+03:00 | FIN-183 | Closure delivered by PR 233; outside canonical epic hierarchy | 86.3% | +0.0 pp |
