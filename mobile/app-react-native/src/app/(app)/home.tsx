@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { theme, typography } from '@/app/theme';
 import { useInsights } from '@/features/insights/InsightsProvider';
+import { formatCurrency, useLocalization } from '@/localization/localization';
 import {
   LinkButton,
   LoadingSkeleton,
@@ -14,20 +15,13 @@ import {
   StatusBanner,
 } from '@/shared/ui';
 
-const periods = ['Today', 'Week', 'Month'] as const;
-type DashboardPeriod = (typeof periods)[number];
+type DashboardPeriod = 'today' | 'week' | 'month';
 
-function money(value: number, currency: string) {
-  return new Intl.NumberFormat(undefined, {
-    style: 'currency',
-    currency,
-  }).format(value);
-}
-
-function ProgressBar({ value, tone = 'action' }: { value: number; tone?: 'action' | 'warning' }) {
+function ProgressBar({ value, label, tone = 'action' }: { value: number; label: string; tone?: 'action' | 'warning' }) {
   const width = `${Math.min(100, Math.max(0, value))}%` as `${number}%`;
   return (
     <View
+      accessibilityLabel={label}
       accessibilityRole="progressbar"
       accessibilityValue={{ min: 0, max: 100, now: Math.round(value) }}
       style={styles.progressTrack}
@@ -38,7 +32,7 @@ function ProgressBar({ value, tone = 'action' }: { value: number; tone?: 'action
 }
 
 export default function HomeScreen() {
-  const [period, setPeriod] = useState<DashboardPeriod>('Today');
+  const [period, setPeriod] = useState<DashboardPeriod>('today');
   const {
     state,
     refreshing,
@@ -46,20 +40,32 @@ export default function HomeScreen() {
     dashboard,
     score,
     recommendations,
+    profile,
     refresh,
   } = useInsights();
+  const { locale, t } = useLocalization(profile?.locale);
+  const periodOptions = [
+    { value: 'today', label: t('home.today') },
+    { value: 'week', label: t('home.week') },
+    { value: 'month', label: t('home.month') },
+  ] as const;
+  const periodName = period === 'today'
+    ? t('home.today')
+    : period === 'week'
+      ? t('home.week')
+      : t('home.month');
   const recommendation = recommendations.find((item) => item.status === 'active') ?? recommendations[0];
   const summary = dashboard
-    ? period === 'Today'
+    ? period === 'today'
       ? dashboard.dailySummary
-      : period === 'Week'
+      : period === 'week'
         ? dashboard.weeklySummary
         : dashboard.monthlySummary
     : null;
   const limit = dashboard
-    ? period === 'Today'
+    ? period === 'today'
       ? dashboard.dailyLimit
-      : period === 'Week'
+      : period === 'week'
         ? dashboard.limitsProgress.weekly
         : dashboard.limitsProgress.monthly
     : null;
@@ -73,77 +79,80 @@ export default function HomeScreen() {
     >
       <View style={styles.header}>
         <View style={styles.headerCopy}>
-          <Text accessibilityRole="header" style={[typography.title, styles.title]}>Overview</Text>
-          <Text style={[typography.small, styles.supporting]}>Financial Assistant</Text>
+          <Text accessibilityRole="header" style={[typography.title, styles.title]}>{t('home.overview')}</Text>
+          <Text style={[typography.small, styles.supporting]}>{t('common.productName')}</Text>
         </View>
-        <LinkButton label="Settings" onPress={() => router.push('/settings')} />
+        <LinkButton label={t('home.settings')} onPress={() => router.push('/settings')} />
       </View>
 
       {error ? <StatusBanner>{error}</StatusBanner> : null}
       {state === 'loading' && !dashboard ? (
-        <LoadingSkeleton label="Loading your overview" rows={3} />
+        <LoadingSkeleton label={t('home.loading')} rows={3} />
       ) : null}
 
       {dashboard && summary && limit ? (
         <>
           {dashboard.freshness.isStale ? (
-            <StatusBanner tone="warning">Some totals are still catching up. Last known values are shown.</StatusBanner>
+            <StatusBanner tone="warning">{t('home.stale')}</StatusBanner>
           ) : null}
 
           <SegmentedControl
-            label="Dashboard period"
-            options={periods}
+            label={t('home.periodLabel')}
+            options={periodOptions}
             value={period}
             onChange={(value) => setPeriod(value as DashboardPeriod)}
           />
 
           <View style={styles.heroMetric}>
-            <Text style={[typography.small, styles.supporting]}>{period} spent</Text>
+            <Text style={[typography.small, styles.supporting]}>{t('home.spent', { period: periodName })}</Text>
             <Text style={[typography.display, styles.title]}>
-              {money(summary.expenseTotal, dashboard.currency)}
+              {formatCurrency(summary.expenseTotal, dashboard.currency, locale)}
             </Text>
             {limit.isConfigured && limit.limit !== null ? (
               <>
                 <ProgressBar
+                  label={t('home.spent', { period: periodName })}
                   value={limit.usedPercent ?? 0}
                   tone={(limit.usedPercent ?? 0) >= 80 ? 'warning' : 'action'}
                 />
                 <Text style={[typography.small, styles.supporting]}>
-                  {`${money(Math.max(0, limit.remaining ?? 0), dashboard.currency)} left from this limit`}
+                  {t('home.limitRemaining', {
+                    amount: formatCurrency(Math.max(0, limit.remaining ?? 0), dashboard.currency, locale),
+                  })}
                 </Text>
               </>
             ) : (
-              <Text style={[typography.small, styles.supporting]}>No limit configured for this period</Text>
+              <Text style={[typography.small, styles.supporting]}>{t('home.noLimit')}</Text>
             )}
           </View>
 
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={[typography.heading, styles.title]}>{period} summary</Text>
-              <LinkButton label="Analytics" onPress={() => router.push('/analytics')} />
+              <Text style={[typography.heading, styles.title]}>{t('home.summary', { period: periodName })}</Text>
+              <LinkButton label={t('home.analytics')} onPress={() => router.push('/analytics')} />
             </View>
             <View style={styles.metricGrid}>
               <View style={styles.metric}>
-                <Text style={[typography.caption, styles.supporting]}>Income</Text>
+                <Text style={[typography.caption, styles.supporting]}>{t('home.income')}</Text>
                 <Text style={[typography.bodyStrong, styles.positive]}>
-                  {money(summary.incomeTotal, dashboard.currency)}
+                  {formatCurrency(summary.incomeTotal, dashboard.currency, locale)}
                 </Text>
               </View>
               <View style={styles.metric}>
-                <Text style={[typography.caption, styles.supporting]}>Expenses</Text>
+                <Text style={[typography.caption, styles.supporting]}>{t('home.expenses')}</Text>
                 <Text style={[typography.bodyStrong, styles.title]}>
-                  {money(summary.expenseTotal, dashboard.currency)}
+                  {formatCurrency(summary.expenseTotal, dashboard.currency, locale)}
                 </Text>
               </View>
               <View style={styles.metric}>
-                <Text style={[typography.caption, styles.supporting]}>Balance change</Text>
+                <Text style={[typography.caption, styles.supporting]}>{t('home.balanceChange')}</Text>
                 <Text style={[typography.bodyStrong, summary.balanceDelta >= 0 ? styles.positive : styles.critical]}>
-                  {money(summary.balanceDelta, dashboard.currency)}
+                  {formatCurrency(summary.balanceDelta, dashboard.currency, locale)}
                 </Text>
               </View>
             </View>
             {!hasActivity ? (
-              <StatusBanner tone="info">No activity for this period yet. Add a transaction or upload a receipt to begin.</StatusBanner>
+              <StatusBanner tone="info">{t('home.noActivity')}</StatusBanner>
             ) : null}
           </View>
 
@@ -153,22 +162,22 @@ export default function HomeScreen() {
       {score ? (
         <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={[typography.heading, styles.title]}>Financial score</Text>
-              <LinkButton label="View factors" onPress={() => router.push('/score')} />
+              <Text style={[typography.heading, styles.title]}>{t('home.financialScore')}</Text>
+              <LinkButton label={t('home.viewFactors')} onPress={() => router.push('/score')} />
             </View>
             <View style={styles.scoreRow}>
               <Text style={[typography.display, styles.title]}>{score.score}</Text>
-              <Text style={[typography.body, styles.supporting]}>out of 100</Text>
+              <Text style={[typography.body, styles.supporting]}>{t('home.outOf100')}</Text>
             </View>
-            <ProgressBar value={score.score} />
+            <ProgressBar label={t('home.financialScore')} value={score.score} />
           </View>
       ) : null}
 
       {dashboard || score || recommendations.length ? (
         <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={[typography.heading, styles.title]}>Latest recommendation</Text>
-              <LinkButton label="View all" onPress={() => router.push('/recommendations')} />
+              <Text style={[typography.heading, styles.title]}>{t('home.latestRecommendation')}</Text>
+              <LinkButton label={t('home.viewAll')} onPress={() => router.push('/recommendations')} />
             </View>
             {recommendation ? (
               <View style={styles.recommendation}>
@@ -176,20 +185,20 @@ export default function HomeScreen() {
                 <Text style={[typography.body, styles.supporting]}>{recommendation.body}</Text>
               </View>
             ) : (
-              <Text style={[typography.body, styles.supporting]}>No recommendations right now.</Text>
+              <Text style={[typography.body, styles.supporting]}>{t('home.noRecommendations')}</Text>
             )}
           </View>
       ) : null}
 
       {state === 'error' && !dashboard ? (
-        <SecondaryButton label="Retry overview" onPress={() => void refresh()} />
+        <SecondaryButton label={t('home.retry')} onPress={() => void refresh()} />
       ) : null}
       <View style={styles.quickActions}>
         <View style={styles.quickAction}>
-          <PrimaryButton label="Add transaction" onPress={() => router.push('/add')} />
+          <PrimaryButton label={t('home.addTransaction')} onPress={() => router.push('/add')} />
         </View>
         <View style={styles.quickAction}>
-          <SecondaryButton label="Upload receipt" onPress={() => router.push('/add')} />
+          <SecondaryButton label={t('home.uploadReceipt')} onPress={() => router.push('/add')} />
         </View>
       </View>
     </ScreenScaffold>

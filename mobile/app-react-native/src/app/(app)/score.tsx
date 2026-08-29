@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { theme, typography } from '@/app/theme';
 import { useInsights } from '@/features/insights/InsightsProvider';
+import { formatDateTime, useLocalization } from '@/localization/localization';
 import { LinkButton, LoadingSkeleton, ScreenScaffold, SecondaryButton, StatusBanner } from '@/shared/ui';
 
 function label(code: string) {
@@ -11,12 +12,9 @@ function label(code: string) {
 
 export default function ScoreScreen() {
   const { state, refreshing, error, profile, score, scoreHistory, refresh } = useInsights();
+  const { locale } = useLocalization(profile?.locale);
   const width = `${Math.min(100, Math.max(0, score?.score ?? 0))}%` as `${number}%`;
   const chronologicalHistory = [...scoreHistory].reverse();
-  const dateFormatter = new Intl.DateTimeFormat(profile?.locale || undefined, {
-    month: 'short',
-    day: 'numeric',
-  });
 
   return (
     <ScreenScaffold centered={false} refreshing={refreshing} onRefresh={() => void refresh()}>
@@ -72,7 +70,10 @@ export default function ScoreScreen() {
             </Text>
             {chronologicalHistory.length ? chronologicalHistory.map((item) => {
               const itemWidth = `${Math.min(100, Math.max(0, item.score))}%` as `${number}%`;
-              const date = dateFormatter.format(new Date(item.calculatedAtUtc));
+              const date = formatDateTime(item.calculatedAtUtc, locale, {
+                month: 'short',
+                day: 'numeric',
+              });
               return (
                 <View
                   key={item.calculationId}

@@ -5,11 +5,13 @@ import { StyleSheet, Text } from 'react-native';
 import { theme, typography } from '@/app/theme';
 import { CaptureProvider } from '@/features/capture/CaptureProvider';
 import { InsightsProvider, useInsights } from '@/features/insights/InsightsProvider';
+import { useLocalization } from '@/localization/localization';
 import { LoadingSkeleton, PrimaryButton, ScreenScaffold, StatusBanner } from '@/shared/ui';
 
 function SignedInNavigator() {
   const pathname = usePathname();
   const { profile, refresh, state } = useInsights();
+  const { t } = useLocalization(profile?.locale);
   const onboardingComplete = Boolean(
     profile?.profileOnboardingCompleted && profile.preferencesOnboardingCompleted,
   );
@@ -26,7 +28,7 @@ function SignedInNavigator() {
   if ((!profile && state === 'loading') || needsRedirect) {
     return (
       <ScreenScaffold>
-        <LoadingSkeleton label="Loading profile" rows={4} />
+        <LoadingSkeleton label={t('shell.loadingProfile')} rows={4} />
       </ScreenScaffold>
     );
   }
@@ -34,9 +36,9 @@ function SignedInNavigator() {
   if (!profile) {
     return (
       <ScreenScaffold>
-        <Text accessibilityRole="header" style={[typography.title, styles.title]}>Profile unavailable</Text>
-        <StatusBanner>Your profile could not be loaded. Try again before continuing.</StatusBanner>
-        <PrimaryButton label="Retry" onPress={() => void refresh()} />
+        <Text accessibilityRole="header" style={[typography.title, styles.title]}>{t('shell.profileUnavailable')}</Text>
+        <StatusBanner>{t('shell.profileUnavailableBody')}</StatusBanner>
+        <PrimaryButton label={t('common.retry')} onPress={() => void refresh()} />
       </ScreenScaffold>
     );
   }

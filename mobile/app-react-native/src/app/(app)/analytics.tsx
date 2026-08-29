@@ -11,6 +11,7 @@ import type {
   AnalyticsDashboard,
   AnalyticsPeriod,
 } from '@/features/insights/insightsTypes';
+import { formatCurrency, formatDateOnly, useLocalization } from '@/localization/localization';
 import {
   LinkButton,
   LoadingSkeleton,
@@ -20,8 +21,7 @@ import {
   StatusBanner,
 } from '@/shared/ui';
 
-const periodLabels = ['Daily', 'Weekly', 'Monthly'] as const;
-type PeriodLabel = (typeof periodLabels)[number];
+type PeriodLabel = 'Daily' | 'Weekly' | 'Monthly';
 
 const periodByLabel: Record<PeriodLabel, AnalyticsPeriod> = {
   Daily: 'daily',
@@ -29,31 +29,34 @@ const periodByLabel: Record<PeriodLabel, AnalyticsPeriod> = {
   Monthly: 'monthly',
 };
 
-function money(value: number, currency: string) {
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value);
-}
-
-function categoryName(categoryId: string) {
+function categoryName(categoryId: string, uncategorized: string) {
   const label = categoryId.replace(/[-_]+/g, ' ').trim();
-  return label ? `${label.charAt(0).toUpperCase()}${label.slice(1)}` : 'Uncategorized';
+  return label ? `${label.charAt(0).toUpperCase()}${label.slice(1)}` : uncategorized;
 }
 
-function errorMessage(reason: unknown) {
-  return friendlyApiError(reason, 'Analytics could not be loaded. Try again.');
-}
-
-function CategoryBar({ item, currency }: { item: AnalyticsCategoryBreakdownItem; currency: string }) {
+function CategoryBar({
+  item,
+  currency,
+  locale,
+  uncategorized,
+}: {
+  item: AnalyticsCategoryBreakdownItem;
+  currency: string;
+  locale: string;
+  uncategorized: string;
+}) {
   const width = `${Math.min(100, Math.max(0, item.expenseSharePercent))}%` as `${number}%`;
-  const value = `${money(item.expenseTotal, currency)}, ${item.expenseSharePercent.toFixed(1)}%`;
+  const value = `${formatCurrency(item.expenseTotal, currency, locale)}, ${item.expenseSharePercent.toFixed(1)}%`;
+  const name = categoryName(item.categoryId, uncategorized);
 
   return (
     <View
-      accessibilityLabel={`${categoryName(item.categoryId)}: ${value}`}
+      accessibilityLabel={`${name}: ${value}`}
       style={styles.categoryRow}
     >
       <View style={styles.categoryLabelRow}>
         <Text numberOfLines={2} style={[typography.bodyStrong, styles.categoryName]}>
-          {categoryName(item.categoryId)}
+          {name}
         </Text>
         <Text
           adjustsFontSizeToFit
@@ -73,6 +76,7 @@ function CategoryBar({ item, currency }: { item: AnalyticsCategoryBreakdownItem;
 
 export default function AnalyticsScreen() {
   const { api, profile } = useInsights();
+  const { locale, t } = useLocalization(profile?.locale);
   const [periodLabel, setPeriodLabel] = useState<PeriodLabel>('Monthly');
   const [dashboard, setDashboard] = useState<AnalyticsDashboard | null>(null);
   const [breakdown, setBreakdown] = useState<AnalyticsCategoryBreakdown | null>(null);
@@ -80,6 +84,16 @@ export default function AnalyticsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const latestRequest = useRef(0);
+  const periodOptions = [
+    { value: 'Daily', label: t('analytics.daily') },
+    { value: 'Weekly', label: t('analytics.weekly') },
+    { value: 'Monthly', label: t('analytics.monthly') },
+  ] as const;
+  const periodDisplay = periodLabel === 'Daily'
+    ? t('analytics.daily')
+    : periodLabel === 'Weekly'
+      ? t('analytics.weekly')
+      : t('analytics.monthly');
 
   const load = useCallback(async (showInitialLoading = false) => {
     if (!profile) return;
@@ -106,17 +120,21 @@ export default function AnalyticsScreen() {
         if (breakdownResult.status === 'fulfilled') setBreakdown(breakdownResult.value);
         const failure = [dashboardResult, breakdownResult]
           .find((result) => result.status === 'rejected');
-        if (failure?.status === 'rejected') setError(errorMessage(failure.reason));
+        if (failure?.status === 'rejected') {
+          setError(friendlyApiError(failure.reason, t('analytics.error')));
+        }
       }
     } catch (reason) {
-      if (requestId === latestRequest.current) setError(errorMessage(reason));
+      if (requestId === latestRequest.current) {
+        setError(friendlyApiError(reason, t('analytics.error')));
+      }
     } finally {
       if (requestId === latestRequest.current) {
         setLoading(false);
         setRefreshing(false);
       }
     }
-  }, [api, periodLabel, profile]);
+  }, [api, periodLabel, profile, t]);
 
   useEffect(() => {
     const initialLoad = setTimeout(() => void load(true), 0);
@@ -146,57 +164,57 @@ export default function AnalyticsScreen() {
     >
       <View style={styles.header}>
         <View style={styles.headerCopy}>
-          <Text accessibilityRole="header" style={[typography.title, styles.title]}>Analytics</Text>
-          <Text style={[typography.small, styles.supporting]}>Income and confirmed spending</Text>
+          <Text accessibilityRole="header" style={[typography.title, styles.title]}>{t('analytics.title')}</Text>
+          <Text style={[typography.small, styles.supporting]}>{t('analytics.subtitle')}</Text>
         </View>
-        <LinkButton label="Back" onPress={() => router.back()} />
+        <LinkButton label={t('common.back')} onPress={() => router.back()} />
       </View>
 
       <SegmentedControl
-        label="Analytics period"
-        options={periodLabels}
+        label={t('analytics.periodLabel')}
+        options={periodOptions}
         value={periodLabel}
         onChange={(value) => setPeriodLabel(value as PeriodLabel)}
       />
 
       {error ? <StatusBanner>{error}</StatusBanner> : null}
       {isStale ? (
-        <StatusBanner tone="warning">Some analytics are still catching up. Last known values are shown.</StatusBanner>
+        <StatusBanner tone="warning">{t('analytics.stale')}</StatusBanner>
       ) : null}
 
       {loading && !dashboard ? (
-        <LoadingSkeleton label="Loading analytics" rows={3} />
+        <LoadingSkeleton label={t('analytics.loading')} rows={3} />
       ) : null}
 
       {summary && dashboard ? (
         <>
           <View style={styles.section}>
-            <Text style={[typography.heading, styles.title]}>{periodLabel} summary</Text>
+            <Text style={[typography.heading, styles.title]}>{t('analytics.summary', { period: periodDisplay })}</Text>
             <View style={styles.metricGrid}>
               <View style={styles.metric}>
-                <Text style={[typography.caption, styles.supporting]}>Income</Text>
+                <Text style={[typography.caption, styles.supporting]}>{t('home.income')}</Text>
                 <Text style={[typography.bodyStrong, styles.positive]}>
-                  {money(summary.incomeTotal, dashboard.currency)}
+                  {formatCurrency(summary.incomeTotal, dashboard.currency, locale)}
                 </Text>
               </View>
               <View style={styles.metric}>
-                <Text style={[typography.caption, styles.supporting]}>Spending</Text>
+                <Text style={[typography.caption, styles.supporting]}>{t('analytics.spending')}</Text>
                 <Text style={[typography.bodyStrong, styles.title]}>
-                  {money(summary.expenseTotal, dashboard.currency)}
+                  {formatCurrency(summary.expenseTotal, dashboard.currency, locale)}
                 </Text>
               </View>
               <View style={styles.metric}>
-                <Text style={[typography.caption, styles.supporting]}>Balance change</Text>
+                <Text style={[typography.caption, styles.supporting]}>{t('home.balanceChange')}</Text>
                 <Text style={[
                   typography.bodyStrong,
                   summary.balanceDelta >= 0 ? styles.positive : styles.critical,
                 ]}>
-                  {money(summary.balanceDelta, dashboard.currency)}
+                  {formatCurrency(summary.balanceDelta, dashboard.currency, locale)}
                 </Text>
               </View>
             </View>
             {!hasActivity ? (
-              <StatusBanner tone="info">No confirmed activity for this period yet. Add a transaction to build your analytics.</StatusBanner>
+              <StatusBanner tone="info">{t('analytics.noActivity')}</StatusBanner>
             ) : null}
           </View>
 
@@ -205,28 +223,34 @@ export default function AnalyticsScreen() {
 
       <View style={styles.section}>
         <View style={styles.sectionCopy}>
-          <Text style={[typography.heading, styles.title]}>Spending by category</Text>
+          <Text style={[typography.heading, styles.title]}>{t('analytics.byCategory')}</Text>
           {breakdown ? (
             <Text style={[typography.small, styles.supporting]}>
-              {`${breakdown.periodStart} to ${breakdown.periodEnd}`}
+              {`${formatDateOnly(breakdown.periodStart, locale)} – ${formatDateOnly(breakdown.periodEnd, locale)}`}
             </Text>
           ) : null}
         </View>
         {loading && !breakdown ? (
-          <LoadingSkeleton label="Loading spending categories" rows={2} />
+          <LoadingSkeleton label={t('analytics.loadingCategories')} rows={2} />
         ) : categories.length && currency ? (
           <View accessibilityRole="summary" style={styles.chart}>
             {categories.map((item) => (
-              <CategoryBar key={item.categoryId} item={item} currency={currency} />
+              <CategoryBar
+                key={item.categoryId}
+                item={item}
+                currency={currency}
+                locale={locale}
+                uncategorized={t('analytics.uncategorized')}
+              />
             ))}
           </View>
         ) : breakdown ? (
-          <StatusBanner tone="info">No spending categories for this period yet.</StatusBanner>
+          <StatusBanner tone="info">{t('analytics.noCategories')}</StatusBanner>
         ) : null}
       </View>
 
       {error ? (
-        <SecondaryButton label="Retry analytics" onPress={() => void load(true)} />
+        <SecondaryButton label={t('analytics.retry')} onPress={() => void load(true)} />
       ) : null}
     </ScreenScaffold>
   );

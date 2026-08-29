@@ -155,6 +155,7 @@ export function PrimaryButton({ label, loading, disabled, onPress }: { label: st
   const unavailable = disabled || loading;
   return (
     <Pressable
+      accessibilityLabel={label}
       accessibilityRole="button"
       accessibilityState={{ busy: loading, disabled: unavailable }}
       disabled={unavailable}
@@ -169,6 +170,7 @@ export function PrimaryButton({ label, loading, disabled, onPress }: { label: st
 export function SecondaryButton({ label, disabled, onPress }: { label: string; disabled?: boolean; onPress: () => void }) {
   return (
     <Pressable
+      accessibilityLabel={label}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       disabled={disabled}
@@ -182,7 +184,7 @@ export function SecondaryButton({ label, disabled, onPress }: { label: string; d
 
 export function LinkButton({ label, onPress }: { label: string; onPress: () => void }) {
   return (
-    <Pressable accessibilityRole="link" onPress={onPress} style={styles.linkButton}>
+    <Pressable accessibilityLabel={label} accessibilityRole="link" onPress={onPress} style={styles.linkButton}>
       <Text style={styles.linkLabel}>{label}</Text>
     </Pressable>
   );
@@ -191,7 +193,7 @@ export function LinkButton({ label, onPress }: { label: string; onPress: () => v
 export function StatusBanner({ children, tone = 'error' }: { children: ReactNode; tone?: 'error' | 'warning' | 'info' | 'success' }) {
   return (
     <View accessibilityRole="alert" style={[styles.banner, styles[`banner_${tone}`]]}>
-      <Text style={[typography.small, styles[`bannerText_${tone}`]]}>{children}</Text>
+      <Text accessibilityLiveRegion="polite" style={[typography.small, styles[`bannerText_${tone}`]]}>{children}</Text>
     </View>
   );
 }
@@ -203,23 +205,26 @@ export function SegmentedControl({
   onChange,
 }: {
   label: string;
-  options: readonly string[];
+  options: readonly (string | { value: string; label: string })[];
   value: string;
   onChange: (value: string) => void;
 }) {
   return (
     <View accessibilityRole="radiogroup" accessibilityLabel={label} style={styles.segmentGroup}>
       {options.map((option) => {
-        const selected = option === value;
+        const optionValue = typeof option === 'string' ? option : option.value;
+        const optionLabel = typeof option === 'string' ? option : option.label;
+        const selected = optionValue === value;
         return (
           <Pressable
-            key={option}
+            key={optionValue}
+            accessibilityLabel={optionLabel}
             accessibilityRole="radio"
             accessibilityState={{ selected }}
-            onPress={() => onChange(option)}
+            onPress={() => onChange(optionValue)}
             style={[styles.segment, selected && styles.segmentSelected]}
           >
-            <Text style={[typography.bodyStrong, styles.segmentLabel, selected && styles.segmentLabelSelected]}>{option}</Text>
+            <Text style={[typography.bodyStrong, styles.segmentLabel, selected && styles.segmentLabelSelected]}>{optionLabel}</Text>
           </Pressable>
         );
       })}
