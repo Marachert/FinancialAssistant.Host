@@ -1,10 +1,10 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-28T19:23:39+03:00
+Last updated: 2026-08-29T18:33:09+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-183 delivery is **86.3%**:
+POC readiness after FIN-187 delivery is **86.3%**:
 **170 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
@@ -24,16 +24,17 @@ Latest canonical closure:
 
 Latest Jira closure:
 
-- FIN-183 - P7.T11 Implement score and recommendations screens, merged and Done
+- FIN-187 - P7.T15 Add mobile accessibility and localization baseline, merged
+  and Done
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/233
+  https://github.com/Marachert/FinancialAssistant.Host/pull/235
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/505435808f1824590a48056a397317ca0cd092f3
-- final implementation head: `560d9cf939753a6d327155c9f2176f7ee69e5c64`
-- exact-head CI: Backend run 33189397176 and Mobile run 33189397184
+  https://github.com/Marachert/FinancialAssistant.Host/commit/29345cbdf30cd895edae9a6289c7b09a2a95cc6e
+- final implementation head: `6c768b3b70c482b92097c899d24777082f613b3a`
+- exact-head CI: Backend run 33260281273 and Mobile run 33260281304
 - previous readiness: 170 / 197, or 86.3%
 - current readiness: 170 / 197, or 86.3%
-- change: +0.0 percentage points because FIN-183 has no Jira parent field and
+- change: +0.0 percentage points because FIN-187 has no Jira parent field and
   is outside the canonical epic hierarchy used by this ledger
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -52,18 +53,18 @@ FIN-174. Closing these duplicates does not change the numerator or denominator.
 FIN-179 is an exact later duplicate of FIN-178 and also does not change the
 numerator or denominator.
 
-FIN-183 is a Jira-ranked leaf with no parent field. Its implementation is not a
-duplicate, but it is outside the canonical epic hierarchy defined by the
-calculation contract, so its closure also leaves the numerator and denominator
-unchanged.
+FIN-183 and FIN-187 are Jira-ranked leaves with no parent field. Their
+implementations are not duplicates, but they are outside the canonical epic
+hierarchy defined by the calculation contract, so their closures leave the
+numerator and denominator unchanged.
 
 Current delivery:
 
-- FIN-183 is Done through guarded merged PR #233
-- the implementation is merged at `505435808f1824590a48056a397317ca0cd092f3`
+- FIN-187 is Done through guarded merged PR #235
+- the implementation is merged at `29345cbdf30cd895edae9a6289c7b09a2a95cc6e`
   after exact-head Backend and Mobile CI and a clear review-channel audit
 - canonical POC readiness is 170/197 (86.3%), a +0.0 percentage-point change
-  because FIN-183 is outside the canonical Jira parent hierarchy
+  because FIN-187 is outside the canonical Jira parent hierarchy
 - FIN-31 P7 progress is 18/18 (100.0%); all 33 direct children and the epic are
   verified Done
 - FIN-36 P8 progress is 3/13 (23.1%); the epic remains In Progress
@@ -73,10 +74,12 @@ Current delivery:
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
   remain open
 - no paid provider or review credits were used
-- FIN-183 provides backend-backed score history, recommendation detail, safe
-  suggested-action navigation, and owner-scoped read and dismissal actions
-- the next ranked unfinished leaf will be selected from a fresh Jira hierarchy
-  after this progress record merges
+- FIN-187 provides typed English and Ukrainian catalogs, profile-aware date and
+  currency formatting, accessible labels and states, and automated touch-target
+  and contrast checks
+- Confluence Architecture v9 remains current because FIN-187 changes no service,
+  storage, event, provider, or trust-boundary topology
+- the next globally ranked unfinished leaf is FIN-188
 
 ## Epic Progress
 
@@ -258,3 +261,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-24T20:03:11+03:00 | FIN-42 | Closure delivered by PR 229 | 85.8% | +0.5 pp |
 | 2026-08-28T18:40:13+03:00 | FIN-43 | Closure delivered by PR 231 | 86.3% | +0.5 pp |
 | 2026-08-28T19:23:39+03:00 | FIN-183 | Closure delivered by PR 233; outside canonical epic hierarchy | 86.3% | +0.0 pp |
+| 2026-08-29T18:33:09+03:00 | FIN-187 | Closure delivered by PR 235; outside canonical epic hierarchy | 86.3% | +0.0 pp |
