@@ -98,8 +98,8 @@ requireValue(metadata.google?.fullDescription.length <= 4000, 'Google full descr
 requireValue(metadata.screenshots?.length >= 8, 'Store screenshot checklist is incomplete.');
 requireHttps(metadata.urls?.privacyPolicy, 'Privacy policy URL');
 requireHttps(metadata.urls?.support, 'Support URL');
-requireValue(metadata.permissions?.camera === 'Allow Financial Assistant to photograph a receipt for review.', 'Camera rationale drifted from native config.');
-requireValue(metadata.permissions?.photos === 'Allow Financial Assistant to select a receipt image for review.', 'Photo rationale drifted from native config.');
+requireValue(metadata.permissions?.camera === 'Allow Financial Assistant to photograph a receipt you choose to review and upload.', 'Camera rationale drifted from native config.');
+requireValue(metadata.permissions?.photos === 'Allow Financial Assistant to select a receipt image you choose to review and upload.', 'Photo rationale drifted from native config.');
 requireValue(imagePicker?.cameraPermission === metadata.permissions?.camera, 'Native camera permission copy does not match store metadata.');
 requireValue(imagePicker?.photosPermission === metadata.permissions?.photos, 'Native photo permission copy does not match store metadata.');
 requireValue(imagePicker?.microphonePermission === false, 'Receipt image capture must not request microphone access.');

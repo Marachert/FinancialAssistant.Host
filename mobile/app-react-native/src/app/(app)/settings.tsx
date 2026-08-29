@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { router } from 'expo-router';
 import * as Notifications from 'expo-notifications';
-import { Linking, Platform, StyleSheet, Switch, Text, View } from 'react-native';
+import { AppState, Linking, Platform, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { friendlyApiError } from '@/api/client';
 import { theme, typography } from '@/app/theme';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useInsights } from '@/features/insights/InsightsProvider';
 import type { NotificationPreferences, UserProfile } from '@/features/insights/insightsTypes';
+import { useLocalization } from '@/localization/localization';
 import {
   LinkButton,
   LoadingSkeleton,
@@ -85,6 +86,7 @@ function ToggleRow({
 export default function SettingsScreen() {
   const { signOut } = useAuth();
   const { api, state, profile, refresh } = useInsights();
+  const { t } = useLocalization(profile?.locale);
   const [formOverride, setFormOverride] = useState<SettingsForm | null>(null);
   const form = formOverride ?? (profile ? formFromProfile(profile) : null);
   const [notifications, setNotifications] = useState<NotificationPreferences | null>(null);
@@ -96,6 +98,7 @@ export default function SettingsScreen() {
   });
   const [permissionBusy, setPermissionBusy] = useState(false);
   const [permissionError, setPermissionError] = useState<string | null>(null);
+  const [notificationRationaleVisible, setNotificationRationaleVisible] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -138,7 +141,13 @@ export default function SettingsScreen() {
       void loadNotifications();
       void loadDevicePermission();
     }, 0);
-    return () => clearTimeout(initialLoad);
+    const appStateSubscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') void loadDevicePermission();
+    });
+    return () => {
+      clearTimeout(initialLoad);
+      appStateSubscription.remove();
+    };
   }, [loadDevicePermission, loadNotifications]);
 
   const requestDevicePermission = async () => {
@@ -146,6 +155,7 @@ export default function SettingsScreen() {
     setPermissionError(null);
     try {
       const permission = await Notifications.requestPermissionsAsync();
+      setNotificationRationaleVisible(false);
       setDevicePermission({
         status: permission.granted
           ? 'granted'
@@ -158,6 +168,15 @@ export default function SettingsScreen() {
       setPermissionError('Device notification permission could not be requested.');
     } finally {
       setPermissionBusy(false);
+    }
+  };
+
+  const openNotificationSettings = async () => {
+    setPermissionError(null);
+    try {
+      await Linking.openSettings();
+    } catch {
+      setPermissionError(t('permissions.settingsFailed'));
     }
   };
 
@@ -295,34 +314,52 @@ export default function SettingsScreen() {
                   onChange={(value) => setNotifications((current) => current ? { ...current, webEnabled: value } : current)}
                 />
                 <View style={styles.devicePermission}>
-                  <Text style={[typography.bodyStrong, styles.title]}>This device</Text>
+                  <Text style={[typography.bodyStrong, styles.title]}>{t('permissions.thisDevice')}</Text>
                   <Text style={[typography.small, styles.supporting]}>
                     {devicePermission.status === 'granted'
-                      ? 'Notification permission is allowed.'
+                      ? t('permissions.notificationAllowed')
                       : devicePermission.status === 'denied'
-                        ? 'Notification permission is blocked on this device.'
+                        ? t('permissions.notificationDenied')
                         : devicePermission.status === 'unavailable'
-                          ? 'Device permission is managed outside this app.'
-                          : 'Notification permission has not been granted yet.'}
+                          ? t('permissions.notificationUnavailable')
+                          : t('permissions.notificationNotGranted')}
                   </Text>
                   {notifications.pushEnabled && devicePermission.status !== 'granted' ? (
                     <StatusBanner tone="info">
-                      Push is enabled in your account, but this device cannot show it until permission is allowed.
+                      {t('permissions.notificationMismatch')}
                     </StatusBanner>
                   ) : null}
                   {devicePermission.status !== 'granted' &&
                   devicePermission.status !== 'unavailable' &&
                   devicePermission.canAskAgain ? (
-                    <SecondaryButton
-                      label="Allow on this device"
-                      disabled={permissionBusy}
-                      onPress={() => void requestDevicePermission()}
-                    />
+                    notificationRationaleVisible ? (
+                      <View style={styles.permissionFlow}>
+                        <Text style={[typography.body, styles.supporting]}>
+                          {t('permissions.notificationRationale')}
+                        </Text>
+                        <PrimaryButton
+                          label={t('permissions.continue')}
+                          loading={permissionBusy}
+                          onPress={() => void requestDevicePermission()}
+                        />
+                        <SecondaryButton
+                          label={t('permissions.notNow')}
+                          disabled={permissionBusy}
+                          onPress={() => setNotificationRationaleVisible(false)}
+                        />
+                      </View>
+                    ) : (
+                      <SecondaryButton
+                        label={t('permissions.reviewNotificationAccess')}
+                        disabled={permissionBusy}
+                        onPress={() => setNotificationRationaleVisible(true)}
+                      />
+                    )
                   ) : null}
                   {devicePermission.status === 'denied' && !devicePermission.canAskAgain ? (
                     <SecondaryButton
-                      label="Open device settings"
-                      onPress={() => void Linking.openSettings()}
+                      label={t('permissions.openSettings')}
+                      onPress={() => void openNotificationSettings()}
                     />
                   ) : null}
                 </View>
@@ -347,6 +384,7 @@ const styles = StyleSheet.create({
   section: { gap: theme.spacing.md, paddingBottom: theme.spacing.md, borderBottomWidth: 1, borderColor: theme.colors.border },
   sectionHeader: { minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing.md },
   devicePermission: { gap: theme.spacing.sm, paddingTop: theme.spacing.sm },
+  permissionFlow: { gap: theme.spacing.md },
   toggleRow: { minHeight: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing.md },
   toggleCopy: { flex: 1, gap: theme.spacing.xs },
 });

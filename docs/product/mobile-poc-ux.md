@@ -159,6 +159,16 @@ Confirmation rules:
 9. The client removes temporary image files according to the platform lifecycle
    after upload/cancel and never writes raw OCR text to logs or analytics.
 
+FIN-188 implements the permission boundary with separate Camera, Gallery, and
+Files actions. Camera and Gallery first show localized in-app rationale and
+invoke the native permission prompt only after explicit continuation. A denial
+offers the alternate image source, Files, and manual transaction entry; a
+non-requestable denial also offers the platform app-settings redirect. Receipt
+copy states that selection remains local until Upload receipt and that OCR
+produces only a reviewable draft. Notification permission follows the same
+pre-prompt pattern in Settings, remains optional during onboarding, and is
+re-read when the app returns from device settings.
+
 ## Flow 6: insights, score, and recommendations
 
 Insights starts with server-computed summaries. It includes:

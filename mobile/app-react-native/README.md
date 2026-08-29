@@ -14,6 +14,9 @@ read and dismissal actions without calculating financial state on the client.
 FIN-187 adds typed English and Ukrainian localization catalogs, profile-aware
 currency and date formatting, explicit shared-control accessibility semantics,
 minimum touch targets, and contrast regression coverage.
+FIN-188 adds contextual camera, gallery, and notification permission rationale,
+receipt privacy copy, denied-permission recovery, and device-settings return
+refresh without making any permission mandatory for manual transaction entry.
 
 ## Prerequisites
 
@@ -126,7 +129,12 @@ the affected screen after reconnecting. Critical data screens use stable shared
 skeletons during initial loading and avoid rendering backend problem details or
 technical exception text as user-facing errors.
 Account delivery preferences remain separate from operating-system permission;
-when device permission is blocked, Settings provides a direct recovery action.
+when device permission is blocked, Settings provides a direct recovery action
+and refreshes status after the app returns from system settings. Camera and
+gallery access is requested only after an in-app explanation and explicit user
+continuation. Denial keeps Files, the alternate image source, and manual entry
+available. A selected receipt stays local until Upload receipt is chosen, and
+the resulting OCR suggestion remains a draft until user confirmation.
 The client displays score factors and recommendation evidence returned by the
 backend; it does not calculate or replace those deterministic results.
 
