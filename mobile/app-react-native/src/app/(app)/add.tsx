@@ -3,12 +3,14 @@ import { router } from 'expo-router';
 import * as Crypto from 'expo-crypto';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, Linking, StyleSheet, Text, View } from 'react-native';
 
 import { ApiProblem } from '@/api/client';
 import { theme, typography } from '@/app/theme';
 import { useCapture } from '@/features/capture/CaptureProvider';
 import type { ReceiptSelection } from '@/features/capture/captureTypes';
+import { useInsights } from '@/features/insights/InsightsProvider';
+import { useLocalization } from '@/localization/localization';
 import {
   PrimaryButton,
   ScreenScaffold,
@@ -21,6 +23,8 @@ const maximumReceiptSize = 10 * 1024 * 1024;
 const supportedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 type Phase = 'idle' | 'creating' | 'uploading' | 'processing';
+type ReceiptPermission = 'camera' | 'gallery';
+type PermissionRecovery = { source: ReceiptPermission; canAskAgain: boolean };
 
 function normalizeSelection(
   uri: string,
@@ -56,21 +60,26 @@ function wait(milliseconds: number, signal: AbortSignal) {
 
 export default function AddTransactionScreen() {
   const { api, input, setInput, receipt, setReceipt, setDraft, setConfirmed } = useCapture();
+  const { profile } = useInsights();
+  const { t } = useLocalization(profile?.locale);
   const [phase, setPhase] = useState<Phase>('idle');
   const [error, setError] = useState<string | null>(null);
+  const [permissionPrompt, setPermissionPrompt] = useState<ReceiptPermission | null>(null);
+  const [permissionRecovery, setPermissionRecovery] = useState<PermissionRecovery | null>(null);
+  const [permissionBusy, setPermissionBusy] = useState(false);
   const textRequest = useRef<{ input: string; key: string } | null>(null);
   const receiptRequest = useRef<{ uri: string; key: string } | null>(null);
   const abortController = useRef<AbortController | null>(null);
   const busy = phase !== 'idle';
 
-  const chooseCamera = async () => {
-    setError(null);
+  const setImagePickerSelection = (asset: ImagePicker.ImagePickerAsset) => {
+    const selection = normalizeSelection(asset.uri, asset.mimeType, asset.fileName, asset.fileSize);
+    setReceipt(selection);
+    if (!selection) setError('Use a JPEG, PNG, or WebP receipt image.');
+  };
+
+  const launchCamera = async () => {
     try {
-      const permission = await ImagePicker.requestCameraPermissionsAsync();
-      if (!permission.granted) {
-        setError('Camera access is off. Allow it in device settings or choose a receipt file.');
-        return;
-      }
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ['images'],
         allowsEditing: false,
@@ -79,16 +88,88 @@ export default function AddTransactionScreen() {
       if (result.canceled) return;
       const asset = result.assets[0];
       if (!asset) return;
-      const selection = normalizeSelection(asset.uri, asset.mimeType, asset.fileName, asset.fileSize);
-      setReceipt(selection);
-      if (!selection) setError('Use a JPEG, PNG, or WebP receipt image.');
+      setImagePickerSelection(asset);
     } catch {
       setError('The camera could not be opened. Choose a receipt file or try again.');
     }
   };
 
+  const launchGallery = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: false,
+        quality: 1,
+        selectionLimit: 1,
+      });
+      if (result.canceled) return;
+      const asset = result.assets[0];
+      if (!asset) return;
+      setImagePickerSelection(asset);
+    } catch {
+      setError('The photo library could not be opened. Choose a receipt file or try again.');
+    }
+  };
+
+  const launchPermissionSource = async (source: ReceiptPermission) => {
+    if (source === 'camera') await launchCamera();
+    else await launchGallery();
+  };
+
+  const inspectPermission = async (source: ReceiptPermission) => {
+    setError(null);
+    setPermissionRecovery(null);
+    try {
+      const permission = source === 'camera'
+        ? await ImagePicker.getCameraPermissionsAsync()
+        : await ImagePicker.getMediaLibraryPermissionsAsync();
+      if (permission.granted) {
+        await launchPermissionSource(source);
+      } else if (permission.canAskAgain) {
+        setPermissionPrompt(source);
+      } else {
+        setPermissionRecovery({ source, canAskAgain: false });
+      }
+    } catch {
+      setError(t('permissions.checkFailed'));
+    }
+  };
+
+  const requestPermission = async (source: ReceiptPermission) => {
+    setPermissionBusy(true);
+    setError(null);
+    try {
+      const permission = source === 'camera'
+        ? await ImagePicker.requestCameraPermissionsAsync()
+        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+      setPermissionPrompt(null);
+      if (permission.granted) {
+        setPermissionRecovery(null);
+        await launchPermissionSource(source);
+      } else {
+        setPermissionRecovery({ source, canAskAgain: permission.canAskAgain });
+      }
+    } catch {
+      setPermissionPrompt(null);
+      setError(t('permissions.requestFailed'));
+    } finally {
+      setPermissionBusy(false);
+    }
+  };
+
+  const openDeviceSettings = async () => {
+    setError(null);
+    try {
+      await Linking.openSettings();
+    } catch {
+      setError(t('permissions.settingsFailed'));
+    }
+  };
+
   const chooseFile = async () => {
     setError(null);
+    setPermissionPrompt(null);
+    setPermissionRecovery(null);
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ['image/jpeg', 'image/png', 'image/webp'],
@@ -209,10 +290,66 @@ export default function AddTransactionScreen() {
         <Text style={[typography.small, styles.supporting]}>or use a receipt</Text>
         <View style={styles.divider} />
       </View>
+      <StatusBanner tone="info">{t('permissions.receiptPrivacy')}</StatusBanner>
       <View style={styles.actions}>
-        <SecondaryButton label="Camera" disabled={busy} onPress={() => void chooseCamera()} />
-        <SecondaryButton label="Files" disabled={busy} onPress={() => void chooseFile()} />
+        <SecondaryButton label={t('permissions.camera')} disabled={busy || permissionBusy} onPress={() => void inspectPermission('camera')} />
+        <SecondaryButton label={t('permissions.gallery')} disabled={busy || permissionBusy} onPress={() => void inspectPermission('gallery')} />
+        <SecondaryButton label={t('permissions.files')} disabled={busy || permissionBusy} onPress={() => void chooseFile()} />
       </View>
+      {permissionPrompt ? (
+        <View style={styles.permissionFlow}>
+          <Text accessibilityRole="header" style={[typography.heading, styles.title]}>
+            {permissionPrompt === 'camera'
+              ? t('permissions.cameraTitle')
+              : t('permissions.galleryTitle')}
+          </Text>
+          <Text style={[typography.body, styles.supporting]}>
+            {permissionPrompt === 'camera'
+              ? t('permissions.cameraRationale')
+              : t('permissions.galleryRationale')}
+          </Text>
+          <PrimaryButton
+            label={t('permissions.continue')}
+            loading={permissionBusy}
+            onPress={() => void requestPermission(permissionPrompt)}
+          />
+          <SecondaryButton
+            label={t('permissions.notNow')}
+            disabled={permissionBusy}
+            onPress={() => setPermissionPrompt(null)}
+          />
+        </View>
+      ) : null}
+      {permissionRecovery ? (
+        <View style={styles.permissionFlow}>
+          <StatusBanner tone="warning">
+            {permissionRecovery.source === 'camera'
+              ? t('permissions.cameraDenied')
+              : t('permissions.galleryDenied')}
+          </StatusBanner>
+          {permissionRecovery.canAskAgain ? (
+            <SecondaryButton
+              label={t('permissions.tryAgain')}
+              disabled={permissionBusy}
+              onPress={() => void requestPermission(permissionRecovery.source)}
+            />
+          ) : (
+            <SecondaryButton
+              label={t('permissions.openSettings')}
+              disabled={permissionBusy}
+              onPress={() => void openDeviceSettings()}
+            />
+          )}
+          <SecondaryButton
+            label={permissionRecovery.source === 'camera'
+              ? t('permissions.useGallery')
+              : t('permissions.useCamera')}
+            disabled={permissionBusy}
+            onPress={() => void inspectPermission(permissionRecovery.source === 'camera' ? 'gallery' : 'camera')}
+          />
+          <SecondaryButton label={t('permissions.useFiles')} disabled={permissionBusy} onPress={() => void chooseFile()} />
+        </View>
+      ) : null}
       {receipt ? (
         <View style={styles.preview}>
           <Image accessibilityLabel="Selected receipt preview" source={{ uri: receipt.uri }} style={styles.image} resizeMode="contain" />
@@ -242,7 +379,8 @@ const styles = StyleSheet.create({
   multiline: { minHeight: 112, textAlignVertical: 'top' },
   dividerRow: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm },
   divider: { flex: 1, height: 1, backgroundColor: theme.colors.border },
-  actions: { flexDirection: 'row', gap: theme.spacing.sm },
+  actions: { gap: theme.spacing.sm },
+  permissionFlow: { gap: theme.spacing.md },
   preview: { gap: theme.spacing.md },
   image: { width: '100%', aspectRatio: 4 / 3, borderRadius: theme.radius.control, backgroundColor: theme.colors.surfaceSubtle },
 });

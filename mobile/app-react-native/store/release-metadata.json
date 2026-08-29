@@ -24,8 +24,8 @@
     "releaseNotes": "Initial controlled test release with secure account setup, reviewable transaction and receipt drafts, authoritative financial summaries, insights, preferences, and resilient offline and error states."
   },
   "permissions": {
-    "camera": "Allow Financial Assistant to photograph a receipt for review.",
-    "photos": "Allow Financial Assistant to select a receipt image for review.",
+    "camera": "Allow Financial Assistant to photograph a receipt you choose to review and upload.",
+    "photos": "Allow Financial Assistant to select a receipt image you choose to review and upload.",
     "notifications": "Allow Financial Assistant to show the budget alerts and weekly summaries you enable."
   },
   "screenshots": [

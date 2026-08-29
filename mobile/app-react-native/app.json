@@ -37,8 +37,8 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "Allow Financial Assistant to photograph a receipt for review.",
-          "photosPermission": "Allow Financial Assistant to select a receipt image for review.",
+          "cameraPermission": "Allow Financial Assistant to photograph a receipt you choose to review and upload.",
+          "photosPermission": "Allow Financial Assistant to select a receipt image you choose to review and upload.",
           "microphonePermission": false
         }
       ]

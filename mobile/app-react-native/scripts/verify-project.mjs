@@ -69,6 +69,16 @@ if (!combined.includes('ocr_completed')) failures.push('OCR suggestion polling i
 if (!combined.includes('ocr_failed')) failures.push('OCR failure handling is missing.');
 if (!combined.includes('expo-image-picker')) failures.push('Camera receipt selection is missing.');
 if (!combined.includes('expo-document-picker')) failures.push('File receipt selection is missing.');
+if (!combined.includes('getCameraPermissionsAsync')) failures.push('Camera access must be inspected before the native prompt.');
+if (!combined.includes('getMediaLibraryPermissionsAsync')) failures.push('Gallery access must be inspected before the native prompt.');
+if (!combined.includes('requestMediaLibraryPermissionsAsync')) failures.push('Gallery receipt permission request is missing.');
+if (!combined.includes('launchImageLibraryAsync')) failures.push('Gallery receipt selection is missing.');
+if (!combined.includes("t('permissions.cameraRationale')") || !combined.includes("t('permissions.galleryRationale')")) failures.push('Receipt permissions require localized pre-prompt rationale.');
+if (!combined.includes("t('permissions.receiptPrivacy')")) failures.push('Receipt capture requires a privacy explanation.');
+if (!combined.includes("t('permissions.useFiles')") || !combined.includes("t('permissions.openSettings')")) failures.push('Denied receipt permissions require file and settings fallbacks.');
+if (!combined.includes('AppState.addEventListener')) failures.push('Device permission must refresh after returning from settings.');
+if (!combined.includes("t('permissions.notificationRationale')")) failures.push('Notification access requires an in-app rationale before the native prompt.');
+if (!combined.includes('notificationRationaleVisible')) failures.push('Notification permission must remain user-initiated.');
 if (!combined.includes('/analytics/dashboard')) failures.push('Dashboard analytics route is missing.');
 if (!combined.includes('/analytics/category-breakdown')) failures.push('Analytics category breakdown route is missing.');
 if (!combined.includes('/financial-score/current')) failures.push('Financial score route is missing.');

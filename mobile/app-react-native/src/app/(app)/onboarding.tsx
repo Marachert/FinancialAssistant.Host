@@ -6,6 +6,7 @@ import { ApiProblem } from '@/api/client';
 import { theme, typography } from '@/app/theme';
 import { useInsights } from '@/features/insights/InsightsProvider';
 import type { UserProfile } from '@/features/insights/insightsTypes';
+import { useLocalization } from '@/localization/localization';
 import {
   LinkButton,
   PrimaryButton,
@@ -45,6 +46,7 @@ async function requestNotificationPermission() {
 
 export default function OnboardingScreen() {
   const { api, profile, saveProfile } = useInsights();
+  const { t } = useLocalization(profile?.locale);
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<OnboardingForm | null>(() => profile ? deviceDefaults(profile) : null);
   const [notificationOptIn, setNotificationOptIn] = useState(false);
@@ -191,11 +193,11 @@ export default function OnboardingScreen() {
             <View style={styles.toggleCopy}>
               <Text style={[typography.bodyStrong, styles.title]}>Budget alerts and weekly summaries</Text>
               <Text style={[typography.small, styles.supporting]}>
-                Your device asks for permission only after you finish setup with this enabled.
+                {t('permissions.notificationOptional')}
               </Text>
             </View>
             <Switch
-              accessibilityLabel="Enable budget alerts and weekly summaries"
+              accessibilityLabel={t('permissions.enableNotifications')}
               disabled={busy}
               value={notificationOptIn}
               onValueChange={setNotificationOptIn}
