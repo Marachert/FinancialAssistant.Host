@@ -11,6 +11,9 @@ FIN-186 adds shared loading skeletons, explicit empty and friendly error states,
 screen-level retry actions, and a live offline banner with manual recheck.
 FIN-183 adds backend score history, recommendation detail, and owner-scoped
 read and dismissal actions without calculating financial state on the client.
+FIN-187 adds typed English and Ukrainian localization catalogs, profile-aware
+currency and date formatting, explicit shared-control accessibility semantics,
+minimum touch targets, and contrast regression coverage.
 
 ## Prerequisites
 
@@ -98,6 +101,13 @@ the current score through `GET /financial-score/current`, score history through
 changes through `PUT /recommendations/{recommendationId}/read` and
 `PUT /recommendations/{recommendationId}/dismissal`. Settings use `GET /users/me`,
 `PUT /users/me/preferences`, and `GET` or `PUT /notification-preferences`.
+
+User-interface copy for the authentication flow, signed-in shell, dashboard,
+analytics, and notifications is resolved through `src/localization/catalogs.ts`.
+English is the fallback; `uk` locales select the Ukrainian catalog. Financial
+amounts and dates are formatted with the validated profile locale through the
+shared localization helpers. Backend-provided recommendation wording remains
+server-owned and is not translated or recalculated by the client.
 The notification inbox reads prepared owner-scoped messages through
 `GET /notifications?currency={currency}` and records the first read timestamp
 through `PUT /notifications/{notificationId}/read`.

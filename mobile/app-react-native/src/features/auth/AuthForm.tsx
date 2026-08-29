@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { ApiProblem } from '@/api/client';
 import { theme, typography } from '@/app/theme';
+import { useLocalization } from '@/localization/localization';
 import { LinkButton, PrimaryButton, ScreenScaffold, StatusBanner, TextField } from '@/shared/ui';
 
 import type { AuthCredentials } from './authTypes';
@@ -17,6 +18,7 @@ type Props = {
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function AuthForm({ mode, onSubmit, onAlternate }: Props) {
+  const { t } = useLocalization();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -24,9 +26,9 @@ export function AuthForm({ mode, onSubmit, onAlternate }: Props) {
   const [error, setError] = useState<string>();
   const registrationKey = useRef(mode === 'register' ? Crypto.randomUUID() : undefined);
 
-  const emailError = email.length > 0 && !emailPattern.test(email) ? 'Enter a valid email address.' : undefined;
-  const passwordError = password.length > 0 && password.length < 12 ? 'Password must contain at least 12 characters.' : undefined;
-  const title = mode === 'register' ? 'Create account' : 'Sign in';
+  const emailError = email.length > 0 && !emailPattern.test(email) ? t('auth.emailInvalid') : undefined;
+  const passwordError = password.length > 0 && password.length < 12 ? t('auth.passwordInvalid') : undefined;
+  const title = mode === 'register' ? t('auth.createAccount') : t('auth.signIn');
 
   const submit = async () => {
     setError(undefined);
@@ -34,7 +36,7 @@ export function AuthForm({ mode, onSubmit, onAlternate }: Props) {
     try {
       await onSubmit({ email: email.trim(), password, idempotencyKey: registrationKey.current });
     } catch (reason) {
-      setError(reason instanceof ApiProblem ? reason.message : 'Could not reach Financial Assistant. Check your connection and try again.');
+      setError(reason instanceof ApiProblem ? reason.message : t('auth.connectionError'));
     } finally {
       setSubmitting(false);
     }
@@ -47,28 +49,28 @@ export function AuthForm({ mode, onSubmit, onAlternate }: Props) {
       <View style={styles.header}>
         <Text accessibilityRole="header" style={[typography.title, styles.title]}>{title}</Text>
         <Text style={[typography.body, styles.supporting]}>
-          {mode === 'register' ? 'Start with a secure account for your financial workspace.' : 'Use your Financial Assistant account.'}
+          {mode === 'register' ? t('auth.registerIntro') : t('auth.signInIntro')}
         </Text>
       </View>
       {error ? <StatusBanner>{error}</StatusBanner> : null}
       <View>
-        <TextField autoCapitalize="none" autoComplete="email" keyboardType="email-address" label="Email" onChangeText={setEmail} value={email} error={emailError} />
+        <TextField autoCapitalize="none" autoComplete="email" keyboardType="email-address" label={t('auth.email')} onChangeText={setEmail} value={email} error={emailError} />
         <TextField
           autoCapitalize="none"
           autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
           error={passwordError}
-          label="Password"
+          label={t('auth.password')}
           onChangeText={setPassword}
           secureTextEntry={!passwordVisible}
           trailingAction={{
-            label: passwordVisible ? 'Hide' : 'Show',
+            label: passwordVisible ? t('auth.hidePassword') : t('auth.showPassword'),
             onPress: () => setPasswordVisible((visible) => !visible),
           }}
           value={password}
         />
       </View>
       <PrimaryButton disabled={disabled} label={title} loading={submitting} onPress={() => void submit()} />
-      <LinkButton label={mode === 'register' ? 'Already have an account? Sign in' : 'New here? Create account'} onPress={onAlternate} />
+      <LinkButton label={mode === 'register' ? t('auth.alreadyRegistered') : t('auth.newAccount')} onPress={onAlternate} />
     </ScreenScaffold>
   );
 }

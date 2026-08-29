@@ -6,6 +6,7 @@ import { friendlyApiError } from '@/api/client';
 import { theme, typography } from '@/app/theme';
 import { useInsights } from '@/features/insights/InsightsProvider';
 import type { NotificationItem } from '@/features/insights/insightsTypes';
+import { formatDateTime, useLocalization } from '@/localization/localization';
 import {
   LinkButton,
   LoadingSkeleton,
@@ -14,22 +15,9 @@ import {
   StatusBanner,
 } from '@/shared/ui';
 
-function message(reason: unknown) {
-  return friendlyApiError(reason, 'Notifications could not be loaded. Try again.');
-}
-
-function preparedTime(value: string) {
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime())
-    ? value
-    : new Intl.DateTimeFormat(undefined, {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      }).format(parsed);
-}
-
 export default function NotificationsScreen() {
   const { api, profile } = useInsights();
+  const { locale, t } = useLocalization(profile?.locale);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -49,14 +37,16 @@ export default function NotificationsScreen() {
       const response = await api.getNotifications(profile.currencyCode);
       if (requestId === latestRequest.current) setItems(response.items);
     } catch (reason) {
-      if (requestId === latestRequest.current) setError(message(reason));
+      if (requestId === latestRequest.current) {
+        setError(friendlyApiError(reason, t('notifications.error')));
+      }
     } finally {
       if (requestId === latestRequest.current) {
         setLoading(false);
         setRefreshing(false);
       }
     }
-  }, [api, profile]);
+  }, [api, profile, t]);
 
   useEffect(() => {
     const initialLoad = setTimeout(() => void load(true), 0);
@@ -75,7 +65,7 @@ export default function NotificationsScreen() {
         item.notificationId === notificationId ? updated : item
       )));
     } catch (reason) {
-      setError(friendlyApiError(reason, 'The notification could not be marked as read. Try again.'));
+      setError(friendlyApiError(reason, t('notifications.readError')));
     } finally {
       setMarkingId(null);
     }
@@ -91,21 +81,21 @@ export default function NotificationsScreen() {
     >
       <View style={styles.header}>
         <View style={styles.headerCopy}>
-          <Text accessibilityRole="header" style={[typography.title, styles.title]}>Notifications</Text>
+          <Text accessibilityRole="header" style={[typography.title, styles.title]}>{t('notifications.title')}</Text>
           <Text style={[typography.small, styles.supporting]}>
-            {unreadCount === 1 ? '1 unread' : `${unreadCount} unread`}
+            {t('notifications.unreadCount', { count: unreadCount })}
           </Text>
         </View>
-        <LinkButton label="Back" onPress={() => router.back()} />
+        <LinkButton label={t('common.back')} onPress={() => router.back()} />
       </View>
 
       {error ? <StatusBanner>{error}</StatusBanner> : null}
       {loading ? (
-        <LoadingSkeleton label="Loading notifications" rows={3} />
+        <LoadingSkeleton label={t('notifications.loading')} rows={3} />
       ) : null}
 
       {!loading && items.length === 0 ? (
-        <StatusBanner tone="info">No notifications yet.</StatusBanner>
+        <StatusBanner tone="info">{t('notifications.empty')}</StatusBanner>
       ) : null}
 
       {!loading ? items.map((item) => {
@@ -113,22 +103,25 @@ export default function NotificationsScreen() {
         return (
           <View
             key={item.notificationId}
-            accessibilityLabel={`${unread ? 'Unread' : 'Read'} notification: ${item.title}`}
+            accessibilityLabel={t('notifications.itemLabel', {
+              status: unread ? t('notifications.unread') : t('notifications.read'),
+              title: item.title,
+            })}
             style={[styles.notification, unread && styles.notificationUnread]}
           >
             <View style={styles.notificationHeader}>
               <Text style={[typography.bodyStrong, styles.notificationTitle]}>{item.title}</Text>
               <Text style={[typography.caption, unread ? styles.unread : styles.supporting]}>
-                {unread ? 'Unread' : 'Read'}
+                {unread ? t('notifications.unread') : t('notifications.read')}
               </Text>
             </View>
             <Text style={[typography.body, styles.title]}>{item.body}</Text>
             <Text style={[typography.caption, styles.supporting]}>
-              {`${item.channel === 'push' ? 'Push' : 'Web'} | ${preparedTime(item.preparedAtUtc)}`}
+              {`${item.channel === 'push' ? t('notifications.push') : t('notifications.web')} | ${formatDateTime(item.preparedAtUtc, locale)}`}
             </Text>
             {unread ? (
               <SecondaryButton
-                label={markingId === item.notificationId ? 'Marking as read...' : 'Mark as read'}
+                label={markingId === item.notificationId ? t('notifications.markingRead') : t('notifications.markRead')}
                 disabled={markingId !== null}
                 onPress={() => void markRead(item.notificationId)}
               />
@@ -138,7 +131,7 @@ export default function NotificationsScreen() {
       }) : null}
 
       {error ? (
-        <SecondaryButton label="Retry notifications" onPress={() => void load(true)} />
+        <SecondaryButton label={t('notifications.retry')} onPress={() => void load(true)} />
       ) : null}
     </ScreenScaffold>
   );

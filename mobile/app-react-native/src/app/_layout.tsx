@@ -5,12 +5,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { theme } from '@/app/theme';
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
+import { useLocalization } from '@/localization/localization';
 
 function RootNavigator() {
   const { state } = useAuth();
+  const { t } = useLocalization();
   if (state === 'loading') {
     return (
-      <View accessibilityLabel="Restoring secure session" accessibilityRole="progressbar" style={styles.loading}>
+      <View accessibilityLabel={t('shell.restoringSession')} accessibilityRole="progressbar" style={styles.loading}>
         <ActivityIndicator color={theme.colors.action} size="large" />
       </View>
     );
