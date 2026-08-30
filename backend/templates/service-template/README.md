@@ -6,6 +6,12 @@ FIN-51 establishes the five project boundaries and dependency direction. FIN-52 
 
 FIN-50 defines the dependency, package, and naming conventions that every service generated from this template must keep.
 
+FIN-190 defines the platform-wide
+[backend observability strategy](../../../docs/architecture/backend-observability-strategy.md).
+Every generated service must map its logs, traces, metrics, health dependencies,
+dashboard panels, alert rules, runbook, exporter controls, and sensitive-data
+tests to that contract.
+
 ## Projects
 
 ```text
@@ -212,6 +218,10 @@ Secrets must use environment variables or an approved secret store, never commit
 10. Add service-owned readiness checks for dependencies required to serve traffic.
 11. Keep Elasticsearch indices/aliases, repositories, mappings, and business events owned by the service.
 12. Use synthetic test data and privacy-safe logs.
+13. Document the service-owned observability catalog and bounded metric
+    dimensions required by FIN-190.
+14. Define dashboard ownership, P1-P4 alert rules, runbook links, and
+    exporter/sampling/retention cost controls before production export.
 
 Example commands after renaming the copied projects:
 

@@ -29,6 +29,16 @@ The service-boundary contract assigns owned data, synchronous read rules,
 asynchronous event direction, failure ownership, and forbidden coupling across
 Profile, Category, Transaction Intake, Income, Expense, and Financial Summary.
 
+The cross-service observability contract is defined in:
+
+```text
+docs/architecture/backend-observability-strategy.md
+```
+
+It assigns privacy-safe log, metric, trace, health, dashboard, alert, retention,
+exporter, and runbook obligations to every backend component without changing
+financial source-of-truth ownership.
+
 Service documentation and implementation must link to and preserve that
 contract.
 

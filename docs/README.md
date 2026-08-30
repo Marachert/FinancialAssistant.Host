@@ -101,6 +101,7 @@ docs/engineering/insights-release-readiness-checklist.md
 Privacy-safe monitoring admin API:
 
 ```text
+docs/architecture/backend-observability-strategy.md
 docs/api/monitoring-admin-v1.md
 ```
 

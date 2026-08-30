@@ -22,6 +22,13 @@ The signal contracts deliberately have no arbitrary labels, user identifiers,
 financial values, receipt/OCR text, prompts, provider responses, or request
 payload fields. Sources and UI stages must match configuration allowlists.
 
+The platform-wide signal ownership, health, metric, trace, dashboard, alert,
+retention, and exporter rules are defined by the
+[backend observability strategy](../../../docs/architecture/backend-observability-strategy.md).
+Monitoring aggregates approved operational state and probes; it does not ingest
+raw application logs or trace payloads, own another service's runbook, or change
+that service's alert responsibility.
+
 ## Required secrets
 
 Set these through environment-backed configuration; do not store them in the
