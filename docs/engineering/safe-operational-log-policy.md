@@ -20,6 +20,12 @@ The policy applies to:
 
 Domain services should adopt the same principles, but service-specific event catalogs belong to the owning service.
 
+FIN-190 makes these minimization and structured-event principles mandatory for
+all backend services through the
+[backend observability strategy](../architecture/backend-observability-strategy.md).
+Service-specific event catalogs, ID ranges, dashboards, alerts, and runbooks
+remain owned by each service.
+
 ## Responsibility boundary
 
 The gateway may log technical routing and security outcomes. It must not log or infer financial domain content.
