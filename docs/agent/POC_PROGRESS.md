@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-08-30T10:19:39+03:00
+Last updated: 2026-09-04T18:13:11+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-190 delivery is **86.3%**:
-**170 of 197 canonical POC leaf tickets are Done**.
+POC readiness after FIN-191 delivery is **86.8%**:
+**171 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,29 +13,28 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-43 - Prepare Apple App Store and Google Play first release tracks
+- FIN-191 - P8.T2 Implement structured logging and correlation baseline
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/231
+  https://github.com/Marachert/FinancialAssistant.Host/pull/241
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/5b26f6b8aab1a91bbb4aa0ae6e81b5e8bddecdb1
-- previous readiness: 169 / 197, or 85.8%
-- current readiness: 170 / 197, or 86.3%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/d072b32a448223835c43625aba70ba570e8657c1
+- previous readiness: 170 / 197, or 86.3%
+- current readiness: 171 / 197, or 86.8%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-190 - P8.T1 Define observability strategy for backend services, merged
+- FIN-191 - P8.T2 Implement structured logging and correlation baseline, merged
   and Done
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/239
+  https://github.com/Marachert/FinancialAssistant.Host/pull/241
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/6c509aa447dde6f8cab2489f5b36294c7cf1f6dc
-- final implementation head: `e3bc1cd4cafc2d2e636d54b8925a176905241539`
-- exact-head CI: Backend run 33298697386 and Mobile run 33298697397
+  https://github.com/Marachert/FinancialAssistant.Host/commit/d072b32a448223835c43625aba70ba570e8657c1
+- final implementation head: `ead8522f596abf6ff09518b672cdce3104ef356c`
+- exact-head CI: Backend run 33887564324 and Mobile run 33887564362
 - previous readiness: 170 / 197, or 86.3%
-- current readiness: 170 / 197, or 86.3%
-- change: +0.0 percentage points because FIN-190 has no Jira parent field and
-  is outside the canonical epic hierarchy used by this ledger
+- current readiness: 171 / 197, or 86.8%
+- change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
 duplicate of FIN-124, FIN-127 is an exact later duplicate of FIN-126, and
@@ -61,26 +60,24 @@ numerator and denominator unchanged.
 
 Current delivery:
 
-- FIN-190 is Done through guarded merged PR #239
-- the implementation is merged at `6c509aa447dde6f8cab2489f5b36294c7cf1f6dc`
+- FIN-191 is Done through guarded merged PR #241
+- the implementation is merged at `d072b32a448223835c43625aba70ba570e8657c1`
   after exact-head Backend and Mobile CI and a clear review-channel audit
-- canonical POC readiness is 170/197 (86.3%), a +0.0 percentage-point change
-  because FIN-190 is outside the canonical Jira parent hierarchy
+- canonical POC readiness is 171/197 (86.8%), a +0.5 percentage-point change
 - FIN-31 P7 progress is 18/18 (100.0%); all 33 direct children and the epic are
   verified Done
-- FIN-36 P8 progress is 3/13 (23.1%); the epic remains In Progress
+- FIN-36 P8 progress is 4/13 (30.8%); the epic remains In Progress
 - FIN-38 P9 progress is 3/20 (15.0%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
   remain open
 - no paid provider or review credits were used
-- FIN-190 provides one normative logs, metrics, traces, health, dashboard,
-  alert, privacy, retention, exporter, and cost contract for every backend
-  component
-- Confluence Architecture v10, System Diagrams v10, and Service Catalog v5 are
-  synchronized with the merged observability signal-flow and ownership model
-- the next globally ranked unfinished leaf is FIN-191
+- FIN-191 implements the privacy-safe JSON console logging and correlation
+  baseline across backend services without a paid telemetry exporter
+- Confluence Architecture v12, System Diagrams v12, and Service Catalog v6 are
+  synchronized with the implemented logging and correlation flow
+- the next ranked unfinished child under FIN-36 is FIN-192
 
 ## Epic Progress
 
@@ -94,9 +91,9 @@ Current delivery:
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
-| FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 3 | 13 | 23.1% |
+| FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 4 | 13 | 30.8% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 3 | 20 | 15.0% |
-| **Total** | **Canonical POC leaf scope** | **170** | **197** | **86.3%** |
+| **Total** | **Canonical POC leaf scope** | **171** | **197** | **86.8%** |
 
 ## First-User-Test Gates
 
@@ -265,3 +262,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-29T18:33:09+03:00 | FIN-187 | Closure delivered by PR 235; outside canonical epic hierarchy | 86.3% | +0.0 pp |
 | 2026-08-29T20:10:12+03:00 | FIN-188 | Closure delivered by PR 237; outside canonical epic hierarchy | 86.3% | +0.0 pp |
 | 2026-08-30T10:19:39+03:00 | FIN-190 | Closure delivered by PR 239; outside canonical epic hierarchy | 86.3% | +0.0 pp |
+| 2026-09-04T18:13:11+03:00 | FIN-191 | Closure delivered by PR 241 | 86.8% | +0.5 pp |
