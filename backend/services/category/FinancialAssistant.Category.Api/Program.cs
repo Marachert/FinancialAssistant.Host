@@ -3,8 +3,6 @@ using FinancialAssistant.Category.Api.Security;
 using FinancialAssistant.Category.Application;
 using FinancialAssistant.Category.Infrastructure;
 using FinancialAssistant.Shared.Observability;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,12 +23,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddCategoryApplication();
 builder.Services.AddCategoryInfrastructure();
 builder.Services.AddSingleton<CategoryGatewayAuthenticator>();
-builder.Services
-    .AddHealthChecks()
-    .AddCheck(
-        "self",
-        () => HealthCheckResult.Healthy("Category service process is running."),
-        tags: new[] { "live", "ready" });
+builder.Services.AddFinancialAssistantHealthChecks();
 
 var app = builder.Build();
 
@@ -45,19 +38,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 }
 
 app.MapGet("/", () => Results.Redirect("/health"));
-app.MapHealthChecks("/health");
-app.MapHealthChecks(
-    "/health/live",
-    new HealthCheckOptions
-    {
-        Predicate = registration => registration.Tags.Contains("live")
-    });
-app.MapHealthChecks(
-    "/health/ready",
-    new HealthCheckOptions
-    {
-        Predicate = registration => registration.Tags.Contains("ready")
-    });
+app.MapFinancialAssistantHealthEndpoints();
 
 app.MapGet("/category/info", (IHostEnvironment environment) => Results.Ok(new
 {

@@ -1,6 +1,6 @@
 # Monitoring Admin API v1
 
-Related Jira: FIN-37.
+Related Jira: FIN-37, FIN-192.
 
 ## Purpose
 
@@ -23,7 +23,9 @@ and independently requires the forwarded admin role.
 
 The response contains:
 
-- generated UTC timestamp and overall `healthy` or `degraded` state;
+- generated UTC timestamp and overall `healthy`, `degraded`, or `unavailable`
+  state;
+- component totals by healthy, degraded, unavailable, and not-configured state;
 - allowlisted service name, health state, probe latency, timestamp, and safe
   error category;
 - RabbitMQ aggregate queue depth and consumer count;
@@ -59,9 +61,16 @@ Rejected signals return a generic safe problem response without echoing input.
 - `401`: trusted gateway or service authentication is missing/invalid;
 - `403`: gateway request lacks the admin role;
 - `400`: source, stage, relationship, or numeric bound is invalid;
-- an unavailable probe produces a degraded snapshot with a safe category such
-  as `timeout`, `transport`, `http_status`, or `invalid_response`.
+- degraded or not-configured probes produce a degraded snapshot when no
+  component is unavailable;
+- an unavailable or unknown probe produces an unavailable snapshot with a safe
+  category such as `timeout`, `transport`, `http_status`, or
+  `invalid_response`.
 
 Admin responses must use `Cache-Control: no-store` at the deployment boundary.
 Visual dashboard composition is owned by FIN-194; this contract supplies its
 safe operational data.
+
+The shared endpoint schema, required-dependency rules, and full dashboard
+requirements are defined in
+[Service Health and Readiness Baseline](../engineering/service-health-and-readiness.md).

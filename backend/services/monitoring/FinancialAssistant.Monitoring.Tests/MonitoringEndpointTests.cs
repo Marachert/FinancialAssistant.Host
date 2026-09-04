@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using FinancialAssistant.Monitoring.Application;
 using FinancialAssistant.Monitoring.Contracts;
 using Xunit;
 
@@ -20,11 +21,15 @@ public sealed class MonitoringEndpointTests : IClassFixture<MonitoringWebApplica
     {
         using var live = await client.GetAsync("/health/live");
         using var ready = await client.GetAsync("/health/ready");
+        var livePayload = await live.Content.ReadFromJsonAsync<JsonElement>();
+        var readyPayload = await ready.Content.ReadFromJsonAsync<JsonElement>();
 
         Assert.Equal(HttpStatusCode.OK, live.StatusCode);
         Assert.Equal(HttpStatusCode.OK, ready.StatusCode);
-        Assert.Equal("Healthy", await live.Content.ReadAsStringAsync());
-        Assert.Equal("Healthy", await ready.Content.ReadAsStringAsync());
+        Assert.Equal("healthy", livePayload.GetProperty("status").GetString());
+        Assert.Equal("healthy", readyPayload.GetProperty("status").GetString());
+        Assert.Single(livePayload.GetProperty("checks").EnumerateArray());
+        Assert.Equal(2, readyPayload.GetProperty("checks").GetArrayLength());
     }
 
     [Fact]
@@ -46,8 +51,26 @@ public sealed class MonitoringEndpointTests : IClassFixture<MonitoringWebApplica
         Assert.Equal(MonitoringStatuses.Degraded, dashboard.OverallStatus);
         Assert.Equal("aggregate-operational-only", dashboard.DataClassification);
         Assert.Equal(2, dashboard.Services.Count);
+        Assert.Equal(4, dashboard.Readiness.ComponentCount);
+        Assert.Equal(3, dashboard.Readiness.HealthyCount);
+        Assert.Equal(1, dashboard.Readiness.DegradedCount);
         Assert.Equal(4, dashboard.RabbitMq.QueueDepth);
         Assert.Equal("green", dashboard.Elasticsearch.ClusterStatus);
+    }
+
+    [Theory]
+    [InlineData(MonitoringStatuses.Healthy, MonitoringStatuses.Healthy)]
+    [InlineData(MonitoringStatuses.Degraded, MonitoringStatuses.Degraded)]
+    [InlineData(MonitoringStatuses.NotConfigured, MonitoringStatuses.Degraded)]
+    [InlineData(MonitoringStatuses.Unavailable, MonitoringStatuses.Unavailable)]
+    [InlineData("unknown", MonitoringStatuses.Unavailable)]
+    public void DashboardStatusPolicy_UsesExplicitWorstStateRules(
+        string componentStatus,
+        string expectedOverallStatus)
+    {
+        var summary = MonitoringStatusPolicy.Summarize([MonitoringStatuses.Healthy, componentStatus]);
+
+        Assert.Equal(expectedOverallStatus, MonitoringStatusPolicy.GetOverallStatus(summary));
     }
 
     [Fact]

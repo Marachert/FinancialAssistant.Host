@@ -4,9 +4,7 @@ using FinancialAssistant.ReceiptProcessing.Application;
 using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
 using FinancialAssistant.ReceiptProcessing.Infrastructure;
 using FinancialAssistant.Shared.Observability;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,12 +27,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddReceiptProcessingApplication();
 builder.Services.AddReceiptProcessingInfrastructure();
 builder.Services.AddSingleton<ReceiptGatewayAuthenticator>();
-builder.Services
-    .AddHealthChecks()
-    .AddCheck(
-        "self",
-        () => HealthCheckResult.Healthy("Receipt Processing service process is running."),
-        tags: new[] { "live", "ready" });
+builder.Services.AddFinancialAssistantHealthChecks();
 
 var app = builder.Build();
 
@@ -51,19 +44,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 }
 
 app.MapGet("/", () => Results.Redirect("/health"));
-app.MapHealthChecks("/health");
-app.MapHealthChecks(
-    "/health/live",
-    new HealthCheckOptions
-    {
-        Predicate = registration => registration.Tags.Contains("live")
-    });
-app.MapHealthChecks(
-    "/health/ready",
-    new HealthCheckOptions
-    {
-        Predicate = registration => registration.Tags.Contains("ready")
-    });
+app.MapFinancialAssistantHealthEndpoints();
 app.MapReceiptProcessingEndpoints();
 
 app.Run();

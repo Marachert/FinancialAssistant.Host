@@ -10,7 +10,9 @@ using Microsoft.Extensions.Options;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddFinancialAssistantObservability();
-builder.Services.AddHealthChecks();
+builder.Services
+    .AddFinancialAssistantHealthChecks()
+    .AddCheck<GatewayReadinessHealthCheck>("gateway_configuration", tags: ["ready"]);
 builder.Services.Configure<CorrelationOptions>(builder.Configuration.GetSection("Gateway:Correlation"));
 builder.Services.Configure<GatewaySecurityOptions>(builder.Configuration.GetSection("Gateway:Security"));
 builder.Services.Configure<GatewayRateLimitOptions>(builder.Configuration.GetSection("Gateway:RateLimiting"));
@@ -39,7 +41,7 @@ app.UseMiddleware<GatewayRateLimitMiddleware>();
 
 app.MapGet("/", () => Results.Redirect("/health"));
 
-app.MapHealthChecks("/health");
+app.MapFinancialAssistantHealthEndpoints();
 app.MapGatewayDiagnostics();
 
 app.MapGet(

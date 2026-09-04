@@ -5,8 +5,6 @@ using FinancialAssistant.TransactionIntake.Api.Endpoints;
 using FinancialAssistant.TransactionIntake.Api.Security;
 using FinancialAssistant.TransactionIntake.Application;
 using FinancialAssistant.TransactionIntake.Infrastructure;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,12 +28,7 @@ builder.Services.AddExpenseInfrastructure();
 builder.Services.AddTransactionIntakeInfrastructure();
 builder.Services.AddSingleton<TransactionIntakeGatewayAuthenticator>();
 builder.Services.AddSingleton<ReceiptEventAuthenticator>();
-builder.Services
-    .AddHealthChecks()
-    .AddCheck(
-        "self",
-        () => HealthCheckResult.Healthy("Transaction Intake service process is running."),
-        tags: new[] { "live", "ready" });
+builder.Services.AddFinancialAssistantHealthChecks();
 
 var app = builder.Build();
 
@@ -51,19 +44,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 }
 
 app.MapGet("/", () => Results.Redirect("/health"));
-app.MapHealthChecks("/health");
-app.MapHealthChecks(
-    "/health/live",
-    new HealthCheckOptions
-    {
-        Predicate = registration => registration.Tags.Contains("live")
-    });
-app.MapHealthChecks(
-    "/health/ready",
-    new HealthCheckOptions
-    {
-        Predicate = registration => registration.Tags.Contains("ready")
-    });
+app.MapFinancialAssistantHealthEndpoints();
 app.MapGet("/transaction-intake/info", (IHostEnvironment environment) => Results.Ok(new
 {
     service = "financial-assistant-transaction-intake-service",

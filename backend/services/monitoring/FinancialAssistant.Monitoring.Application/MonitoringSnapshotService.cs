@@ -21,15 +21,15 @@ public sealed class MonitoringSnapshotService(
             .ToArray();
         var statuses = services.Select(service => service.Status)
             .Append(probes.RabbitMq.Status)
-            .Append(probes.Elasticsearch.Status);
-        var overallStatus = statuses.All(status =>
-                string.Equals(status, MonitoringStatuses.Healthy, StringComparison.Ordinal))
-            ? MonitoringStatuses.Healthy
-            : MonitoringStatuses.Degraded;
+            .Append(probes.Elasticsearch.Status)
+            .ToArray();
+        var readiness = MonitoringStatusPolicy.Summarize(statuses);
+        var overallStatus = MonitoringStatusPolicy.GetOverallStatus(readiness);
 
         return new MonitoringDashboardResponse(
             DateTimeOffset.UtcNow,
             overallStatus,
+            readiness,
             services,
             new MonitoringRabbitMqResponse(
                 probes.RabbitMq.Status,

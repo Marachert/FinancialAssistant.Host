@@ -4,8 +4,6 @@ using FinancialAssistant.Audit.Api.Security;
 using FinancialAssistant.Audit.Contracts;
 using FinancialAssistant.Audit.Infrastructure;
 using FinancialAssistant.Shared.Observability;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,11 +24,7 @@ builder.Services.AddSingleton<AuditGatewayAuthenticator>();
 builder.Services.AddSingleton<AuditServiceAuthenticator>();
 builder.Services.AddSingleton<AuditReadinessHealthCheck>();
 builder.Services
-    .AddHealthChecks()
-    .AddCheck(
-        "self",
-        () => HealthCheckResult.Healthy("Audit service process is running."),
-        tags: ["live", "ready"])
+    .AddFinancialAssistantHealthChecks()
     .AddCheck<AuditReadinessHealthCheck>("configuration", tags: ["ready"]);
 
 var app = builder.Build();
@@ -47,13 +41,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 }
 
 app.MapGet("/", () => Results.Redirect("/health"));
-app.MapHealthChecks("/health");
-app.MapHealthChecks(
-    "/health/live",
-    new HealthCheckOptions { Predicate = registration => registration.Tags.Contains("live") });
-app.MapHealthChecks(
-    "/health/ready",
-    new HealthCheckOptions { Predicate = registration => registration.Tags.Contains("ready") });
+app.MapFinancialAssistantHealthEndpoints();
 app.MapGet(
     "/audit/info",
     (IHostEnvironment environment) => Results.Ok(new AuditServiceInfoResponse(

@@ -19,9 +19,13 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
         using var client = CreateClient();
 
         using var response = await client.GetAsync("/health");
+        using var document = await ReadJsonAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
+        Assert.Equal("healthy", document.RootElement.GetProperty("status").GetString());
+        Assert.Equal(
+            "FinancialAssistant.PublicApiGateway",
+            document.RootElement.GetProperty("service").GetString());
     }
 
     [Fact]
@@ -71,7 +75,7 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
     }
 
     [Fact]
-    public async Task ReadinessEndpoint_ReturnsLoadedConfigurationSummary()
+    public async Task ReadinessEndpoint_ReturnsStandardHealthContract()
     {
         using var client = CreateClient();
 
@@ -80,11 +84,16 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
         var root = document.RootElement;
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("ready", root.GetProperty("status").GetString());
-        Assert.Equal(18, root.GetProperty("routeCount").GetInt32());
-        Assert.Equal(13, root.GetProperty("destinationCount").GetInt32());
-        Assert.Equal(4, root.GetProperty("enabledDestinationCount").GetInt32());
-        Assert.Equal("placeholder", root.GetProperty("securityMode").GetString());
+        Assert.Equal("healthy", root.GetProperty("status").GetString());
+        Assert.Equal("Testing", root.GetProperty("environment").GetString());
+        var checks = root.GetProperty("checks").EnumerateArray().ToArray();
+        Assert.Equal(2, checks.Length);
+        Assert.Equal(
+            ["gateway_configuration", "self"],
+            checks.Select(check => check.GetProperty("name").GetString()));
+        Assert.All(
+            checks,
+            check => Assert.Equal("healthy", check.GetProperty("status").GetString()));
     }
 
     [Theory]
