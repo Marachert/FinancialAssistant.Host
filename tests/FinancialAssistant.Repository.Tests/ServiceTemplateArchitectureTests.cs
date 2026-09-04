@@ -49,6 +49,7 @@ public sealed class ServiceTemplateArchitectureTests
         {
             ["ServiceTemplate.Api"] =
             [
+                "FinancialAssistant.Shared.Observability",
                 "ServiceTemplate.Application",
                 "ServiceTemplate.Contracts",
                 "ServiceTemplate.Infrastructure"

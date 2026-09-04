@@ -12,6 +12,12 @@ Every generated service must map its logs, traces, metrics, health dependencies,
 dashboard panels, alert rules, runbook, exporter controls, and sensitive-data
 tests to that contract.
 
+FIN-191 implements the common
+[structured logging and correlation baseline](../../../docs/engineering/structured-logging-and-correlation.md)
+through `FinancialAssistant.Shared.Observability`. Generated APIs must call
+`AddFinancialAssistantObservability()` and
+`UseFinancialAssistantCorrelation()`.
+
 ## Projects
 
 ```text
@@ -162,20 +168,26 @@ The template clears default providers and configures JSON console logging with:
 
 - UTC timestamps;
 - structured scopes;
-- a `CorrelationId` scope value for every request;
+- `CorrelationId`, `TraceId`, `ServiceName`, `Environment`, and
+  `RequestMethod` scope values for every request;
 - log levels controlled by normal .NET configuration.
 
 Logs must remain privacy-safe. Do not log access tokens, raw receipts, OCR text, LLM prompts/responses, personal identities, or financial payloads.
 
 ### Correlation identifier
 
-`CorrelationIdMiddleware` accepts the request header:
+The shared correlation middleware accepts the request headers:
 
 ```text
-X-Correlation-ID
+correlationId
+X-Correlation-Id
 ```
 
-A supplied value is preserved when it is non-empty, contains no control characters, and is at most 128 characters. Otherwise the middleware generates a 32-character identifier, assigns it to `HttpContext.TraceIdentifier`, adds it to the logging scope, and returns it in the response header.
+A supplied value is preserved when it is non-empty, contains no control or
+whitespace characters, and is at most 128 characters. Otherwise the middleware
+generates a 32-character identifier, assigns it to
+`HttpContext.TraceIdentifier`, adds it to the logging scope, and returns both
+correlation headers plus `X-Trace-Id`.
 
 The correlation identifier is operational metadata, not authentication, authorization, idempotency, or a business transaction identifier.
 

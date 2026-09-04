@@ -17,4 +17,7 @@
     <ProjectReference Include="../FinancialAssistant.Income.Contracts/FinancialAssistant.Income.Contracts.csproj" />
     <ProjectReference Include="../FinancialAssistant.Income.Infrastructure/FinancialAssistant.Income.Infrastructure.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../shared/observability/FinancialAssistant.Shared.Observability/FinancialAssistant.Shared.Observability.csproj" />
+  </ItemGroup>
 </Project>

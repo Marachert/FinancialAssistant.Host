@@ -4,6 +4,7 @@ using FinancialAssistant.Identity.Application;
 using FinancialAssistant.Identity.Infrastructure;
 using FinancialAssistant.Identity.Infrastructure.Configuration;
 using FinancialAssistant.Identity.Infrastructure.Health;
+using FinancialAssistant.Shared.Observability;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
@@ -11,6 +12,7 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddFinancialAssistantObservability();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -47,6 +49,7 @@ builder.Services
 
 var app = builder.Build();
 
+app.UseFinancialAssistantCorrelation();
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {
     app.UseSwagger(options => options.RouteTemplate = "openapi/{documentName}.json");

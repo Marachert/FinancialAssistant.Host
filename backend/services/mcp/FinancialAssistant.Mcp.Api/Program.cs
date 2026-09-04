@@ -4,6 +4,7 @@ using FinancialAssistant.Mcp.Api.Tools;
 using FinancialAssistant.Mcp.Application;
 using FinancialAssistant.Mcp.Contracts;
 using FinancialAssistant.Mcp.Infrastructure;
+using FinancialAssistant.Shared.Observability;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -11,6 +12,7 @@ using ModelContextProtocol.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddFinancialAssistantObservability();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMcpInfrastructure(builder.Configuration);
 builder.Services
@@ -35,6 +37,7 @@ builder.Services
 
 var app = builder.Build();
 
+app.UseFinancialAssistantCorrelation();
 app.UseMiddleware<McpRequestAuditMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();

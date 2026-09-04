@@ -18,4 +18,7 @@
     <ProjectReference Include="../FinancialAssistant.RecommendationsNotifications.Domain/FinancialAssistant.RecommendationsNotifications.Domain.csproj" />
     <ProjectReference Include="../FinancialAssistant.RecommendationsNotifications.Infrastructure/FinancialAssistant.RecommendationsNotifications.Infrastructure.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../shared/observability/FinancialAssistant.Shared.Observability/FinancialAssistant.Shared.Observability.csproj" />
+  </ItemGroup>
 </Project>

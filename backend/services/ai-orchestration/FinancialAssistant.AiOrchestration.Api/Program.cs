@@ -1,11 +1,11 @@
 using FinancialAssistant.AiOrchestration.Api.Configuration;
 using FinancialAssistant.AiOrchestration.Api.Health;
-using FinancialAssistant.AiOrchestration.Api.Middleware;
 using FinancialAssistant.AiOrchestration.Application;
 using FinancialAssistant.AiOrchestration.Application.Abstractions;
 using FinancialAssistant.AiOrchestration.Contracts;
 using FinancialAssistant.AiOrchestration.Infrastructure;
 using FinancialAssistant.AiOrchestration.Infrastructure.Prompts;
+using FinancialAssistant.Shared.Observability;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
@@ -13,13 +13,7 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Logging.ClearProviders();
-builder.Logging.AddJsonConsole(options =>
-{
-    options.IncludeScopes = true;
-    options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
-    options.UseUtcTimestamp = true;
-});
+builder.AddFinancialAssistantObservability();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -98,7 +92,7 @@ if (runtimeProviderOptions.Enabled &&
         "The configured AI provider adapter is not registered.");
 }
 
-app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseFinancialAssistantCorrelation();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {

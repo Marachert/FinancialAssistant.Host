@@ -3,6 +3,7 @@ using FinancialAssistant.ReceiptProcessing.Api.Security;
 using FinancialAssistant.ReceiptProcessing.Application;
 using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
 using FinancialAssistant.ReceiptProcessing.Infrastructure;
+using FinancialAssistant.Shared.Observability;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -10,6 +11,7 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddFinancialAssistantObservability();
 builder.Services.Configure<FormOptions>(options =>
     options.MultipartBodyLengthLimit = ReceiptProcessingService.MaximumReceiptSizeBytes + (1024 * 1024));
 builder.Services.AddEndpointsApiExplorer();
@@ -36,6 +38,7 @@ builder.Services
 
 var app = builder.Build();
 
+app.UseFinancialAssistantCorrelation();
 _ = app.Services.GetRequiredService<ReceiptGatewayAuthenticator>();
 _ = app.Services.GetRequiredService<IOcrCompletedPublisher>();
 _ = app.Services.GetRequiredService<IOcrProvider>();

@@ -1,5 +1,6 @@
 using FinancialAssistant.Expense.Infrastructure;
 using FinancialAssistant.Income.Infrastructure;
+using FinancialAssistant.Shared.Observability;
 using FinancialAssistant.TransactionIntake.Api.Endpoints;
 using FinancialAssistant.TransactionIntake.Api.Security;
 using FinancialAssistant.TransactionIntake.Application;
@@ -10,6 +11,7 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddFinancialAssistantObservability();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -37,6 +39,7 @@ builder.Services
 
 var app = builder.Build();
 
+app.UseFinancialAssistantCorrelation();
 _ = app.Services.GetRequiredService<TransactionIntakeGatewayAuthenticator>();
 _ = app.Services.GetRequiredService<ReceiptEventAuthenticator>();
 

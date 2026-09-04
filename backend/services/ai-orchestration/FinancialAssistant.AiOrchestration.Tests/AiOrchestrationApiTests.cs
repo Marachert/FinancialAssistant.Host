@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
-using FinancialAssistant.AiOrchestration.Api.Middleware;
 using FinancialAssistant.AiOrchestration.Application;
 using FinancialAssistant.AiOrchestration.Application.Abstractions;
 using FinancialAssistant.AiOrchestration.Contracts;
+using FinancialAssistant.Shared.Observability;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -47,13 +47,13 @@ public sealed class AiOrchestrationApiTests :
     public async Task CorrelationMiddleware_PreservesSafeCallerIdentifier()
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, "/health/live");
-        request.Headers.Add(CorrelationIdMiddleware.HeaderName, "synthetic-correlation-105");
+        request.Headers.Add(ObservabilityHeaders.CorrelationId, "synthetic-correlation-105");
 
         using var response = await client.SendAsync(request);
 
         Assert.Equal(
             "synthetic-correlation-105",
-            response.Headers.GetValues(CorrelationIdMiddleware.HeaderName).Single());
+            response.Headers.GetValues(ObservabilityHeaders.CorrelationId).Single());
     }
 
     [Fact]

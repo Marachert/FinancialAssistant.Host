@@ -3,12 +3,14 @@ using FinancialAssistant.Expense.Api.Security;
 using FinancialAssistant.Expense.Application;
 using FinancialAssistant.Expense.Contracts;
 using FinancialAssistant.Expense.Infrastructure;
+using FinancialAssistant.Shared.Observability;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddFinancialAssistantObservability();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -33,6 +35,7 @@ builder.Services
 
 var app = builder.Build();
 
+app.UseFinancialAssistantCorrelation();
 _ = app.Services.GetRequiredService<ExpenseGatewayAuthenticator>();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))

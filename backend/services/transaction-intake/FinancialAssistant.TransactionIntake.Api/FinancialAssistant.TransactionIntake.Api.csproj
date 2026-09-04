@@ -19,4 +19,7 @@
     <ProjectReference Include="../FinancialAssistant.TransactionIntake.Contracts/FinancialAssistant.TransactionIntake.Contracts.csproj" />
     <ProjectReference Include="../FinancialAssistant.TransactionIntake.Infrastructure/FinancialAssistant.TransactionIntake.Infrastructure.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../shared/observability/FinancialAssistant.Shared.Observability/FinancialAssistant.Shared.Observability.csproj" />
+  </ItemGroup>
 </Project>

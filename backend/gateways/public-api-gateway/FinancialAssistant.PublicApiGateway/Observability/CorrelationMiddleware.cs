@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Globalization;
+using FinancialAssistant.Shared.Observability;
 using Microsoft.Extensions.Options;
 
 namespace FinancialAssistant.PublicApiGateway.Observability;
@@ -9,15 +10,18 @@ public sealed class CorrelationMiddleware
     private readonly RequestDelegate next;
     private readonly ILogger<CorrelationMiddleware> logger;
     private readonly CorrelationOptions options;
+    private readonly ObservabilityRuntimeIdentity runtimeIdentity;
 
     public CorrelationMiddleware(
         RequestDelegate next,
         ILogger<CorrelationMiddleware> logger,
-        IOptions<CorrelationOptions> options)
+        IOptions<CorrelationOptions> options,
+        ObservabilityRuntimeIdentity runtimeIdentity)
     {
         this.next = next;
         this.logger = logger;
         this.options = options.Value;
+        this.runtimeIdentity = runtimeIdentity;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -47,6 +51,8 @@ public sealed class CorrelationMiddleware
         {
             ["CorrelationId"] = correlationId,
             ["TraceId"] = traceId,
+            ["ServiceName"] = runtimeIdentity.ServiceName,
+            ["Environment"] = runtimeIdentity.Environment,
             ["RequestMethod"] = context.Request.Method
         });
 

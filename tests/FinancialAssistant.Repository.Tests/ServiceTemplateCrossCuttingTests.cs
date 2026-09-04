@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
-using FinancialAssistant.ServiceTemplate.Api.Middleware;
 using FinancialAssistant.ServiceTemplate.Contracts;
+using FinancialAssistant.Shared.Observability;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Hosting;
@@ -56,20 +56,20 @@ public sealed class ServiceTemplateCrossCuttingTests(
         const string suppliedCorrelationId = "fin-52-integration-test";
         using var suppliedRequest = new HttpRequestMessage(HttpMethod.Get, "/service/info");
         suppliedRequest.Headers.TryAddWithoutValidation(
-            CorrelationIdMiddleware.HeaderName,
+            ObservabilityHeaders.CorrelationId,
             suppliedCorrelationId);
 
         using var suppliedResponse = await client.SendAsync(suppliedRequest);
         Assert.Equal(HttpStatusCode.OK, suppliedResponse.StatusCode);
         Assert.Equal(
             suppliedCorrelationId,
-            suppliedResponse.Headers.GetValues(CorrelationIdMiddleware.HeaderName).Single());
+            suppliedResponse.Headers.GetValues(ObservabilityHeaders.CorrelationId).Single());
 
         using var generatedResponse = await client.GetAsync("/service/info");
         Assert.Equal(HttpStatusCode.OK, generatedResponse.StatusCode);
 
         var generatedCorrelationId = generatedResponse.Headers
-            .GetValues(CorrelationIdMiddleware.HeaderName)
+            .GetValues(ObservabilityHeaders.CorrelationId)
             .Single();
         Assert.True(Guid.TryParseExact(generatedCorrelationId, "N", out _));
     }
@@ -101,7 +101,7 @@ public sealed class ServiceTemplateCrossCuttingTests(
                 "backend/templates/service-template/ServiceTemplate.Api/Program.cs"));
         var middleware = ReadRequiredFile(
             repositoryRoot,
-            "backend/templates/service-template/ServiceTemplate.Api/Middleware/CorrelationIdMiddleware.cs");
+            "backend/shared/observability/FinancialAssistant.Shared.Observability/FinancialAssistantCorrelationMiddleware.cs");
         var options = ReadRequiredFile(
             repositoryRoot,
             "backend/templates/service-template/ServiceTemplate.Api/Configuration/ServiceOptions.cs");
@@ -111,8 +111,7 @@ public sealed class ServiceTemplateCrossCuttingTests(
 
         var requiredProgramPhrases = new[]
         {
-            "AddJsonConsole",
-            "IncludeScopes = true",
+            "AddFinancialAssistantObservability",
             "ValidateOnStart",
             "AddHealthChecks",
             "tags: [\"live\"]",
@@ -121,7 +120,7 @@ public sealed class ServiceTemplateCrossCuttingTests(
             "MapHealthChecks(\n    \"/health/ready\"",
             "app.Environment.IsDevelopment()",
             "app.UseSwagger()",
-            "app.UseMiddleware<CorrelationIdMiddleware>()"
+            "app.UseFinancialAssistantCorrelation()"
         };
 
         foreach (var phrase in requiredProgramPhrases)
@@ -129,7 +128,8 @@ public sealed class ServiceTemplateCrossCuttingTests(
             Assert.Contains(phrase, program, StringComparison.Ordinal);
         }
 
-        Assert.Contains("X-Correlation-ID", middleware, StringComparison.Ordinal);
+        Assert.Contains("ObservabilityHeaders.CorrelationId", middleware, StringComparison.Ordinal);
+        Assert.Contains("ObservabilityHeaders.TraceId", middleware, StringComparison.Ordinal);
         Assert.Contains("BeginScope", middleware, StringComparison.Ordinal);
         Assert.Contains("context.TraceIdentifier", middleware, StringComparison.Ordinal);
         Assert.Contains("SectionName = \"Service\"", options, StringComparison.Ordinal);
