@@ -8,6 +8,7 @@
 backend/shared/building-blocks/  Small technical helpers with no domain or storage ownership
 backend/shared/contracts/        Stable versioned integration contracts
 backend/shared/elasticsearch/    Reusable Elasticsearch client and mapping utilities
+backend/shared/observability/    Structured logging and correlation baseline
 backend/shared/testing/          Deterministic test helpers and synthetic fixtures
 ```
 

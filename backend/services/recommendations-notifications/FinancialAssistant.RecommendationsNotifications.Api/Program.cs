@@ -3,12 +3,14 @@ using FinancialAssistant.RecommendationsNotifications.Api.Security;
 using FinancialAssistant.RecommendationsNotifications.Application;
 using FinancialAssistant.RecommendationsNotifications.Contracts;
 using FinancialAssistant.RecommendationsNotifications.Infrastructure;
+using FinancialAssistant.Shared.Observability;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddFinancialAssistantObservability();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -35,6 +37,7 @@ builder.Services
 
 var app = builder.Build();
 
+app.UseFinancialAssistantCorrelation();
 _ = app.Services.GetRequiredService<RecommendationNotificationGatewayAuthenticator>();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))

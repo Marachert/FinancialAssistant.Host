@@ -4,10 +4,12 @@ using FinancialAssistant.PublicApiGateway.Observability;
 using FinancialAssistant.PublicApiGateway.RateLimiting;
 using FinancialAssistant.PublicApiGateway.Routing;
 using FinancialAssistant.PublicApiGateway.Security;
+using FinancialAssistant.Shared.Observability;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddFinancialAssistantObservability();
 builder.Services.AddHealthChecks();
 builder.Services.Configure<CorrelationOptions>(builder.Configuration.GetSection("Gateway:Correlation"));
 builder.Services.Configure<GatewaySecurityOptions>(builder.Configuration.GetSection("Gateway:Security"));

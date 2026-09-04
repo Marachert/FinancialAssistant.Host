@@ -224,6 +224,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{51475809
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Release.Tests", "tests\FinancialAssistant.Release.Tests\FinancialAssistant.Release.Tests.csproj", "{919DBD12-756E-4F1B-98C1-74F7C1355C13}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Observability", "backend\shared\observability\FinancialAssistant.Shared.Observability\FinancialAssistant.Shared.Observability.csproj", "{E81CA06E-DE0F-45FB-B0B1-09D77D674382}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Observability.Tests", "backend\shared\observability\FinancialAssistant.Shared.Observability.Tests\FinancialAssistant.Shared.Observability.Tests.csproj", "{75C15E67-A926-41C5-8488-4F2E8BBE4BB5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -634,6 +638,14 @@ Global
 		{919DBD12-756E-4F1B-98C1-74F7C1355C13}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{919DBD12-756E-4F1B-98C1-74F7C1355C13}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{919DBD12-756E-4F1B-98C1-74F7C1355C13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E81CA06E-DE0F-45FB-B0B1-09D77D674382}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E81CA06E-DE0F-45FB-B0B1-09D77D674382}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E81CA06E-DE0F-45FB-B0B1-09D77D674382}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E81CA06E-DE0F-45FB-B0B1-09D77D674382}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75C15E67-A926-41C5-8488-4F2E8BBE4BB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75C15E67-A926-41C5-8488-4F2E8BBE4BB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75C15E67-A926-41C5-8488-4F2E8BBE4BB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75C15E67-A926-41C5-8488-4F2E8BBE4BB5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7AC3F48D-624D-4E99-8B8A-4D491602CEE2} = {FB7E6B6E-BA1A-4D09-96DE-E4179EB6DA47}

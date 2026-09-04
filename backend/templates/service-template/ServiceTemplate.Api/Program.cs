@@ -1,20 +1,14 @@
 using FinancialAssistant.ServiceTemplate.Api.Configuration;
 using FinancialAssistant.ServiceTemplate.Api.Health;
-using FinancialAssistant.ServiceTemplate.Api.Middleware;
 using FinancialAssistant.ServiceTemplate.Contracts;
+using FinancialAssistant.Shared.Observability;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Logging.ClearProviders();
-builder.Logging.AddJsonConsole(options =>
-{
-    options.IncludeScopes = true;
-    options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
-    options.UseUtcTimestamp = true;
-});
+builder.AddFinancialAssistantObservability();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -38,7 +32,7 @@ builder.Services
 
 var app = builder.Build();
 
-app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseFinancialAssistantCorrelation();
 
 if (app.Environment.IsDevelopment())
 {

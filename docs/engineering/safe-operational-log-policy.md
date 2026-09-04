@@ -23,6 +23,8 @@ Domain services should adopt the same principles, but service-specific event cat
 FIN-190 makes these minimization and structured-event principles mandatory for
 all backend services through the
 [backend observability strategy](../architecture/backend-observability-strategy.md).
+FIN-191 implements the common host behavior in the
+[structured logging and correlation baseline](structured-logging-and-correlation.md).
 Service-specific event catalogs, ID ranges, dashboards, alerts, and runbooks
 remain owned by each service.
 

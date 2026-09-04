@@ -2,12 +2,14 @@ using FinancialAssistant.Category.Api.Endpoints;
 using FinancialAssistant.Category.Api.Security;
 using FinancialAssistant.Category.Application;
 using FinancialAssistant.Category.Infrastructure;
+using FinancialAssistant.Shared.Observability;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddFinancialAssistantObservability();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -32,6 +34,7 @@ builder.Services
 
 var app = builder.Build();
 
+app.UseFinancialAssistantCorrelation();
 _ = app.Services.GetRequiredService<CategoryGatewayAuthenticator>();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))

@@ -17,4 +17,7 @@
     <ProjectReference Include="../ServiceTemplate.Contracts/ServiceTemplate.Contracts.csproj" />
     <ProjectReference Include="../ServiceTemplate.Infrastructure/ServiceTemplate.Infrastructure.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../shared/observability/FinancialAssistant.Shared.Observability/FinancialAssistant.Shared.Observability.csproj" />
+  </ItemGroup>
 </Project>

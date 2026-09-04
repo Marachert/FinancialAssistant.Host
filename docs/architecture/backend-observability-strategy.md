@@ -18,6 +18,7 @@ LLM/OCR history.
 
 The strategy extends the existing
 [safe operational log policy](../engineering/safe-operational-log-policy.md),
+[structured logging and correlation baseline](../engineering/structured-logging-and-correlation.md),
 [gateway correlation contract](../engineering/gateway-correlation-tracing-and-logging.md),
 [integration event envelope](../events/event-contract-versioning.md), and
 [Monitoring Service](../../backend/services/monitoring/README.md). Service
