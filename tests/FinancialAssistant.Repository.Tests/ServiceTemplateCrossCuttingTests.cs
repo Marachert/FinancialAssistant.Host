@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using FinancialAssistant.ServiceTemplate.Contracts;
 using FinancialAssistant.Shared.Observability;
 using Microsoft.AspNetCore.Hosting;
@@ -21,11 +22,15 @@ public sealed class ServiceTemplateCrossCuttingTests(
 
         var liveResponse = await client.GetAsync("/health/live");
         var readyResponse = await client.GetAsync("/health/ready");
+        var live = await liveResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var ready = await readyResponse.Content.ReadFromJsonAsync<JsonElement>();
 
         Assert.Equal(HttpStatusCode.OK, liveResponse.StatusCode);
         Assert.Equal(HttpStatusCode.OK, readyResponse.StatusCode);
-        Assert.Equal("Healthy", await liveResponse.Content.ReadAsStringAsync());
-        Assert.Equal("Healthy", await readyResponse.Content.ReadAsStringAsync());
+        Assert.Equal("healthy", live.GetProperty("status").GetString());
+        Assert.Equal("healthy", ready.GetProperty("status").GetString());
+        Assert.Single(live.GetProperty("checks").EnumerateArray());
+        Assert.Equal(2, ready.GetProperty("checks").GetArrayLength());
     }
 
     [Fact]
@@ -95,10 +100,9 @@ public sealed class ServiceTemplateCrossCuttingTests(
     public void CrossCuttingSource_ContainsLoggingOptionsAndHealthBoundaries()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var program = NormalizeLineEndings(
-            ReadRequiredFile(
-                repositoryRoot,
-                "backend/templates/service-template/ServiceTemplate.Api/Program.cs"));
+        var program = ReadRequiredFile(
+            repositoryRoot,
+            "backend/templates/service-template/ServiceTemplate.Api/Program.cs");
         var middleware = ReadRequiredFile(
             repositoryRoot,
             "backend/shared/observability/FinancialAssistant.Shared.Observability/FinancialAssistantCorrelationMiddleware.cs");
@@ -113,11 +117,9 @@ public sealed class ServiceTemplateCrossCuttingTests(
         {
             "AddFinancialAssistantObservability",
             "ValidateOnStart",
-            "AddHealthChecks",
-            "tags: [\"live\"]",
+            "AddFinancialAssistantHealthChecks",
             "tags: [\"ready\"]",
-            "MapHealthChecks(\n    \"/health/live\"",
-            "MapHealthChecks(\n    \"/health/ready\"",
+            "MapFinancialAssistantHealthEndpoints",
             "app.Environment.IsDevelopment()",
             "app.UseSwagger()",
             "app.UseFinancialAssistantCorrelation()"
@@ -136,21 +138,6 @@ public sealed class ServiceTemplateCrossCuttingTests(
         Assert.Contains("\"Name\": \"FinancialAssistant.ServiceTemplate\"", appSettings, StringComparison.Ordinal);
         Assert.Contains("\"Version\": \"1.0.0\"", appSettings, StringComparison.Ordinal);
     }
-
-    [Theory]
-    [InlineData("MapHealthChecks(\r\n    \"/health/live\"")]
-    [InlineData("MapHealthChecks(\r    \"/health/live\"")]
-    [InlineData("MapHealthChecks(\n    \"/health/live\"")]
-    public void NormalizeLineEndings_MakesSourceAssertionsPlatformIndependent(string source)
-    {
-        Assert.Equal(
-            "MapHealthChecks(\n    \"/health/live\"",
-            NormalizeLineEndings(source));
-    }
-
-    private static string NormalizeLineEndings(string value) =>
-        value.Replace("\r\n", "\n", StringComparison.Ordinal)
-            .Replace('\r', '\n');
 
     private static string ReadRequiredFile(string repositoryRoot, string path)
     {

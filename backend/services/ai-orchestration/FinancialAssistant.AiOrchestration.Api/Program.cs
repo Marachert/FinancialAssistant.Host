@@ -6,8 +6,6 @@ using FinancialAssistant.AiOrchestration.Contracts;
 using FinancialAssistant.AiOrchestration.Infrastructure;
 using FinancialAssistant.AiOrchestration.Infrastructure.Prompts;
 using FinancialAssistant.Shared.Observability;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
@@ -66,11 +64,7 @@ builder.Services.AddSingleton(configuredProvider.UsageCostControls.CreatePolicy(
 builder.Services.AddAiOrchestrationApplication();
 builder.Services.AddAiOrchestrationInfrastructure();
 builder.Services
-    .AddHealthChecks()
-    .AddCheck(
-        "self",
-        () => HealthCheckResult.Healthy("The AI orchestration process is running."),
-        tags: new[] { "live" })
+    .AddFinancialAssistantHealthChecks()
     .AddCheck<AiOrchestrationReadinessHealthCheck>(
         "ai_boundary_configuration",
         tags: new[] { "ready" });
@@ -104,18 +98,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 }
 
 app.MapGet("/", () => Results.Redirect("/health/ready"));
-app.MapHealthChecks(
-    "/health/live",
-    new HealthCheckOptions
-    {
-        Predicate = registration => registration.Tags.Contains("live")
-    });
-app.MapHealthChecks(
-    "/health/ready",
-    new HealthCheckOptions
-    {
-        Predicate = registration => registration.Tags.Contains("ready")
-    });
+app.MapFinancialAssistantHealthEndpoints();
 app.MapGet(
         "/service/info",
         (IOptions<AiOrchestrationOptions> options, IHostEnvironment environment) =>

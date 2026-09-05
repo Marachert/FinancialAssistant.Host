@@ -173,7 +173,7 @@ The central security boundary evaluates the route policy before dispatch. Final 
 | --- | --- |
 | `GET /health` | framework health baseline |
 | `GET /health/live` | process liveness |
-| `GET /health/ready` | route/destination configuration summary |
+| `GET /health/ready` | shared readiness contract including bounded gateway configuration state |
 | `GET /gateway/info` | compact gateway information |
 | `GET /gateway/status` | safe route and destination counts |
 | `GET /gateway/routes` | sanitized public route descriptors |

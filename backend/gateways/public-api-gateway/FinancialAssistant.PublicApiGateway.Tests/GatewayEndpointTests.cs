@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 
 namespace FinancialAssistant.PublicApiGateway.Tests;
 
@@ -10,7 +11,16 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
 
     public GatewayEndpointTests(WebApplicationFactory<Program> factory)
     {
-        this.factory = factory.WithWebHostBuilder(builder => builder.UseEnvironment("Testing"));
+        this.factory = factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment("Testing");
+            builder.ConfigureAppConfiguration((_, configuration) =>
+                configuration.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Gateway:DownstreamAuthentication:SharedSecret"] =
+                        "synthetic-gateway-secret-with-at-least-32-characters"
+                }));
+        });
     }
 
     [Fact]
@@ -19,9 +29,13 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
         using var client = CreateClient();
 
         using var response = await client.GetAsync("/health");
+        using var document = await ReadJsonAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
+        Assert.Equal("healthy", document.RootElement.GetProperty("status").GetString());
+        Assert.Equal(
+            "FinancialAssistant.PublicApiGateway",
+            document.RootElement.GetProperty("service").GetString());
     }
 
     [Fact]
@@ -71,7 +85,7 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
     }
 
     [Fact]
-    public async Task ReadinessEndpoint_ReturnsLoadedConfigurationSummary()
+    public async Task ReadinessEndpoint_ReturnsStandardHealthContract()
     {
         using var client = CreateClient();
 
@@ -80,11 +94,37 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
         var root = document.RootElement;
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("ready", root.GetProperty("status").GetString());
-        Assert.Equal(18, root.GetProperty("routeCount").GetInt32());
-        Assert.Equal(13, root.GetProperty("destinationCount").GetInt32());
-        Assert.Equal(4, root.GetProperty("enabledDestinationCount").GetInt32());
-        Assert.Equal("placeholder", root.GetProperty("securityMode").GetString());
+        Assert.Equal("healthy", root.GetProperty("status").GetString());
+        Assert.Equal("Testing", root.GetProperty("environment").GetString());
+        var checks = root.GetProperty("checks").EnumerateArray().ToArray();
+        Assert.Equal(2, checks.Length);
+        Assert.Equal(
+            ["gateway_configuration", "self"],
+            checks.Select(check => check.GetProperty("name").GetString()));
+        Assert.All(
+            checks,
+            check => Assert.Equal("healthy", check.GetProperty("status").GetString()));
+    }
+
+    [Fact]
+    public async Task ReadinessEndpoint_WhenRequiredDownstreamSecretIsMissing_ReturnsUnavailable()
+    {
+        using var unconfiguredFactory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder => builder.UseEnvironment("Testing"));
+        using var client = unconfiguredFactory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+
+        using var response = await client.GetAsync("/health/ready");
+        using var document = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal("unavailable", document.RootElement.GetProperty("status").GetString());
+        var gatewayCheck = document.RootElement.GetProperty("checks")
+            .EnumerateArray()
+            .Single(check => check.GetProperty("name").GetString() == "gateway_configuration");
+        Assert.Equal("unavailable", gatewayCheck.GetProperty("status").GetString());
     }
 
     [Theory]

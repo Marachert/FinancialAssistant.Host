@@ -6,8 +6,6 @@ using FinancialAssistant.Mcp.Contracts;
 using FinancialAssistant.Mcp.Infrastructure;
 using FinancialAssistant.Shared.Observability;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using ModelContextProtocol.Server;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,11 +26,7 @@ builder.Services
     .WithTools<FinancialAssistantMcpTools>();
 builder.Services.AddSingleton<McpReadinessHealthCheck>();
 builder.Services
-    .AddHealthChecks()
-    .AddCheck(
-        "self",
-        () => HealthCheckResult.Healthy("MCP service process is running."),
-        tags: ["live", "ready"])
+    .AddFinancialAssistantHealthChecks()
     .AddCheck<McpReadinessHealthCheck>("configuration", tags: ["ready"]);
 
 var app = builder.Build();
@@ -43,13 +37,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGet("/", () => Results.Redirect("/health"));
-app.MapHealthChecks("/health");
-app.MapHealthChecks(
-    "/health/live",
-    new HealthCheckOptions { Predicate = registration => registration.Tags.Contains("live") });
-app.MapHealthChecks(
-    "/health/ready",
-    new HealthCheckOptions { Predicate = registration => registration.Tags.Contains("ready") });
+app.MapFinancialAssistantHealthEndpoints();
 app.MapGet(
         "/mcp/info",
         (IHostEnvironment environment, McpToolRegistry registry) => Results.Ok(

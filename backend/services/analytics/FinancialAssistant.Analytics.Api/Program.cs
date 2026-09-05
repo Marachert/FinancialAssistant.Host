@@ -4,8 +4,6 @@ using FinancialAssistant.Analytics.Application;
 using FinancialAssistant.Analytics.Contracts;
 using FinancialAssistant.Analytics.Infrastructure;
 using FinancialAssistant.Shared.Observability;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,12 +24,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddAnalyticsApplication();
 builder.Services.AddAnalyticsInfrastructure(builder.Configuration);
 builder.Services.AddSingleton<AnalyticsGatewayAuthenticator>();
-builder.Services
-    .AddHealthChecks()
-    .AddCheck(
-        "self",
-        () => HealthCheckResult.Healthy("Analytics service process is running."),
-        tags: new[] { "live", "ready" });
+builder.Services.AddFinancialAssistantHealthChecks();
 
 var app = builder.Build();
 
@@ -46,19 +39,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 }
 
 app.MapGet("/", () => Results.Redirect("/health"));
-app.MapHealthChecks("/health");
-app.MapHealthChecks(
-    "/health/live",
-    new HealthCheckOptions
-    {
-        Predicate = registration => registration.Tags.Contains("live")
-    });
-app.MapHealthChecks(
-    "/health/ready",
-    new HealthCheckOptions
-    {
-        Predicate = registration => registration.Tags.Contains("ready")
-    });
+app.MapFinancialAssistantHealthEndpoints();
 app.MapGet(
     "/analytics/info",
     (IHostEnvironment environment) => Results.Ok(

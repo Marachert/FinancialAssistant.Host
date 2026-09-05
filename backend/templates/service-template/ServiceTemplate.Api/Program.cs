@@ -2,8 +2,6 @@ using FinancialAssistant.ServiceTemplate.Api.Configuration;
 using FinancialAssistant.ServiceTemplate.Api.Health;
 using FinancialAssistant.ServiceTemplate.Contracts;
 using FinancialAssistant.Shared.Observability;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,11 +19,7 @@ builder.Services
     .ValidateOnStart();
 
 builder.Services
-    .AddHealthChecks()
-    .AddCheck(
-        "self",
-        () => HealthCheckResult.Healthy("The service process is running."),
-        tags: ["live"])
+    .AddFinancialAssistantHealthChecks()
     .AddCheck<ServiceReadinessHealthCheck>(
         "service_configuration",
         tags: ["ready"]);
@@ -40,19 +34,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapHealthChecks(
-    "/health/live",
-    new HealthCheckOptions
-    {
-        Predicate = registration => registration.Tags.Contains("live")
-    });
-
-app.MapHealthChecks(
-    "/health/ready",
-    new HealthCheckOptions
-    {
-        Predicate = registration => registration.Tags.Contains("ready")
-    });
+app.MapFinancialAssistantHealthEndpoints();
 
 app.MapGet(
         "/service/info",

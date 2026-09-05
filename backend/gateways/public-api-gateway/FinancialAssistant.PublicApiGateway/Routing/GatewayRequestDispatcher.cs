@@ -229,13 +229,12 @@ public sealed class GatewayRequestDispatcher
 
     private string? ResolveDownstreamSecret(GatewayDestinationDefinition destination)
     {
-        if (!destination.RequiresGatewayAuthentication)
+        if (!destination.RequiresGatewayAuthentication || !downstreamAuthentication.IsConfigured)
         {
             return null;
         }
 
-        var value = downstreamAuthentication.SharedSecret;
-        return string.IsNullOrWhiteSpace(value) || value.Length < 32 ? null : value;
+        return downstreamAuthentication.SharedSecret;
     }
 
     private static Uri BuildTargetUri(Uri baseAddress, PathString path, QueryString query)

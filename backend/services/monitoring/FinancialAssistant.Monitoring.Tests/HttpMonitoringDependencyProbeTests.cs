@@ -17,7 +17,7 @@ public sealed class HttpMonitoringDependencyProbeTests
             var path = request.RequestUri?.AbsolutePath;
             return path switch
             {
-                "/health/ready" => Json(HttpStatusCode.OK, "{\"status\":\"ready\",\"raw\":\"ignored\"}"),
+                "/health/ready" => Json(HttpStatusCode.OK, "{\"status\":\"healthy\",\"raw\":\"ignored\"}"),
                 "/api/overview" => Json(
                     HttpStatusCode.OK,
                     "{\"queue_totals\":{\"messages\":7},\"object_totals\":{\"consumers\":3},\"raw\":\"ignored\"}"),
@@ -61,6 +61,62 @@ public sealed class HttpMonitoringDependencyProbeTests
         Assert.Equal("yellow", snapshot.Elasticsearch.ClusterStatus);
         Assert.Equal(2, snapshot.Elasticsearch.NodeCount);
         Assert.Equal(9, snapshot.Elasticsearch.ActiveShardCount);
+    }
+
+    [Fact]
+    public async Task ProbeAsync_PreservesStandardizedDegradedServiceStatus()
+    {
+        var handler = new RoutingHandler(request =>
+            request.RequestUri?.AbsolutePath == "/health/ready"
+                ? Json(HttpStatusCode.OK, "{\"status\":\"degraded\"}")
+                : new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+        var probe = CreateProbe(
+            handler,
+            new MonitoringOptions
+            {
+                Services =
+                [
+                    new MonitoringServiceTargetOptions
+                    {
+                        Name = "analytics",
+                        BaseAddress = "http://analytics.internal"
+                    }
+                ]
+            });
+
+        var snapshot = await probe.ProbeAsync(CancellationToken.None);
+
+        var service = Assert.Single(snapshot.Services);
+        Assert.Equal(MonitoringStatuses.Degraded, service.Status);
+        Assert.Null(service.ErrorCategory);
+    }
+
+    [Fact]
+    public async Task ProbeAsync_RejectsUnknownSuccessfulServiceStatus()
+    {
+        var handler = new RoutingHandler(request =>
+            request.RequestUri?.AbsolutePath == "/health/ready"
+                ? Json(HttpStatusCode.OK, "{\"status\":\"ready\"}")
+                : new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+        var probe = CreateProbe(
+            handler,
+            new MonitoringOptions
+            {
+                Services =
+                [
+                    new MonitoringServiceTargetOptions
+                    {
+                        Name = "analytics",
+                        BaseAddress = "http://analytics.internal"
+                    }
+                ]
+            });
+
+        var snapshot = await probe.ProbeAsync(CancellationToken.None);
+
+        var service = Assert.Single(snapshot.Services);
+        Assert.Equal(MonitoringStatuses.Unavailable, service.Status);
+        Assert.Equal("invalid_response", service.ErrorCategory);
     }
 
     [Fact]

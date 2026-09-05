@@ -73,9 +73,17 @@ public sealed record MonitoringOperationalMetricsResponse(
     MonitoringParsingQualityResponse ParsingQuality,
     IReadOnlyList<MonitoringUiFunnelResponse> UiFunnel);
 
+public sealed record MonitoringReadinessSummaryResponse(
+    int ComponentCount,
+    int HealthyCount,
+    int DegradedCount,
+    int UnavailableCount,
+    int NotConfiguredCount);
+
 public sealed record MonitoringDashboardResponse(
     DateTimeOffset GeneratedAtUtc,
     string OverallStatus,
+    MonitoringReadinessSummaryResponse Readiness,
     IReadOnlyList<MonitoringServiceHealthResponse> Services,
     MonitoringRabbitMqResponse RabbitMq,
     MonitoringElasticsearchResponse Elasticsearch,

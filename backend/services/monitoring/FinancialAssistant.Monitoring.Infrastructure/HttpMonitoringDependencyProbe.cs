@@ -48,14 +48,48 @@ public sealed class HttpMonitoringDependencyProbe(
         {
             using var response = await httpClient.GetAsync(uri, cancellationToken);
             stopwatch.Stop();
+            if (!response.IsSuccessStatusCode)
+            {
+                return new MonitoringServiceProbe(
+                    target.Name,
+                    MonitoringStatuses.Unavailable,
+                    stopwatch.ElapsedMilliseconds,
+                    checkedAt,
+                    "http_status");
+            }
+
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+            var status = document.RootElement.TryGetProperty("status", out var statusElement)
+                ? statusElement.GetString()?.Trim().ToLowerInvariant()
+                : null;
+            if (status is not (MonitoringStatuses.Healthy
+                or MonitoringStatuses.Degraded
+                or MonitoringStatuses.Unavailable))
+            {
+                return new MonitoringServiceProbe(
+                    target.Name,
+                    MonitoringStatuses.Unavailable,
+                    stopwatch.ElapsedMilliseconds,
+                    checkedAt,
+                    "invalid_response");
+            }
+
             return new MonitoringServiceProbe(
                 target.Name,
-                response.IsSuccessStatusCode
-                    ? MonitoringStatuses.Healthy
-                    : MonitoringStatuses.Unavailable,
+                status,
                 stopwatch.ElapsedMilliseconds,
                 checkedAt,
-                response.IsSuccessStatusCode ? null : "http_status");
+                null);
+        }
+        catch (JsonException)
+        {
+            return new MonitoringServiceProbe(
+                target.Name,
+                MonitoringStatuses.Unavailable,
+                stopwatch.ElapsedMilliseconds,
+                checkedAt,
+                "invalid_response");
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {

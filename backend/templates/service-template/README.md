@@ -18,6 +18,12 @@ through `FinancialAssistant.Shared.Observability`. Generated APIs must call
 `AddFinancialAssistantObservability()` and
 `UseFinancialAssistantCorrelation()`.
 
+FIN-192 implements the common
+[service health and readiness baseline](../../../docs/engineering/service-health-and-readiness.md)
+through the same package. Generated APIs must call
+`AddFinancialAssistantHealthChecks()` and
+`MapFinancialAssistantHealthEndpoints()`.
+
 ## Projects
 
 ```text
@@ -135,6 +141,7 @@ Use the URL printed by `dotnet run`.
 The API exposes:
 
 ```text
+GET /health
 GET /health/live
 GET /health/ready
 ```
@@ -144,6 +151,10 @@ GET /health/ready
 `/health/ready` validates the mandatory service configuration and is the extension point for dependencies required to serve traffic. A real service should add only its own required readiness checks, such as its service-owned Elasticsearch alias or RabbitMQ connection.
 
 Do not make readiness depend on optional recommendation, analytics, OCR, or LLM providers unless that service cannot perform its core responsibility without them.
+
+All endpoints return the shared privacy-safe JSON contract. Do not expose check
+descriptions, exception messages, dependency payloads, addresses, credentials,
+identifiers, or financial data.
 
 ### OpenAPI
 

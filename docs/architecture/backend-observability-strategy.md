@@ -19,6 +19,7 @@ LLM/OCR history.
 The strategy extends the existing
 [safe operational log policy](../engineering/safe-operational-log-policy.md),
 [structured logging and correlation baseline](../engineering/structured-logging-and-correlation.md),
+[service health and readiness baseline](../engineering/service-health-and-readiness.md),
 [gateway correlation contract](../engineering/gateway-correlation-tracing-and-logging.md),
 [integration event envelope](../events/event-contract-versioning.md), and
 [Monitoring Service](../../backend/services/monitoring/README.md). Service
@@ -210,9 +211,14 @@ raw path, exception message, prompt/model response, email, or phone.
 Each HTTP host exposes:
 
 ```text
+GET /health
 GET /health/live
 GET /health/ready
 ```
+
+FIN-192 implements these endpoints through the shared
+`FinancialAssistant.Shared.Observability` package. Every host registers the
+same `self` check and maps the same privacy-safe JSON response contract.
 
 `/health/live` proves only that the process and request pipeline can run. It
 must not call a database, broker, object store, provider, or another service.
@@ -227,8 +233,10 @@ Healthy endpoints return HTTP 200; an unready endpoint returns HTTP 503.
 Responses expose only component name, aggregate status, checked time, and
 bounded dependency categories. They never expose connection strings, hosts,
 credentials, exception text, documents, queue payloads, or financial state.
-Checks use the `live` and `ready` tags. The compatibility `/health`
-endpoint may remain, but deployment probes use the explicit endpoints.
+Checks use the `live` and `ready` tags. The compatibility `/health` endpoint
+runs every registered check, while deployment probes use the explicit
+endpoints. The complete implemented convention and dashboard rules are in
+[Service Health and Readiness Baseline](../engineering/service-health-and-readiness.md).
 
 ## Service requirements
 

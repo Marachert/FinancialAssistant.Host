@@ -20,7 +20,7 @@ Automated checks cover:
 * configured public route count and ownership;
 * sanitized `/gateway/routes` output;
 * absence of internal destination keys in public route metadata;
-* readiness route/destination counts;
+* readiness gateway-configuration status and `/gateway/status` route/destination counts;
 * correlation generation and propagation;
 * W3C trace-context handling;
 * gateway access-policy headers;
