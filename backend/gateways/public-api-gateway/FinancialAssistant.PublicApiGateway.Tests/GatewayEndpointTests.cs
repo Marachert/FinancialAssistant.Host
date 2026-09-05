@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 
 namespace FinancialAssistant.PublicApiGateway.Tests;
 
@@ -10,7 +11,16 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
 
     public GatewayEndpointTests(WebApplicationFactory<Program> factory)
     {
-        this.factory = factory.WithWebHostBuilder(builder => builder.UseEnvironment("Testing"));
+        this.factory = factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment("Testing");
+            builder.ConfigureAppConfiguration((_, configuration) =>
+                configuration.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Gateway:DownstreamAuthentication:SharedSecret"] =
+                        "synthetic-gateway-secret-with-at-least-32-characters"
+                }));
+        });
     }
 
     [Fact]
@@ -94,6 +104,27 @@ public sealed class GatewayEndpointTests : IClassFixture<WebApplicationFactory<P
         Assert.All(
             checks,
             check => Assert.Equal("healthy", check.GetProperty("status").GetString()));
+    }
+
+    [Fact]
+    public async Task ReadinessEndpoint_WhenRequiredDownstreamSecretIsMissing_ReturnsUnavailable()
+    {
+        using var unconfiguredFactory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder => builder.UseEnvironment("Testing"));
+        using var client = unconfiguredFactory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+
+        using var response = await client.GetAsync("/health/ready");
+        using var document = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal("unavailable", document.RootElement.GetProperty("status").GetString());
+        var gatewayCheck = document.RootElement.GetProperty("checks")
+            .EnumerateArray()
+            .Single(check => check.GetProperty("name").GetString() == "gateway_configuration");
+        Assert.Equal("unavailable", gatewayCheck.GetProperty("status").GetString());
     }
 
     [Theory]

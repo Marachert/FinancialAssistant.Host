@@ -112,7 +112,14 @@ public sealed class GatewayRateLimitingTests
         {
             builder.UseEnvironment("Testing");
             builder.ConfigureAppConfiguration((_, configuration) =>
-                configuration.AddInMemoryCollection(overrides));
+            {
+                configuration.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Gateway:DownstreamAuthentication:SharedSecret"] =
+                        "synthetic-gateway-secret-with-at-least-32-characters"
+                });
+                configuration.AddInMemoryCollection(overrides);
+            });
         });
     }
 
