@@ -37,7 +37,9 @@ public sealed record AuditEventV1(
     string Outcome,
     string ResourceType,
     string? FailureCategory,
-    string RetentionClass);
+    string RetentionClass,
+    string? ActorType = null,
+    string? ActorIdHash = null);
 
 public sealed record AuditRecordResponse(
     string AuditId,
@@ -54,7 +56,9 @@ public sealed record AuditRecordResponse(
     string ResourceType,
     string? FailureCategory,
     string RetentionClass,
-    DateTimeOffset ExpiresAtUtc);
+    DateTimeOffset ExpiresAtUtc,
+    string ActorType,
+    string? ActorIdHash);
 
 public sealed record AuditQueryResponse(
     string CorrelationId,

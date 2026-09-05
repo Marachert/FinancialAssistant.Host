@@ -1,6 +1,6 @@
 # Audit Service
 
-Related Jira: FIN-39.
+Related Jira: FIN-39 and FIN-193.
 
 Audit Service stores immutable, privacy-safe metadata for security, business,
 AI, admin, and MCP operations. It is a technical trace service, not an
@@ -11,12 +11,17 @@ other financial state.
 
 Producers publish `IntegrationEventEnvelope<AuditEventV1>` with routing key
 `audit.recorded.v1`. The payload contains only bounded identifiers: domain,
-action, outcome, resource type, optional safe failure category, and retention
-class.
+action, outcome, resource type, optional safe failure category, retention class,
+actor type, and an optional pseudonymous actor hash. The sensitive-operation
+catalog binds each action to its owner, domain, resource, retention class, and
+allowed actors. See
+[`docs/engineering/audit-trail-model-and-events.md`](../../../docs/engineering/audit-trail-model-and-events.md).
 
 Raw email, phone, names, receipt/OCR text, prompts, model responses, financial
 notes, amounts, descriptions, tokens, and credentials are prohibited. A
-pseudonymous subject hash may be carried by the standard event envelope.
+pseudonymous subject hash may be carried by the standard event envelope. User
+and admin actors require a separate pseudonymous actor hash; anonymous, service,
+and system actors cannot carry one.
 
 ## Append-only and delivery behavior
 

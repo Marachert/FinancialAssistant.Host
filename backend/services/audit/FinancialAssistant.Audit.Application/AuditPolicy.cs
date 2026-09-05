@@ -10,7 +10,21 @@ public sealed class AuditPolicy(
         [AuditDomains.Security, AuditDomains.Business, AuditDomains.Ai, AuditDomains.Admin, AuditDomains.Mcp],
         StringComparer.Ordinal);
     private static readonly HashSet<string> AllowedOutcomes = new(
-        ["succeeded", "failed", "denied", "accepted"],
+        [
+            AuditOutcomes.Succeeded,
+            AuditOutcomes.Failed,
+            AuditOutcomes.Denied,
+            AuditOutcomes.Accepted
+        ],
+        StringComparer.Ordinal);
+    private static readonly HashSet<string> AllowedActorTypes = new(
+        [
+            AuditActorTypes.Anonymous,
+            AuditActorTypes.User,
+            AuditActorTypes.Admin,
+            AuditActorTypes.Service,
+            AuditActorTypes.System
+        ],
         StringComparer.Ordinal);
     private readonly HashSet<string> allowedProducers = new(
         allowedProducers.Select(Normalize),
@@ -20,7 +34,15 @@ public sealed class AuditPolicy(
 
     public void Validate(AuditEventV1 payload, string producer)
     {
-        if (!allowedProducers.Contains(Normalize(producer)))
+        var normalizedProducer = Normalize(producer);
+        var normalizedDomain = Normalize(payload.Domain);
+        var normalizedOutcome = Normalize(payload.Outcome);
+        var normalizedRetentionClass = Normalize(payload.RetentionClass);
+        var normalizedAction = Normalize(payload.Action);
+        var normalizedResourceType = Normalize(payload.ResourceType);
+        var normalizedActorType = NormalizeActorType(payload.ActorType);
+
+        if (!allowedProducers.Contains(normalizedProducer))
         {
             throw new ArgumentException("Audit producer is not allowlisted.");
         }
@@ -28,9 +50,9 @@ public sealed class AuditPolicy(
         if (string.IsNullOrWhiteSpace(payload.Domain)
             || string.IsNullOrWhiteSpace(payload.Outcome)
             || string.IsNullOrWhiteSpace(payload.RetentionClass)
-            || !AllowedDomains.Contains(Normalize(payload.Domain))
-            || !AllowedOutcomes.Contains(Normalize(payload.Outcome))
-            || !retentionDays.ContainsKey(Normalize(payload.RetentionClass)))
+            || !AllowedDomains.Contains(normalizedDomain)
+            || !AllowedOutcomes.Contains(normalizedOutcome)
+            || !retentionDays.ContainsKey(normalizedRetentionClass))
         {
             throw new ArgumentException("Audit domain, outcome, or retention class is not allowlisted.");
         }
@@ -41,6 +63,41 @@ public sealed class AuditPolicy(
         {
             EnsureSafeIdentifier(payload.FailureCategory, nameof(payload.FailureCategory));
         }
+
+        if (!AllowedActorTypes.Contains(normalizedActorType))
+        {
+            throw new ArgumentException("Audit actor type is not allowlisted.", nameof(payload));
+        }
+
+        EnsureActorHash(normalizedActorType, payload.ActorIdHash);
+
+        if (AuditEventCatalog.TryGet(normalizedAction, out var definition)
+            && definition is not null)
+        {
+            if (!string.Equals(definition.Domain, normalizedDomain, StringComparison.Ordinal)
+                || !string.Equals(definition.ResourceType, normalizedResourceType, StringComparison.Ordinal)
+                || !string.Equals(definition.RetentionClass, normalizedRetentionClass, StringComparison.Ordinal)
+                || !definition.Producers.Contains(normalizedProducer, StringComparer.Ordinal)
+                || !definition.ActorTypes.Contains(normalizedActorType, StringComparer.Ordinal))
+            {
+                throw new ArgumentException("Audit event does not match its catalog definition.");
+            }
+
+            return;
+        }
+
+        if (normalizedAction.StartsWith("tool.", StringComparison.Ordinal)
+            && normalizedAction.Length > "tool.".Length
+            && string.Equals(normalizedProducer, "mcp-service", StringComparison.Ordinal)
+            && string.Equals(normalizedDomain, AuditDomains.Mcp, StringComparison.Ordinal)
+            && string.Equals(normalizedResourceType, AuditResourceTypes.McpTool, StringComparison.Ordinal)
+            && string.Equals(normalizedRetentionClass, AuditRetentionClasses.Standard, StringComparison.Ordinal)
+            && string.Equals(normalizedActorType, AuditActorTypes.Service, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        throw new ArgumentException("Audit action is not in the sensitive-operation catalog.");
     }
 
     public DateTimeOffset ExpiresAt(DateTimeOffset occurredAtUtc, string retentionClass)
@@ -67,6 +124,32 @@ public sealed class AuditPolicy(
         }
     }
 
+    public static string NormalizeActorType(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? AuditActorTypes.Service : Normalize(value);
+
+    private static void EnsureActorHash(string actorType, string? actorIdHash)
+    {
+        if (actorType is AuditActorTypes.User or AuditActorTypes.Admin)
+        {
+            if (actorIdHash is null)
+            {
+                throw new ArgumentException(
+                    "User and admin audit actors require a pseudonymous actor hash.",
+                    nameof(actorIdHash));
+            }
+
+            EnsureSubjectHash(actorIdHash);
+            return;
+        }
+
+        if (actorIdHash is not null)
+        {
+            throw new ArgumentException(
+                "Anonymous, service, and system audit actors cannot carry an actor hash.",
+                nameof(actorIdHash));
+        }
+    }
+
     private static void EnsureSafeIdentifier(
         string value,
         string parameterName,
@@ -82,5 +165,5 @@ public sealed class AuditPolicy(
         }
     }
 
-    private static string Normalize(string value) => value.Trim().ToLowerInvariant();
+    private static string Normalize(string? value) => value?.Trim().ToLowerInvariant() ?? string.Empty;
 }

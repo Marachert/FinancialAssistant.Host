@@ -15,7 +15,9 @@ public sealed record AuditRecord(
     string ResourceType,
     string? FailureCategory,
     string RetentionClass,
-    DateTimeOffset ExpiresAtUtc);
+    DateTimeOffset ExpiresAtUtc,
+    string ActorType,
+    string? ActorIdHash);
 
 public enum AuditAppendResult
 {
