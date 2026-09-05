@@ -110,6 +110,7 @@ docs/api/monitoring-admin-v1.md
 Privacy-safe append-only audit API and event contract:
 
 ```text
+docs/engineering/audit-trail-model-and-events.md
 docs/api/audit-admin-v1.md
 backend/services/audit/README.md
 ```

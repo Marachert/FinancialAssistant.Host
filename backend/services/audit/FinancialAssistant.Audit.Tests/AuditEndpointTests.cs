@@ -38,7 +38,11 @@ public sealed class AuditEndpointTests(AuditWebApplicationFactory factory) :
     public async Task TrustedEvent_IsStoredAndReturnedAsSafeMetadataOnly()
     {
         using var client = factory.CreateClient();
-        var envelope = CreateEnvelope("event-audit-endpoint", "trace-audit-endpoint");
+        var envelope = CreateEnvelope(
+            "event-audit-endpoint",
+            "trace-audit-endpoint",
+            actorType: AuditActorTypes.User,
+            actorIdHash: new string('c', 64));
         using var ingest = new HttpRequestMessage(HttpMethod.Post, AuditApiRoutes.InternalEvents)
         {
             Content = JsonContent.Create(envelope)
@@ -59,6 +63,8 @@ public sealed class AuditEndpointTests(AuditWebApplicationFactory factory) :
         Assert.Equal(envelope.EventId, record.SourceEventId);
         Assert.Equal(envelope.CorrelationId, record.CorrelationId);
         Assert.Equal("security", record.Domain);
+        Assert.Equal(AuditActorTypes.User, record.ActorType);
+        Assert.Equal(new string('c', 64), record.ActorIdHash);
         Assert.DoesNotContain("email", json, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("receiptText", json, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("prompt", json, StringComparison.OrdinalIgnoreCase);
@@ -90,7 +96,9 @@ public sealed class AuditEndpointTests(AuditWebApplicationFactory factory) :
     internal static IntegrationEventEnvelope<AuditEventV1> CreateEnvelope(
         string eventId,
         string correlationId,
-        string retentionClass = "security") =>
+        string retentionClass = "security",
+        string? actorType = null,
+        string? actorIdHash = null) =>
         new(
             eventId,
             $"occurrence-{eventId}",
@@ -107,5 +115,7 @@ public sealed class AuditEndpointTests(AuditWebApplicationFactory factory) :
                 "succeeded",
                 "session",
                 null,
-                retentionClass));
+                retentionClass,
+                actorType,
+                actorIdHash));
 }
