@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-09-04T18:13:11+03:00
+Last updated: 2026-09-05T17:27:06+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-191 delivery is **86.8%**:
-**171 of 197 canonical POC leaf tickets are Done**.
+POC readiness after FIN-192 delivery is **87.3%**:
+**172 of 197 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,27 +13,27 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-191 - P8.T2 Implement structured logging and correlation baseline
+- FIN-192 - P8.T3 Add service health checks and readiness dashboard
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/241
+  https://github.com/Marachert/FinancialAssistant.Host/pull/243
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/d072b32a448223835c43625aba70ba570e8657c1
-- previous readiness: 170 / 197, or 86.3%
-- current readiness: 171 / 197, or 86.8%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/4a0c7acba05434a34ef5dde360a63205ef0357ee
+- previous readiness: 171 / 197, or 86.8%
+- current readiness: 172 / 197, or 87.3%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-191 - P8.T2 Implement structured logging and correlation baseline, merged
+- FIN-192 - P8.T3 Add service health checks and readiness dashboard, merged
   and Done
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/241
+  https://github.com/Marachert/FinancialAssistant.Host/pull/243
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/d072b32a448223835c43625aba70ba570e8657c1
-- final implementation head: `ead8522f596abf6ff09518b672cdce3104ef356c`
-- exact-head CI: Backend run 33887564324 and Mobile run 33887564362
-- previous readiness: 170 / 197, or 86.3%
-- current readiness: 171 / 197, or 86.8%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/4a0c7acba05434a34ef5dde360a63205ef0357ee
+- final implementation head: `de81cbd941f0cd3f0a6388bb78c11c659d43f8b0`
+- exact-head CI: Backend run 33971305024 and Mobile run 33971304995
+- previous readiness: 171 / 197, or 86.8%
+- current readiness: 172 / 197, or 87.3%
 - change: +0.5 percentage points
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
@@ -60,24 +60,24 @@ numerator and denominator unchanged.
 
 Current delivery:
 
-- FIN-191 is Done through guarded merged PR #241
-- the implementation is merged at `d072b32a448223835c43625aba70ba570e8657c1`
+- FIN-192 is Done through guarded merged PR #243
+- the implementation is merged at `4a0c7acba05434a34ef5dde360a63205ef0357ee`
   after exact-head Backend and Mobile CI and a clear review-channel audit
-- canonical POC readiness is 171/197 (86.8%), a +0.5 percentage-point change
+- canonical POC readiness is 172/197 (87.3%), a +0.5 percentage-point change
 - FIN-31 P7 progress is 18/18 (100.0%); all 33 direct children and the epic are
   verified Done
-- FIN-36 P8 progress is 4/13 (30.8%); the epic remains In Progress
+- FIN-36 P8 progress is 5/13 (38.5%); the epic remains In Progress
 - FIN-38 P9 progress is 3/20 (15.0%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
   remain open
-- no paid provider or review credits were used
-- FIN-191 implements the privacy-safe JSON console logging and correlation
-  baseline across backend services without a paid telemetry exporter
-- Confluence Architecture v12, System Diagrams v12, and Service Catalog v6 are
-  synchronized with the implemented logging and correlation flow
-- the next ranked unfinished child under FIN-36 is FIN-192
+- no paid provider, exporter, alert destination, or additional credits were used
+- FIN-192 implements the shared privacy-safe liveness/readiness contract,
+  fail-closed gateway admission checks, and degraded-aware Monitoring summary
+- Confluence Architecture v16, System Diagrams v16, and Service Catalog v8 are
+  synchronized with the implemented and merged health/readiness control plane
+- the next ranked unfinished child under FIN-36 is FIN-193
 
 ## Epic Progress
 
@@ -91,9 +91,9 @@ Current delivery:
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
-| FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 4 | 13 | 30.8% |
+| FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 5 | 13 | 38.5% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 3 | 20 | 15.0% |
-| **Total** | **Canonical POC leaf scope** | **171** | **197** | **86.8%** |
+| **Total** | **Canonical POC leaf scope** | **172** | **197** | **87.3%** |
 
 ## First-User-Test Gates
 
@@ -263,3 +263,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-29T20:10:12+03:00 | FIN-188 | Closure delivered by PR 237; outside canonical epic hierarchy | 86.3% | +0.0 pp |
 | 2026-08-30T10:19:39+03:00 | FIN-190 | Closure delivered by PR 239; outside canonical epic hierarchy | 86.3% | +0.0 pp |
 | 2026-09-04T18:13:11+03:00 | FIN-191 | Closure delivered by PR 241 | 86.8% | +0.5 pp |
+| 2026-09-05T17:27:06+03:00 | FIN-192 | Closure delivered by PR 243 | 87.3% | +0.5 pp |
