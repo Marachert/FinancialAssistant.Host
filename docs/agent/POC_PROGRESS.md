@@ -1,11 +1,11 @@
 # POC Readiness Progress
 
-Last updated: 2026-09-05T17:27:06+03:00
+Last updated: 2026-09-06T09:50:00+03:00
 
 ## Current Snapshot
 
-POC readiness after FIN-192 delivery is **87.3%**:
-**172 of 197 canonical POC leaf tickets are Done**.
+POC readiness after FIN-193 delivery is **87.8%**:
+**172 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,28 +13,38 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-192 - P8.T3 Add service health checks and readiness dashboard
+- FIN-193 - P8.T4 Define audit trail model and events
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/243
+  https://github.com/Marachert/FinancialAssistant.Host/pull/245
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/4a0c7acba05434a34ef5dde360a63205ef0357ee
-- previous readiness: 171 / 197, or 86.8%
-- current readiness: 172 / 197, or 87.3%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/7792f645645bd09c55884f154e4f49b9fee2608f
+- previous recorded readiness: 172 / 197, or 87.3%
+- current readiness: 172 / 196, or 87.8%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-192 - P8.T3 Add service health checks and readiness dashboard, merged
+- FIN-193 - P8.T4 Define audit trail model and events, merged
   and Done
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/243
+  https://github.com/Marachert/FinancialAssistant.Host/pull/245
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/4a0c7acba05434a34ef5dde360a63205ef0357ee
-- final implementation head: `de81cbd941f0cd3f0a6388bb78c11c659d43f8b0`
-- exact-head CI: Backend run 33971305024 and Mobile run 33971304995
-- previous readiness: 171 / 197, or 86.8%
-- current readiness: 172 / 197, or 87.3%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/7792f645645bd09c55884f154e4f49b9fee2608f
+- merged at: `2026-09-06T06:47:04Z`
+- final implementation head: `067cdd0ac45df304caf3fcf0e9d7f5ff144eca54`
+- exact-head CI: Backend run 34017104510 and Mobile run 34017104524
+- previous recorded readiness: 172 / 197, or 87.3%
+- current readiness: 172 / 196, or 87.8%
 - change: +0.5 percentage points
+
+Scope reconciliation on 2026-09-06: the fresh census contains 268 unique Jira
+issues. FIN-131 is Done but currently has no parent, confirmed by a direct Jira
+read. Under the calculation contract it is outside the canonical hierarchy,
+reducing both the previous numerator and denominator by one. On the current
+scope FIN-193 moves 171/196 (87.2%) to 172/196 (87.8%): an unrounded increase of
+0.5102 percentage points, reported as +0.5 pp. Independently rounded endpoint
+percentages can differ by 0.6 pp. Historical snapshots remain unchanged; no Jira
+parent was silently repaired and no previously delivered work was undone.
 
 FIN-122 is an exact later duplicate of FIN-121, FIN-125 is an exact later
 duplicate of FIN-124, FIN-127 is an exact later duplicate of FIN-126, and
@@ -60,24 +70,27 @@ numerator and denominator unchanged.
 
 Current delivery:
 
-- FIN-192 is Done through guarded merged PR #243
-- the implementation is merged at `4a0c7acba05434a34ef5dde360a63205ef0357ee`
+- FIN-193 is Done through guarded merged PR #245
+- the implementation is merged at `7792f645645bd09c55884f154e4f49b9fee2608f`
   after exact-head Backend and Mobile CI and a clear review-channel audit
-- canonical POC readiness is 172/197 (87.3%), a +0.5 percentage-point change
+- canonical POC readiness is 172/196 (87.8%), a +0.5 percentage-point change
 - FIN-31 P7 progress is 18/18 (100.0%); all 33 direct children and the epic are
   verified Done
-- FIN-36 P8 progress is 5/13 (38.5%); the epic remains In Progress
+- FIN-36 P8 progress is 6/13 (46.2%); the epic remains In Progress
 - FIN-38 P9 progress is 3/20 (15.0%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
   remain open
 - no paid provider, exporter, alert destination, or additional credits were used
-- FIN-192 implements the shared privacy-safe liveness/readiness contract,
-  fail-closed gateway admission checks, and degraded-aware Monitoring summary
-- Confluence Architecture v16, System Diagrams v16, and Service Catalog v8 are
-  synchronized with the implemented and merged health/readiness control plane
-- the next ranked unfinished child under FIN-36 is FIN-193
+- FIN-193 implements the audit model/catalog, pseudonymous actor/subject
+  separation, consumer validation, and support/compliance documentation;
+  legacy v1 acceptance is retained and target producer wiring is not claimed
+- initial full suite passed 634/634 tests; the compatibility review correction
+  passed 18/18 Audit regressions, focused format, and 984-file privacy checks
+- Confluence Architecture v21, System Diagrams v21, Service Catalog v12, and
+  Event Envelope v10 record the verified merge and reconciled progress
+- the next globally ranked unfinished leaf is FIN-194 under FIN-36
 
 ## Epic Progress
 
@@ -89,11 +102,11 @@ Current delivery:
 | FIN-14 | P3 API Gateway, authentication, and security foundation | 28 | 28 | 100.0% |
 | FIN-18 | P4 Financial core backend services | 22 | 22 | 100.0% |
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
-| FIN-27 | P6 Analytics, score, recommendations, and notifications | 21 | 21 | 100.0% |
+| FIN-27 | P6 Analytics, score, recommendations, and notifications | 20 | 20 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
-| FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 5 | 13 | 38.5% |
+| FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 6 | 13 | 46.2% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 3 | 20 | 15.0% |
-| **Total** | **Canonical POC leaf scope** | **172** | **197** | **87.3%** |
+| **Total** | **Canonical POC leaf scope** | **172** | **196** | **87.8%** |
 
 ## First-User-Test Gates
 
@@ -264,3 +277,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-08-30T10:19:39+03:00 | FIN-190 | Closure delivered by PR 239; outside canonical epic hierarchy | 86.3% | +0.0 pp |
 | 2026-09-04T18:13:11+03:00 | FIN-191 | Closure delivered by PR 241 | 86.8% | +0.5 pp |
 | 2026-09-05T17:27:06+03:00 | FIN-192 | Closure delivered by PR 243 | 87.3% | +0.5 pp |
+| 2026-09-06T09:50:00+03:00 | FIN-193 | Closure delivered by PR 245; FIN-131 orphan scope reconciled above | 87.8% | +0.5 pp |
