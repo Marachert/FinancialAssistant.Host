@@ -42,7 +42,8 @@ system activity has no actor hash.
 
 ## Canonical event catalog
 
-Every row is enforced by `AuditEventCatalog` and `AuditPolicy`. A producer cannot
+For payloads with explicit actor metadata, every row is enforced by
+`AuditEventCatalog` and `AuditPolicy`. Such a producer cannot
 change the domain, resource, retention class, or actor types associated with an
 action.
 
@@ -71,7 +72,16 @@ action.
 
 MCP tool execution retains the existing dynamic action family `tool.{safe-name}`
 with producer `mcp-service`, domain `mcp`, resource `mcp-tool`, standard
-retention, and a service actor. No other uncataloged action is accepted.
+retention, and a service actor. No other uncataloged action with explicit actor
+metadata is accepted.
+
+Legacy v1 payloads with both actor fields absent or null retain the original
+producer/domain/outcome/retention allowlists and bounded identifier validation,
+including actions outside this catalog and previously valid classification
+tuples. Their stored service actor is a compatibility default, not proof that a
+human did not initiate the operation. New producers should send explicit actor
+metadata. Removing the legacy path requires a new major version and migration;
+the catalog is not an authorization boundary for legacy events.
 
 ## Producer flow
 

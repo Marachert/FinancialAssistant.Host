@@ -181,10 +181,59 @@ public sealed class AuditApplicationTests
             "mcp-service");
     }
 
+    [Theory]
+    [InlineData("category-service", "category.updated", "category", "standard")]
+    [InlineData("income-service", "income.created", "income", "standard")]
+    public async Task LegacyV1_PreservesPriorActionsAndClassificationTuples(
+        string producer, string action, string resource, string retention)
+    {
+        var store = new InMemoryAppendOnlyAuditRecordStore();
+        var service = new AuditEventService(store, CreatePolicy(), TimeProvider.System);
+        var envelope = AuditEndpointTests.CreateEnvelope("legacy-event", "legacy-trace");
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        var json = JsonNode.Parse(JsonSerializer.Serialize(envelope, options))!;
+        json["producer"] = producer;
+        json["payload"] = JsonSerializer.SerializeToNode(new
+        {
+            domain = "business",
+            action,
+            outcome = "succeeded",
+            resourceType = resource,
+            failureCategory = (string?)null,
+            retentionClass = retention
+        });
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(json, options);
+        var handler = new AuditEventMessageHandler(service);
+
+        var id = await handler.HandleAsync(bytes, CancellationToken.None);
+        Assert.Equal(id, await handler.HandleAsync(bytes, CancellationToken.None));
+        var record = Assert.Single(await service.FindByCorrelationAsync("legacy-trace", CancellationToken.None));
+        Assert.Equal(action, record.Action);
+        Assert.Equal(retention, record.RetentionClass);
+        Assert.Equal(AuditActorTypes.Service, record.ActorType);
+        Assert.Null(record.ActorIdHash);
+
+        json["payload"]!["action"] = "person@example.com";
+        await Assert.ThrowsAsync<ArgumentException>(() => handler.HandleAsync(
+            JsonSerializer.SerializeToUtf8Bytes(json, options), CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("unknown")]
+    public void ExplicitInvalidActor_DoesNotUseLegacyCompatibility(string actorType)
+    {
+        var payload = new AuditEventV1("security", "session.revoked", "succeeded",
+            "session", null, "security", actorType);
+        Assert.Throws<ArgumentException>(() => CreatePolicy().Validate(payload, "identity-service"));
+    }
+
     private static AuditPolicy CreatePolicy() =>
         new(
             [
                 "identity-service",
+                "category-service",
                 "profile-service",
                 "transaction-intake-service",
                 "income-service",

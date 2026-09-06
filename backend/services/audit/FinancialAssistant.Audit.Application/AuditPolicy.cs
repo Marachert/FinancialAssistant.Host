@@ -64,6 +64,12 @@ public sealed class AuditPolicy(
             EnsureSafeIdentifier(payload.FailureCategory, nameof(payload.FailureCategory));
         }
 
+        // Existing v1 payloads retain the original bounded-identifier policy.
+        if (payload.ActorType is null && payload.ActorIdHash is null)
+        {
+            return;
+        }
+
         if (!AllowedActorTypes.Contains(normalizedActorType))
         {
             throw new ArgumentException("Audit actor type is not allowlisted.", nameof(payload));
@@ -125,7 +131,7 @@ public sealed class AuditPolicy(
     }
 
     public static string NormalizeActorType(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? AuditActorTypes.Service : Normalize(value);
+        value is null ? AuditActorTypes.Service : Normalize(value);
 
     private static void EnsureActorHash(string actorType, string? actorIdHash)
     {

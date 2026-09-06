@@ -41,7 +41,11 @@ The body is `IntegrationEventEnvelope<AuditEventV1>` with event type
 class, action, resource type, actor type, actor hash, and failure category are
 validated against the canonical sensitive-operation catalog and bounded
 allowlists. Missing actor fields from an earlier `audit.recorded.v1` producer
-default to a service actor. The internal secret is distinct from gateway trust.
+default to a service actor and retain the previous bounded-identifier policy,
+including uncataloged actions and classification tuples. Catalog enforcement
+applies when actor metadata is explicitly supplied. The service-actor default
+does not prove who initiated a legacy operation. The internal secret is distinct
+from gateway trust.
 
 ## Privacy boundary
 

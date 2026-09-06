@@ -13,8 +13,10 @@ Producers publish `IntegrationEventEnvelope<AuditEventV1>` with routing key
 `audit.recorded.v1`. The payload contains only bounded identifiers: domain,
 action, outcome, resource type, optional safe failure category, retention class,
 actor type, and an optional pseudonymous actor hash. The sensitive-operation
-catalog binds each action to its owner, domain, resource, retention class, and
-allowed actors. See
+catalog binds explicitly actor-annotated actions to their owner, domain,
+resource, retention class, and allowed actors. Legacy v1 payloads without both
+actor fields retain the previous bounded-identifier policy and use a service
+actor compatibility default. See
 [`docs/engineering/audit-trail-model-and-events.md`](../../../docs/engineering/audit-trail-model-and-events.md).
 
 Raw email, phone, names, receipt/OCR text, prompts, model responses, financial
