@@ -62,7 +62,8 @@ public sealed class HttpMcpAuditSink(
                 entry.Outcome,
                 "mcp-tool",
                 entry.FailureCategory,
-                "standard"));
+                AuditRetentionClasses.Standard,
+                AuditActorTypes.Service));
         using var request = new HttpRequestMessage(HttpMethod.Post, AuditApiRoutes.InternalEvents)
         {
             Content = JsonContent.Create(envelope)

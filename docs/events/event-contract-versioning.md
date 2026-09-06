@@ -262,6 +262,27 @@ contract or routing failures follow the owning queue's dead-letter policy.
 
 ## Privacy and Review
 
+### audit.recorded.v1
+
+Owner: Audit Service contract; emitted by the service that owns the sensitive
+operation. FIN-193 adds optional `actorType` and `actorIdHash` fields without
+changing schema version 1. A missing actor type means `service`; a missing actor
+hash means no human actor identity. User and admin actors require a pseudonymous
+64-character lowercase hexadecimal hash. The envelope `userIdHash` remains the
+affected subject, so actor and subject are not interchangeable. Payloads with
+both actor fields absent or null retain all previously valid v1 action and
+classification combinations under the original bounded-identifier policy.
+Explicit actor metadata opts into catalog validation; removing the legacy path
+requires a major version migration. The default does not establish the identity
+of a legacy initiator.
+
+The action catalog binds profile, income, expense, draft confirmation,
+authentication/session, and administrative actions to producer, domain,
+resource, retention, and allowed actor types. Audit payloads contain no raw
+identity, financial values, receipt/OCR content, prompts, model responses,
+credentials, or arbitrary metadata. See
+[`Audit Trail Model and Sensitive Operation Events`](../engineering/audit-trail-model-and-events.md).
+
 ### score.calculated.v1
 
 Owner: Financial Score Service.

@@ -54,7 +54,9 @@ public sealed class AuditEventService(
             payload.ResourceType.Trim().ToLowerInvariant(),
             payload.FailureCategory?.Trim().ToLowerInvariant(),
             payload.RetentionClass.Trim().ToLowerInvariant(),
-            policy.ExpiresAt(integrationEvent.OccurredAtUtc, payload.RetentionClass));
+            policy.ExpiresAt(integrationEvent.OccurredAtUtc, payload.RetentionClass),
+            AuditPolicy.NormalizeActorType(payload.ActorType),
+            payload.ActorIdHash);
         await store.AppendAsync(record, cancellationToken);
         return auditId;
     }

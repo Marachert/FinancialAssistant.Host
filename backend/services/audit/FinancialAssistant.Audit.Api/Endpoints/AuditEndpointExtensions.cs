@@ -128,7 +128,9 @@ public static class AuditEndpointExtensions
             record.ResourceType,
             record.FailureCategory,
             record.RetentionClass,
-            record.ExpiresAtUtc);
+            record.ExpiresAtUtc,
+            record.ActorType,
+            record.ActorIdHash);
 
     private static IResult Problem(
         HttpContext context,
