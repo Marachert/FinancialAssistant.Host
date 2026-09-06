@@ -1,6 +1,6 @@
 # Monitoring Admin API v1
 
-Related Jira: FIN-37, FIN-192.
+Related Jira: FIN-37, FIN-192, FIN-194.
 
 ## Purpose
 
@@ -74,3 +74,40 @@ safe operational data.
 The shared endpoint schema, required-dependency rules, and full dashboard
 requirements are defined in
 [Service Health and Readiness Baseline](../engineering/service-health-and-readiness.md).
+
+## Recent processing jobs (FIN-194)
+
+`GET /admin/monitoring/jobs` uses the same trusted-gateway and admin-role checks
+and returns `Cache-Control: no-store`. It is available through the existing
+gateway catch-all. Response classification is `bounded-operational-metadata-only`;
+the aggregate snapshot above retains its existing classification and schema.
+
+The response contains generated UTC time, capacity (200), retention hours (24),
+and recent job observations. Fields are an opaque random operation UUID, service,
+kind (`ai`, `ocr`, `notification`), state (`queued`, `running`, `succeeded`,
+`failed`), positive monotonic revision, server-observed UTC time, and an optional
+closed failure category. This UUID must be generated for operations; it must not
+reuse user, receipt, financial record, token, or other private identifiers.
+
+`POST /internal/monitoring/signals/jobs` requires the independent service secret.
+Its request is `operationId`, `sourceService`, `kind`, `state`, `revision`, and
+`errorCategory`. Source must be allowlisted and match kind ownership:
+AI = `ai-orchestration`, OCR = `receipt-processing`, notification =
+`recommendations-notifications`. Categories are `timeout`, `transport`,
+`provider_unavailable`, `invalid_result`, or `policy_rejected`; a category is
+required exactly for failed state. Invalid input is 400, missing service trust
+is 401, conflicting same-revision evidence is 409, accepted signals are 202.
+
+Duplicate revisions are idempotent without extending retention; older revisions
+are ignored. Later revisions replace the last observation. At capacity the oldest
+observation is evicted; entries expire 24 hours after the last accepted update.
+The store is concurrency-protected and process-local: restart loses observations,
+replicas are independent, and this is not a durable operational or audit history.
+
+The signal ingestion contract and UI are executable; producer wiring is not
+automatically enabled by this ticket. No job or provider response is fetched from
+another service's storage. Missing observations remain empty, never demo records.
+User-support lookup stays disabled pending a separately approved privacy scope.
+
+Web client setup and security behavior:
+[Monitoring Web UI](../../web-admin/monitoring-ui/README.md).

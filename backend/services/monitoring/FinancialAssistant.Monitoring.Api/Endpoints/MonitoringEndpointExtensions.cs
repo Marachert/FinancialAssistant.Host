@@ -10,6 +10,8 @@ public static class MonitoringEndpointExtensions
     {
         MapDashboard(app, MonitoringApiRoutes.Dashboard, "GetMonitoringDashboardFromGateway");
         MapDashboard(app, MonitoringApiRoutes.ServiceDashboard, "GetMonitoringDashboard");
+        app.MapGet(MonitoringApiRoutes.Jobs, GetJobs).WithName("GetMonitoringJobs");
+        app.MapPost(MonitoringApiRoutes.JobSignals, RecordJob).WithName("RecordMonitoringJob");
         app.MapPost(MonitoringApiRoutes.AiUsageSignals, RecordAiUsage)
             .WithName("RecordMonitoringAiUsage")
             .Produces<MonitoringSignalAcceptedResponse>(StatusCodes.Status202Accepted)
@@ -26,6 +28,27 @@ public static class MonitoringEndpointExtensions
             .Produces<MonitoringApiErrorResponse>(StatusCodes.Status400BadRequest)
             .Produces<MonitoringApiErrorResponse>(StatusCodes.Status401Unauthorized);
         return app;
+    }
+
+    private static IResult GetJobs(HttpContext context, MonitoringGatewayAuthenticator authenticator,
+        MonitoringJobStore store)
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        return AuthenticateAdmin(context, authenticator) ?? Results.Ok(store.GetSnapshot());
+    }
+
+    private static IResult RecordJob(HttpContext context, MonitoringJobSignalRequest request,
+        MonitoringSignalAuthenticator authenticator, MonitoringJobStore store)
+    {
+        try
+        {
+            return RecordSignal(context, authenticator, () => store.Record(request));
+        }
+        catch (InvalidOperationException)
+        {
+            return Problem(context, "Job revision conflict.", "Operational evidence was not replaced.",
+                "monitoring_job_conflict", StatusCodes.Status409Conflict);
+        }
     }
 
     private static void MapDashboard(IEndpointRouteBuilder app, string route, string name)

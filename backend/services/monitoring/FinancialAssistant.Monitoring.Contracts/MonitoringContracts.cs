@@ -7,6 +7,8 @@ public static class MonitoringApiRoutes
     public const string AiUsageSignals = "/internal/monitoring/signals/ai-usage";
     public const string ParsingQualitySignals = "/internal/monitoring/signals/parsing-quality";
     public const string UiFunnelSignals = "/internal/monitoring/signals/ui-funnel";
+    public const string Jobs = "/admin/monitoring/jobs";
+    public const string JobSignals = "/internal/monitoring/signals/jobs";
 }
 
 public static class MonitoringHeaders

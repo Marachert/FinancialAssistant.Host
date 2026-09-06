@@ -1,0 +1,20 @@
+{
+  "name": "financial-assistant-monitoring-ui",
+  "version": "0.1.0",
+  "private": true,
+  "engines": { "node": ">=22.13.0" },
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "start": "node scripts/serve.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "verify": "npm test && npm run build"
+  },
+  "dependencies": { "react": "19.2.3", "react-dom": "19.2.3" },
+  "devDependencies": {
+    "metro": "0.84.4",
+    "metro-babel-transformer": "0.84.4",
+    "@babel/plugin-transform-react-jsx": "7.29.7",
+    "@babel/plugin-transform-modules-commonjs": "7.29.7",
+    "lucide": "1.8.0"
+  }
+}

@@ -49,9 +49,10 @@ probe as `not_configured` without exposing configuration detail.
 ## Boundaries
 
 The initial store is process-local and suitable for PoC aggregation and tests.
-Durable operational indices, retention, visual admin UI, alerting, and support
-workflows belong to later P8 tickets. The API contract remains aggregate-only
-when those adapters are added.
+FIN-194 adds the React admin UI and a bounded, process-local recent-job store.
+Durable operational indices, long-term retention, alerting, and support workflows
+belong to later P8 tickets. The existing snapshot remains aggregate-only; the
+separate jobs endpoint exposes only approved operational metadata.
 
 Full API and safety rules are in
 `docs/api/monitoring-admin-v1.md`.
