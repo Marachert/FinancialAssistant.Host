@@ -55,11 +55,14 @@ bundle; icons are generated from Lucide into build output. No runtime CDN is use
 See the [Metro bundling API](https://metrobundler.dev/docs/api/).
 
 ```powershell
-npm install --no-audit --no-fund
+npm ci --no-audit --no-fund
 npm run verify
 $env:MONITORING_GATEWAY_URL = 'http://127.0.0.1:5000'
 npm start
 ```
+
+The committed `package-lock.json` pins the complete dependency graph used by CI.
+Update it deliberately alongside dependency changes; use `npm ci` for verification.
 
 For an offline supervised run, existing compatible dependencies can be supplied
 through `NODE_PATH`; no installation is required. Build from this directory.

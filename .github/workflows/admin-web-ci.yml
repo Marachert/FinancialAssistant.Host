@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22.13.0'
-      - name: Install declared web dependencies
-        run: npm install --no-audit --no-fund
+      - name: Install locked web dependencies
+        run: npm ci --no-audit --no-fund
       - name: Verify admin web client
         run: npm run verify

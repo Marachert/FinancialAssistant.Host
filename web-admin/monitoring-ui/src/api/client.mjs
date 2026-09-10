@@ -34,7 +34,7 @@ export function createMonitoringClient(fetcher = fetch) {
     platform: 'web',
     appVersion: '0.1.0'
   };
-  async function request(path, options = {}) {
+  async function request(path, options = {}, requestSession = session) {
     const response = await fetcher('/gateway' + path, {
       cache: 'no-store',
       credentials: 'omit',
@@ -43,13 +43,13 @@ export function createMonitoringClient(fetcher = fetch) {
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        ...(session ? {
-          Authorization: 'Bearer ' + session.accessToken
+        ...(requestSession ? {
+          Authorization: 'Bearer ' + requestSession.accessToken
         } : {})
       }
     });
     if (!response.ok) {
-      if ([401, 403].includes(response.status)) session = null;
+      if ([401, 403].includes(response.status) && session === requestSession) session = null;
       throw new Error(response.status === 401 ? 'sign_in_required' : response.status === 403 ? 'admin_required' : response.status === 429 ? 'rate_limited' : 'service_unavailable');
     }
     return response.status === 204 ? null : response.json();
@@ -77,8 +77,11 @@ export function createMonitoringClient(fetcher = fetch) {
         session = null;
         throw new Error('sign_in_required');
       }
-      const dashboard = validateDashboard(await request('/admin/monitoring'));
-      const jobs = validateJobs(await request('/admin/monitoring/jobs'));
+      const active = session;
+      const dashboard = validateDashboard(await request('/admin/monitoring', {}, active));
+      if (session !== active) throw new Error('sign_in_required');
+      const jobs = validateJobs(await request('/admin/monitoring/jobs', {}, active));
+      if (session !== active) throw new Error('sign_in_required');
       return {
         dashboard,
         jobs
