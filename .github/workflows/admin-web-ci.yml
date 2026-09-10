@@ -1,0 +1,33 @@
+name: Admin Web CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  admin-web:
+    name: Admin web tests and production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: web-admin/monitoring-ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+      - name: Install locked web dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Verify admin web client
+        run: npm run verify

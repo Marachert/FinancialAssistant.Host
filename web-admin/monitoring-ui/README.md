@@ -26,7 +26,65 @@ It must not:
 
 The owning backend service decides which operational data is safe to expose. The gateway enforces the configured admin perimeter.
 
-## Planned structure
+## FIN-194 dashboard baseline
+
+The React client now implements service readiness, recent and failed processing
+jobs, AI usage, OCR/parsing quality, and a disabled user-support lookup placeholder.
+Only a successful server-authorized snapshot unlocks dashboard content. The UI
+does not infer admin authority from decoded tokens or local role flags.
+
+Access and refresh tokens exist only in the client closure in memory. No local
+storage, session storage, cookies, analytics SDK, external CDN, or service worker
+is used. Sign-out clears visible data immediately and attempts server revocation.
+Expired sessions require sign-in again. 401/403 clears authority; failed refreshes
+clear the old snapshot rather than presenting stale data as current. Automatic
+refresh is opt-in, every 30 seconds, and pauses in hidden tabs.
+
+The jobs endpoint is bounded operational metadata, not financial or user-level
+support data. It is process-local (200 entries, 24 hours), not a durable queue,
+audit trail, or exhaustive failure history. Producers must submit approved
+signals; an empty list means no retained observations, not that no work exists.
+AI/OCR counters are process-local observations and cost values are provider
+micro-units, not a claimed account bill or a currency conversion.
+
+## Build and run
+
+Use Node 22.13+ and the declared package dependencies. The client reuses Metro,
+already used by the repository's mobile stack, to produce a self-contained web
+bundle; icons are generated from Lucide into build output. No runtime CDN is used.
+See the [Metro bundling API](https://metrobundler.dev/docs/api/).
+
+```powershell
+npm ci --no-audit --no-fund
+npm run verify
+$env:MONITORING_GATEWAY_URL = 'http://127.0.0.1:5000'
+npm start
+```
+
+The committed `package-lock.json` pins the complete dependency graph used by CI.
+Update it deliberately alongside dependency changes; use `npm ci` for verification.
+
+For an offline supervised run, existing compatible dependencies can be supplied
+through `NODE_PATH`; no installation is required. Build from this directory.
+`PORT` defaults to 5184. The local server binds only 127.0.0.1; a busy port fails
+without replacing another process. The gateway origin is operator-controlled,
+HTTPS except for loopback development, and never supplied by browser input.
+
+The development server serves only known build assets and proxies four exact
+gateway paths: sign-in, logout, monitoring snapshot, and monitoring jobs. It
+forwards bearer authorization, never client-controlled gateway trust headers;
+rejects cross-origin browser calls; refuses redirects; uses bounded request and
+response sizes, timeouts, no-store, and a self-only CSP. It is not a production
+internet-facing reverse proxy.
+
+For an approved deployment, serve `dist` and the same `/gateway` allowlist from
+one HTTPS origin behind the existing Gateway. Require real Identity validation,
+an explicitly provisioned admin account, active identity routes, and matching
+environment secrets between Gateway and Monitoring. Never activate placeholder
+authentication, embed gateway secrets in assets, enable direct service access,
+or self-register an administrator. No admin provisioning is implemented here.
+
+## Structure
 
 ```text
 web-admin/monitoring-ui/
@@ -37,4 +95,7 @@ web-admin/monitoring-ui/
     api/
 ```
 
-Framework scaffolding and UI implementation belong to dedicated frontend tasks. FIN-47 establishes only the canonical source boundary.
+FIN-47 established the source boundary; FIN-194 implements this baseline.
+The synthetic fixtures under `tests` are never imported into the application
+bundle. Browser smoke tests intercept only local requests and do not log in to
+real accounts or call paid providers.

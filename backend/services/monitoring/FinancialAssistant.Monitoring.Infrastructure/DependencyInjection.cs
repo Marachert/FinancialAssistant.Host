@@ -23,6 +23,7 @@ public static class DependencyInjection
             options.SignalPolicy.AllowedSourceServices,
             options.SignalPolicy.AllowedUiStages));
         services.AddSingleton<IMonitoringMetricStore, InMemoryMonitoringMetricStore>();
+        services.AddSingleton<MonitoringJobStore>();
         services.AddSingleton<MonitoringSnapshotService>();
         services
             .AddHttpClient<IMonitoringDependencyProbe, HttpMonitoringDependencyProbe>(client =>
