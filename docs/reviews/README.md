@@ -6,4 +6,6 @@ Reviews summarize acceptance-criteria evidence, known limitations, blocking gaps
 
 Current reviews:
 
+- [September 2026 documentation audit](documentation-audit-20260910.md) - FIN-269 Confluence/GitHub reconciliation and remaining acceptance boundaries.
+
 - `fin-15-api-gateway-foundation-review.md` — FIN-15 / FIN-266 API Gateway foundation review.

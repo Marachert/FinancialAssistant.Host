@@ -114,7 +114,7 @@ dotnet format FinancialAssistant.Backend.sln --verify-no-changes --verbosity dia
 pwsh -NoProfile -NonInteractive -File tools/scripts/verify-privacy-baseline.ps1
 ```
 
-It rejects forbidden tracked configuration/credential artifacts and high-confidence embedded secret markers without printing matched values. Semantic raw-PII logging checks, mapping tests, and contract tests remain explicit future gates in `docs/engineering/ci.md`.
+It rejects forbidden tracked configuration/credential artifacts and high-confidence embedded secret markers without printing matched values. Existing backend/release suites include mapping, contract and privacy coverage; dedicated expanded checks remain future gates in `docs/engineering/ci.md`.
 
 The workflow detects the first available `.sln` or `.csproj`, but the root `FinancialAssistant.Backend.sln` is the canonical backend verification target.
 

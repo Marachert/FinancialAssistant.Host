@@ -6,6 +6,11 @@ It is not just an expense tracker. The product is designed to minimize manual in
 
 ## Start here
 
+For implementation status and first-user readiness, read
+[POC progress](docs/agent/POC_PROGRESS.md) and the
+[current implementation boundary](docs/architecture/current-implementation.md).
+Completed Jira scope is not proof of a deployed, accepted release.
+
 New contributors should follow the canonical onboarding guide:
 
 ```text
@@ -29,11 +34,12 @@ docs/README.md                       Documentation map
 | Backend | .NET 8 pragmatic microservices |
 | Client API | Public REST API through the Public API Gateway |
 | Async integration | RabbitMQ events |
-| Operational storage | Elasticsearch-first, service-owned indices and aliases |
+| Authoritative durable storage target | Service-owned PostgreSQL; current development adapters are often in-memory |
+| Search and legacy storage contracts | Service-owned Elasticsearch indices/aliases; not universal financial truth |
 | Cache | Redis for disposable cache and short-lived state |
 | File storage | MinIO for receipt and file binaries |
-| Mobile | React Native boundary for Android and iOS |
-| Web admin | Internal monitoring UI boundary |
+| Mobile | React Native app with Home/Add/Insights/Settings; external store acceptance remains separate |
+| Web admin | Implemented admin-protected React monitoring baseline; support lookup disabled |
 | Internal MCP | Role-controlled read-only operational and documentation tools |
 | AI and OCR | External providers used for parsing, explanations, recommendations, and UX assistance |
 
@@ -79,7 +85,7 @@ Required for the current backend and local infrastructure baseline:
 - Node.js LTS;
 - npm or another approved JavaScript package manager.
 
-Mobile development additionally requires Android Studio/JDK/Android SDK for Android and macOS/Xcode/CocoaPods for iOS when the React Native scaffold is implemented.
+Native mobile builds additionally require Android Studio/JDK/Android SDK for Android and macOS/Xcode/CocoaPods for iOS. The React Native application is already implemented; follow its [workspace guide](mobile/app-react-native/README.md) for current commands.
 
 Verify the core tools:
 
@@ -211,7 +217,7 @@ ServiceTemplate.Contracts/
 | Api | REST endpoints, authentication boundary, correlation, request/response mapping |
 | Application | Use cases, commands, queries, validation orchestration |
 | Domain | Entities, value objects, invariants, deterministic business rules |
-| Infrastructure | Elasticsearch, RabbitMQ, external providers, object storage, technical adapters |
+| Infrastructure | Service-owned persistence adapters, RabbitMQ, external providers, object storage |
 | Contracts | DTOs and versioned integration contracts |
 
 Dependency direction remains inward. Infrastructure implements adapters; Domain must not depend on infrastructure or provider SDKs.
@@ -230,6 +236,9 @@ The Docker Compose baseline provides:
 | Grafana | `http://localhost:3000` | Local dashboards |
 
 These are technical utilities. They do not create shared ownership of business data.
+The checked-in local stack is not proof that the preferred PostgreSQL durability
+target is implemented. See the [storage policy](docs/architecture/storage-policy.md)
+for the distinction between target decisions and existing adapters.
 
 ## Contributor workflow
 
@@ -286,6 +295,10 @@ Do not commit or expose:
 Use synthetic fixtures and privacy-safe logs. LLM and OCR providers are never sources of financial truth.
 
 ## Documentation map
+
+The [documentation maintenance contract](docs/agent/DOCUMENTATION_MAINTENANCE.md)
+maps GitHub sources to Confluence pages and defines the update gate for every
+relevant implementation and verified Jira closure.
 
 | Folder | Responsibility |
 | --- | --- |

@@ -37,12 +37,20 @@ Install these before cloning the repository:
 | Node.js LTS | Mobile and web workspaces | `node --version` |
 | npm or another approved package manager | JavaScript dependencies | `npm --version` |
 
-Mobile development also requires platform tooling when the application scaffold is implemented:
+Native mobile development also requires platform tooling:
 
 - Android: Android Studio, Android SDK, JDK, and an emulator or device;
 - iOS: macOS, Xcode, CocoaPods, and an iOS simulator or device.
 
-The canonical mobile boundary already exists at `mobile/app-react-native/`, but dedicated frontend tasks own the React Native scaffold and dependency setup.
+The application is implemented at `mobile/app-react-native/`; use its README for
+dependency and verification commands. The internal React admin baseline is at
+`web-admin/monitoring-ui/`. Local tests do not prove store/deployment acceptance.
+
+Before interpreting older infrastructure baselines, read
+[current implementation](../architecture/current-implementation.md) and
+[storage policy](../architecture/storage-policy.md). PostgreSQL is the preferred
+durable authoritative target; the shipped in-memory adapters and Elasticsearch
+contracts must not be described as a completed durable migration.
 
 ## 3. Clone and inspect the repository
 

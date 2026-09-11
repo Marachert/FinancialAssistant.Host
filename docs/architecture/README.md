@@ -10,11 +10,14 @@ Architecture documentation should cover:
 * service boundaries and data ownership;
 * Public API Gateway responsibilities;
 * synchronous REST and asynchronous RabbitMQ interactions;
-* Elasticsearch ownership and read-model boundaries;
+* service-owned PostgreSQL durability targets, Elasticsearch legacy/search contracts, and read-model boundaries;
 * OCR, LLM, notification, object-storage, and observability integrations;
 * architecture decisions and trade-offs.
 
 ## Canonical decisions
+
+- [Current implementation and target gaps](current-implementation.md)
+- [Storage policy](storage-policy.md)
 
 The normative rules for records that may affect balances, reports, limits,
 scores, and recommendations are defined in:

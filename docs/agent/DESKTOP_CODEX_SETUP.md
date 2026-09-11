@@ -28,8 +28,8 @@ Prefer an OS credential store or MCP OAuth. Do not place credentials in `.codex/
 5. Validate read access:
 
 ```powershell
-pwsh tools/delivery/jira.ps1 get-issue FIN-268
-pwsh tools/delivery/confluence.ps1 get-page 4227073
+pwsh -NoProfile -NonInteractive -File tools/delivery/jira.ps1 -Action get-issue -Value FIN-269
+pwsh -NoProfile -NonInteractive -File tools/delivery/confluence.ps1 -Action get-page -PageId 4259842
 ```
 
 6. Validate repository checks:
@@ -56,9 +56,32 @@ Merge only when every gate in AGENTS.md passes, then verify the actual merged st
 
 ## Automation schedule
 
-Start with supervised manual runs. After two or three successful deliveries, create a recurring Desktop Codex automation in the dedicated clone. A 20–30 minute interval is appropriate because GitHub CI and reviews are external state transitions.
+Start with supervised manual runs. Create recurring automation only when the
+owner explicitly requests it; this setup document does not create or authorize
+a schedule. Prefer persisted restart-safe state to assumptions from old chats.
 
 Every run must acquire `.codex-runtime/delivery.lock`. A run finding a fresh lock exits without changes.
+
+On pause, save a privacy-safe checkpoint and release only the run's own lock.
+Never discard pre-existing local edits. An interrupted external write requires
+a fresh state read before retrying.
+
+## Documentation And Financial Boundary
+
+Read [documentation maintenance](DOCUMENTATION_MAINTENANCE.md) and
+[POC progress](POC_PROGRESS.md) before continuation. Keep Confluence and GitHub
+sources aligned, record actual merge/CI evidence, and update statistics after
+every closure.
+
+Do not enable auto-reload, buy/redeem credits, choose API-billed fallbacks or
+activate paid providers/builds/deployments without separate owner approval.
+These are project authorization limits, not an account-level billing switch or
+a guarantee about remaining subscription usage.
+
+Environment-variable presence does not prove authentication or resource access.
+Validate the read without printing secrets. A Confluence MCP widget/sandbox
+rendering error can occur independently of the underlying API; distinguish it
+from an HTTP authentication error before requesting token replacement.
 
 ## Required GitHub protections
 

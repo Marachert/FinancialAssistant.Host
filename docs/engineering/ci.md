@@ -1,6 +1,6 @@
 # CI Quality Gates
 
-This document defines the current Backend CI baseline and pull request quality gates for Financial Assistant.
+This document defines the Backend, Mobile and Admin Web CI baseline and pull request quality gates for Financial Assistant.
 
 Related documentation:
 
@@ -18,6 +18,14 @@ docs/engineering/contributing.md
 | `ci-dotnet-build-test` | Restore and build the selected .NET target, run test projects, and upload TRX results |
 | `ci-dotnet-format` | Verify repository formatting with `dotnet format --verify-no-changes` |
 | `ci-privacy-baseline` | Reject tracked local/production configuration, credential artifacts, user-data stores, private keys, and high-confidence embedded secret markers |
+| `ci-mobile-verify` (Mobile CI) | Mobile type, lint and structure verification |
+| `admin-web` (Admin Web CI) | Locked admin dependency installation, client/proxy tests and production build |
+
+The client workflows are `.github/workflows/mobile-ci.yml` and
+`.github/workflows/admin-web-ci.yml`; both run for main/develop PRs and pushes,
+plus manual dispatch. Admin Web uses `npm ci --no-audit --no-fund`; Mobile
+currently uses `npm install --no-audit --no-fund` with its checked-in lockfile.
+Do not describe the latter as a clean `npm ci` installation.
 
 ## CI triggers
 
@@ -76,6 +84,7 @@ A pull request is merge-ready only when:
 - `ci-dotnet-build-test` succeeds on the final head;
 - `ci-dotnet-format` succeeds on the final head;
 - `ci-privacy-baseline` succeeds on the final head;
+- Mobile and Admin Web checks succeed on the final head;
 - architecture, API, event, security, delivery, and onboarding documentation is updated where behavior changes;
 - no secrets, generated binaries, real receipts, raw OCR text, real LLM content, personal data, or real financial data are introduced;
 - all actionable review comments are processed;
@@ -106,7 +115,7 @@ develop
 Recommended `main` rules:
 
 - require a pull request before merge;
-- require `ci-dotnet-build-test`, `ci-dotnet-format`, and `ci-privacy-baseline`;
+- require the current Backend, Mobile and Admin Web status checks on the final head (use their actual GitHub display names when configuring protection);
 - require conversation resolution when supported;
 - block force pushes;
 - block branch deletion;
@@ -172,8 +181,8 @@ These placeholders are intentionally not required checks yet:
 | Gate | Future enforcement |
 | --- | --- |
 | `TODO-PRIVACY-SEMANTIC` | Add analyzer-backed or policy-tested detection for raw PII, receipt text, OCR output, prompts, responses, and financial values passed to logs or telemetry |
-| `TODO-MAPPING-TESTS` | Require deterministic mapping tests for API, persistence, event, OCR/LLM candidate, and domain boundaries as those contracts are introduced |
-| `TODO-CONTRACT-TESTS` | Require provider/consumer compatibility tests for REST and RabbitMQ contracts after contract ownership and versioning are implemented |
+| `TODO-MAPPING-TESTS` | A dedicated mapping check beyond the deterministic mapping coverage already included in backend tests |
+| `TODO-CONTRACT-TESTS` | A dedicated provider/consumer compatibility check beyond existing REST/event/release contract tests |
 
 Each TODO becomes a required branch-protection check only after its implementation is deterministic, documented, and proven stable on pull requests.
 
@@ -185,5 +194,5 @@ Dedicated Jira tasks should introduce these when justified:
 - mobile app store delivery;
 - cloud/Kubernetes provisioning;
 - complete dependency and vulnerability management;
-- frontend/mobile linting and end-to-end automation;
+- expanded device/browser end-to-end automation beyond current mobile type/lint/structure checks, admin tests/build and local smoke scripts;
 - performance, resilience, and disaster-recovery testing.

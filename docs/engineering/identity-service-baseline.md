@@ -4,7 +4,12 @@
 
 The Identity Service is the authoritative service for user authentication credentials, external identity links, and session lifecycle in Financial Assistant.
 
-FIN-74 establishes project and dependency boundaries only. It does not implement account creation, login, token issuance, provider validation, or storage schemas.
+FIN-74 originally established project and dependency boundaries. Subsequent
+increments implemented account creation, sign-in, JWT/refresh-session lifecycle,
+Google/Apple validation, phone challenge logic and outbox-backed event publishing.
+This page preserves layer ownership, not the old skeleton-only status.
+See [API contracts](identity-api-contracts.md), [sessions](identity-session-lifecycle.md)
+and [events](identity-event-publishing.md).
 
 ## Component boundaries
 
@@ -14,7 +19,7 @@ Responsibilities:
 
 - host internal identity REST endpoints;
 - expose health and local OpenAPI endpoints;
-- validate transport-level input in later tasks;
+- validate transport-level input;
 - compose Application and Infrastructure dependencies;
 - return safe public errors through the gateway.
 
@@ -50,13 +55,16 @@ The Domain project has no Infrastructure or API dependency.
 
 Responsibilities:
 
-- implement Elasticsearch repositories owned by Identity Service;
+- implement service-owned persistence adapters behind application interfaces;
 - implement password and token hashing adapters;
 - implement JWT signing and validation adapters;
 - implement RabbitMQ event publishing;
 - bind runtime configuration.
 
-FIN-74 provides only safe configuration and event-publishing placeholders. Active adapters are added in later tasks.
+Current wiring includes in-memory account/session/challenge/outbox stores,
+password hashing, JWT validation and an event dispatcher. RabbitMQ transport is
+configuration-selected; the phone delivery provider is disabled by default.
+These adapters do not establish durable production operation.
 
 ### Contracts
 
@@ -70,7 +78,7 @@ Contracts must not expose Elasticsearch document metadata, password hashes, refr
 
 ## Data ownership
 
-Identity Service will own:
+Identity Service owns:
 
 - account identity records;
 - credential metadata and password hashes;
@@ -80,7 +88,10 @@ Identity Service will own:
 
 Profile Service owns non-authentication user profile data. Other services consume safe user identifiers through APIs or events and must not read Identity Service indices directly.
 
-Exact document models, aliases, mappings, retention, and cleanup rules are deferred to FIN-85.
+FIN-85 records the earlier Elasticsearch models/aliases. Their ownership and
+compatibility remain relevant, but [current storage policy](../architecture/storage-policy.md)
+prefers service-owned PostgreSQL for durable authoritative state. No durable
+adapter migration is claimed here.
 
 ## Synchronous and asynchronous flows
 
@@ -117,7 +128,7 @@ Readiness checks validate that the baseline configuration is structurally presen
 - diagnostic endpoints expose no user, credential, token, provider, or storage-address data;
 - LLM and OCR are outside the identity trust boundary.
 
-## Follow-up implementation order
+## Delivered Baseline References
 
 1. FIN-85 — identity data model and owned storage.
 2. FIN-86 — client-facing identity API contracts.

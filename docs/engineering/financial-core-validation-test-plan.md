@@ -23,11 +23,14 @@ live provider, broker, database, clock, locale, or network.
 | Expense service | `FinancialAssistant.Expense.Tests` | owner-scoped CRUD, validation, lifecycle, totals, events |
 | Summary projection/contract | `FinancialAssistant.FinancialSummary.Tests` | event replay, active totals, periods, freshness, public shape |
 | Cross-boundary architecture | `FinancialAssistant.Repository.Tests` | source-of-truth and dependency boundaries |
-| End-to-end | future P9 integration suite | gateway-to-summary happy path and failure recovery |
+| Synthetic cross-service release | `FinancialAssistant.Release.Tests` | authentication/intake/Expense/Analytics/Score flow, contracts and privacy |
 
-Unit tests freeze `TimeProvider` and avoid HTTP. Service integration tests use
-in-memory adapters and authenticated test hosts. End-to-end tests use local,
-containerized free dependencies and synthetic fixtures.
+Unit tests freeze `TimeProvider` and avoid HTTP. Service integration and the
+implemented release suite use in-memory adapters and authenticated test hosts.
+A complete deployed public-gateway-to-Summary run and failure recovery still
+require activated routes, environment configuration and separate runtime evidence.
+See [release tests](backend-release-test-suite.md); do not describe the synthetic
+suite as an approved-host or containerized end-to-end deployment test.
 
 ## Amount validation
 

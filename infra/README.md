@@ -15,6 +15,11 @@ repeatable infrastructure bootstrap tooling.
 Infrastructure is shared at the platform level, but data ownership is not.
 Each backend service exclusively owns its Elasticsearch namespace, mappings,
 indices, aliases, migrations, retention rules, and credentials.
+The existing stacks and index bootstrap describe delivered infrastructure assets,
+not a universal Elasticsearch-first architecture or production durability.
+[Current storage policy](../docs/architecture/storage-policy.md) prefers
+service-owned PostgreSQL for durable authoritative state; no migration is
+performed or claimed by this documentation update.
 
 Use development-only configuration and synthetic data. Never commit `.env`
 files, credentials, production configuration, user identities, receipts, OCR or

@@ -4,7 +4,12 @@
 
 This document defines the FIN-85 storage contract for the Financial Assistant Identity Service.
 
-Identity Service is authoritative for accounts, authentication credential metadata, refresh sessions, and external provider links. Elasticsearch is the operational store, but deterministic authentication and lifecycle rules remain in Application and Domain code.
+Identity Service is authoritative for accounts, authentication credential metadata,
+refresh sessions and external provider links. This document preserves the FIN-85
+Elasticsearch adapter contract, not a claim that the running Identity store uses
+Elasticsearch. Current wiring is in-memory; the preferred durable authoritative
+target is service-owned PostgreSQL under [storage policy](../architecture/storage-policy.md).
+Deterministic authentication and lifecycle rules remain in Application and Domain.
 
 FIN-85 defines documents, index names, aliases, sensitive-field rules, and cleanup policy. Elasticsearch client/bootstrap implementation is intentionally deferred to a later storage integration increment.
 
@@ -154,7 +159,7 @@ Authoritative state changes follow this order:
 
 1. validate deterministic business rules;
 2. commit the Identity Service Elasticsearch write;
-3. publish the versioned integration event using an outbox/reliable publication mechanism when FIN-77 is implemented.
+3. enqueue the versioned integration event through the implemented FIN-77 outbox boundary; its current in-memory adapter does not make the write and event intent one durable transaction.
 
 RabbitMQ events do not replace the Identity Service record as the source of truth.
 
