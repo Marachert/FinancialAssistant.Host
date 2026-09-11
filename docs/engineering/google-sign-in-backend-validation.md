@@ -147,7 +147,10 @@ Secrets and client configuration must come from environment variables or a secre
 
 The active account/provider-link adapter is `InMemoryIdentityAccountStore`. It supports local execution and automated tests but loses state on restart and is not shared between replicas.
 
-A production Elasticsearch adapter must preserve unique provider-subject ownership and atomic account-plus-provider-link creation through optimistic concurrency or an equivalent documented mechanism.
+A production persistence adapter must preserve unique provider-subject ownership
+and atomic account-plus-provider-link creation. The preferred authoritative
+durability target is PostgreSQL; earlier Elasticsearch contracts do not establish
+a deployed store. See [storage policy](../architecture/storage-policy.md).
 
 ## Mobile integration sequence
 

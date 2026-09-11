@@ -4,7 +4,12 @@
 
 This document defines the FIN-86 version 1 authentication contract used by React Native mobile clients, web clients, and the Public API Gateway.
 
-The contract is intentionally defined before registration, login, and token logic are implemented. OpenAPI, DTOs, routes, status codes, and errors are stable enough for client API generation and mock-based UI work. The current server endpoints return HTTP 501 until FIN-75 and FIN-76 activate the deterministic use cases.
+FIN-86 originally defined this contract before the handlers. FIN-75 and FIN-76
+subsequently activated registration, sign-in and the complete session lifecycle;
+the current Identity handlers are not the original HTTP 501 stubs. See the
+[session lifecycle](identity-session-lifecycle.md) and
+[event publisher](identity-event-publishing.md) for the implemented behavior and
+in-memory durability limitations.
 
 ## Public boundary
 
@@ -14,7 +19,12 @@ The public versioned base path is:
 /auth/v1
 ```
 
-The gateway already owns the `/auth` route group and forwards these paths to Identity Service. Identity Service remains authoritative for credentials and sessions. Gateway forwarding or pre-validation never replaces Identity Service validation.
+The gateway owns the `/auth` route group and forwards these paths when the route
+and destination are enabled. The group is authenticated by default with an exact
+method/path public allowlist; it is not blanket-public. Identity Service remains
+authoritative for credentials and sessions. Gateway forwarding or pre-validation
+never replaces Identity Service validation. See
+[gateway groups](gateway-public-api-groups.md) for checked-in activation state.
 
 All requests and responses use JSON unless a response has no body. Clients may send `X-Correlation-Id`; the gateway generates one when absent and returns the effective value.
 
@@ -249,9 +259,12 @@ Stable error codes:
 
 ## Current implementation state
 
-FIN-86 publishes DTOs, routes, OpenAPI metadata, synthetic examples, and safety tests. Endpoints return HTTP 501 with `not_implemented` until their use cases are activated.
+The listed Identity handlers and OpenAPI contracts are implemented. A gateway
+`501 route_not_active` describes a deliberately inactive gateway route, not
+missing Identity business logic. Production durability, provider configuration
+and hosted acceptance remain separate gates.
 
-Implementation sequence:
+Delivered implementation sequence:
 
 1. FIN-75 activates register and sign-in.
 2. FIN-76 activates refresh, logout, token validation, and current context.

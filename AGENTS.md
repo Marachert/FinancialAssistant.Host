@@ -7,6 +7,7 @@ Before changing code, read:
 - `docs/agent/PROJECT_INSTRUCTIONS.md`
 - `docs/agent/DELIVERY_WORKFLOW.md`
 - `docs/agent/SECURITY_AND_BLOCKERS.md`
+- `docs/agent/DOCUMENTATION_MAINTENANCE.md`
 - the active Jira issue and its parent/children
 - the nearest nested `AGENTS.md`, when present
 
@@ -93,6 +94,12 @@ Do not weaken or delete a valid test merely to make CI green.
 Never commit or expose tokens, passwords, API keys, certificates, `.env` files, production configuration, real identities, personal financial data, receipts, raw OCR data, or real LLM prompts/responses. Use synthetic test data and environment-provided credentials.
 
 ## Completion
+
+Keep affected GitHub documentation and Confluence pages synchronized using
+`docs/agent/DOCUMENTATION_MAINTENANCE.md`. After each verified Jira leaf closure,
+publish the updated `docs/agent/POC_PROGRESS.md` snapshot/history through a guarded
+PR and report the percentage-point change and first-user readiness separately.
+Do not claim runtime acceptance from task percentage or synthetic CI alone.
 
 A task is complete only after the PR is actually merged, post-merge evidence is recorded, Jira is Done, parent status is evaluated, and the next unfinished leaf-ticket is identified or no work remains.
 

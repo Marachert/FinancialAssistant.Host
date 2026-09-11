@@ -32,3 +32,14 @@ OpenAPI artifacts may be added here or generated from service-owned source contr
 - [Analytics Category Breakdown API v1](analytics-category-breakdown-v1.md)
 - [Financial Score API v1](financial-score-v1.md)
 - [Recommendations and Notifications API v1](recommendations-notifications-v1.md)
+- [Notification Preferences API v1](notification-preferences-v1.md)
+- [Monitoring Admin API v1](monitoring-admin-v1.md)
+- [Audit Admin API v1](audit-admin-v1.md)
+- [Internal MCP Server v1](mcp-server-v1.md)
+- [Identity API contracts](../engineering/identity-api-contracts.md)
+- [Transaction Intake and draft flow](../engineering/transaction-intake-draft-flow.md)
+- [Receipt upload and OCR pipeline](../engineering/receipt-upload-ocr-pipeline.md)
+
+Endpoint handlers, gateway route activation and deployed availability are
+separate states. See [gateway groups](../engineering/gateway-public-api-groups.md)
+and [current implementation](../architecture/current-implementation.md).

@@ -28,7 +28,16 @@ Forbidden without explicit human approval:
 - destructive production migrations;
 - commands that can erase the workspace or unrelated files.
 
-## Blocking conditions
+## Financial Authorization
+
+Autonomous delivery does not authorize extra spending. Do not buy/redeem credits,
+enable auto-reload, switch to API-billed fallbacks, activate paid providers or
+exporters, start paid cloud builds, enroll accounts or deploy paid infrastructure
+without separate explicit approval. Repository instructions cannot certify the
+account's billing settings or remaining subscription limits. If the next action
+requires unapproved spending, preserve state and report the blocker.
+
+## Delivery Blockers
 
 Stop autonomous delivery and report a blocker when:
 

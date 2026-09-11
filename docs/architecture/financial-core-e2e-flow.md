@@ -67,10 +67,12 @@ Before the journey:
   including draft review/update/reject and Financial Summary, before a full
   public HTTP end-to-end test is classified green.
 
-Public gateway readiness is an explicit prerequisite, not a current capability.
-At FIN-104, the checked-in gateway catalog keeps Transaction Intake disabled,
-marks only intake and confirmation placeholders, and has no review, update,
-rejection, or Summary route. Service-contract tests may call the `/api/v1` routes
+Public gateway readiness is an explicit prerequisite, not a claim that all routes
+are operational. The historical FIN-104 catalog description, "has no review, update, rejection, or Summary route",
+is no longer the full current route map: draft review/update/reject and receipt
+draft routes now exist, but remain placeholders in repository defaults.
+See [current gateway groups](../engineering/gateway-public-api-groups.md).
+Service-contract tests may call the `/api/v1` routes
 in an isolated Transaction Intake test host with synthetic trusted-gateway
 headers. A public-gateway test must fail its prerequisite check until the complete
 route set and destinations are activated by their owning delivery work.

@@ -2,14 +2,14 @@
 
 ## Purpose
 
-FIN-75 activates `POST /auth/v1/register` and `POST /auth/v1/sign-in` using deterministic server-side logic. Refresh, logout, access-token validation, and current-session lookup remain in FIN-76.
+FIN-75 activates `POST /auth/v1/register` and `POST /auth/v1/sign-in` using deterministic server-side logic. FIN-76 subsequently implemented refresh, logout, access-token validation and current-session lookup; see [session lifecycle](identity-session-lifecycle.md).
 
 ## Component boundaries
 
 - API maps HTTP contracts to application results and safe Problem Details responses.
 - Application validates commands, normalizes email identities, coordinates account creation/sign-in, and publishes lifecycle events through abstractions.
 - Domain owns account lifecycle state and the rule that only active accounts can authenticate.
-- Infrastructure provides password protection, keyed email lookup, initial opaque session values, a development in-memory store, clock, and event adapter.
+- Infrastructure provides password protection, keyed email lookup, JWT access and opaque refresh values, development in-memory stores, clock, and outbox/event adapters.
 - Contracts remain independent from storage documents and hashing metadata.
 
 ## Registration flow
@@ -21,7 +21,7 @@ FIN-75 activates `POST /auth/v1/register` and `POST /auth/v1/sign-in` using dete
 5. Create an active account with the default `user` role.
 6. Protect the supplied secret with the ASP.NET Core Identity password hasher.
 7. Atomically store account and credential records through `IIdentityAccountStore`.
-8. Issue an initial opaque access/refresh session response.
+8. Create the server-side session and issue a signed access JWT and opaque refresh value.
 9. Publish `user.registered.v1` through `IIdentityEventPublisher` with user ID and authentication method only.
 10. Return HTTP 201.
 
@@ -60,15 +60,24 @@ This adapter is not a production persistence solution:
 - it does not create Elasticsearch documents or aliases;
 - it provides no durable idempotency store.
 
-The production Elasticsearch repository must implement `IIdentityAccountStore` without changing API contracts, domain rules, or application use cases. Identity Service remains the only owner of its indices.
+Any production repository must implement `IIdentityAccountStore` without changing
+API contracts, domain rules or use cases. The preferred durable target is
+service-owned PostgreSQL; earlier Elasticsearch contracts remain historical or
+adapter-specific. See [storage policy](../architecture/storage-policy.md).
 
 ## Session boundary
 
-FIN-75 issues cryptographically random opaque access and refresh values so register/sign-in responses are complete. It does not persist sessions or validate, rotate, revoke, or replay-detect them. FIN-76 replaces this temporary issuer with the complete session lifecycle.
+The original FIN-75 opaque-access issuer was replaced by the FIN-76 lifecycle.
+The compatibility wrapper now creates server-side session records, signed access
+JWTs and opaque refresh values with rotation, revocation and replay detection.
+The current session store remains in-memory, not crash-durable.
 
 ## Event boundary
 
-`user.registered.v1` is published through the application event abstraction after the authoritative account write. The current adapter is a no-op/capturing implementation. FIN-77 adds reliable RabbitMQ publication and the final delivery mechanism.
+`user.registered.v1` is enqueued through the application event abstraction after
+the authoritative account write. FIN-77 implemented the outbox dispatcher and
+publisher-confirmed RabbitMQ transport. The active outbox is in-memory; state
+and event intent are not one durable transaction. See [event publishing](identity-event-publishing.md).
 
 ## Verification
 
@@ -81,4 +90,4 @@ Automated tests cover:
 - protected lookup and credential storage;
 - versioned registration event publication;
 - OpenAPI continuity;
-- FIN-76 placeholder routes remaining inactive.
+- session issuance continuity with the implemented FIN-76 handlers.

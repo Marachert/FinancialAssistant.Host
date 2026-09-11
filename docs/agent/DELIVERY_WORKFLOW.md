@@ -51,6 +51,12 @@ A `COMMENTED` review is not automatically blocking; inspect its findings. A `CHA
 
 ## Idempotency
 
+Documentation is a delivery gate: follow
+[Confluence/GitHub maintenance](DOCUMENTATION_MAINTENANCE.md). Update affected
+source documents and current page bodies, not only evidence comments. After each
+Jira closure, recompute and publish the POC ledger before the next product ticket;
+maintenance work outside its canonical hierarchy receives no extra POC credit.
+
 Before every mutation, perform a fresh read:
 
 - before branch creation, search branches;

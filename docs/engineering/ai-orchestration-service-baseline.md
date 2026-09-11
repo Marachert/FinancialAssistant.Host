@@ -16,4 +16,10 @@ AI output is suggestion data. `AiCapabilityResult` contains an `AiSuggestionRevi
 
 ## Configuration
 
-Service identity and suggestion-only authority are non-secret defaults in `appsettings.json`. Development provider name, model, and endpoint are empty placeholders in `appsettings.Development.json`. Credentials must be supplied through environment-backed provider adapters in later delivery work and must never be committed or logged.
+Service identity and suggestion-only authority are non-secret defaults in `appsettings.json`.
+Provider credentials and runtime selection must come from environment-backed
+configuration and must never be committed or logged. Provider configuration,
+disabled/fallback behavior and usage limits are documented in
+[provider configuration](ai-ocr-provider-configuration.md) and
+[cost controls](ai-ocr-usage-cost-controls.md). Existing abstractions and tests do
+not authorize or prove a live paid provider integration.

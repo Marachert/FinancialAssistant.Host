@@ -8,14 +8,18 @@ Canonical application source boundary:
 mobile/app-react-native/
 ```
 
-## Planned responsibilities
+## Implemented baseline
 
-- Universal money input UI.
-- Transaction and receipt draft confirmation.
-- Home financial console and activity views.
-- Financial score, recommendations, progress, and achievements.
-- Camera/file receipt intake.
-- Push notification handling.
+- Authentication, onboarding and profile/settings screens.
+- Free-form text and camera/file receipt intake with editable draft review, rejection and confirmation.
+- Home, Add, Insights and Settings navigation, activity, score and recommendation views.
+- Notification inbox and lifecycle actions, loading/empty/error and offline states.
+
+See the [application guide](app-react-native/README.md) and
+[implemented UX contract](../docs/product/mobile-poc-ux.md).
+Native audio capture, the complete wallet/debt/reserve concept and real push/web
+delivery are not all implemented. Store signing, submission, tester installation
+and approved-host acceptance remain release gates, not consequences of a merged UI.
 
 The mobile client calls backend capabilities only through the Public API Gateway. Backend deterministic logic remains authoritative for financial data and calculations.
 

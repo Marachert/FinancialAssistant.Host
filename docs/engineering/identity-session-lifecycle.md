@@ -194,7 +194,10 @@ sessionId
 reason
 ```
 
-Durable RabbitMQ publication, delivery guarantees, and final event-envelope integration remain FIN-77.
+FIN-77 subsequently implemented envelope conversion, a retry dispatcher and
+publisher-confirmed RabbitMQ transport. The active outbox is still in-memory,
+so durable publication and atomic state-plus-intent persistence are not claimed.
+See [event publishing](identity-event-publishing.md).
 
 ## Configuration
 
@@ -221,7 +224,10 @@ Known limitations of this adapter:
 - session records are not yet stored in the FIN-85 Elasticsearch session index;
 - no distributed atomicity is provided.
 
-A production Elasticsearch adapter must preserve the same rotation and family-revocation semantics, use optimistic concurrency, and remain owned exclusively by Identity Service.
+A production adapter must preserve the same atomic rotation and family-revocation
+semantics and remain owned exclusively by Identity. The preferred durable target
+is PostgreSQL; FIN-85 Elasticsearch models are retained contracts, not evidence
+of a deployed repository. See [storage policy](../architecture/storage-policy.md).
 
 ## Synchronous and asynchronous flows
 

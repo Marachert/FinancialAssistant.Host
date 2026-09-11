@@ -37,6 +37,11 @@ Every Identity integration event is emitted as:
 
 Event names use `domain.action.v{version}`. The event type suffix and numeric schema version must align.
 
+Compatibility note: `user.signed_in.v1` is an existing Identity event name, while
+the newer shared event naming validator rejects underscores. This is an explicit
+legacy exception/migration gap, not permission to rename a live v1 contract
+without producer/consumer migration and regression coverage.
+
 ## Safe event catalog
 
 ### user.registered.v1
@@ -148,7 +153,14 @@ The current active outbox adapter is `InMemoryIdentityEventOutbox`. Therefore th
 - authoritative state mutation and outbox enqueue are not yet one durable Elasticsearch operation;
 - a process failure between state mutation and enqueue remains a known gap.
 
-The production Elasticsearch adapter must implement `IIdentityEventOutbox` and coordinate state plus event intent using the service-owned persistence design. Because Elasticsearch does not provide a general cross-document transaction, the production design must use an aggregate-local pending-event field, a rigorously reconciled outbox index, or another documented mechanism that closes the state-to-intent gap. This limitation must not be hidden by calling the current adapter transactional.
+The durable adapter must implement `IIdentityEventOutbox` and coordinate state
+plus event intent using the service-owned persistence design. The preferred
+target is a PostgreSQL transaction over owned state and outbox intent; it is not
+implemented by this documentation change. Any retained Elasticsearch design must
+explicitly close its cross-document state-to-intent gap through a documented,
+tested mechanism. Neither the current in-memory adapter nor an unimplemented
+design may be described as a durable transaction. See
+[storage policy](../architecture/storage-policy.md).
 
 ## Verification
 

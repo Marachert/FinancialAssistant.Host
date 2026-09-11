@@ -4,6 +4,12 @@ Developer, architecture, security, API, event, and delivery documentation worksp
 
 ## Start here
 
+- [POC readiness and closure statistics](agent/POC_PROGRESS.md)
+- [Current implementation versus product target](architecture/current-implementation.md)
+- [Service-owned storage policy](architecture/storage-policy.md)
+- [Confluence/GitHub maintenance map](agent/DOCUMENTATION_MAINTENANCE.md)
+- [September 2026 documentation audit](reviews/documentation-audit-20260910.md)
+
 New contributors should begin with:
 
 ```text
@@ -166,4 +172,6 @@ docs/reviews/       Review records and acceptance evidence
 - Keep backend deterministic logic authoritative for financial data and calculations.
 - Treat OCR and LLM output as probabilistic input that requires backend validation.
 - Update commands and repository paths in the same pull request as the implementation change.
+- Update affected Confluence pages as well as these source documents; record current behavior separately from target designs and historical evidence.
+- Verify actual merge SHA/time and exact-head CI before recording delivery as complete; recalculate the POC ledger after each Jira closure.
 - Use synthetic examples only; do not publish secrets, tokens, real user data, financial records, receipt content, OCR text, or LLM prompts/responses.
