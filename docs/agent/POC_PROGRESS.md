@@ -1,6 +1,6 @@
 # POC Readiness Progress
 
-Last updated: 2026-09-11
+Last updated: 2026-09-12
 
 ## Current Snapshot
 
@@ -24,23 +24,23 @@ Latest canonical closure:
 
 Latest Jira closure:
 
-- FIN-194 - P8.T5 Create admin web dashboard baseline, merged
-  and Done
+- FIN-269 - Synchronize GitHub documentation with verified implementation and
+  Confluence audit, merged and verified Done on 2026-09-12
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/247
+  https://github.com/Marachert/FinancialAssistant.Host/pull/248
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/783f22746d3902181153076b0871121311e8f4f7
-- merged at: `2026-09-10T17:11:22Z`
-- final implementation head: `ec499b42f066a6b09bb8c99abc4229ac444b703d`
-- exact-head CI: Backend 34506306935, Mobile 34506306944, Admin Web 34506306932
-- previous recorded readiness: 172 / 196, or 87.8%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/98d47e0e66f6926e745ffa808b251eec8ec4d082
+- merged at: `2026-09-11T17:10:39Z`
+- final implementation head: `285853c4b3250240b22b5570676a90a07ddc4f49`
+- exact-head CI: Backend 34625876721, Mobile 34625876654, Admin Web 34625876648
+- previous recorded readiness: 173 / 196, or 88.3%
 - current readiness: 173 / 196, or 88.3%
-- change: +0.5 percentage points
+- change: +0.0 percentage points (maintenance outside canonical feature scope)
 
-The fresh 2026-09-10 census after FIN-194 closure confirms 173/196. The subsequent
-owner-requested documentation maintenance issue FIN-269 has no canonical epic
-parent and contributes neither numerator nor denominator. Its completion will
-not increase feature readiness. Historical snapshots below remain unchanged.
+The fresh 2026-09-12 census contains 269 unique issues and confirms 173/196 after
+FIN-269 closure. This owner-requested documentation maintenance issue has no
+parent or children and contributes neither numerator nor denominator. No parent
+transition is applicable. Historical snapshots below remain unchanged.
 
 Scope reconciliation on 2026-09-06: the fresh census contains 268 unique Jira
 issues. FIN-131 is Done but currently has no parent, confirmed by a direct Jira
@@ -95,8 +95,11 @@ Current delivery:
   the bounded local full-solution build was not claimed successful, while CI was green
 - all 139 Confluence pages were audited; 118 updated and 79 empty content pages filled;
   historical evidence and three intentional templates were preserved
-- current owner-requested priority is FIN-269 GitHub documentation synchronization
-- after that, the next ranked product leaf is FIN-195 under FIN-36
+- FIN-269 GitHub documentation synchronization is merged through PR #248 and Done;
+  all five exact-head CI checks passed and every review channel was empty
+- current documentation includes the implementation map, preferred storage policy,
+  source-to-Confluence maintenance map and explicit financial authorization limits
+- the next ranked product leaf is FIN-195 under FIN-36, after closure publication
 
 ## Epic Progress
 
@@ -285,3 +288,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-09-05T17:27:06+03:00 | FIN-192 | Closure delivered by PR 243 | 87.3% | +0.5 pp |
 | 2026-09-06T09:50:00+03:00 | FIN-193 | Closure delivered by PR 245; FIN-131 orphan scope reconciled above | 87.8% | +0.5 pp |
 | 2026-09-10T20:11:22+03:00 | FIN-194 | PR 247 verified merged; Jira Done verified afterward; 173/196 canonical leaves | 88.3% | +0.5 pp |
+| 2026-09-12 | FIN-269 | PR 248 verified merged; Jira Done verified; documentation maintenance outside canonical feature scope | 88.3% | +0.0 pp |
