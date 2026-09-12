@@ -1,0 +1,36 @@
+{
+  "jira": "FIN-195",
+  "status": "design-only",
+  "environment": "local",
+  "refreshMinimumSeconds": 30,
+  "families": [
+    {
+      "name": "application-logs",
+      "owner": "public-api-gateway",
+      "readAlias": "fa-local-public-api-gateway-application-logs-read",
+      "query": "application-logs.json",
+      "fields": { "occurredAtUtc": "date", "observedAtUtc": "date", "environment": "keyword", "service": "keyword", "eventId": "integer", "level": "keyword", "outcome": "keyword", "statusCode": "integer", "elapsedMilliseconds": "double" }
+    },
+    {
+      "name": "event-summaries",
+      "owner": "audit",
+      "readAlias": "fa-local-audit-event-summaries-read",
+      "query": "audit-events.json",
+      "fields": { "occurredAtUtc": "date", "observedAtUtc": "date", "expiresAtUtc": "date", "producer": "keyword", "action": "keyword", "domain": "keyword", "outcome": "keyword" }
+    },
+    {
+      "name": "ai-ocr-job-observations",
+      "owner": "monitoring",
+      "readAlias": "fa-local-monitoring-ai-ocr-job-observations-read",
+      "query": "ai-ocr-jobs.json",
+      "fields": { "observedAtUtc": "date", "sourceService": "keyword", "kind": "keyword", "state": "keyword", "revision": "long", "errorCategory": "keyword" }
+    },
+    {
+      "name": "service-health",
+      "owner": "monitoring",
+      "readAlias": "fa-local-monitoring-service-health-read",
+      "query": "service-health.json",
+      "fields": { "observedAtUtc": "date", "component": "keyword", "status": "keyword", "latencyMilliseconds": "double" }
+    }
+  ]
+}

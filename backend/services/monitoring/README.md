@@ -54,5 +54,9 @@ Durable operational indices, long-term retention, alerting, and support workflow
 belong to later P8 tickets. The existing snapshot remains aggregate-only; the
 separate jobs endpoint exposes only approved operational metadata.
 
+FIN-195 defines [operational index/dashboard contracts](../../../docs/engineering/operational-indices-and-dashboards.md),
+including minimized job observations and health projections. These are offline
+design/query assets, not a durable adapter, collector or new admin UI integration.
+
 Full API and safety rules are in
 `docs/api/monitoring-admin-v1.md`.

@@ -1,0 +1,19 @@
+{
+  "size": 0,
+  "_source": false,
+  "track_total_hits": false,
+  "timeout": "2s",
+  "query": { "bool": { "filter": [
+    { "range": { "occurredAtUtc": { "gte": "now-1h", "lte": "now" } } },
+    { "range": { "expiresAtUtc": { "gt": "now" } } }
+  ] } },
+  "aggs": {
+    "outcomes": { "filters": { "filters": {
+      "succeeded": { "term": { "outcome": "succeeded" } },
+      "failed": { "term": { "outcome": "failed" } },
+      "denied": { "term": { "outcome": "denied" } },
+      "accepted": { "term": { "outcome": "accepted" } }
+    } } },
+    "lastObserved": { "max": { "field": "observedAtUtc" } }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "size": 0,
+  "_source": false,
+  "track_total_hits": false,
+  "timeout": "2s",
+  "query": { "bool": { "filter": [
+    { "range": { "observedAtUtc": { "gte": "now-5m", "lte": "now" } } },
+    { "term": { "component": "identity-service" } }
+  ] } },
+  "aggs": {
+    "selectedComponent": {
+      "filter": { "match_all": {} },
+      "aggs": { "latest": { "top_hits": {
+        "size": 1,
+        "sort": [{ "observedAtUtc": { "order": "desc" } }],
+        "_source": { "includes": ["observedAtUtc", "component", "status", "latencyMilliseconds"] }
+      } } }
+    }
+  }
+}

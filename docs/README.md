@@ -110,6 +110,7 @@ Privacy-safe monitoring admin API:
 docs/architecture/backend-observability-strategy.md
 docs/engineering/structured-logging-and-correlation.md
 docs/engineering/service-health-and-readiness.md
+docs/engineering/operational-indices-and-dashboards.md
 docs/api/monitoring-admin-v1.md
 ```
 

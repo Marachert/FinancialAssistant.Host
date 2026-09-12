@@ -1,0 +1,25 @@
+{
+  "size": 0,
+  "_source": false,
+  "track_total_hits": false,
+  "timeout": "2s",
+  "query": { "bool": { "filter": [
+    { "range": { "observedAtUtc": { "gte": "now-1h", "lte": "now" } } },
+    { "term": { "state": "failed" } },
+    { "terms": { "kind": ["ai", "ocr"] } }
+  ] } },
+  "aggs": {
+    "kinds": { "filters": { "filters": {
+      "ai": { "term": { "kind": "ai" } },
+      "ocr": { "term": { "kind": "ocr" } }
+    } }, "aggs": {
+      "categories": { "filters": { "filters": {
+        "timeout": { "term": { "errorCategory": "timeout" } },
+        "transport": { "term": { "errorCategory": "transport" } },
+        "provider_unavailable": { "term": { "errorCategory": "provider_unavailable" } },
+        "invalid_result": { "term": { "errorCategory": "invalid_result" } },
+        "policy_rejected": { "term": { "errorCategory": "policy_rejected" } }
+      } } }
+    } }
+  }
+}
