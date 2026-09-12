@@ -9,6 +9,8 @@ repeatable infrastructure bootstrap tooling.
   RabbitMQ, Redis, MinIO, Prometheus, and Grafana.
 - [Elasticsearch sample bootstrap](elasticsearch/bootstrap/README.md) for the
   first Identity Service-owned index template and stable aliases.
+- [Operational index and dashboard design](../docs/engineering/operational-indices-and-dashboards.md)
+  with offline, owner-scoped query examples; no deployed collector or lifecycle policy.
 - [Windows Server PoC stack](windows-poc/README.md) for the production-like
   single-host service topology, reverse proxy, secrets, and backup/restore.
 

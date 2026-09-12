@@ -1,0 +1,16 @@
+{
+  "size": 0,
+  "_source": false,
+  "track_total_hits": false,
+  "timeout": "2s",
+  "query": { "range": { "occurredAtUtc": { "gte": "now-15m", "lte": "now" } } },
+  "aggs": {
+    "levels": { "filters": { "filters": {
+      "information": { "term": { "level": "Information" } },
+      "warning": { "term": { "level": "Warning" } },
+      "error": { "term": { "level": "Error" } },
+      "critical": { "term": { "level": "Critical" } }
+    } } },
+    "lastObserved": { "max": { "field": "observedAtUtc" } }
+  }
+}
