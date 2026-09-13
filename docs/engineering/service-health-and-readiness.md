@@ -104,6 +104,10 @@ and the remaining P8/P9 work.
 
 ## Cost boundary
 
+Readiness-to-incident evaluation and missing-data behavior are defined in
+[Alerting rules and incident priorities](alerting-and-incident-priorities.md).
+That definition does not install an evaluator or paging integration.
+
 The baseline uses ASP.NET Core health checks, the existing Monitoring Service,
 and local JSON output. It enables no paid monitoring account, exporter, hosted
 dashboard, alert destination, or additional provider credit. Any future

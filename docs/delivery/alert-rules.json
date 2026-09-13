@@ -1,0 +1,17 @@
+{
+  "classification": "offline-alert-definition-only",
+  "enabled": false,
+  "destination": null,
+  "automaticMutationAllowed": false,
+  "runbook": "docs/engineering/alerting-and-incident-priorities.md",
+  "rules": [
+    { "id": "service_down", "priority": "P2", "owner": "service-owner", "sourceGate": "verified-required-readiness" },
+    { "id": "provider_failure", "priority": "P2", "owner": "provider-service-owner", "sourceGate": "owner-windowed-provider-outcomes" },
+    { "id": "queue_backlog", "priority": "P2", "owner": "consumer-owner", "sourceGate": "owner-per-queue-age-and-consumers" },
+    { "id": "http_error_rate", "priority": "P2", "owner": "request-boundary-owner", "sourceGate": "complete-windowed-request-counts" },
+    { "id": "storage_failure", "priority": "P2", "owner": "storage-owning-service", "sourceGate": "required-persistence-and-integrity-evidence" },
+    { "id": "release_blocker", "priority": "P2", "owner": "release-owner", "sourceGate": "exact-candidate-release-evidence" },
+    { "id": "visibility_gap", "priority": "P3", "owner": "monitoring-and-source-owner", "sourceGate": "approved-expected-source-inventory" },
+    { "id": "integrity_security", "priority": "P1", "owner": "domain-security-release-owners", "sourceGate": "validated-owner-invariant-evidence" }
+  ]
+}
