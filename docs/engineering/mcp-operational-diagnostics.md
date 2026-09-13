@@ -4,6 +4,9 @@ Related Jira: FIN-196, parent FIN-36. This is a **design-only** contract, not
 deployed tooling. The [catalog](../api/mcp-diagnostics-catalog.json) is an offline
 review/test artifact, not SDK registration or configuration that enables access.
 
+The operator decision process is defined in
+[Failed Job Support Workflow](failed-job-support-workflow.md) (FIN-197).
+
 ## Implemented Boundary
 
 The [MCP v1 host](../api/mcp-server-v1.md) currently registers exactly six tools:
