@@ -1,0 +1,16 @@
+{
+  "classification": "synthetic-support-example-only",
+  "caseReference": "synthetic-case-001",
+  "kind": "ocr",
+  "owner": "receipt-processing",
+  "observationState": "unavailable",
+  "failureCategory": null,
+  "verifiedAttempt": null,
+  "verifiedRetryAtUtc": null,
+  "decision": "visibility_gap",
+  "userMessageChoice": "unknown_outcome",
+  "handoff": "service-owner",
+  "verification": "pending-owner-evidence",
+  "recoveryConfirmed": false,
+  "supportMutationAllowed": false
+}

@@ -127,6 +127,7 @@ Role-controlled internal MCP Server:
 ```text
 docs/api/mcp-server-v1.md
 docs/engineering/mcp-operational-diagnostics.md
+docs/engineering/failed-job-support-workflow.md
 backend/services/mcp/README.md
 ```
 

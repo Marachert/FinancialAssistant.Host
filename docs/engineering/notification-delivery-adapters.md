@@ -1,5 +1,8 @@
 # Notification Delivery Adapter Baseline
 
+Support decisions, user-safe messages and retry escalation:
+[Failed Job Support Workflow](failed-job-support-workflow.md).
+
 FIN-139 adds a provider-neutral boundary between prepared notification business
 messages and future mobile push or web notification SDKs. Recommendation and
 notification rules continue to produce `PreparedNotification` values and do

@@ -1,5 +1,8 @@
 # Asynchronous AI and OCR processing flow
 
+Support triage and the distinction between retry eligibility and a verified
+schedule: [Failed Job Support Workflow](failed-job-support-workflow.md).
+
 ## Purpose
 
 AI parsing and OCR extraction are provider-dependent jobs. Public financial APIs accept
