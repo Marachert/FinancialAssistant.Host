@@ -70,13 +70,28 @@ accumulation and preserve firing incidents as unknown, never resolve them.
 | `service_down` | Critical service readiness unavailable for two distinct consecutive 30-second probes; validate freshness and required scope | P2 owning service/platform; P1 for confirmed broad core impact | Three consecutive fresh healthy readiness samples plus owner verification of affected core flow |
 | `provider_failure` | Owner-side terminal physical attempts: at least 20 attempts and at least 20% technical failures in each of five consecutive one-minute buckets; explicit disabled/configuration/cost guardrail evidence bypasses rate gating | P2 for exhausted guardrail or blocked required capability; P3 for partial optional loss; AI/OCR/notification owner | Five complete minutes below 10% with verified coverage and controlled successful work; zero traffic alone cannot resolve |
 | `queue_backlog` | Required oldest pending age exceeds 300 seconds in a fresh owner sample, or pending messages with zero consumers persist for two probes; P3 for strictly increasing age across ten 30-second samples below P2 threshold | P2 required processing blocked, P3 growing lag; consumer owner/platform | Age below 60 seconds and expected consumers present for five minutes; verified empty queue counts only with complete fresh coverage |
-| `http_error_rate` | One request boundary: at least 20 completed requests and HTTP 5xx at least 5% in each of five consecutive one-minute buckets; exclude health probes/client cancellations, count downstream failures once | P2 gateway/service owner | Five complete minutes below 1% with same minimum traffic and coverage; otherwise owner-approved synthetic flow evidence and manual resolution |
+| `http_error_rate` | One request boundary: at least 20 completed requests across the full rolling five-minute window and HTTP 5xx at least 5% over that same window; require complete source coverage, exclude health probes/client cancellations, count downstream failures once | P2 gateway/service owner | A complete five-minute window below 1% with at least 20 total requests and verified coverage; otherwise owner-approved synthetic flow evidence and manual resolution |
 | `storage_failure` | Required owned persistence unavailable for two probes; confirmed lost authoritative event, corruption or financial invariant breach fires immediately | P2 availability, P1 integrity; store-owning service/platform and security when relevant | Fresh required readiness plus approved persistence/restore or integrity verification; never clear P1 from cluster color |
-| `release_blocker` | Mandatory exact-build/environment gate failed, pending, cancelled, unexpectedly skipped, missing or stale; missing coverage/destination approval also blocks | P2 release owner; P1 security/integrity | Every required gate verified successful for unchanged candidate, approvals current, explicit release-owner go decision |
+| `release_blocker` | For an exact candidate with release approval requested, any mandatory gate failed, pending, cancelled, unexpectedly skipped, missing or stale; before approval request, a check still pending/missing more than 30 minutes after candidate registration triggers review; missing coverage/destination approval blocks release | P2 release owner for requested release or overdue checks; P1 security/integrity immediately | Every required gate verified successful for unchanged candidate, approvals current, explicit release-owner go decision |
 | `visibility_gap` | Expected armed source has no valid fresh sample for 90 seconds, is unauthorized, partial or not configured | P3 Monitoring/source owner; P2 and release block when critical evidence cannot be established | Three consecutive fresh complete samples; independently re-evaluate affected incidents before resolution |
 | `integrity_security` | Validated owning-domain invariant or security-boundary failure, confirmed authoritative event loss or broad core outage; no window | P1 domain/security/release owners | Explicit containment and integrity acceptance with follow-up; no automatic clear |
 
-Rate numerator/denominator use the same boundary and bucket, with
+Ordinary pending CI prevents merge but does not page during the 30-minute build
+grace period before release approval is requested. Candidate registration records
+the exact head/environment and UTC start; a new head supersedes the prior candidate
+without claiming recovery of its failures. A normally completed failed build needs
+owner follow-up, not automatic P2 paging unless release approval was requested or
+verified runtime/security/integrity impact warrants it. Expired pending/missing
+checks trigger P2 owner review, never automatic merge. No grace period relaxes the
+merge gate: every mandatory check must succeed on the exact head.
+
+For HTTP errors, four requests per minute with all requests failing yields
+20/20 failures over five minutes and triggers P2. Nineteen total requests remain
+insufficient, and zero requests never imply recovery. The threshold is inclusive:
+one failure among 20 total requests is 5%; requests need not be evenly distributed
+among minutes. This concretizes FIN-190's full-window minimum, not 20 per minute.
+
+Rate numerator/denominator use the same boundary and window, with
 `0 <= failed <= total`. Provider counts include physical bounded retries, not
 logical jobs; policy-disabled calls are separate guardrail events, not technical
 failures. Notification consent suppression and manual review are not provider

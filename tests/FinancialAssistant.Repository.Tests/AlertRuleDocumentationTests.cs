@@ -67,6 +67,31 @@ public sealed class AlertRuleDocumentationTests
     }
 
     [Fact]
+    public void HttpRate_UsesFullWindowMinimumIncludingLowVolumeFailure()
+    {
+        var guide = Read(Guide);
+        Assert.Contains("at least 20 completed requests across the full rolling five-minute window", guide, StringComparison.Ordinal);
+        Assert.Contains("20/20 failures over five minutes and triggers P2", guide, StringComparison.Ordinal);
+        Assert.Contains("Nineteen total requests remain", guide, StringComparison.Ordinal);
+        Assert.Contains("one failure among 20 total requests is 5%", guide, StringComparison.Ordinal);
+        Assert.Contains("not 20 per minute", guide, StringComparison.Ordinal);
+        var row = guide.Split('\n').Single(line => line.StartsWith("| `http_error_rate` |", StringComparison.Ordinal));
+        Assert.DoesNotContain("each of five", row, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ReleaseGate_DoesNotPageRoutinePendingChecksOrWeakenMergeGate()
+    {
+        var guide = Read(Guide);
+        Assert.Contains("Ordinary pending CI prevents merge but does not page", guide, StringComparison.Ordinal);
+        Assert.Contains("30-minute build", guide, StringComparison.Ordinal);
+        Assert.Contains("before release approval is requested", guide, StringComparison.Ordinal);
+        Assert.Contains("more than 30 minutes after candidate registration", guide, StringComparison.Ordinal);
+        Assert.Contains("every mandatory check must succeed on the exact head", guide, StringComparison.Ordinal);
+        Assert.Contains("P1 security/integrity immediately", guide, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Guide_IsDiscoverableFromExistingOperationalPolicy()
     {
         foreach (var path in new[]
