@@ -4,8 +4,8 @@ Last updated: 2026-09-13
 
 ## Current Snapshot
 
-POC readiness after FIN-196 delivery is **89.3%**:
-**175 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-197 delivery is **89.8%**:
+**176 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,32 +13,32 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-196 - P8.T7 Define MCP tooling for Elasticsearch diagnostics
+- FIN-197 - P8.T8 Define support workflow for failed AI OCR and notification jobs
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/252
+  https://github.com/Marachert/FinancialAssistant.Host/pull/254
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/8a9deaa9ac396eb2cb94f2b18db1ae3da48831aa
-- previous recorded readiness: 174 / 196, or 88.8%
-- current readiness: 175 / 196, or 89.3%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/e151670da43db64de47a3bbb1f58638c33a82d4e
+- previous recorded readiness: 175 / 196, or 89.3%
+- current readiness: 176 / 196, or 89.8%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-196 - Bounded read-only MCP diagnostics definition and offline action catalog,
+- FIN-197 - Privacy-safe support triage, retry/escalation rules and case notes,
   merged and verified Done on 2026-09-13
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/252
+  https://github.com/Marachert/FinancialAssistant.Host/pull/254
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/8a9deaa9ac396eb2cb94f2b18db1ae3da48831aa
-- merged at: `2026-09-13T07:32:44Z`
-- final implementation head: `354d98f060ccfa33f706c9e404a832786baf23d5`
-- exact-head CI: Backend 34745350673, Mobile 34745350590, Admin Web 34745350589
-- previous recorded readiness: 174 / 196, or 88.8%
-- current readiness: 175 / 196, or 89.3%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/e151670da43db64de47a3bbb1f58638c33a82d4e
+- merged at: `2026-09-13T12:52:07Z`
+- final implementation head: `119a27147b21de381361b9ab1c1c1485c891b4c7`
+- exact-head CI: Backend 34758102095, Mobile 34758102107, Admin Web 34758102100
+- previous recorded readiness: 175 / 196, or 89.3%
+- current readiness: 176 / 196, or 89.8%
 - change: +0.5 percentage points
 
-The fresh 2026-09-13 census contains 269 unique issues and confirms 175/196 after
-FIN-196 closure. FIN-36 remains In Progress with four unfinished children, FIN-197
+The fresh 2026-09-13 census contains 269 unique issues and confirms 176/196 after
+FIN-197 closure. FIN-36 remains In Progress with three unfinished children, FIN-198
 through FIN-200. Prior FIN-269 documentation maintenance has no parent or children
 and contributes neither numerator nor denominator; its +0.0 pp closure and
 publication through PRs #248/#249 remain historical evidence below.
@@ -76,32 +76,31 @@ numerator and denominator unchanged.
 
 Current delivery:
 
-- FIN-196 is Done through guarded merged PR #252
-- the implementation is merged at `8a9deaa9ac396eb2cb94f2b18db1ae3da48831aa`
+- FIN-197 is Done through guarded merged PR #254
+- the implementation is merged at `e151670da43db64de47a3bbb1f58638c33a82d4e`
   after exact-head Backend, Mobile and Admin Web CI and a clear review-channel audit
-- canonical POC readiness is 175/196 (89.3%), a +0.5 percentage-point change
+- canonical POC readiness is 176/196 (89.8%), a +0.5 percentage-point change
 - FIN-31 P7 progress is 18/18 (100.0%); all 33 direct children and the epic are
   verified Done
-- FIN-36 P8 progress is 9/13 (69.2%); four children remain unfinished and the epic remains In Progress
+- FIN-36 P8 progress is 10/13 (76.9%); three children remain unfinished and the epic remains In Progress
 - FIN-38 P9 progress is 3/20 (15.0%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
   remain open
 - no paid provider, exporter, alert destination, or additional credits were used
-- FIN-196 defines four admin-only read actions, closed inputs/output fields,
-  owner API boundaries and a synthetic support flow; no new MCP registration,
-  live storage access or deployment is claimed. Adapters and runtime approval
-  remain gates; the existing six tools are unchanged
-- local 143/143 repository tests, focused format, 1017-file privacy scan and
-  133 Markdown files/220 local links passed; exact-head full CI was green
+- FIN-197 defines read-only support triage, three retry layers, escalation,
+  user-safe messages and synthetic minimal case notes. No scheduler, replay,
+  provider send or customer-data access is enabled; runtime approval remains open
+- local 148/148 repository tests, focused format, 1020-file privacy scan and
+  134 Markdown files/232 local links passed; exact-head full CI was green
 - all 139 Confluence pages were audited; 118 updated and 79 empty content pages filled;
   historical evidence and three intentional templates were preserved
 - FIN-269 GitHub documentation synchronization is merged through PR #248 and Done;
   all five exact-head CI checks passed and every review channel was empty
 - current documentation includes the implementation map, preferred storage policy,
   source-to-Confluence maintenance map and explicit financial authorization limits
-- the next ranked product leaf is FIN-197 under FIN-36, after closure publication
+- the next ranked product leaf is FIN-198 under FIN-36, after closure publication
 
 ## Epic Progress
 
@@ -115,9 +114,9 @@ Current delivery:
 | FIN-23 | P5 AI orchestration and OCR automation | 19 | 19 | 100.0% |
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 20 | 20 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
-| FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 9 | 13 | 69.2% |
+| FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 10 | 13 | 76.9% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 3 | 20 | 15.0% |
-| **Total** | **Canonical POC leaf scope** | **175** | **196** | **89.3%** |
+| **Total** | **Canonical POC leaf scope** | **176** | **196** | **89.8%** |
 
 ## First-User-Test Gates
 
@@ -293,3 +292,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-09-12 | FIN-269 | PR 248 verified merged; Jira Done verified; documentation maintenance outside canonical feature scope | 88.3% | +0.0 pp |
 | 2026-09-12 | FIN-195 | PR 250 verified merged and Jira Done; operational index/query design, not runtime deployment | 88.8% | +0.5 pp |
 | 2026-09-13 | FIN-196 | PR 252 verified merged and Jira Done; read-only MCP diagnostics definition, not runtime enablement | 89.3% | +0.5 pp |
+| 2026-09-13 | FIN-197 | PR 254 verified merged and Jira Done; failed-job support workflow, not runtime recovery or provider enablement | 89.8% | +0.5 pp |
