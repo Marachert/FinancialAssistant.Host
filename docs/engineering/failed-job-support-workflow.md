@@ -6,6 +6,9 @@ enable providers, a scheduler, a replay endpoint or customer-data access.
 
 ## Current Capabilities
 
+For incident severity, owner response targets and signal limitations, follow
+[Alerting rules and incident priorities](alerting-and-incident-priorities.md).
+
 Use the protected [Monitoring snapshot/jobs API](../api/monitoring-admin-v1.md)
 and [Audit contract](../api/audit-admin-v1.md) only within approved access scope.
 Monitoring has at most 200 latest observations for 24 hours in process-local

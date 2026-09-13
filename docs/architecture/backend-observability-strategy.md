@@ -265,6 +265,10 @@ dependencies, dashboard panels, and runbook.
 
 ## Alert priorities
 
+Concrete FIN-198 rules, evidence gaps and draft owner response targets:
+[Alerting rules and incident priorities](../engineering/alerting-and-incident-priorities.md).
+The definition does not arm rules or enable an external destination.
+
 Alerts are symptom-based, deduplicated, and actionable. They include service,
 environment, severity, started time, affected technical capability, dashboard
 link, and runbook link. They never include log bodies or sensitive fields.
