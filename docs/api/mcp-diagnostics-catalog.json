@@ -1,0 +1,62 @@
+{
+  "jira": "FIN-196",
+  "status": "design-only",
+  "registered": false,
+  "directStorageAccess": false,
+  "timeoutSeconds": 5,
+  "maximumResponseBytes": 16384,
+  "minimumRepeatSeconds": 30,
+  "maximumConcurrentCallsPerPrincipal": 1,
+  "automaticRetries": 0,
+  "environments": ["local", "approved-poc"],
+  "outcomes": ["ok", "no_data", "unavailable", "stale", "denied", "invalid_request", "rate_limited"],
+  "actions": [
+    {
+      "name": "operational_query", "roles": ["admin"], "readOnly": true,
+      "route": "owner-api-required", "maximumItems": 20,
+      "inputSchema": {
+        "type": "object", "additionalProperties": false, "required": ["catalogKey"],
+        "properties": {
+          "catalogKey": {"type": "string", "enum": ["application-logs", "event-summaries", "ai-ocr-job-observations", "service-health"]}
+        }
+      },
+      "resultFields": ["catalogKey", "bucketKey", "count", "component", "status", "latencyMilliseconds"],
+      "projectionCatalog": "../../infra/elasticsearch/operations/catalog.json"
+    },
+    {
+      "name": "operational_index_inspect", "roles": ["admin"], "readOnly": true,
+      "route": "owner-api-required", "maximumItems": 1,
+      "inputSchema": {
+        "type": "object", "additionalProperties": false, "required": ["catalogKey"],
+        "properties": {
+          "catalogKey": {"type": "string", "enum": ["application-logs", "event-summaries", "ai-ocr-job-observations", "service-health"]}
+        }
+      },
+      "resultFields": ["catalogKey", "owner", "configured", "aliasResolved", "schemaMatches", "retentionPolicyMatches", "projectionStatus"],
+      "projectionCatalog": "../../infra/elasticsearch/operations/catalog.json"
+    },
+    {
+      "name": "failed_job_lookup", "roles": ["admin"], "readOnly": true,
+      "route": "monitoring-api-adapter-required", "maximumItems": 1,
+      "inputSchema": {
+        "type": "object", "additionalProperties": false, "required": ["operationId", "kind"],
+        "properties": {
+          "operationId": {"type": "string", "format": "uuid", "maxLength": 36},
+          "kind": {"type": "string", "enum": ["ai", "ocr", "notification"]}
+        }
+      },
+      "resultFields": ["sourceService", "kind", "state", "revision", "observedAtUtc", "errorCategory"]
+    },
+    {
+      "name": "audit_lookup", "roles": ["admin"], "readOnly": true,
+      "route": "audit-api-adapter-required", "maximumItems": 20,
+      "inputSchema": {
+        "type": "object", "additionalProperties": false, "required": ["correlationId"],
+        "properties": {
+          "correlationId": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9._:-]+$"}
+        }
+      },
+      "resultFields": ["occurredAtUtc", "producer", "action", "domain", "outcome"]
+    }
+  ]
+}
