@@ -29,8 +29,18 @@ submission and cannot mutate Atlassian.
 
 ## Data policy
 
-Operational tools call allowlisted Monitoring and Audit APIs only. There is no
+Operational reads use the allowlisted Monitoring API; the optional Audit adapter
+records outcomes, not audit searches. There is no
 arbitrary Elasticsearch/database query, URL fetch, shell, filesystem, or raw
 production-data tool. Responses contain aggregate operational counters, safe
 status identifiers, or governed documentation references. Every request and
 tool outcome is audited without raw personal or financial content.
+
+## Proposed Diagnostics (FIN-196)
+
+The [diagnostics definition](../engineering/mcp-operational-diagnostics.md) and
+[offline catalog](mcp-diagnostics-catalog.json) specify four additional admin-only
+read actions. They are not registered or enabled by this contract. Owner API
+adapters, bounded minimized responses and runtime security verification are
+prerequisites. Existing cost/parsing zero fallbacks do not prove no activity;
+existing health output does not yet expose a freshness timestamp.

@@ -42,3 +42,11 @@ Secrets are never stored in this repository. Configure:
 
 Prompt evaluation counters are aggregate configuration/projection values. No
 paid provider or external credit is required by this service.
+
+## Operational Diagnostics Design
+
+[FIN-196 diagnostics](../../../docs/engineering/mcp-operational-diagnostics.md)
+defines an offline query catalog, index inspection, failed-job lookup and audit
+lookup. These four admin-only actions are not registered. Owner API adapters,
+privacy approval and bounded runtime verification must precede access. The
+current six-tool registry and its role rules remain unchanged.

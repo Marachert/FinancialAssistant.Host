@@ -36,6 +36,7 @@ OpenAPI artifacts may be added here or generated from service-owned source contr
 - [Monitoring Admin API v1](monitoring-admin-v1.md)
 - [Audit Admin API v1](audit-admin-v1.md)
 - [Internal MCP Server v1](mcp-server-v1.md)
+- [MCP operational diagnostics design](../engineering/mcp-operational-diagnostics.md)
 - [Identity API contracts](../engineering/identity-api-contracts.md)
 - [Transaction Intake and draft flow](../engineering/transaction-intake-draft-flow.md)
 - [Receipt upload and OCR pipeline](../engineering/receipt-upload-ocr-pipeline.md)
