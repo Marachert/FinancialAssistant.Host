@@ -33,8 +33,9 @@ Blocked. Role names here do not invent assigned people or approvals. Product and
 security owners approve declared capabilities; only the release owner records
 the final dated decision after all independent gates pass.
 
-FIN-202 expands journey scenarios; FIN-203 is a separately ranked QA ticket,
-not automatically closed as a duplicate. FIN-204 owns backend E2E expansion;
+FIN-202 expands journey scenarios. FIN-203 owns the production-like scope
+crosswalk below and is not automatically closed as a duplicate of this strategy.
+FIN-204 owns backend E2E expansion;
 FIN-205 storage validation; FIN-206/207/208/209 deployment, HTTPS, secrets and
 restore; FIN-210/211 native distribution; FIN-212/213 privacy/store metadata;
 FIN-215 security review; FIN-216 runtime operations; FIN-217 rollout; FIN-218
@@ -180,3 +181,57 @@ Until all items are evidenced, the decision is **No-Go**. Neither FIN-201 Done,
 green synthetic CI, all P8 leaf definitions Done nor the
 [POC progress percentage](../agent/POC_PROGRESS.md) grants tester access. This plan
 does not supply missing runtime results or an estimated release date.
+
+## First Production-Like POC Scope
+
+Related Jira: FIN-203. This crosswalk makes its seven scope areas explicit within
+the shared strategy; it does not create another QA process or assert execution.
+The seven [MVP user journeys](mvp-e2e-scenarios.md) remain the critical journey
+catalog, including every applicable negative variant and both mobile platforms.
+
+Production-like means an approved isolated candidate environment with the actual
+deployment topology, authenticated public gateway, service-owned persistent
+adapters, configured event transport, TLS, secret injection, retention, recovery
+and diagnostics used by the proposed rollout. It does not mean production data,
+production access or permission to spend. In-memory stores, manually forwarded
+events and fake providers remain useful L1/L2 evidence, not proof of this lane.
+Current placeholder routes, non-sending notifications and unverified persistence
+must be recorded as Blocked until their owning work supplies runtime evidence.
+
+| ID | Required QA area / owner | Execute at stated level | Pass evidence / blocker |
+| --- | --- | --- | --- |
+| QA-SCOPE-001 | Backend unit/integration / backend owners | L1/L2 full Release solution gate and [financial validation](financial-core-validation-test-plan.md); L3 actual connected owner/event paths | Exact-head TRX plus candidate transport/persistence/auth/convergence results; test-host-only coverage cannot establish durable E2E |
+| QA-SCOPE-002 | Mobile smoke/regression / mobile and QA | L4 every required MOB-SMK/MOB-REG row from [mobile matrix](mobile-smoke-regression-test-plan.md), Android and iOS independently | Candidate app/backend mapping, OS/device results and safe screenshots; TypeScript/lint or one platform cannot replace native acceptance |
+| QA-SCOPE-003 | API contracts / gateway and service owners | L1/L2 [release contract suite](../../tests/FinancialAssistant.Release.Tests/ReleaseContractPrivacyTests.cs) and owned v1 contracts; L3 public-route/auth/owner/negative cases from MVP journeys | Snapshot/compatibility checks plus real method/path/status/error/auth evidence; OpenAPI path presence alone does not prove routing, authorization or destination availability |
+| QA-SCOPE-004 | AI/OCR fixtures / AI, OCR and Intake owners | L1/L2 [generated fixture matrix](ai-ocr-integration-test-plan.json); separately approved provider sandbox mapping and [readiness](ai-ocr-release-readiness-checklist.md) | Fixture IDs, adapter/model/configuration provenance, schema/ambiguity/timeout/retry/privacy outcomes; fake success cannot approve a live provider or confirmation |
+| QA-SCOPE-005 | Privacy/security / security and area owners | L1/L2 privacy baseline/contracts, [AI/OCR review](../security/ai-ocr-privacy-review-checklist.md); L3/L4 actual access, owner isolation, sinks, retention/deletion and client leakage | Restricted safe evidence and FIN-215 review; a filename/secret scan is not a complete security review or proof of deployed privacy controls |
+| QA-SCOPE-006 | Windows deployment / platform owner | L3/L5 [Windows runbook](../../infra/windows-poc/README.md): prerequisites, configuration validation, approved startup/smoke, TLS, storage/broker and synthetic restore | Exact artifact/configuration identity plus observed restart/restore results and P8 record; static Compose validation or archive creation alone does not prove deployability or recovery |
+| QA-SCOPE-007 | Store readiness / mobile, account and release owners | L1 repository metadata/assets validation; L5 [strict store gate and account workflow](../delivery/mobile-store-release-tracks.md) | Matching native versions/builds, approved account/signing records, reconciled disclosures and actual tester installation; repository validation alone is not store or distribution acceptance |
+
+All seven areas are required. This table is a scope checklist, not seven recorded
+passes. Record per-area owner/backup, required case IDs, lane/platform, candidate
+and artifact/configuration mapping, UTC time, explicit result, safe evidence
+reference/hash and any defect. References to test files show existing coverage,
+not that all desired scenarios exist or ran. An unimplemented required case is
+Blocked with an owning Jira issue, not Passed or silently excluded.
+
+Before a production-like run, the release owner reviews the environment inventory
+and authorizes only the needed verification operations. Check existing runtimes,
+least-privilege secret references, isolated synthetic fixtures, safe retention,
+backup/rollback and maximum-spend approval first. This document does not authorize
+Docker startup, destructive restore, external API usage, paid builds or account
+enrollment. Never expose credential values or reset a retry/cost budget to pass.
+
+Run the five required CI checks at the reviewed head, then execute the approved
+L3-L5 matrix against the actual candidate artifacts. Map those artifacts to the
+reviewed source and independently verified merge; source/configuration changes
+invalidate affected evidence. Run post-deployment smoke before inviting testers.
+Keep runtime P6 notification delivery, P7 device journeys, all seven P8 areas plus
+rollback, and remaining P9 release gates independent of this table. Passing the
+seven scope areas alone is not the final Go decision. FIN-218 retains final
+release-owner sign-off; no missing gate can be waived by closing FIN-203.
+
+The result rules above apply unchanged: only explicit Pass with valid evidence
+qualifies; blank, Fail, Blocked, Not run, stale, pending or unexpectedly skipped
+required evidence means No-Go. First-user readiness cannot be inferred from the
+number of plan rows, tests, closed tickets or green synthetic CI.
