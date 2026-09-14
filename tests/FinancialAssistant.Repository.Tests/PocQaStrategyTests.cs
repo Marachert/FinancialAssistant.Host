@@ -87,6 +87,42 @@ public sealed class PocQaStrategyTests
 
     private static string Read(string path) => File.ReadAllText(Rooted(path));
 
+    [Fact]
+    public void ProductionLikeScope_CoversAllSevenFin203Areas()
+    {
+        var guide = Read(Guide);
+        var ids = Regex.Matches(guide, @"(?m)^\| (QA-SCOPE-\d{3}) \|")
+            .Select(match => match.Groups[1].Value).ToArray();
+        Assert.Equal(Enumerable.Range(1, 7).Select(number => $"QA-SCOPE-{number:000}"), ids);
+        foreach (var area in new[]
+        {
+            "Backend unit/integration", "Mobile smoke/regression", "API contracts",
+            "AI/OCR fixtures", "Privacy/security", "Windows deployment", "Store readiness"
+        })
+        {
+            Assert.Contains(area, guide, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void ProductionLikeScope_RejectsStaticOnlyAcceptanceAndImplicitApproval()
+    {
+        var guide = Regex.Replace(Read(Guide), @"\s+", " ");
+        foreach (var phrase in new[]
+        {
+            "All seven areas are required", "not seven recorded passes",
+            "actual deployment topology", "OpenAPI path presence alone does not prove",
+            "filename/secret scan is not a complete security review", "archive creation alone",
+            "actual tester installation", "not that all desired scenarios exist or ran",
+            "An unimplemented required case is Blocked", "does not authorize Docker startup",
+            "Passing the seven scope areas alone is not the final Go decision",
+            "FIN-218 retains final release-owner sign-off"
+        })
+        {
+            Assert.Contains(phrase, guide, StringComparison.Ordinal);
+        }
+    }
+
     private static string Rooted(string path)
     {
         foreach (var start in new[] { Directory.GetCurrentDirectory(), AppContext.BaseDirectory })
