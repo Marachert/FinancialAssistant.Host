@@ -2,6 +2,9 @@
 
 Related Jira: FIN-189.
 
+The [POC QA strategy](poc-qa-strategy.md) coordinates this mobile matrix with
+backend, provider, operational and first-user release evidence.
+
 ## Purpose
 
 This plan defines the minimum release-candidate validation for the Financial

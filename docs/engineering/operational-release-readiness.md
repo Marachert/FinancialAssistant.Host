@@ -1,5 +1,8 @@
 # Operational Release Readiness Checklist
 
+The [POC QA strategy](poc-qa-strategy.md) coordinates this P8 gate with the
+independent backend, mobile, provider and P9 release checks.
+
 Related Jira: FIN-200, parent FIN-36. This is the release-owner verification
 checklist for P8, not a deployment approval. The [blank decision record](../delivery/operational-readiness-record.json)
 starts `Blocked`, with no candidate, environment, approver or evidence. Closing

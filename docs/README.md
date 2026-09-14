@@ -5,6 +5,7 @@ Developer, architecture, security, API, event, and delivery documentation worksp
 ## Start here
 
 - [POC readiness and closure statistics](agent/POC_PROGRESS.md)
+- [POC QA strategy and test scope](engineering/poc-qa-strategy.md)
 - [Current implementation versus product target](architecture/current-implementation.md)
 - [Service-owned storage policy](architecture/storage-policy.md)
 - [Confluence/GitHub maintenance map](agent/DOCUMENTATION_MAINTENANCE.md)
