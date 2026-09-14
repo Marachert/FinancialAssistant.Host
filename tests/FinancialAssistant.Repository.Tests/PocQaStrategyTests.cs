@@ -49,13 +49,23 @@ public sealed class PocQaStrategyTests
             "no automatic fallback", "Exactly one authoritative record", "cross-owner",
             "non-sending placeholder is not delivery evidence", "both native platforms",
             "actual browser", "independently verified actual merge", "artifact digest",
-            "Pass/Fail/Blocked/Not run", "No blank result means Pass", "maximum spend",
+            "Pass/Fail/Blocked/Not run", "maximum spend",
             "Required smoke/area gates cannot be waived", "rollback gate pass independently",
             "not the P1-P4 operational incident response classes", "No-Go"
         })
         {
             Assert.Contains(phrase, guide, StringComparison.Ordinal);
         }
+    }
+
+    [Fact]
+    public void ResultGate_RequiresExplicitPassAndRejectsBlankOrNonPassingResults()
+    {
+        var guide = Regex.Replace(Read(Guide), @"\s+", " ");
+        Assert.Contains("A blank result never counts as Pass", guide, StringComparison.Ordinal);
+        Assert.Contains("Only an explicit Pass with valid evidence qualifies", guide, StringComparison.Ordinal);
+        Assert.Contains("Fail, Blocked and Not run never qualify", guide, StringComparison.Ordinal);
+        Assert.DoesNotContain("No blank result means Pass", guide, StringComparison.Ordinal);
     }
 
     [Fact]

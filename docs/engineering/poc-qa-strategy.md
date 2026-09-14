@@ -137,7 +137,9 @@ UI/fallbacks. They cannot waive core correctness/privacy or required area gates.
 5. For each row record case ID, owner, UTC time, candidate/artifact/environment,
    level/platform, expected/actual safe result, Pass/Fail/Blocked/Not run,
    restricted evidence reference/hash and linked defect. Capture CI name/run URL,
-   attempt, head, conclusion and completion time. No blank result means Pass.
+   attempt, head, conclusion and completion time. A blank result never counts as
+   Pass. Only an explicit Pass with valid evidence qualifies; Fail, Blocked and
+   Not run never qualify.
 6. Triage defects below. Fix and rerun the failed case plus affected neighboring
    regressions on the new candidate. Never weaken tests, erase blockers or retry
    until a flaky result becomes a pass; reproduce and explain nondeterminism.
