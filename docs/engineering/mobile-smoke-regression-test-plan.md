@@ -5,6 +5,9 @@ Related Jira: FIN-189.
 The [POC QA strategy](poc-qa-strategy.md) coordinates this mobile matrix with
 backend, provider, operational and first-user release evidence.
 
+The [MVP end-to-end scenarios](mvp-e2e-scenarios.md) connect this platform matrix
+to owner commits, projection convergence and actual notification receipt evidence.
+
 ## Purpose
 
 This plan defines the minimum release-candidate validation for the Financial
