@@ -141,6 +141,9 @@ with the rule's recovery evidence, safe impact summary and owner acceptance.
 
 ## Acceptance Before Arming
 
+Candidate evidence and release-owner decisions are governed by the
+[operational readiness checklist](operational-release-readiness.md).
+
 See the [observability and admin test plan](observability-admin-test-plan.md)
 for scenario IDs, negative access/privacy cases and required execution evidence.
 

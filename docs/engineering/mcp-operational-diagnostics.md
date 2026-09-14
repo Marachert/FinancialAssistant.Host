@@ -9,6 +9,9 @@ The operator decision process is defined in
 
 ## Implemented Boundary
 
+Candidate tool scope, availability limitations and owner sign-off are evaluated
+through the [operational readiness checklist](operational-release-readiness.md).
+
 The [MCP v1 host](../api/mcp-server-v1.md) currently registers exactly six tools:
 `system_health`, `ai_cost_summary`, `parsing_quality`, `prompt_eval_summary`,
 `jira_issue_draft`, and `architecture_lookup`. Existing role rules are unchanged.

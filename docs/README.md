@@ -130,6 +130,7 @@ docs/engineering/mcp-operational-diagnostics.md
 docs/engineering/failed-job-support-workflow.md
 docs/engineering/alerting-and-incident-priorities.md
 docs/engineering/observability-admin-test-plan.md
+docs/engineering/operational-release-readiness.md
 backend/services/mcp/README.md
 ```
 

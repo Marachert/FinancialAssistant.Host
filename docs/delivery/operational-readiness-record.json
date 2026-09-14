@@ -1,0 +1,37 @@
+{
+  "classification": "blank-operational-release-record",
+  "candidateCommit": null,
+  "pullRequest": null,
+  "reviewedHead": null,
+  "actualMergeCommit": null,
+  "exactHeadCi": [],
+  "artifactDigest": null,
+  "environment": null,
+  "capabilityScope": null,
+  "releaseOwner": null,
+  "backupOwner": null,
+  "verifiedAtUtc": null,
+  "decision": "Blocked",
+  "runtimeAcceptance": false,
+  "additionalSpendAuthorized": false,
+  "rollback": {
+    "required": true,
+    "status": "Blocked",
+    "previousArtifactDigest": null,
+    "configurationReference": null,
+    "procedureReference": null,
+    "owner": null,
+    "restoreEvidence": [],
+    "verificationEvidence": [],
+    "blocker": "Approved rollback artifact, configuration, procedure, owner and successful restore/recovery evidence not supplied."
+  },
+  "checks": [
+    { "id": "OPS-READY-001", "area": "health", "ownerRole": "platform-and-service-owners", "required": true, "status": "Blocked", "evidence": [], "blocker": "Candidate coverage and fresh required readiness evidence not supplied." },
+    { "id": "OPS-READY-002", "area": "logs", "ownerRole": "service-owners-and-security", "required": true, "status": "Blocked", "evidence": [], "blocker": "Candidate sink privacy and retention evidence not supplied." },
+    { "id": "OPS-READY-003", "area": "alerts", "ownerRole": "platform-source-and-release-owners", "required": true, "status": "Blocked", "evidence": [], "blocker": "Runtime source, destination and response-drill evidence not supplied." },
+    { "id": "OPS-READY-004", "area": "audit", "ownerRole": "audit-owner-and-security", "required": true, "status": "Blocked", "evidence": [], "blocker": "Candidate producer, durability and expiry evidence not supplied." },
+    { "id": "OPS-READY-005", "area": "admin", "ownerRole": "gateway-monitoring-and-web-owners", "required": true, "status": "Blocked", "evidence": [], "blocker": "Deployed access and browser acceptance evidence not supplied." },
+    { "id": "OPS-READY-006", "area": "support", "ownerRole": "service-and-support-owners", "required": true, "status": "Blocked", "evidence": [], "blocker": "Case access and owner recovery/handoff evidence not supplied." },
+    { "id": "OPS-READY-007", "area": "mcp", "ownerRole": "mcp-owner-and-security", "required": true, "status": "Blocked", "evidence": [], "blocker": "Deployed tool authorization, audit and truthful availability evidence not supplied." }
+  ]
+}
