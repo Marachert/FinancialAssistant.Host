@@ -2,6 +2,9 @@
 
 ## Release gate
 
+The [POC QA strategy](poc-qa-strategy.md) coordinates backend evidence with
+connected-system, client, operational and distribution acceptance gates.
+
 The [observability and admin test plan](observability-admin-test-plan.md) maps
 P8 scenarios and explicitly separates existing automated coverage from approved-host
 runtime acceptance. A plan or source-file reference is not an execution result.
