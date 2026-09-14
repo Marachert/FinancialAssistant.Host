@@ -4,8 +4,8 @@ Last updated: 2026-09-14
 
 ## Current Snapshot
 
-POC readiness after FIN-201 delivery is **91.8%**:
-**180 of 196 canonical POC leaf tickets are Done**.
+POC readiness after FIN-202 delivery is **92.3%**:
+**181 of 196 canonical POC leaf tickets are Done**.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
@@ -13,32 +13,32 @@ for the readiness gates below.
 
 Latest canonical closure:
 
-- FIN-201 - P9.T1 Define full PoC QA strategy and test scope
+- FIN-202 - P9.T2 Define end-to-end MVP test scenarios
 - delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/262
+  https://github.com/Marachert/FinancialAssistant.Host/pull/264
 - delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/b3e94fae48b75e410226fab7b0e93bf474995d80
-- previous recorded readiness: 179 / 196, or 91.3%
-- current readiness: 180 / 196, or 91.8%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/cb1f697f165e77886ae2b747bab617c3454f3593
+- previous recorded readiness: 180 / 196, or 91.8%
+- current readiness: 181 / 196, or 92.3%
 - change: +0.5 percentage points
 
 Latest Jira closure:
 
-- FIN-201 - Full POC QA strategy with explicit-Pass result gates,
+- FIN-202 - Seven end-to-end MVP scenario definitions and synthetic fixture,
   merged and verified Done on 2026-09-14
 - implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/262
+  https://github.com/Marachert/FinancialAssistant.Host/pull/264
 - implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/b3e94fae48b75e410226fab7b0e93bf474995d80
-- merged at: `2026-09-14T07:42:58Z`
-- final implementation head: `7e54e7b2642e95e58f157f035adcfcda6de2960a`
-- exact-head CI: Backend 34818842802, Mobile 34818842813, Admin Web 34818842838
-- previous recorded readiness: 179 / 196, or 91.3%
-- current readiness: 180 / 196, or 91.8%
+  https://github.com/Marachert/FinancialAssistant.Host/commit/cb1f697f165e77886ae2b747bab617c3454f3593
+- merged at: `2026-09-14T16:17:15Z`
+- final implementation head: `3e63c08f045198760f3b4d146c13d5ea43c28f1a`
+- exact-head CI: Backend 34867190801, Mobile 34867190686, Admin Web 34867190772
+- previous recorded readiness: 180 / 196, or 91.8%
+- current readiness: 181 / 196, or 92.3%
 - change: +0.5 percentage points
 
-The fresh 2026-09-14 census contains 269 unique issues and confirms 180/196 after
-FIN-201 closure. All 13 P8 children are Done. FIN-36 remains In Progress because
+The fresh 2026-09-14 census contains 269 unique issues and confirms 181/196 after
+FIN-202 closure. All 13 P8 children are Done. FIN-36 remains In Progress because
 its integrated runtime DoD is not verified; task counts do not close that gate.
 Prior FIN-269 documentation maintenance has no parent or children
 and contributes neither numerator nor denominator; its +0.0 pp closure and
@@ -77,15 +77,15 @@ numerator and denominator unchanged.
 
 Current delivery:
 
-- FIN-201 is Done through guarded merged PR #262
-- the implementation is merged at `b3e94fae48b75e410226fab7b0e93bf474995d80`
+- FIN-202 is Done through guarded merged PR #264
+- the implementation is merged at `cb1f697f165e77886ae2b747bab617c3454f3593`
   after exact-head Backend, Mobile and Admin Web CI and a clear review-channel audit
-- canonical POC readiness is 180/196 (91.8%), a +0.5 percentage-point change
+- canonical POC readiness is 181/196 (92.3%), a +0.5 percentage-point change
 - FIN-31 P7 progress is 18/18 (100.0%); all 33 direct children and the epic are
   verified Done
 - FIN-36 P8 progress is 13/13 (100.0%); all children are Done and the epic remains
   In Progress for unverified integrated log/metric/trace, audit, admin and MCP evidence
-- FIN-38 P9 progress is 4/20 (20.0%); the epic remains In Progress
+- FIN-38 P9 progress is 5/20 (25.0%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
@@ -101,17 +101,20 @@ Current delivery:
 - FIN-201 coordinates five QA lanes, twelve critical smoke flows, area owners,
   regression cadence and candidate/CI/artifact provenance across the full POC;
   only explicit Pass with valid evidence qualifies, never blank/Fail/Blocked/Not run
-- local 169/169 repository tests, focused format, 1031-file privacy scan and
-  138 Markdown files/282 local links passed; exact-head full CI was green
-- one valid PR review finding was fixed and answered with evidence, then resolved
-  after all five checks passed on the final head
+- FIN-202 defines seven full user journeys with prerequisites, happy/negative paths,
+  explicit backend/mobile/runtime dependencies and a checked synthetic arithmetic
+  fixture. Confirmation intent, owner commit, convergence and notification receipt
+  remain distinct; no public/native/provider execution is claimed
+- local 173/173 repository tests, focused format, 1034-file privacy scan and
+  139 Markdown files/296 local links passed; all five exact-head CI checks were green
+- final review threads, submitted reviews and conversation comments were empty
 - all 139 Confluence pages were audited; 118 updated and 79 empty content pages filled;
   historical evidence and three intentional templates were preserved
 - FIN-269 GitHub documentation synchronization is merged through PR #248 and Done;
   all five exact-head CI checks passed and every review channel was empty
 - current documentation includes the implementation map, preferred storage policy,
   source-to-Confluence maintenance map and explicit financial authorization limits
-- the next ranked product leaf is FIN-202 under FIN-38, after closure publication
+- the next ranked product leaf is FIN-203 under FIN-38, after closure publication
 
 ## Epic Progress
 
@@ -126,8 +129,8 @@ Current delivery:
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 20 | 20 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 13 | 13 | 100.0% |
-| FIN-38 | P9 Testing, Windows deployment, and release readiness | 4 | 20 | 20.0% |
-| **Total** | **Canonical POC leaf scope** | **180** | **196** | **91.8%** |
+| FIN-38 | P9 Testing, Windows deployment, and release readiness | 5 | 20 | 25.0% |
+| **Total** | **Canonical POC leaf scope** | **181** | **196** | **92.3%** |
 
 ## First-User-Test Gates
 
@@ -308,3 +311,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-09-14 | FIN-199 | PR 258 verified merged and Jira Done; observability/admin test plan, not execution of all planned scenarios or host acceptance | 90.8% | +0.5 pp |
 | 2026-09-14 | FIN-200 | PR 260 verified merged and Jira Done after provenance and rollback review fixes; readiness checklist definition, not runtime Go approval; FIN-36 remains In Progress for integrated evidence | 91.3% | +0.5 pp |
 | 2026-09-14 | FIN-201 | PR 262 verified merged and Jira Done after explicit-Pass review fix; full POC QA strategy, not host/device/provider/store acceptance; FIN-38 remains In Progress | 91.8% | +0.5 pp |
+| 2026-09-14 | FIN-202 | PR 264 verified merged and Jira Done; seven MVP E2E scenario definitions and synthetic fixture, not actual public/native/provider acceptance; FIN-38 remains In Progress | 92.3% | +0.5 pp |
