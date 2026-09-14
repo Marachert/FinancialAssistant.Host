@@ -109,6 +109,9 @@ is not passed. Do not backfill outcomes from ticket percentages or old-head CI.
 
 ## Exit And Remaining Gates
 
+The release owner records operational evidence and blockers using the
+[FIN-200 operational readiness checklist](operational-release-readiness.md).
+
 Definition DoD: all six scoped areas mapped, privacy cases and negative admin
 cases present, evidence and gaps explicit. This can close FIN-199 after review;
 it cannot close runtime P8/P9 acceptance. Existing automated suites cover only
