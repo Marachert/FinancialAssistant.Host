@@ -1,6 +1,10 @@
 {
   "classification": "blank-operational-release-record",
   "candidateCommit": null,
+  "pullRequest": null,
+  "reviewedHead": null,
+  "actualMergeCommit": null,
+  "exactHeadCi": [],
   "artifactDigest": null,
   "environment": null,
   "capabilityScope": null,
@@ -10,6 +14,17 @@
   "decision": "Blocked",
   "runtimeAcceptance": false,
   "additionalSpendAuthorized": false,
+  "rollback": {
+    "required": true,
+    "status": "Blocked",
+    "previousArtifactDigest": null,
+    "configurationReference": null,
+    "procedureReference": null,
+    "owner": null,
+    "restoreEvidence": [],
+    "verificationEvidence": [],
+    "blocker": "Approved rollback artifact, configuration, procedure, owner and successful restore/recovery evidence not supplied."
+  },
   "checks": [
     { "id": "OPS-READY-001", "area": "health", "ownerRole": "platform-and-service-owners", "required": true, "status": "Blocked", "evidence": [], "blocker": "Candidate coverage and fresh required readiness evidence not supplied." },
     { "id": "OPS-READY-002", "area": "logs", "ownerRole": "service-owners-and-security", "required": true, "status": "Blocked", "evidence": [], "blocker": "Candidate sink privacy and retention evidence not supplied." },

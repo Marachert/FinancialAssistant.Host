@@ -8,7 +8,9 @@ this definition ticket cannot authorize a release or mark runtime gates passed.
 ## Decision And Candidate
 
 All seven required checks below must have `Pass` evidence for the exact candidate
-build and approved environment. `Fail`, `Blocked`, missing, stale, pending,
+build and approved environment. The required rollback.status must also be Pass,
+with the artifact, configuration, procedure, owner and recovery evidence below.
+`Fail`, `Blocked`, missing, stale, pending,
 cancelled or unexpectedly skipped evidence means **No-Go**. Never derive a pass
 from Jira Done, POC percentage, a source-file reference or another build's CI.
 
@@ -19,6 +21,16 @@ deployed artifact identity, not merely the source branch. Changes to artifact,
 configuration, provider, trust boundary or scope invalidate affected approvals;
 re-run affected tests and re-evaluate the full decision. Never copy secrets into
 the record. Store real operational evidence and approvals in restricted storage.
+
+Keep `candidateCommit` (the deployed source revision), `pullRequest` (URL),
+`reviewedHead` and `actualMergeCommit` separate. Record each required CI run in
+`exactHeadCi` with its head SHA, workflow/check name, run URL and attempt,
+conclusion and completion time. Verify the run head equals `reviewedHead`, the
+actual merge comes from the independently re-read merged PR, and the deployed
+artifact digest maps to `candidateCommit`. Record the verified relationship
+between the reviewed head and merge; if the deployed candidate differs, require
+candidate build/test evidence as well. A PR head is not its provisional merge SHA.
+The JSON is a manual evidence template; no automatic Go validator is supplied.
 
 For first-user scope the seven checks are mandatory; `Not applicable` cannot
 waive them. Optional components may be explicitly excluded from the candidate
@@ -109,8 +121,13 @@ Technical cost counters are neither an invoice nor approval to buy credits.
 
 Before Go, require an approved previous artifact/configuration, compatibility and
 rollback procedure, source/audit preservation, recovery verification and named
-owner. Never claim a backup works until a synthetic restore is verified. Rollback
-must not erase authoritative records or duplicate provider sends; uncertain
+owner. Never claim a backup works until a synthetic restore is verified. The
+record has a separate required `rollback` gate; passing the seven area
+checks cannot substitute for it. Record the previous artifact digest, approved
+configuration and procedure references, owner, successful restore evidence and
+recovery verification evidence before changing its status to Pass. Missing or
+failed rollback evidence keeps the overall decision No-Go.
+Rollback must not erase authoritative records or duplicate provider sends; uncertain
 outcomes require owner reconciliation. A new rollback candidate gets its own
 health/access/flow checks and decision record. Do not run rollback from this file.
 

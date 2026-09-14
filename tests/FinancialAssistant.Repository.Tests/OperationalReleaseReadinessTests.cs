@@ -14,12 +14,13 @@ public sealed class OperationalReleaseReadinessTests
         var root = document.RootElement;
         Assert.Equal(new[]
         {
-            "classification", "candidateCommit", "artifactDigest", "environment", "capabilityScope",
+            "classification", "candidateCommit", "pullRequest", "reviewedHead", "actualMergeCommit", "exactHeadCi",
+            "artifactDigest", "environment", "capabilityScope",
             "releaseOwner", "backupOwner", "verifiedAtUtc", "decision", "runtimeAcceptance",
-            "additionalSpendAuthorized", "checks"
+            "additionalSpendAuthorized", "rollback", "checks"
         }, root.EnumerateObject().Select(property => property.Name));
         Assert.Equal("blank-operational-release-record", root.GetProperty("classification").GetString());
-        foreach (var name in new[] { "candidateCommit", "artifactDigest", "environment", "capabilityScope", "releaseOwner", "backupOwner", "verifiedAtUtc" })
+        foreach (var name in new[] { "candidateCommit", "pullRequest", "reviewedHead", "actualMergeCommit", "artifactDigest", "environment", "capabilityScope", "releaseOwner", "backupOwner", "verifiedAtUtc" })
         {
             Assert.Equal(JsonValueKind.Null, root.GetProperty(name).ValueKind);
         }
@@ -27,6 +28,26 @@ public sealed class OperationalReleaseReadinessTests
         Assert.Equal("Blocked", root.GetProperty("decision").GetString());
         Assert.False(root.GetProperty("runtimeAcceptance").GetBoolean());
         Assert.False(root.GetProperty("additionalSpendAuthorized").GetBoolean());
+        Assert.Empty(root.GetProperty("exactHeadCi").EnumerateArray());
+    }
+
+    [Fact]
+    public void Rollback_IsARequiredBlockedGateWithoutInventedRecoveryEvidence()
+    {
+        using var document = JsonDocument.Parse(Read("docs/delivery/operational-readiness-record.json"));
+        var rollback = document.RootElement.GetProperty("rollback");
+        Assert.True(rollback.GetProperty("required").GetBoolean());
+        Assert.Equal("Blocked", rollback.GetProperty("status").GetString());
+        foreach (var name in new[] { "previousArtifactDigest", "configurationReference", "procedureReference", "owner" })
+        {
+            Assert.Equal(JsonValueKind.Null, rollback.GetProperty(name).ValueKind);
+        }
+
+        Assert.Empty(rollback.GetProperty("restoreEvidence").EnumerateArray());
+        Assert.Empty(rollback.GetProperty("verificationEvidence").EnumerateArray());
+        Assert.False(string.IsNullOrWhiteSpace(rollback.GetProperty("blocker").GetString()));
+        var guide = System.Text.RegularExpressions.Regex.Replace(Read(Guide), @"\s+", " ");
+        Assert.Contains("rollback.status must also be Pass", guide, StringComparison.Ordinal);
     }
 
     [Fact]
