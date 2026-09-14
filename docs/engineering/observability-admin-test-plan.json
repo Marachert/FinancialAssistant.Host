@@ -1,0 +1,28 @@
+{
+  "classification": "synthetic-test-plan-only",
+  "automaticExecution": false,
+  "runtimeAcceptance": false,
+  "guide": "docs/engineering/observability-admin-test-plan.md",
+  "cases": [
+    { "id": "OBS-LOG-01", "area": "logs", "level": "offline", "status": "planned", "reference": "tests/FinancialAssistant.Repository.Tests/StructuredLoggingBaselineTests.cs" },
+    { "id": "OBS-LOG-02", "area": "logs", "level": "offline", "status": "planned", "reference": "backend/shared/observability/FinancialAssistant.Shared.Observability.Tests/CorrelationBaselineTests.cs" },
+    { "id": "OBS-HLT-01", "area": "health", "level": "offline", "status": "planned", "reference": "backend/shared/observability/FinancialAssistant.Shared.Observability.Tests/HealthBaselineTests.cs" },
+    { "id": "OBS-HLT-02", "area": "health", "level": "offline", "status": "planned", "reference": "backend/services/monitoring/FinancialAssistant.Monitoring.Tests/HttpMonitoringDependencyProbeTests.cs" },
+    { "id": "OBS-AUD-01", "area": "audit", "level": "offline", "status": "planned", "reference": "backend/services/audit/FinancialAssistant.Audit.Tests/AuditApplicationTests.cs" },
+    { "id": "OBS-AUD-02", "area": "audit", "level": "offline", "status": "planned", "reference": "backend/services/audit/FinancialAssistant.Audit.Tests/AuditEndpointTests.cs" },
+    { "id": "OBS-AUD-03", "area": "audit", "level": "approved-host", "status": "planned", "reference": "docs/api/audit-admin-v1.md" },
+    { "id": "OBS-ADM-01", "area": "admin", "level": "offline", "status": "planned", "reference": "backend/services/monitoring/FinancialAssistant.Monitoring.Tests/MonitoringEndpointTests.cs" },
+    { "id": "OBS-ADM-02", "area": "admin", "level": "offline", "status": "planned", "reference": "web-admin/monitoring-ui/tests/client.test.mjs" },
+    { "id": "OBS-ADM-03", "area": "admin", "level": "offline", "status": "planned", "reference": "web-admin/monitoring-ui/tests/proxy.test.mjs" },
+    { "id": "OBS-ADM-04", "area": "admin", "level": "approved-host", "status": "planned", "reference": "web-admin/monitoring-ui/README.md" },
+    { "id": "OBS-JOB-01", "area": "jobs", "level": "offline", "status": "planned", "reference": "backend/services/monitoring/FinancialAssistant.Monitoring.Tests/MonitoringJobTests.cs" },
+    { "id": "OBS-JOB-02", "area": "jobs", "level": "offline", "status": "planned", "reference": "docs/engineering/failed-job-support-workflow.md" },
+    { "id": "OBS-JOB-03", "area": "jobs", "level": "approved-host", "status": "planned", "reference": "docs/api/monitoring-admin-v1.md" },
+    { "id": "OBS-ALT-01", "area": "alerts", "level": "offline", "status": "planned", "reference": "tests/FinancialAssistant.Repository.Tests/AlertRuleDocumentationTests.cs" },
+    { "id": "OBS-ALT-02", "area": "alerts", "level": "approved-host", "status": "planned", "reference": "docs/engineering/alerting-and-incident-priorities.md" },
+    { "id": "OBS-ALT-03", "area": "alerts", "level": "approved-host", "status": "planned", "reference": "docs/engineering/alerting-and-incident-priorities.md" },
+    { "id": "OBS-MCP-01", "area": "mcp", "level": "offline", "status": "planned", "reference": "backend/services/mcp/FinancialAssistant.Mcp.Tests/McpApplicationTests.cs" },
+    { "id": "OBS-PRV-01", "area": "privacy", "level": "offline", "status": "planned", "reference": "tests/FinancialAssistant.Release.Tests/ReleaseContractPrivacyTests.cs" },
+    { "id": "OBS-PRV-02", "area": "privacy", "level": "approved-host", "status": "planned", "reference": "docs/agent/SECURITY_AND_BLOCKERS.md" }
+  ]
+}

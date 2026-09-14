@@ -2,6 +2,10 @@
 
 ## Release gate
 
+The [observability and admin test plan](observability-admin-test-plan.md) maps
+P8 scenarios and explicitly separates existing automated coverage from approved-host
+runtime acceptance. A plan or source-file reference is not an execution result.
+
 `tests/FinancialAssistant.Release.Tests` is the executable pre-deployment
 backend release gate. A passing result proves the bounded synthetic scenarios
 below; it does not replace the Windows deployment, mobile-device, backup,

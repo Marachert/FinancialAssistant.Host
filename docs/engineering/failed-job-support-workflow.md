@@ -6,6 +6,9 @@ enable providers, a scheduler, a replay endpoint or customer-data access.
 
 ## Current Capabilities
 
+Validation scenarios and evidence requirements are in the
+[observability and admin test plan](observability-admin-test-plan.md).
+
 For incident severity, owner response targets and signal limitations, follow
 [Alerting rules and incident priorities](alerting-and-incident-priorities.md).
 

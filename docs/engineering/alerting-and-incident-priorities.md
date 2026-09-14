@@ -141,6 +141,9 @@ with the rule's recovery evidence, safe impact summary and owner acceptance.
 
 ## Acceptance Before Arming
 
+See the [observability and admin test plan](observability-admin-test-plan.md)
+for scenario IDs, negative access/privacy cases and required execution evidence.
+
 FIN-199 owns test-plan expansion; FIN-200/P9 own operational acceptance. Test
 threshold edges, low/zero traffic, counter resets, duplicate/out-of-order samples,
 stale/missing/partial data, restart, disabled providers, consent suppression,
