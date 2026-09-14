@@ -1,0 +1,27 @@
+{
+  "classification": "synthetic-scenario-plan-only",
+  "automaticExecution": false,
+  "runtimeAcceptance": false,
+  "guide": "docs/engineering/mvp-e2e-scenarios.md",
+  "fixture": {
+    "currency": "USD",
+    "timeZone": "UTC",
+    "controlledDate": "2026-08-20",
+    "income": 100.00,
+    "textExpense": 42.15,
+    "receiptExpense": 17.85,
+    "monthlyBudget": 50.00,
+    "expectedExpense": 60.00,
+    "expectedBalanceDelta": 40.00,
+    "expectedBudgetUsagePercent": 120.00
+  },
+  "scenarios": [
+    { "id": "MVP-E2E-001", "journey": "register-onboard", "status": "planned", "reference": "docs/engineering/profile-service-preferences.md" },
+    { "id": "MVP-E2E-002", "journey": "text-expense", "status": "planned", "reference": "docs/architecture/financial-core-e2e-flow.md" },
+    { "id": "MVP-E2E-003", "journey": "receipt-draft-confirm", "status": "planned", "reference": "docs/engineering/receipt-upload-ocr-pipeline.md" },
+    { "id": "MVP-E2E-004", "journey": "income", "status": "planned", "reference": "docs/architecture/financial-core-e2e-flow.md" },
+    { "id": "MVP-E2E-005", "journey": "dashboard-analytics", "status": "planned", "reference": "docs/api/analytics-dashboard-v1.md" },
+    { "id": "MVP-E2E-006", "journey": "score-recommendation", "status": "planned", "reference": "docs/engineering/insights-validation-test-plan.md" },
+    { "id": "MVP-E2E-007", "journey": "receive-notification", "status": "planned", "reference": "docs/api/recommendations-notifications-v1.md" }
+  ]
+}

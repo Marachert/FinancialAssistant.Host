@@ -6,6 +6,9 @@ stricter gates. First-user testing remains **Not Ready** until candidate-specifi
 evidence satisfies all required product, security, operational and release gates.
 Task completion percentage measures delivered scope, not runtime readiness.
 
+The [MVP end-to-end scenarios](mvp-e2e-scenarios.md) expand the seven complete
+user journeys, negative variants, dependency gates and synthetic financial oracle.
+
 ## Scope And Ownership
 
 The target is a simple intelligent assistant: capture income/expenses, review
