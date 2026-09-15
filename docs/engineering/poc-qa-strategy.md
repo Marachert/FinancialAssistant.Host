@@ -11,6 +11,13 @@ user journeys, negative variants, dependency gates and synthetic financial oracl
 
 ## Scope And Ownership
 
+Deployment environment update (FIN-271, 2026-09-15): the
+[Windows-native WPF installer](../architecture/windows-native-poc.md) replaces
+Compose as the POC target. L3/L5 now require installed native services on Windows
+11 and Server 2022/2025 Desktop Experience. Earlier Compose checks remain legacy
+compatibility evidence, not native install or E2E acceptance. All existing
+functional, privacy, mobile and release gates remain required.
+
 The target is a simple intelligent assistant: capture income/expenses, review
 text/receipt suggestions, confirm once, and understand backend-calculated facts.
 Backend deterministic logic is the financial oracle. AI/OCR output is
@@ -23,7 +30,7 @@ probabilistic input, never an expected balance, score or confirmed entity.
 | AI/OCR and draft safety | AI/OCR and Intake owners | [Integration plan](ai-ocr-integration-test-plan.md), [provider readiness](ai-ocr-release-readiness-checklist.md) |
 | Analytics, score, recommendations and notifications | Insights and notification owners | [Insights validation](insights-validation-test-plan.md), [P6 readiness](insights-release-readiness-checklist.md) |
 | Admin web, Monitoring, Audit, support and MCP | Operations, admin web and security owners | [Observability/admin plan](observability-admin-test-plan.md), [P8 readiness](operational-release-readiness.md) |
-| Storage, deployment, TLS and recovery | Platform owner | [Windows runbook](../../infra/windows-poc/README.md) |
+| Storage, deployment, TLS and recovery | Platform owner | [Native Windows target](../architecture/windows-native-poc.md) and FIN-206/207/208/209 acceptance |
 | Privacy and controlled store distribution | Security, mobile, account and release owners | [Store tracks](../delivery/mobile-store-release-tracks.md), [privacy policy](../legal/privacy-policy.md) |
 
 QA coordinates the matrix and defect register; each area owner executes and
@@ -205,7 +212,7 @@ must be recorded as Blocked until their owning work supplies runtime evidence.
 | QA-SCOPE-003 | API contracts / gateway and service owners | L1/L2 [release contract suite](../../tests/FinancialAssistant.Release.Tests/ReleaseContractPrivacyTests.cs) and owned v1 contracts; L3 public-route/auth/owner/negative cases from MVP journeys | Snapshot/compatibility checks plus real method/path/status/error/auth evidence; OpenAPI path presence alone does not prove routing, authorization or destination availability |
 | QA-SCOPE-004 | AI/OCR fixtures / AI, OCR and Intake owners | L1/L2 [generated fixture matrix](ai-ocr-integration-test-plan.json); separately approved provider sandbox mapping and [readiness](ai-ocr-release-readiness-checklist.md) | Fixture IDs, adapter/model/configuration provenance, schema/ambiguity/timeout/retry/privacy outcomes; fake success cannot approve a live provider or confirmation |
 | QA-SCOPE-005 | Privacy/security / security and area owners | L1/L2 privacy baseline/contracts, [AI/OCR review](../security/ai-ocr-privacy-review-checklist.md); L3/L4 actual access, owner isolation, sinks, retention/deletion and client leakage | Restricted safe evidence and FIN-215 review; a filename/secret scan is not a complete security review or proof of deployed privacy controls |
-| QA-SCOPE-006 | Windows deployment / platform owner | L3/L5 [Windows runbook](../../infra/windows-poc/README.md): prerequisites, configuration validation, approved startup/smoke, TLS, storage/broker and synthetic restore | Exact artifact/configuration identity plus observed restart/restore results and P8 record; static Compose validation or archive creation alone does not prove deployability or recovery |
+| QA-SCOPE-006 | Windows deployment / platform owner | L3/L5 [native WPF installer](../architecture/windows-native-poc.md): OS matrix, prerequisites, approved install/update/repair/uninstall, TLS, durable storage/broker and synthetic restore | Exact artifact/configuration identity plus observed restart/restore results and P8 record; static Compose validation or archive creation alone does not prove deployability or recovery |
 | QA-SCOPE-007 | Store readiness / mobile, account and release owners | L1 repository metadata/assets validation; L5 [strict store gate and account workflow](../delivery/mobile-store-release-tracks.md) | Matching native versions/builds, approved account/signing records, reconciled disclosures and actual tester installation; repository validation alone is not store or distribution acceptance |
 
 All seven areas are required. This table is a scope checklist, not seven recorded

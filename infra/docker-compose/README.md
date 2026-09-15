@@ -1,6 +1,8 @@
 # Local Docker Compose infrastructure
 
-This folder contains the local infrastructure baseline for the Financial Assistant PoC.
+This folder retains the historical/local developer infrastructure baseline.
+The current POC target is the [Windows-native WPF installer](../../docs/architecture/windows-native-poc.md)
+without Docker or WSL (FIN-270), not this Compose stack.
 
 It implements the missing repository changes from FIN-12 and its subtasks:
 
@@ -122,9 +124,10 @@ created resource names and read-back verification commands.
 | RabbitMQ UI unavailable | Container still starting or port conflict | Run `docker compose logs rabbitmq` |
 | MinIO health fails | Container still starting or port conflict | Run `docker compose logs minio` |
 
-## Production-like PoC follow-up
+## Historical Compose Follow-Up
 
-Backend service containers belong to the separate
-[Windows Server PoC stack](../windows-poc/README.md). Update the shared
+Earlier backend service containers belong to the retained
+[historical Windows-hosted Compose stack](../windows-poc/README.md), not the
+current POC deployment target. For legacy development, update the shared
 `monitoring/prometheus.yml` with service `/metrics` scrape targets only when the
 backend hosts expose a reviewed metrics endpoint.

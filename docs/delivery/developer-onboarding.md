@@ -1,5 +1,11 @@
 # Developer Onboarding Guide
 
+Deployment update (FIN-271, 2026-09-15): the approved POC target is the
+[Windows-native WPF installer](../architecture/windows-native-poc.md), without
+Docker or WSL. Native installed-host evidence is required for deployment/E2E
+acceptance. Existing Compose commands and in-memory checks below remain
+developer/legacy evidence, not proof of the new installation path.
+
 This guide is the canonical first-day path for a developer joining Financial Assistant.
 
 Use it together with:

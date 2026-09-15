@@ -1,17 +1,28 @@
 # POC Readiness Progress
 
-Last updated: 2026-09-14
+Last updated: 2026-09-15
 
 ## Current Snapshot
 
-POC readiness after FIN-203 delivery is **92.9%**:
-**182 of 196 canonical POC leaf tickets are Done**.
+POC backlog completion after the Windows-native scope revision is **87.9%**:
+**182 of 207 canonical POC leaf tickets are Done**.
+
+The fresh 2026-09-15 census contains 281 unique Jira issues. FIN-270 adds eleven
+unfinished canonical Sub-tasks (FIN-271 through FIN-281); its parent Story is
+not counted as a leaf. No delivered work was removed. The old 182/196 (92.9%)
+becomes 182/207 (87.9%), a -4.9 percentage-point scope adjustment calculated
+before rounding. This is not a delivery regression or an elapsed-time estimate.
+FIN-271 is In Progress; no new leaf is credited Done in this snapshot.
+
+Approved target: [Windows-native WPF installer](../architecture/windows-native-poc.md)
+on Windows 11 and Server 2022/2025, without Docker/WSL. Installer, durable native
+adapters and installed-host acceptance are new work, not completed capabilities.
 
 The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
 for the readiness gates below.
 
-Latest canonical closure:
+Latest canonical closure (recorded on the previous 196-leaf scope):
 
 - FIN-203 - P9.T1 Define full PoC test strategy and QA scope
 - delivery PR:
@@ -22,7 +33,7 @@ Latest canonical closure:
 - current readiness: 182 / 196, or 92.9%
 - change: +0.5 percentage points
 
-Latest Jira closure:
+Latest Jira closure (historical scope preserved):
 
 - FIN-203 - Seven-area production-like QA scope and evidence crosswalk,
   merged and verified Done on 2026-09-14
@@ -75,17 +86,18 @@ implementations are not duplicates, but they are outside the canonical epic
 hierarchy defined by the calculation contract, so their closures leave the
 numerator and denominator unchanged.
 
-Current delivery:
+Current delivery (native scope revision supersedes previous scope totals):
 
 - FIN-203 is Done through guarded merged PR #266
 - the implementation is merged at `06622d0713fcaf1989de7abbc169dcdaffe7d4c7`
   after exact-head Backend, Mobile and Admin Web CI and a clear review-channel audit
-- canonical POC readiness is 182/196 (92.9%), a +0.5 percentage-point change
+- current canonical completion is 182/207 (87.9%); eleven native installer leaves
+  added, no new closure; previous FIN-203 closure remains historical +0.5 pp
 - FIN-31 P7 progress is 18/18 (100.0%); all 33 direct children and the epic are
   verified Done
 - FIN-36 P8 progress is 13/13 (100.0%); all children are Done and the epic remains
   In Progress for unverified integrated log/metric/trace, audit, admin and MCP evidence
-- FIN-38 P9 progress is 6/20 (30.0%); the epic remains In Progress
+- FIN-38 P9 progress is 6/31 (19.4%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
@@ -117,7 +129,9 @@ Current delivery:
   all five exact-head CI checks passed and every review channel was empty
 - current documentation includes the implementation map, preferred storage policy,
   source-to-Confluence maintenance map and explicit financial authorization limits
-- the next ranked product leaf is FIN-204 under FIN-38, after closure publication
+- FIN-270 is the priority parent; FIN-271 documents the concept/backlog revision
+- next implementation leaf is FIN-272 after FIN-271 closure publication;
+  follow native-host/TLS/secrets/recovery dependencies before FIN-204 E2E
 
 ## Epic Progress
 
@@ -132,8 +146,8 @@ Current delivery:
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 20 | 20 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 13 | 13 | 100.0% |
-| FIN-38 | P9 Testing, Windows deployment, and release readiness | 6 | 20 | 30.0% |
-| **Total** | **Canonical POC leaf scope** | **182** | **196** | **92.9%** |
+| FIN-38 | P9 Testing, Windows deployment, and release readiness | 6 | 31 | 19.4% |
+| **Total** | **Canonical POC leaf scope** | **182** | **207** | **87.9%** |
 
 ## First-User-Test Gates
 
@@ -149,8 +163,9 @@ satisfied:
 - analytics and user-facing insight flows required by the PoC scope are usable;
 - monitoring and support diagnostics expose safe operational state;
 - integration, contract, privacy, and end-to-end tests pass with synthetic data;
-- the Windows PoC deployment stack is repeatable and the first-user environment
-  is verified.
+- the WPF installer deploys the complete native Windows stack without Docker/WSL;
+  install/reboot/update/repair/recovery/uninstall and actual first-user environment
+  are verified on Windows 11 and Server 2022/2025 Desktop Experience.
 
 Current blocking areas are runtime P6, P8, and P9. P7 now has authentication,
 free-form transaction capture, receipt upload, editable draft review, backend

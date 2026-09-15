@@ -6,6 +6,11 @@ It is not just an expense tracker. The product is designed to minimize manual in
 
 ## Start here
 
+The approved POC deployment target is now a [Windows-native WPF installer](docs/architecture/windows-native-poc.md)
+for Windows 11 and Windows Server 2022/2025, without Docker or WSL. This is new
+implementation work under FIN-270, not an available installer. Compose commands
+below describe the retained developer/legacy baseline, not the POC install path.
+
 For implementation status and first-user readiness, read
 [POC progress](docs/agent/POC_PROGRESS.md) and the
 [current implementation boundary](docs/architecture/current-implementation.md).

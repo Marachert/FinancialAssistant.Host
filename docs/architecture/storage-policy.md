@@ -6,6 +6,11 @@ and the preferred stack in `AGENTS.md` and project instructions.
 
 ## Decision And Implementation
 
+The [Windows-native POC decision](windows-native-poc.md) changes installation,
+not financial authority. FIN-274/275 implement missing durable service-owned
+stores; FIN-277 supplies native protected receipt/cache adapters. Existing
+Compose infrastructure is not the new POC deployment mechanism.
+
 PostgreSQL is the preferred target for durable authoritative financial records,
 workflow state, idempotency, inbox/outbox and audit persistence. Each service owns
 its schema, access, migrations, retention and recovery; another service must use

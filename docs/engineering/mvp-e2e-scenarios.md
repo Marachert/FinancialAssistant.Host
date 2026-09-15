@@ -1,5 +1,11 @@
 # MVP End-To-End User Scenarios
 
+Deployment update (FIN-271, 2026-09-15): the approved POC target is the
+[Windows-native WPF installer](../architecture/windows-native-poc.md), without
+Docker or WSL. Native installed-host evidence is required for deployment/E2E
+acceptance. Existing Compose commands and in-memory checks below remain
+developer/legacy evidence, not proof of the new installation path.
+
 Related Jira: FIN-202, parent FIN-38. These are **planned scenarios, not execution
 results**. The [scenario manifest](mvp-e2e-scenarios.json) contains seven journey
 IDs and a synthetic arithmetic fixture; it neither runs the application nor

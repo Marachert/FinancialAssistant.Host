@@ -16,6 +16,8 @@ Architecture documentation should cover:
 
 ## Canonical decisions
 
+- [Windows-native POC and WPF installer](windows-native-poc.md)
+
 - [Current implementation and target gaps](current-implementation.md)
 - [Storage policy](storage-policy.md)
 

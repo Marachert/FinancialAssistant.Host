@@ -4,6 +4,8 @@ Developer, architecture, security, API, event, and delivery documentation worksp
 
 ## Start here
 
+- [Windows-native POC and WPF installer decision](architecture/windows-native-poc.md)
+
 - [POC readiness and closure statistics](agent/POC_PROGRESS.md)
 - [POC QA strategy and test scope](engineering/poc-qa-strategy.md)
 - [MVP end-to-end user scenarios](engineering/mvp-e2e-scenarios.md)
@@ -32,7 +34,10 @@ docs/engineering/contributing.md
 docs/engineering/ci.md
 ```
 
-Windows Server PoC deployment and recovery:
+Approved Windows-native POC deployment and recovery target:
+
+[WPF installer architecture, operator flow and Jira map](architecture/windows-native-poc.md).
+The following files retain the superseded Compose implementation and its history:
 
 ```text
 docs/delivery/windows-server-poc-deployment.md
