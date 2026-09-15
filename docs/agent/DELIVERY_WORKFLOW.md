@@ -37,6 +37,14 @@ A `COMMENTED` review is not automatically blocking; inspect its findings. A `CHA
 
 ## State B: no agent PR exists
 
+For the FIN-270 hierarchy, prioritize the ranked parent and descend through its
+unfinished children. Sub-task order is local to its parent, not a flattened
+global rank. Follow recorded blocking dependencies to their prerequisite leaf
+before implementation (including FIN-207/208/209 outside the installer story);
+never implement a parent or mark a blocked leaf Done to move forward. Read all
+dependencies fresh. The Windows-native concept change replaces the old FIN-204
+Docker prerequisite; actual installed-native E2E evidence remains mandatory.
+
 1. Query the active hierarchy and select the next unfinished leaf by Jira rank.
 2. Read description, Definition of Done, dependencies, parent, and children.
 3. Search for duplicate branches and PRs.

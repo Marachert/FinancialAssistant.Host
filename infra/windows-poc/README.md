@@ -1,5 +1,16 @@
 # Windows Server PoC deployment
 
+## Superseded POC Target
+
+The approved 2026-09-15 target is a
+[Windows-native WPF installer](../../docs/architecture/windows-native-poc.md)
+for Windows 11 and Windows Server 2022/2025, without Docker or WSL. FIN-270
+implements that target. This directory retains the historical FIN-42 Compose
+baseline and its compatibility checks; do not use its startup/backup commands
+as the new POC installation procedure or evidence of native acceptance.
+
+## Historical Compose Baseline
+
 This folder is the production-like, single-host deployment baseline for the
 Financial Assistant controlled PoC. It is separate from `infra/docker-compose`,
 which remains the smaller developer infrastructure stack.

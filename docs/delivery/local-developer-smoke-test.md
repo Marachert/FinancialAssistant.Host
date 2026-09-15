@@ -1,5 +1,11 @@
 # Local Developer Smoke Test
 
+Deployment update (FIN-271, 2026-09-15): the approved POC target is the
+[Windows-native WPF installer](../architecture/windows-native-poc.md), without
+Docker or WSL. Native installed-host evidence is required for deployment/E2E
+acceptance. Existing Compose commands and in-memory checks below remain
+developer/legacy evidence, not proof of the new installation path.
+
 Use this checklist after a fresh checkout or after changing the platform
 foundation. It verifies the repository, service template, local infrastructure,
 backend solution, tests, documentation, and one sample HTTP host.

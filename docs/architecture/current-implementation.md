@@ -7,6 +7,10 @@ this page describes capability boundaries, not deployed-environment acceptance.
 
 ## Capability Map
 
+The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
+supersedes the Compose POC target. FIN-270 is implementation work: no WPF
+installer or accepted native Windows runtime is claimed by this document.
+
 | Area | Implemented repository baseline | Separate target or runtime gate |
 | --- | --- | --- |
 | Gateway | REST routing, JWT/role checks, exact public allowlist, trusted context, rate limits and safe errors | Route activation and destinations are environment-controlled; not every handler is enabled by repository defaults |
@@ -18,7 +22,7 @@ this page describes capability boundaries, not deployed-environment acceptance.
 | Mobile | Home/Add/Insights/Settings, authentication/onboarding, text/receipt draft review, dashboard, inbox and resilience states | Native audio, complete wallet/debt/reserve flows, signed stores and tester acceptance are not all delivered |
 | Monitoring/Audit/MCP | Safe operational aggregates, append-only audit contracts and six allowlisted read-only MCP tools | Durable history, complete producer wiring and approved operational acceptance |
 | Admin web | Protected React dashboard, memory-only sessions, service status, bounded recent/failed jobs and AI/OCR summaries | Support lookup is disabled; job history is process-local (200 observations, 24 hours), not a durable job scheduler |
-| Infrastructure | Local Compose and Windows POC topology/runbooks | Approved host, TLS, stable secrets, backup/restore drill and real client installation |
+| Infrastructure | Retained legacy Compose topology/runbooks | WPF installer and native Windows services, durable adapters, approved host/TLS/secrets/recovery and real client installation (FIN-270) |
 
 The internal admin app is not a consumer web application. The product still targets
 Android, iOS and Web, but repository directories alone do not establish delivery.

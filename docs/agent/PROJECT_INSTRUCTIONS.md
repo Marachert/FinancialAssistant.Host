@@ -19,7 +19,17 @@ The UX must remain simple, automation-first, and understandable to ordinary user
 - Notifications: mobile push and web notifications
 - Architecture: modular/pragmatic microservices without premature fragmentation
 
-## Architecture rules
+## POC Deployment Target
+
+User-approved 2026-09-15: Windows 11 and Windows Server 2022/2025 x64, Server
+Desktop Experience, native Windows services installed through a WPF wizard.
+No Docker, WSL or Linux VM is required by the POC. Follow
+[the canonical installer decision](../architecture/windows-native-poc.md) and
+FIN-270's children. Existing Compose material is historical/developer baseline;
+keep valid tests and evidence, but do not treat it as native runtime acceptance.
+This change does not authorize machine installation or additional spending.
+
+## Service Architecture
 
 Each business service owns its data and business capability. Separate synchronous REST flows from asynchronous RabbitMQ event flows. REST is used for immediate request/response operations; events are published after owned state changes and for decoupled processing.
 
