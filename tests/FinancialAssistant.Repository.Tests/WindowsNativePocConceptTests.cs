@@ -33,6 +33,17 @@ public sealed class WindowsNativePocConceptTests
         Assert.Contains("FIN-270", guide, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("infra/README.md")]
+    [InlineData("infra/docker-compose/README.md")]
+    public void InfrastructureIndexes_PointToTheNativeTarget(string path)
+    {
+        var guide = Read(path);
+        Assert.Contains("windows-native-poc.md", guide, StringComparison.Ordinal);
+        Assert.Contains("historical", guide, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("production-like", guide, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static string Read(string path)
     {
         foreach (var start in new[] { Directory.GetCurrentDirectory(), AppContext.BaseDirectory })
