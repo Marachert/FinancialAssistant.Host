@@ -60,6 +60,10 @@ FIN-272 must inventory every required component, select compatible supported
 versions and prove unattended installation, health, upgrade and redistribution
 rights. This table is a target, not an approved binary bill of materials.
 
+The [native component inventory](../../infra/windows-native/README.md) records
+source hosts, proposed non-conflicting ports, package metadata and explicit
+qualification gaps. Its read-only validator cannot approve a release.
+
 | Component | Native target | Owner and release gate |
 | --- | --- | --- |
 | WPF wizard and engine | Separate UI and privileged deployment engine | FIN-278/279; resumable steps and UI validation |
