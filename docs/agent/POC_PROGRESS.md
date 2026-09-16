@@ -4,15 +4,16 @@ Last updated: 2026-09-15
 
 ## Current Snapshot
 
-POC backlog completion after the Windows-native scope revision is **87.9%**:
-**182 of 207 canonical POC leaf tickets are Done**.
+POC backlog completion after FIN-271 closure is **88.4%**:
+**183 of 207 canonical POC leaf tickets are Done**.
 
-The fresh 2026-09-15 census contains 281 unique Jira issues. FIN-270 adds eleven
-unfinished canonical Sub-tasks (FIN-271 through FIN-281); its parent Story is
+The fresh 2026-09-15 census contains 281 unique Jira issues. FIN-270 added eleven
+initially unfinished canonical Sub-tasks (FIN-271 through FIN-281); its parent Story is
 not counted as a leaf. No delivered work was removed. The old 182/196 (92.9%)
 becomes 182/207 (87.9%), a -4.9 percentage-point scope adjustment calculated
 before rounding. This is not a delivery regression or an elapsed-time estimate.
-FIN-271 is In Progress; no new leaf is credited Done in this snapshot.
+FIN-271 is now verified Done, moving 182/207 (87.9%) to 183/207 (88.4%),
+a +0.5 percentage-point closure after the separate scope adjustment.
 
 Approved target: [Windows-native WPF installer](../architecture/windows-native-poc.md)
 on Windows 11 and Server 2022/2025, without Docker/WSL. Installer, durable native
@@ -22,32 +23,20 @@ The POC is **not yet ready for first-user testing**. The percentage measures
 completed backlog scope; it is not an estimate of elapsed time or a substitute
 for the readiness gates below.
 
-Latest canonical closure (recorded on the previous 196-leaf scope):
+Latest canonical and Jira closure:
 
-- FIN-203 - P9.T1 Define full PoC test strategy and QA scope
-- delivery PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/266
-- delivery merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/06622d0713fcaf1989de7abbc169dcdaffe7d4c7
-- previous recorded readiness: 181 / 196, or 92.3%
-- current readiness: 182 / 196, or 92.9%
+- FIN-271 - Record Windows-native POC architecture and reconcile delivery backlog
+- implementation PR: https://github.com/Marachert/FinancialAssistant.Host/pull/268
+- actual merge: https://github.com/Marachert/FinancialAssistant.Host/commit/2b23b2bb787fd2f8f9809ad3aec0a27b822cd702
+- merged at: `2026-09-15T19:26:58Z`
+- final head: `3c4f3a497f935d3c4fe7c34efa91a0f2f77dd57f`
+- exact-head CI: Backend 35013355461, Mobile 35013355793, Admin Web 35013355383
+- previous current-scope completion: 182 / 207, or 87.9%
+- current completion: 183 / 207, or 88.4%
 - change: +0.5 percentage points
+- FIN-270 remains In Progress: 1/11 children Done; FIN-272 is next
 
-Latest Jira closure (historical scope preserved):
-
-- FIN-203 - Seven-area production-like QA scope and evidence crosswalk,
-  merged and verified Done on 2026-09-14
-- implementation PR:
-  https://github.com/Marachert/FinancialAssistant.Host/pull/266
-- implementation merge commit:
-  https://github.com/Marachert/FinancialAssistant.Host/commit/06622d0713fcaf1989de7abbc169dcdaffe7d4c7
-- merged at: `2026-09-14T18:26:32Z`
-- final implementation head: `c63edf23632235fced93d082d77358bfdfc3f2b2`
-- exact-head CI: Backend 34880054298, Mobile 34880054223, Admin Web 34880054409
-- previous recorded readiness: 181 / 196, or 92.3%
-- current readiness: 182 / 196, or 92.9%
-- change: +0.5 percentage points
-
+Previous-scope FIN-203 closure and its +0.5 pp remain in history below.
 The fresh 2026-09-14 census contains 269 unique issues and confirms 182/196 after
 FIN-203 closure. All 13 P8 children are Done. FIN-36 remains In Progress because
 its integrated runtime DoD is not verified; task counts do not close that gate.
@@ -88,16 +77,16 @@ numerator and denominator unchanged.
 
 Current delivery (native scope revision supersedes previous scope totals):
 
-- FIN-203 is Done through guarded merged PR #266
-- the implementation is merged at `06622d0713fcaf1989de7abbc169dcdaffe7d4c7`
+- FIN-271 is Done through guarded merged PR #268
+- the documentation implementation is merged at `2b23b2bb787fd2f8f9809ad3aec0a27b822cd702`
   after exact-head Backend, Mobile and Admin Web CI and a clear review-channel audit
-- current canonical completion is 182/207 (87.9%); eleven native installer leaves
-  added, no new closure; previous FIN-203 closure remains historical +0.5 pp
+- current canonical completion is 183/207 (88.4%); eleven native installer leaves
+  added, FIN-271 Done; previous FIN-203 closure remains historical +0.5 pp
 - FIN-31 P7 progress is 18/18 (100.0%); all 33 direct children and the epic are
   verified Done
 - FIN-36 P8 progress is 13/13 (100.0%); all children are Done and the epic remains
   In Progress for unverified integrated log/metric/trace, audit, admin and MCP evidence
-- FIN-38 P9 progress is 6/31 (19.4%); the epic remains In Progress
+- FIN-38 P9 progress is 7/31 (22.6%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
@@ -120,9 +109,12 @@ Current delivery (native scope revision supersedes previous scope totals):
 - FIN-203 maps seven production-like QA areas to owners, execution lanes,
   candidate evidence and blockers within the shared strategy; static checks,
   test hosts and plan completion do not grant runtime or release acceptance
-- local 175/175 repository tests, focused format, 1034-file privacy scan and
-  139 Markdown files/305 local links passed; all five exact-head CI checks were green
-- final review threads, submitted reviews and conversation comments were empty
+- local 180/180 repository tests, focused format, 1036-file privacy scan and
+  140 Markdown files/334 local links passed; all five exact-head CI checks were green
+- one valid infrastructure-index finding was fixed with regression coverage,
+  answered and resolved after green CI; no blocking review/comment remained
+- forty Confluence native decision bodies and the new canonical installer page
+  were read-back verified; original content/history retained
 - all 139 Confluence pages were audited; 118 updated and 79 empty content pages filled;
   historical evidence and three intentional templates were preserved
 - FIN-269 GitHub documentation synchronization is merged through PR #248 and Done;
@@ -146,8 +138,8 @@ Current delivery (native scope revision supersedes previous scope totals):
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 20 | 20 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 13 | 13 | 100.0% |
-| FIN-38 | P9 Testing, Windows deployment, and release readiness | 6 | 31 | 19.4% |
-| **Total** | **Canonical POC leaf scope** | **182** | **207** | **87.9%** |
+| FIN-38 | P9 Testing, Windows deployment, and release readiness | 7 | 31 | 22.6% |
+| **Total** | **Canonical POC leaf scope** | **183** | **207** | **88.4%** |
 
 ## First-User-Test Gates
 
@@ -331,3 +323,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-09-14 | FIN-201 | PR 262 verified merged and Jira Done after explicit-Pass review fix; full POC QA strategy, not host/device/provider/store acceptance; FIN-38 remains In Progress | 91.8% | +0.5 pp |
 | 2026-09-14 | FIN-202 | PR 264 verified merged and Jira Done; seven MVP E2E scenario definitions and synthetic fixture, not actual public/native/provider acceptance; FIN-38 remains In Progress | 92.3% | +0.5 pp |
 | 2026-09-14 | FIN-203 | PR 266 verified merged and Jira Done; seven-area production-like QA scope crosswalk, not runtime acceptance or release approval; FIN-38 remains In Progress | 92.9% | +0.5 pp |
+| 2026-09-15 | FIN-271 | PR 268 verified merged and Jira Done after infrastructure-index review fix; Windows-native WPF installer concept/backlog only; scope expanded to 207 before closure, not a completed installer | 88.4% | +0.5 pp |
