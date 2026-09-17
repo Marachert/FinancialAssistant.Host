@@ -20,6 +20,9 @@ pwsh -NoProfile -NonInteractive -File tools/scripts/test-native-component-manife
 
 This performs offline structural checks, exact source-host coverage, unique
 ports/IDs, dependency references/cycles, digest shape and safety-policy checks.
+It requires explicit prerelease denial and retains every named capability and
+qualification blocker; deleting backup, secret recovery or observability cannot
+silently produce a valid inventory. Duplicate safety entries are also rejected.
 It reads files only. It does not download, install, run probes, verify binary
 signatures, certify licenses, query vendor support or approve a release.
 `schemaValid: true` always accompanies `releaseReady: false`. A mutated inventory

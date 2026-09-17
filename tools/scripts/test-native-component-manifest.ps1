@@ -9,7 +9,7 @@ if ($manifest.schemaVersion -ne 1 -or $manifest.kind -ne 'component-design' -or
     throw 'Only the non-release component-design schema is supported.'
 }
 if ($manifest.sourceCommit -notmatch '^[a-f0-9]{40}$') { throw 'Invalid source commit.' }
-foreach ($key in @('containersAllowed','automaticDownloadsAllowed','automaticSpendingAllowed','sharedDependencyRemovalAllowed')) {
+foreach ($key in @('containersAllowed','automaticDownloadsAllowed','automaticSpendingAllowed','sharedDependencyRemovalAllowed','prereleaseAllowed')) {
     if ($manifest.policy[$key] -isnot [bool] -or $manifest.policy[$key]) { throw "Unsafe policy: $key" }
 }
 if ($manifest.policy.uninstallRetainsData -isnot [bool] -or -not $manifest.policy.uninstallRetainsData) { throw 'Data retention is required.' }
@@ -75,7 +75,21 @@ foreach ($package in $manifest.packages) {
         if (($port -isnot [long] -and $port -isnot [int]) -or $port -lt 1024 -or $port -gt 65535 -or -not $ports.Add($port)) { throw 'Invalid or conflicting dependency port.' }
     }
 }
-if ($manifest.blockers.Count -eq 0) { throw 'Design-only manifest must retain qualification blockers.' }
+function Assert-RequiredEntries([object[]]$Entries, [string]$Key, [string[]]$Required, [string]$Kind) {
+    $names = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($entry in $Entries) {
+        if ([string]::IsNullOrWhiteSpace($entry[$Key]) -or -not $names.Add($entry[$Key])) { throw "Invalid or duplicate $Kind identifier." }
+        if ($entry.owner -notmatch '^FIN-\d+$') { throw "Missing $Kind owner." }
+        if ($Kind -eq 'capability') {
+            if ($entry.qualification -notin @('not-implemented','not-tested','blocked') -or [string]::IsNullOrWhiteSpace($entry.decision)) { throw 'Invalid capability qualification.' }
+        } elseif ([string]::IsNullOrWhiteSpace($entry.detail)) { throw 'Missing blocker detail.' }
+    }
+    foreach ($name in $Required) {
+        if (-not $names.Contains($name)) { throw "Missing required ${Kind}: $name" }
+    }
+}
+Assert-RequiredEntries $manifest.capabilities 'id' @('receipt-storage','cache','event-delivery','search','metrics-traces-alerts','https','secret-recovery','backup','providers') 'capability'
+Assert-RequiredEntries $manifest.blockers 'code' @('PACKAGE-QUALIFICATION','SEARCH-OBSERVABILITY','SIGNED-ARTIFACTS','RUNTIME-IMPLEMENTATION','HOST-ACCEPTANCE') 'blocker'
 [pscustomobject]@{
     schemaValid = $true
     releaseReady = $false

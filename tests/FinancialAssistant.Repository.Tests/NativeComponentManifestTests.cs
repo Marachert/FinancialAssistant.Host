@@ -63,6 +63,79 @@ public sealed class NativeComponentManifestTests
     private static JsonNode ReadManifest() => JsonNode.Parse(File.ReadAllText(
         Path.Combine(Root(), "infra/windows-native/component-manifest.json")))!;
 
+    [Theory]
+    [InlineData("enabled")]
+    [InlineData("missing")]
+    [InlineData("string")]
+    public async Task PrereleasePolicy_MustBeExplicitBooleanFalse(string mutation)
+    {
+        var manifest = ReadManifest();
+        var policy = manifest["policy"]!.AsObject();
+        if (mutation == "missing")
+        {
+            policy.Remove("prereleaseAllowed");
+        }
+        else
+        {
+            policy["prereleaseAllowed"] = mutation == "enabled"
+                ? JsonValue.Create(true)
+                : JsonValue.Create("false");
+        }
+
+        var result = await ValidateAsync(manifest);
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("Unsafe policy: prereleaseAllowed", result.Output);
+    }
+
+    [Theory]
+    [InlineData("receipt-storage")]
+    [InlineData("cache")]
+    [InlineData("event-delivery")]
+    [InlineData("search")]
+    [InlineData("metrics-traces-alerts")]
+    [InlineData("https")]
+    [InlineData("secret-recovery")]
+    [InlineData("backup")]
+    [InlineData("providers")]
+    public async Task RequiredCapabilities_CannotBeRemoved(string id)
+    {
+        var manifest = ReadManifest();
+        var capabilities = manifest["capabilities"]!.AsArray();
+        capabilities.Remove(capabilities.Single(entry => entry!["id"]!.GetValue<string>() == id));
+        var result = await ValidateAsync(manifest);
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains($"Missing required capability: {id}", result.Output);
+    }
+
+    [Theory]
+    [InlineData("PACKAGE-QUALIFICATION")]
+    [InlineData("SEARCH-OBSERVABILITY")]
+    [InlineData("SIGNED-ARTIFACTS")]
+    [InlineData("RUNTIME-IMPLEMENTATION")]
+    [InlineData("HOST-ACCEPTANCE")]
+    public async Task RequiredBlockers_CannotBeRemoved(string code)
+    {
+        var manifest = ReadManifest();
+        var blockers = manifest["blockers"]!.AsArray();
+        blockers.Remove(blockers.Single(entry => entry!["code"]!.GetValue<string>() == code));
+        var result = await ValidateAsync(manifest);
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains($"Missing required blocker: {code}", result.Output);
+    }
+
+    [Theory]
+    [InlineData("capabilities", "capability")]
+    [InlineData("blockers", "blocker")]
+    public async Task DuplicateSafetyEntries_AreRejected(string collection, string kind)
+    {
+        var manifest = ReadManifest();
+        var entries = manifest[collection]!.AsArray();
+        entries.Add(entries[0]!.DeepClone());
+        var result = await ValidateAsync(manifest);
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains($"Invalid or duplicate {kind} identifier", result.Output);
+    }
+
     private static async Task<(int ExitCode, string Output)> ValidateAsync(JsonNode manifest)
     {
         var temporaryFile = Path.Combine(Path.GetTempPath(), $"fa-manifest-{Guid.NewGuid():N}.json");
