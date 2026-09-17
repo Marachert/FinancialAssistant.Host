@@ -15,6 +15,7 @@ public sealed class NativeComponentManifestTests
         Assert.True(report["schemaValid"]!.GetValue<bool>());
         Assert.False(report["releaseReady"]!.GetValue<bool>());
         Assert.Equal(15, report["hosts"]!.GetValue<int>());
+        Assert.Equal(12, report["packages"]!.GetValue<int>());
         Assert.Equal(3, report["targets"]!.GetValue<int>());
         Assert.NotEmpty(report["blockers"]!.AsArray());
     }
@@ -62,6 +63,24 @@ public sealed class NativeComponentManifestTests
 
     private static JsonNode ReadManifest() => JsonNode.Parse(File.ReadAllText(
         Path.Combine(Root(), "infra/windows-native/component-manifest.json")))!;
+
+    [Theory]
+    [InlineData("elasticsearch")]
+    [InlineData("prometheus")]
+    [InlineData("alertmanager")]
+    [InlineData("jaeger")]
+    [InlineData("jaeger-tools")]
+    [InlineData("grafana")]
+    public void ObservabilityCandidates_KeepIntegrityEvidence_WithoutClaimingQualification(string id)
+    {
+        var package = ReadManifest()["packages"]!.AsArray()
+            .Single(entry => entry!["id"]!.GetValue<string>() == id)!;
+        Assert.Equal("blocked", package["qualification"]!.GetValue<string>());
+        Assert.NotEmpty(package["hash"]!.GetValue<string>());
+        Assert.StartsWith("https://", package["integritySource"]!.GetValue<string>());
+        Assert.Empty(package["silentArguments"]!.AsArray());
+        Assert.NotEmpty(package["probe"]!.GetValue<string>());
+    }
 
     [Theory]
     [InlineData("enabled")]

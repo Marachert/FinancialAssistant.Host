@@ -1,6 +1,6 @@
 # Native Windows Component Inventory
 
-FIN-272, researched 2026-09-16. **Design inventory, not a release lock or an
+FIN-272, metadata updated 2026-09-18. **Design inventory, not a release lock or an
 installer. FIN-272 remains In Progress.** The approved target is the
 [Windows-native POC](../../docs/architecture/windows-native-poc.md), without
 Docker, WSL or a Linux VM. No machine configuration is changed here.
@@ -8,7 +8,7 @@ Docker, WSL or a Linux VM. No machine configuration is changed here.
 ## Read-Only Verification
 
 [component-manifest.json](component-manifest.json) inventories all 15 production
-ASP.NET hosts, the admin web assets, future WPF/engine assets, six prerequisite
+ASP.NET hosts, the admin web assets, future WPF/engine assets, twelve native
 package candidates and required native capabilities. It distinguishes upstream
 metadata from verified local payloads and actual installed-host acceptance.
 
@@ -81,7 +81,10 @@ published hash is not evidence that downloaded bytes or a signature were checked
 | Erlang/OTP 27.3.4.17 x64 | Official release asset SHA-256 captured; binary trust and unattended lifecycle not tested |
 | RabbitMQ 4.3.5 | Official release asset SHA-256 and detached-signature location captured; signing-key trust and native lifecycle not tested |
 | NSIS 3.12 build-time packaging candidate | Native compiled bootstrap plus WPF and separate elevated engine; compiler digest/notices and product signing identity pending |
-| Retained search and observability packages | Blocked: select exact supported native payloads after retained-contract inventory; not optional capability removal |
+| Elasticsearch 8.19.21; Prometheus 3.14.0; Alertmanager 0.34.1; Jaeger and tools 2.21.0; Grafana OSS 13.2.2 | Exact Windows artifact URLs and published hashes captured; service hosting, support and binary qualification remain blocked |
+
+See [search and observability qualification](search-observability.md) for the
+candidate signal paths, additional ports, service-wrapper gap and per-OS evidence.
 
 Microsoft's [runtime composition and installer options](https://learn.microsoft.com/en-us/dotnet/core/install/windows)
 distinguish the base runtime from ASP.NET and Desktop. ASP.NET alone does not
@@ -183,7 +186,7 @@ unconfigured. A disabled provider is unavailable, never a successful test result
 ## Remaining FIN-272 Work
 
 1. Pin the exact PostgreSQL archive/revision and all required native dependencies.
-2. Complete retained search/observability package choices and support/license matrix.
+2. Qualify the pinned search/observability candidates, service wrapper and support/license matrix.
 3. Verify downloaded payload hashes, trusted signatures, notices and redistribution
    terms; capture exact unattended commands, exit codes and resource requirements.
 4. Resolve bootstrap/compiler qualification and the approved product-signing path.

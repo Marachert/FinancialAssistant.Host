@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "component-design",
-  "verifiedMetadataDate": "2026-09-16",
+  "verifiedMetadataDate": "2026-09-18",
   "sourceCommit": "09a6c1d4c132b5fbbe060a129a5684f9323a53b2",
   "jira": "FIN-272",
   "releaseReady": false,
@@ -172,6 +172,138 @@
       "probe": "rabbitmq-diagnostics ping/check_running/check_local_alarms plus authenticated publish/confirm/consume",
       "owner": "FIN-276",
       "qualification": "metadata-only"
+    },
+    {
+      "id": "elasticsearch",
+      "version": "8.19.21",
+      "origin": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.19.21-windows-x86_64.zip",
+      "hashAlgorithm": "SHA512",
+      "hash": "869020baa1d5cef826a7640962013cb0886be6405023002c1510bc3237fec78702000a8ff2c0443dd72f675159e8daf3893cf865e5b33195afe068e312f12370",
+      "integritySource": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.19.21-windows-x86_64.zip.sha512",
+      "signature": "Published checksum only; archive signature, bundled JDK and service wrapper trust pending",
+      "license": "Elastic distribution and bundled JDK/notices review pending; no paid features or support entitlement",
+      "dependsOn": [],
+      "ports": [
+        9200,
+        9300
+      ],
+      "probe": "Authenticated cluster health plus retained-contract index/read/delete and restart checks",
+      "owner": "FIN-205",
+      "architecture": "x64",
+      "supportEnds": null,
+      "silentArguments": [],
+      "qualification": "blocked"
+    },
+    {
+      "id": "prometheus",
+      "version": "3.14.0",
+      "license": "Apache-2.0 and bundled notices; binary redistribution review pending",
+      "dependsOn": [],
+      "ports": [
+        9090
+      ],
+      "probe": "/-/ready plus synthetic scrape, bounded-label query and TSDB restart persistence",
+      "owner": "FIN-277",
+      "origin": "https://github.com/prometheus/prometheus/releases/download/v3.14.0/prometheus-3.14.0.windows-amd64.zip",
+      "hashAlgorithm": "SHA256",
+      "hash": "e57fbb99e4d0bc734d2f2b3aeb68c02fba38862259dc99a95c27ea46d9ccba0a",
+      "integritySource": "https://api.github.com/repos/prometheus/prometheus/releases/tags/v3.14.0",
+      "downloadBytes": 110095743,
+      "signature": "Release asset digest only; binary provenance/trust verification pending",
+      "architecture": "x64",
+      "supportEnds": null,
+      "silentArguments": [],
+      "qualification": "blocked"
+    },
+    {
+      "id": "alertmanager",
+      "version": "0.34.1",
+      "license": "Apache-2.0 and bundled notices; binary redistribution review pending",
+      "dependsOn": [],
+      "ports": [
+        9093
+      ],
+      "probe": "/-/ready plus synthetic alert grouping, local delivery, silence persistence and restart recovery",
+      "owner": "FIN-277",
+      "origin": "https://github.com/prometheus/alertmanager/releases/download/v0.34.1/alertmanager-0.34.1.windows-amd64.zip",
+      "hashAlgorithm": "SHA256",
+      "hash": "69624d6ce3674dbcf8cefc5a93d7028d00bbd5e0196a8384907f51593a495fef",
+      "integritySource": "https://api.github.com/repos/prometheus/alertmanager/releases/tags/v0.34.1",
+      "downloadBytes": 40131065,
+      "signature": "Release asset digest only; binary provenance/trust verification pending",
+      "architecture": "x64",
+      "supportEnds": null,
+      "silentArguments": [],
+      "qualification": "blocked"
+    },
+    {
+      "id": "jaeger",
+      "version": "2.21.0",
+      "license": "Apache-2.0 and bundled notices; binary redistribution review pending",
+      "dependsOn": [
+        "elasticsearch"
+      ],
+      "ports": [
+        4317,
+        4318,
+        16686,
+        13133
+      ],
+      "probe": "Configured health extension plus synthetic OTLP span stored and queried after restart",
+      "owner": "FIN-277",
+      "origin": "https://github.com/jaegertracing/jaeger/releases/download/v2.21.0/jaeger-2.21.0-windows-amd64.zip",
+      "hashAlgorithm": "SHA256",
+      "hash": "197c4b42aba6983b3d9cbca3577a0e14191bcb9431fde1b6661471b6fece39fc",
+      "integritySource": "https://api.github.com/repos/jaegertracing/jaeger/releases/tags/v2.21.0",
+      "downloadBytes": 64683817,
+      "signature": "Detached .zip.asc published; trusted signing key and binary verification pending",
+      "architecture": "x64",
+      "supportEnds": null,
+      "silentArguments": [],
+      "qualification": "blocked"
+    },
+    {
+      "id": "jaeger-tools",
+      "version": "2.21.0",
+      "license": "Apache-2.0 and bundled notices; binary redistribution review pending",
+      "dependsOn": [
+        "elasticsearch"
+      ],
+      "ports": [],
+      "probe": "Exact-version rollover initializer with owned trace prefix and ILM verification on synthetic data",
+      "owner": "FIN-277",
+      "origin": "https://github.com/jaegertracing/jaeger/releases/download/v2.21.0/jaeger-tools-2.21.0-windows-amd64.zip",
+      "hashAlgorithm": "SHA256",
+      "hash": "65c055e3501c5dd4d87c79989e7b8081376bdbd74783e64a4d477a3a470a7840",
+      "integritySource": "https://api.github.com/repos/jaegertracing/jaeger/releases/tags/v2.21.0",
+      "downloadBytes": 41148088,
+      "signature": "Detached .zip.asc published; trusted signing key and binary verification pending",
+      "architecture": "x64",
+      "supportEnds": null,
+      "silentArguments": [],
+      "qualification": "blocked"
+    },
+    {
+      "id": "grafana",
+      "version": "13.2.2",
+      "origin": "https://dl.grafana.com/grafana/release/13.2.2/grafana_13.2.2_34846740809_windows_amd64.msi",
+      "hashAlgorithm": "SHA256",
+      "hash": "6f6abfb4f833320b874949aec8726f0b794465ba6adf72d67345bccf43ff256d",
+      "integritySource": "https://grafana.com/grafana/download/13.2.2?edition=oss&platform=windows",
+      "signature": "MSI publisher/signature, service registration and unattended properties not verified",
+      "license": "AGPL-3.0 OSS edition; corresponding source and bundled notices obligations require review; no Enterprise activation",
+      "dependsOn": [
+        "prometheus"
+      ],
+      "ports": [
+        3000
+      ],
+      "probe": "/api/health plus authenticated provisioned dashboard and synthetic metric query; no default admin credentials",
+      "owner": "FIN-277",
+      "architecture": "x64",
+      "supportEnds": null,
+      "silentArguments": [],
+      "qualification": "blocked"
     }
   ],
   "hosts": [
@@ -509,13 +641,13 @@
     {
       "id": "search",
       "owner": "FIN-205",
-      "decision": "Elasticsearch native Windows distribution only for retained read/operational contracts; exact supported version, payload digest and license review outstanding",
+      "decision": "Elasticsearch 8.19.21 Windows candidate pinned from vendor checksum for retained read/operational contracts; three-OS support, bundled JDK, binary trust and license review outstanding",
       "qualification": "blocked"
     },
     {
       "id": "metrics-traces-alerts",
       "owner": "FIN-277",
-      "decision": "Native collection and protected persistent sinks required; local logs alone do not replace metrics/traces/dashboards/alert delivery",
+      "decision": "Prometheus 3.14.0, Alertmanager 0.34.1, Grafana OSS 13.2.2 and Jaeger/tools 2.21.0 candidates pinned; Jaeger uses Elasticsearch 8.x, not memory. SCM wrapper, privacy filters, retention, support and binary trust remain unqualified. No cloud export or default credentials.",
       "qualification": "blocked"
     },
     {
