@@ -157,6 +157,14 @@ behavior must use native Windows mechanisms and be tested on the target host.
 
 ## Acceptance And Authorization
 
+Owner decision, 2026-09-18: all paid development/testing operations are excluded
+from the agent's POC work. The owner will run final installed-POC acceptance after
+development. Deliver the installer, reproducible test harness/checklist and known
+limitations; continue no-cost implementation and automated checks without waiting
+for paid infrastructure or provider access. Use synthetic doubles for paid APIs,
+and mark live-provider and owner-run results pending, not passed or waived.
+No paid license, certificate, hosted runner or trial is activated by the agent.
+
 FIN-281 supplies the lifecycle test harness. FIN-206 independently records actual
 installed-host acceptance on all three OS targets; FIN-204 records business E2E.
 Test clean install, reboot, failed prerequisite, non-admin rejection, port

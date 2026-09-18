@@ -30,6 +30,20 @@ Forbidden without explicit human approval:
 
 ## Financial Authorization
 
+POC owner directive, 2026-09-18: the agent must not perform paid operations for
+development, testing or deployment. The additional-spend budget is zero. Do not
+activate paid APIs, trials that can bill, paid CI/runners, infrastructure, licenses,
+certificates or extra credits. Existing credentials are not spending permission.
+Use no-cost local/static/unit/integration checks and synthetic provider doubles;
+keep real paid integrations disabled. Do not repeatedly request paid testing.
+
+The owner will perform final installed-POC testing after development. Prepare
+reproducible installation instructions, test scripts/checklists and known limits
+for that handoff. Continue independent implementation and free verification;
+do not wait for a paid test environment to develop those deliverables. Record
+owner-run/live-provider checks as pending, never passed by a mock or waived.
+This does not authorize installation or privileged changes on the owner's PC.
+
 Autonomous delivery does not authorize extra spending. Do not buy/redeem credits,
 enable auto-reload, switch to API-billed fallbacks, activate paid providers or
 exporters, start paid cloud builds, enroll accounts or deploy paid infrastructure

@@ -185,6 +185,13 @@ unconfigured. A disabled provider is unavailable, never a successful test result
 
 ## Remaining FIN-272 Work
 
+Owner clarification, 2026-09-18: paid operations are excluded from POC development
+and testing. Final installed-POC testing is owner-run after development. Continue
+the manifest, implementation and free verification; prepare reproducible scripts
+and explicit pending checks for handoff. Do not buy a signing certificate, activate
+a paid provider or provision paid test hosts to unblock this inventory. Metadata,
+integrity and security requirements still apply; untested is not approved.
+
 1. Pin the exact PostgreSQL archive/revision and all required native dependencies.
 2. Qualify the pinned search/observability candidates, service wrapper and support/license matrix.
 3. Verify downloaded payload hashes, trusted signatures, notices and redistribution
