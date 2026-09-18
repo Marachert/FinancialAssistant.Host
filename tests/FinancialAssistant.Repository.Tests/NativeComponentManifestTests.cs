@@ -16,6 +16,7 @@ public sealed class NativeComponentManifestTests
         Assert.False(report["releaseReady"]!.GetValue<bool>());
         Assert.Equal(15, report["hosts"]!.GetValue<int>());
         Assert.Equal(12, report["packages"]!.GetValue<int>());
+        Assert.Equal(3, report["assets"]!.GetValue<int>());
         Assert.Equal(3, report["targets"]!.GetValue<int>());
         Assert.NotEmpty(report["blockers"]!.AsArray());
     }
@@ -63,6 +64,91 @@ public sealed class NativeComponentManifestTests
 
     private static JsonNode ReadManifest() => JsonNode.Parse(File.ReadAllText(
         Path.Combine(Root(), "infra/windows-native/component-manifest.json")))!;
+
+    [Theory]
+    [InlineData("admin-web")]
+    [InlineData("wpf-wizard")]
+    [InlineData("installation-engine")]
+    public async Task RequiredAssets_CannotBeRemoved(string id)
+    {
+        var manifest = ReadManifest();
+        var assets = manifest["assets"]!.AsArray();
+        assets.Remove(assets.Single(entry => entry!["id"]!.GetValue<string>() == id));
+        var result = await ValidateAsync(manifest);
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains($"Missing required asset: {id}", result.Output);
+    }
+
+    public static IEnumerable<object[]> InvalidAssetQualifications()
+    {
+        foreach (var id in new[] { "admin-web", "wpf-wizard", "installation-engine" })
+        {
+            foreach (var mutation in new[] { "release-ready", "empty", "missing", "null", "case", "array" })
+            {
+                yield return new object[] { id, mutation };
+            }
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(InvalidAssetQualifications))]
+    public async Task Assets_RequireAnExplicitNonReleaseQualification(string id, string mutation)
+    {
+        var manifest = ReadManifest();
+        var asset = manifest["assets"]!.AsArray()
+            .Single(entry => entry!["id"]!.GetValue<string>() == id)!.AsObject();
+        switch (mutation)
+        {
+            case "missing": asset.Remove("qualification"); break;
+            case "null": asset["qualification"] = null; break;
+            case "empty": asset["qualification"] = ""; break;
+            case "case": asset["qualification"] = "Not-Tested"; break;
+            case "array": asset["qualification"] = new JsonArray("not-tested"); break;
+            default: asset["qualification"] = mutation; break;
+        }
+
+        var result = await ValidateAsync(manifest);
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains($"Invalid asset qualification: {id}", result.Output);
+    }
+
+    [Theory]
+    [InlineData("not-implemented")]
+    [InlineData("not-tested")]
+    [InlineData("blocked")]
+    public async Task NonReleaseAssetQualifications_DoNotApproveRelease(string qualification)
+    {
+        var manifest = ReadManifest();
+        foreach (var asset in manifest["assets"]!.AsArray())
+        {
+            asset!["qualification"] = qualification;
+        }
+
+        var result = await ValidateAsync(manifest);
+        Assert.Equal(0, result.ExitCode);
+        Assert.False(JsonNode.Parse(result.Output)!["releaseReady"]!.GetValue<bool>());
+    }
+
+    [Fact]
+    public async Task EmptyAssets_AreRejected()
+    {
+        var manifest = ReadManifest();
+        manifest["assets"] = new JsonArray();
+        var result = await ValidateAsync(manifest);
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("Missing required asset: admin-web", result.Output);
+    }
+
+    [Fact]
+    public async Task DuplicateAssets_AreRejected()
+    {
+        var manifest = ReadManifest();
+        var assets = manifest["assets"]!.AsArray();
+        assets.Add(assets[0]!.DeepClone());
+        var result = await ValidateAsync(manifest);
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("Invalid or duplicate component id", result.Output);
+    }
 
     [Theory]
     [InlineData("elasticsearch")]

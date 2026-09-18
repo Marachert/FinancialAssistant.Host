@@ -23,6 +23,9 @@ ports/IDs, dependency references/cycles, digest shape and safety-policy checks.
 It requires explicit prerelease denial and retains every named capability and
 qualification blocker; deleting backup, secret recovery or observability cannot
 silently produce a valid inventory. Duplicate safety entries are also rejected.
+The admin web assets, WPF wizard and installation engine are mandatory entries.
+Each asset must declare exactly `not-implemented`, `not-tested` or `blocked`;
+missing, non-string or release-ready qualification values are rejected.
 It reads files only. It does not download, install, run probes, verify binary
 signatures, certify licenses, query vendor support or approve a release.
 `schemaValid: true` always accompanies `releaseReady: false`. A mutated inventory

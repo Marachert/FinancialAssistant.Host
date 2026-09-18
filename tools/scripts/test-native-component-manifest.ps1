@@ -26,6 +26,14 @@ foreach ($component in $components) {
     if ($component.id -notmatch '^[a-z][a-z0-9-]+$' -or -not $ids.Add($component.id)) { throw 'Invalid or duplicate component id.' }
     if ($component.owner -notmatch '^FIN-\d+$') { throw "Missing owner: $($component.id)" }
 }
+foreach ($required in @('admin-web','wpf-wizard','installation-engine')) {
+    if ($required -cnotin @($manifest.assets | ForEach-Object { $_.id })) { throw "Missing required asset: $required" }
+}
+foreach ($asset in $manifest.assets) {
+    if ($asset['qualification'] -isnot [string] -or $asset['qualification'] -cnotin @('not-implemented','not-tested','blocked')) {
+        throw "Invalid asset qualification: $($asset.id)"
+    }
+}
 foreach ($component in $components) {
     foreach ($dependency in $component.dependsOn) {
         if (-not $ids.Contains($dependency) -or $dependency -eq $component.id) { throw "Invalid dependency: $($component.id)" }
@@ -95,6 +103,7 @@ Assert-RequiredEntries $manifest.blockers 'code' @('PACKAGE-QUALIFICATION','SEAR
     releaseReady = $false
     hosts = $manifest.hosts.Count
     packages = $manifest.packages.Count
+    assets = $manifest.assets.Count
     targets = $manifest.targets.Count
     blockers = @($manifest.blockers.code)
     message = 'Inventory validated only. No packages downloaded, installed, executed or approved.'
