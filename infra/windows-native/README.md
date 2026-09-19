@@ -1,6 +1,6 @@
 # Native Windows Component Inventory
 
-FIN-272, metadata updated 2026-09-18. **Design inventory, not a release lock or an
+FIN-272, metadata updated 2026-09-19. **Design inventory, not a release lock or an
 installer. FIN-272 remains In Progress.** The approved target is the
 [Windows-native POC](../../docs/architecture/windows-native-poc.md), without
 Docker, WSL or a Linux VM. No machine configuration is changed here.
@@ -80,7 +80,7 @@ published hash is not evidence that downloaded bytes or a signature were checked
 | Candidate | Evidence and unresolved qualification |
 | --- | --- |
 | .NET Runtime, ASP.NET Core Runtime and Desktop Runtime 8.0.31 x64 | Official SHA-512 metadata captured; signature chain/revocation and binary notices pending |
-| PostgreSQL 18.6 x64 EDB distribution | Exact distribution revision, payload URL/hash, prerequisite inventory and bundled terms pending |
+| PostgreSQL 18.6-4 x64 EDB binary archive | Official exact archive URL and download size captured; authenticated digest, prerequisite inventory and bundled terms pending |
 | Erlang/OTP 27.3.4.17 x64 | Official release asset SHA-256 captured; binary trust and unattended lifecycle not tested |
 | RabbitMQ 4.3.5 | Official release asset SHA-256 and detached-signature location captured; signing-key trust and native lifecycle not tested |
 | NSIS 3.12 build-time packaging candidate | Native compiled bootstrap plus WPF and separate elevated engine; compiler digest/notices and product signing identity pending |
@@ -108,7 +108,16 @@ that the current package remains the newest patch at future packaging time.
 Server 2022/2025 for version 18; desktop comparability is not a Windows 11 test
 certificate. All three product targets still need our acceptance evidence.
 The [EDB archive listing](https://www.enterprisedb.com/download-postgresql-binaries)
-is a discovery URL, not a pinned downloadable payload. The
+links Windows 18.6 to [file ID 1260566](https://sbp.enterprisedb.com/getfile.jsp?fileid=1260566).
+On 2026-09-19 a read-only HEAD request followed the vendor redirect to
+`postgresql-18.6-4-windows-x64-binaries.zip`, HTTP 200, 382815572 download bytes.
+The exact HTTPS payload URL is pinned in the manifest; no payload was downloaded
+or executed. The listing/file ID can change later, so it is discovery evidence,
+not the installation input. The compressed size is not installed disk usage.
+No authoritative checksum for this exact revision was found. An HTTP ETag,
+TLS connection, source archive checksum, installer EXE checksum or another ZIP
+revision's hash cannot substitute for the binary ZIP's authenticated digest.
+Hash fields remain null and qualification remains blocked. The
 [PostgreSQL license](https://www.postgresql.org/about/licence/) does not by itself
 complete the license inventory of an entire vendor archive.
 
@@ -195,7 +204,8 @@ and explicit pending checks for handoff. Do not buy a signing certificate, activ
 a paid provider or provision paid test hosts to unblock this inventory. Metadata,
 integrity and security requirements still apply; untested is not approved.
 
-1. Pin the exact PostgreSQL archive/revision and all required native dependencies.
+1. Authenticate the pinned PostgreSQL 18.6-4 archive digest and inventory all
+required native dependencies.
 2. Qualify the pinned search/observability candidates, service wrapper and support/license matrix.
 3. Verify downloaded payload hashes, trusted signatures, notices and redistribution
    terms; capture exact unattended commands, exit codes and resource requirements.

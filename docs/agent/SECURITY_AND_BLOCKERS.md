@@ -53,6 +53,13 @@ requires unapproved spending, preserve state and report the blocker.
 
 ## Delivery Blockers
 
+Owner quota guard, 2026-09-19: pause this development at 40% used in the five-hour
+Codex window (60% remaining). Apply the mandatory `AGENTS.md` usage guard at every
+resume and during work. The rule persists until explicitly changed by the owner;
+no credit redemption or paid fallback may bypass it. Missing usage information
+requires a safe stop, not an assumption of remaining capacity. This operational
+guard does not change subscription/billing settings or promise an exact hard cap.
+
 Stop autonomous delivery and report a blocker when:
 
 - Jira requirements materially contradict repository architecture;

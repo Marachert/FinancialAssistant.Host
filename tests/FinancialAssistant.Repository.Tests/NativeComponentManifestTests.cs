@@ -65,6 +65,25 @@ public sealed class NativeComponentManifestTests
     private static JsonNode ReadManifest() => JsonNode.Parse(File.ReadAllText(
         Path.Combine(Root(), "infra/windows-native/component-manifest.json")))!;
 
+    [Fact]
+    public void PostgreSqlArchive_IsPinnedButBlockedWithoutIntegrityEvidence()
+    {
+        var package = ReadManifest()["packages"]!.AsArray()
+            .Single(entry => entry!["id"]!.GetValue<string>() == "postgresql")!;
+        Assert.Equal("18.6", package["version"]!.GetValue<string>());
+        Assert.Equal("4", package["distributionRevision"]!.GetValue<string>());
+        Assert.Equal("https://get.enterprisedb.com/postgresql/postgresql-18.6-4-windows-x64-binaries.zip",
+            package["origin"]!.GetValue<string>());
+        Assert.Equal("https://sbp.enterprisedb.com/getfile.jsp?fileid=1260566",
+            package["discoveryRedirect"]!.GetValue<string>());
+        Assert.Equal(382815572, package["downloadSizeBytes"]!.GetValue<long>());
+        Assert.Equal("blocked", package["qualification"]!.GetValue<string>());
+        Assert.Null(package["hashAlgorithm"]);
+        Assert.Null(package["hash"]);
+        Assert.Null(package["integritySource"]);
+        Assert.Empty(package["silentArguments"]!.AsArray());
+    }
+
     [Theory]
     [InlineData("admin-web")]
     [InlineData("wpf-wizard")]
