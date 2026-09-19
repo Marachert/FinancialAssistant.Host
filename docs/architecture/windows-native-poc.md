@@ -60,6 +60,10 @@ FIN-272 must inventory every required component, select compatible supported
 versions and prove unattended installation, health, upgrade and redistribution
 rights. This table is a target, not an approved binary bill of materials.
 
+The [native component inventory](../../infra/windows-native/README.md) records
+source hosts, proposed non-conflicting ports, package metadata and explicit
+qualification gaps. Its read-only validator cannot approve a release.
+
 | Component | Native target | Owner and release gate |
 | --- | --- | --- |
 | WPF wizard and engine | Separate UI and privileged deployment engine | FIN-278/279; resumable steps and UI validation |
@@ -152,6 +156,14 @@ Archive creation alone is not recovery verification. Scheduled backup and reboot
 behavior must use native Windows mechanisms and be tested on the target host.
 
 ## Acceptance And Authorization
+
+Owner decision, 2026-09-18: all paid development/testing operations are excluded
+from the agent's POC work. The owner will run final installed-POC acceptance after
+development. Deliver the installer, reproducible test harness/checklist and known
+limitations; continue no-cost implementation and automated checks without waiting
+for paid infrastructure or provider access. Use synthetic doubles for paid APIs,
+and mark live-provider and owner-run results pending, not passed or waived.
+No paid license, certificate, hosted runner or trial is activated by the agent.
 
 FIN-281 supplies the lifecycle test harness. FIN-206 independently records actual
 installed-host acceptance on all three OS targets; FIN-204 records business E2E.

@@ -93,6 +93,20 @@ Do not weaken or delete a valid test merely to make CI green.
 
 Never commit or expose tokens, passwords, API keys, certificates, `.env` files, production configuration, real identities, personal financial data, receipts, raw OCR data, or real LLM prompts/responses. Use synthetic test data and environment-provided credentials.
 
+## Owner Usage Guard
+
+Owner directive, 2026-09-19: for this development, pause safely when the account's
+five-hour Codex window reaches 40% USED (60% remaining), until explicitly changed
+by the owner. Read fresh usage at resume, before substantial work phases, and
+regularly during long work; do not rely on conversation memory or a weekly value.
+At or above the threshold, start no new work: save the checkpoint, preserve edits,
+finish only necessary safe shutdown and release the owned delivery lock. If the
+five-hour reading is unavailable, stop at a safe point rather than assume capacity.
+Resume only on user request and after a fresh reading below 40%; a generic
+"continue" does not revoke this standing threshold. Never redeem credits, enable
+paid fallback or bypass the guard. This is an agent workflow guard, not a billing
+setting or a guarantee of an exact hard cap; readings and safe shutdown can lag.
+
 ## Completion
 
 Keep affected GitHub documentation and Confluence pages synchronized using

@@ -1,0 +1,722 @@
+{
+  "schemaVersion": 1,
+  "kind": "component-design",
+  "verifiedMetadataDate": "2026-09-19",
+  "sourceCommit": "09a6c1d4c132b5fbbe060a129a5684f9323a53b2",
+  "jira": "FIN-272",
+  "releaseReady": false,
+  "targets": [
+    {
+      "id": "windows-11",
+      "architecture": "x64",
+      "desktopExperience": true,
+      "qualification": "not-tested"
+    },
+    {
+      "id": "windows-server-2022",
+      "architecture": "x64",
+      "desktopExperience": true,
+      "qualification": "not-tested"
+    },
+    {
+      "id": "windows-server-2025",
+      "architecture": "x64",
+      "desktopExperience": true,
+      "qualification": "not-tested"
+    }
+  ],
+  "policy": {
+    "containersAllowed": false,
+    "automaticDownloadsAllowed": false,
+    "automaticSpendingAllowed": false,
+    "uninstallRetainsData": true,
+    "sharedDependencyRemovalAllowed": false,
+    "internalBindAddress": "127.0.0.1",
+    "applicationRuntime": "net8.0",
+    "releaseBefore": "2026-11-10",
+    "prereleaseAllowed": false
+  },
+  "packages": [
+    {
+      "id": "dotnet-runtime",
+      "version": "8.0.31",
+      "architecture": "x64",
+      "origin": "https://builds.dotnet.microsoft.com/dotnet/Runtime/8.0.31/dotnet-runtime-8.0.31-win-x64.exe",
+      "hashAlgorithm": "SHA512",
+      "hash": "2dc2f346a4bcb53ab15ab6ab84348c02eb31b0a3d4e8e06aac73b4c89f1b001af01943ed4c5735fa5585f1dd731a942d2034577dfe937f4454367ff2d6edf929",
+      "integritySource": "https://builds.dotnet.microsoft.com/dotnet/release-metadata/8.0/releases.json",
+      "signature": "Authenticode Microsoft publisher; binary chain/revocation verification pending",
+      "license": "Microsoft .NET redistribution terms and bundled notices; exact payload review pending",
+      "supportEnds": "2026-11-10",
+      "silentArguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "dependsOn": [],
+      "ports": [],
+      "probe": "dotnet --list-runtimes: Microsoft.NETCore.App 8.0.31 x64",
+      "owner": "FIN-272",
+      "qualification": "metadata-only"
+    },
+    {
+      "id": "aspnet-runtime",
+      "version": "8.0.31",
+      "architecture": "x64",
+      "origin": "https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/8.0.31/aspnetcore-runtime-8.0.31-win-x64.exe",
+      "hashAlgorithm": "SHA512",
+      "hash": "39c032419a5d6fc786280f7f69af9aebc137b1bc59c560a3cf7b7a4effa68b664f8e7325c941bad8a6134f7adb0f6b3fd2b6eb9376760070b0cc080873cc5a26",
+      "integritySource": "https://builds.dotnet.microsoft.com/dotnet/release-metadata/8.0/releases.json",
+      "signature": "Authenticode Microsoft publisher; binary chain/revocation verification pending",
+      "license": "Microsoft .NET redistribution terms and bundled notices; exact payload review pending",
+      "supportEnds": "2026-11-10",
+      "silentArguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "dependsOn": [
+        "dotnet-runtime"
+      ],
+      "ports": [],
+      "probe": "dotnet --list-runtimes: Microsoft.AspNetCore.App 8.0.31 x64",
+      "owner": "FIN-272",
+      "qualification": "metadata-only"
+    },
+    {
+      "id": "desktop-runtime",
+      "version": "8.0.31",
+      "architecture": "x64",
+      "origin": "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/8.0.31/windowsdesktop-runtime-8.0.31-win-x64.exe",
+      "hashAlgorithm": "SHA512",
+      "hash": "605189223cf0a64bfb5453520b794d1d386a97c7e65e3944feaf9214db1a8b247f66c569265aef4204447baf5b5ff19559c323d887e1318f17deb28a5af0fa12",
+      "integritySource": "https://builds.dotnet.microsoft.com/dotnet/release-metadata/8.0/releases.json",
+      "signature": "Authenticode Microsoft publisher; binary chain/revocation verification pending",
+      "license": "Microsoft .NET redistribution terms and bundled notices; exact payload review pending",
+      "supportEnds": "2026-11-10",
+      "silentArguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "dependsOn": [],
+      "ports": [],
+      "probe": "dotnet --list-runtimes: Microsoft.WindowsDesktop.App 8.0.31 x64",
+      "owner": "FIN-279",
+      "qualification": "metadata-only"
+    },
+    {
+      "id": "postgresql",
+      "version": "18.6",
+      "distributionRevision": "4",
+      "architecture": "x64",
+      "origin": "https://get.enterprisedb.com/postgresql/postgresql-18.6-4-windows-x64-binaries.zip",
+      "discoverySource": "https://www.enterprisedb.com/download-postgresql-binaries",
+      "discoveryRedirect": "https://sbp.enterprisedb.com/getfile.jsp?fileid=1260566",
+      "downloadSizeBytes": 382815572,
+      "hashAlgorithm": null,
+      "hash": null,
+      "integritySource": null,
+      "signature": "Official archive redirect and HEAD metadata captured; authenticated digest and binary trust still unverified",
+      "license": "PostgreSQL License plus EDB archive and all bundled dependency terms pending",
+      "supportEnds": null,
+      "silentArguments": [],
+      "dependsOn": [],
+      "ports": [
+        5432
+      ],
+      "probe": "pg_isready plus authenticated SELECT 1 and expected per-service schema version",
+      "owner": "FIN-272",
+      "qualification": "blocked"
+    },
+    {
+      "id": "erlang",
+      "version": "27.3.4.17",
+      "architecture": "x64",
+      "origin": "https://github.com/erlang/otp/releases/download/OTP-27.3.4.17/otp_win64_27.3.4.17.exe",
+      "hashAlgorithm": "SHA256",
+      "hash": "7ed735569fb9bc44368e40d86a08c71f1b70cba5a18154417b882214e1da66d4",
+      "integritySource": "https://api.github.com/repos/erlang/otp/releases/tags/OTP-27.3.4.17",
+      "signature": "Release digest captured; binary publisher/signature trust verification pending",
+      "license": "Apache-2.0 and bundled notices; complete binary redistribution review pending",
+      "supportEnds": null,
+      "silentArguments": [
+        "/S"
+      ],
+      "dependsOn": [],
+      "ports": [
+        4369
+      ],
+      "probe": "erl -noshell reports exact OTP and ERTS versions; crypto/TLS probe",
+      "owner": "FIN-276",
+      "qualification": "metadata-only"
+    },
+    {
+      "id": "rabbitmq",
+      "version": "4.3.5",
+      "architecture": "x64",
+      "origin": "https://github.com/rabbitmq/rabbitmq-server/releases/download/v4.3.5/rabbitmq-server-4.3.5.exe",
+      "hashAlgorithm": "SHA256",
+      "hash": "e7f8a8dc326714ca5b964e27f987b020398a4a3f4b52c4d85d8f342b0b0e4e7d",
+      "integritySource": "https://api.github.com/repos/rabbitmq/rabbitmq-server/releases/tags/v4.3.5",
+      "signature": "Detached .exe.asc at the same release; pin trusted signing key and verify before use",
+      "license": "MPL-2.0 and bundled notices; no commercial support entitlement assumed",
+      "supportEnds": "2026-11-30",
+      "silentArguments": [
+        "/S"
+      ],
+      "dependsOn": [
+        "erlang"
+      ],
+      "ports": [
+        5672,
+        15672,
+        25672
+      ],
+      "probe": "rabbitmq-diagnostics ping/check_running/check_local_alarms plus authenticated publish/confirm/consume",
+      "owner": "FIN-276",
+      "qualification": "metadata-only"
+    },
+    {
+      "id": "elasticsearch",
+      "version": "8.19.21",
+      "origin": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.19.21-windows-x86_64.zip",
+      "hashAlgorithm": "SHA512",
+      "hash": "869020baa1d5cef826a7640962013cb0886be6405023002c1510bc3237fec78702000a8ff2c0443dd72f675159e8daf3893cf865e5b33195afe068e312f12370",
+      "integritySource": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.19.21-windows-x86_64.zip.sha512",
+      "signature": "Published checksum only; archive signature, bundled JDK and service wrapper trust pending",
+      "license": "Elastic distribution and bundled JDK/notices review pending; no paid features or support entitlement",
+      "dependsOn": [],
+      "ports": [
+        9200,
+        9300
+      ],
+      "probe": "Authenticated cluster health plus retained-contract index/read/delete and restart checks",
+      "owner": "FIN-205",
+      "architecture": "x64",
+      "supportEnds": null,
+      "silentArguments": [],
+      "qualification": "blocked"
+    },
+    {
+      "id": "prometheus",
+      "version": "3.14.0",
+      "license": "Apache-2.0 and bundled notices; binary redistribution review pending",
+      "dependsOn": [],
+      "ports": [
+        9090
+      ],
+      "probe": "/-/ready plus synthetic scrape, bounded-label query and TSDB restart persistence",
+      "owner": "FIN-277",
+      "origin": "https://github.com/prometheus/prometheus/releases/download/v3.14.0/prometheus-3.14.0.windows-amd64.zip",
+      "hashAlgorithm": "SHA256",
+      "hash": "e57fbb99e4d0bc734d2f2b3aeb68c02fba38862259dc99a95c27ea46d9ccba0a",
+      "integritySource": "https://api.github.com/repos/prometheus/prometheus/releases/tags/v3.14.0",
+      "downloadBytes": 110095743,
+      "signature": "Release asset digest only; binary provenance/trust verification pending",
+      "architecture": "x64",
+      "supportEnds": null,
+      "silentArguments": [],
+      "qualification": "blocked"
+    },
+    {
+      "id": "alertmanager",
+      "version": "0.34.1",
+      "license": "Apache-2.0 and bundled notices; binary redistribution review pending",
+      "dependsOn": [],
+      "ports": [
+        9093
+      ],
+      "probe": "/-/ready plus synthetic alert grouping, local delivery, silence persistence and restart recovery",
+      "owner": "FIN-277",
+      "origin": "https://github.com/prometheus/alertmanager/releases/download/v0.34.1/alertmanager-0.34.1.windows-amd64.zip",
+      "hashAlgorithm": "SHA256",
+      "hash": "69624d6ce3674dbcf8cefc5a93d7028d00bbd5e0196a8384907f51593a495fef",
+      "integritySource": "https://api.github.com/repos/prometheus/alertmanager/releases/tags/v0.34.1",
+      "downloadBytes": 40131065,
+      "signature": "Release asset digest only; binary provenance/trust verification pending",
+      "architecture": "x64",
+      "supportEnds": null,
+      "silentArguments": [],
+      "qualification": "blocked"
+    },
+    {
+      "id": "jaeger",
+      "version": "2.21.0",
+      "license": "Apache-2.0 and bundled notices; binary redistribution review pending",
+      "dependsOn": [
+        "elasticsearch"
+      ],
+      "ports": [
+        4317,
+        4318,
+        16686,
+        13133
+      ],
+      "probe": "Configured health extension plus synthetic OTLP span stored and queried after restart",
+      "owner": "FIN-277",
+      "origin": "https://github.com/jaegertracing/jaeger/releases/download/v2.21.0/jaeger-2.21.0-windows-amd64.zip",
+      "hashAlgorithm": "SHA256",
+      "hash": "197c4b42aba6983b3d9cbca3577a0e14191bcb9431fde1b6661471b6fece39fc",
+      "integritySource": "https://api.github.com/repos/jaegertracing/jaeger/releases/tags/v2.21.0",
+      "downloadBytes": 64683817,
+      "signature": "Detached .zip.asc published; trusted signing key and binary verification pending",
+      "architecture": "x64",
+      "supportEnds": null,
+      "silentArguments": [],
+      "qualification": "blocked"
+    },
+    {
+      "id": "jaeger-tools",
+      "version": "2.21.0",
+      "license": "Apache-2.0 and bundled notices; binary redistribution review pending",
+      "dependsOn": [
+        "elasticsearch"
+      ],
+      "ports": [],
+      "probe": "Exact-version rollover initializer with owned trace prefix and ILM verification on synthetic data",
+      "owner": "FIN-277",
+      "origin": "https://github.com/jaegertracing/jaeger/releases/download/v2.21.0/jaeger-tools-2.21.0-windows-amd64.zip",
+      "hashAlgorithm": "SHA256",
+      "hash": "65c055e3501c5dd4d87c79989e7b8081376bdbd74783e64a4d477a3a470a7840",
+      "integritySource": "https://api.github.com/repos/jaegertracing/jaeger/releases/tags/v2.21.0",
+      "downloadBytes": 41148088,
+      "signature": "Detached .zip.asc published; trusted signing key and binary verification pending",
+      "architecture": "x64",
+      "supportEnds": null,
+      "silentArguments": [],
+      "qualification": "blocked"
+    },
+    {
+      "id": "grafana",
+      "version": "13.2.2",
+      "origin": "https://dl.grafana.com/grafana/release/13.2.2/grafana_13.2.2_34846740809_windows_amd64.msi",
+      "hashAlgorithm": "SHA256",
+      "hash": "6f6abfb4f833320b874949aec8726f0b794465ba6adf72d67345bccf43ff256d",
+      "integritySource": "https://grafana.com/grafana/download/13.2.2?edition=oss&platform=windows",
+      "signature": "MSI publisher/signature, service registration and unattended properties not verified",
+      "license": "AGPL-3.0 OSS edition; corresponding source and bundled notices obligations require review; no Enterprise activation",
+      "dependsOn": [
+        "prometheus"
+      ],
+      "ports": [
+        3000
+      ],
+      "probe": "/api/health plus authenticated provisioned dashboard and synthetic metric query; no default admin credentials",
+      "owner": "FIN-277",
+      "architecture": "x64",
+      "supportEnds": null,
+      "silentArguments": [],
+      "qualification": "blocked"
+    }
+  ],
+  "hosts": [
+    {
+      "id": "gateway",
+      "project": "backend/gateways/public-api-gateway/FinancialAssistant.PublicApiGateway/FinancialAssistant.PublicApiGateway.csproj",
+      "owner": "FIN-273",
+      "nativeHostingOwner": "FIN-273",
+      "serviceName": "FinancialAssistant.gateway",
+      "port": 5100,
+      "bindAddress": "127.0.0.1",
+      "liveness": "/health/live",
+      "readiness": "/health/ready",
+      "dependsOn": [
+        "aspnet-runtime",
+        "identity",
+        "profile",
+        "category",
+        "transaction-intake",
+        "receipt-processing",
+        "income",
+        "expense",
+        "analytics",
+        "financial-score",
+        "recommendations-notifications",
+        "monitoring",
+        "audit"
+      ],
+      "qualification": "not-tested",
+      "dataOwnership": "No authoritative state; disposable rate-limit partitions"
+    },
+    {
+      "id": "identity",
+      "project": "backend/services/identity/FinancialAssistant.Identity.Api/FinancialAssistant.Identity.Api.csproj",
+      "owner": "FIN-274",
+      "nativeHostingOwner": "FIN-273",
+      "serviceName": "FinancialAssistant.identity",
+      "port": 5101,
+      "bindAddress": "127.0.0.1",
+      "liveness": "/health/live",
+      "readiness": "/health/ready",
+      "dependsOn": [
+        "aspnet-runtime",
+        "postgresql",
+        "rabbitmq"
+      ],
+      "qualification": "not-tested",
+      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-274 must replace in-memory authoritative stores"
+    },
+    {
+      "id": "profile",
+      "project": "backend/services/profile/FinancialAssistant.Profile.Api/FinancialAssistant.Profile.Api.csproj",
+      "owner": "FIN-274",
+      "nativeHostingOwner": "FIN-273",
+      "serviceName": "FinancialAssistant.profile",
+      "port": 5102,
+      "bindAddress": "127.0.0.1",
+      "liveness": "/health/live",
+      "readiness": "/health/ready",
+      "dependsOn": [
+        "aspnet-runtime",
+        "postgresql",
+        "rabbitmq"
+      ],
+      "qualification": "not-tested",
+      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-274 must replace in-memory authoritative stores"
+    },
+    {
+      "id": "category",
+      "project": "backend/services/category/FinancialAssistant.Category.Api/FinancialAssistant.Category.Api.csproj",
+      "owner": "FIN-274",
+      "nativeHostingOwner": "FIN-273",
+      "serviceName": "FinancialAssistant.category",
+      "port": 5103,
+      "bindAddress": "127.0.0.1",
+      "liveness": "/health/live",
+      "readiness": "/health/ready",
+      "dependsOn": [
+        "aspnet-runtime",
+        "postgresql",
+        "rabbitmq"
+      ],
+      "qualification": "not-tested",
+      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-274 must replace in-memory authoritative stores"
+    },
+    {
+      "id": "transaction-intake",
+      "project": "backend/services/transaction-intake/FinancialAssistant.TransactionIntake.Api/FinancialAssistant.TransactionIntake.Api.csproj",
+      "owner": "FIN-274",
+      "nativeHostingOwner": "FIN-273",
+      "serviceName": "FinancialAssistant.transaction-intake",
+      "port": 5104,
+      "bindAddress": "127.0.0.1",
+      "liveness": "/health/live",
+      "readiness": "/health/ready",
+      "dependsOn": [
+        "aspnet-runtime",
+        "postgresql",
+        "rabbitmq"
+      ],
+      "qualification": "not-tested",
+      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-274 must replace in-memory authoritative stores"
+    },
+    {
+      "id": "receipt-processing",
+      "project": "backend/services/receipt-processing/FinancialAssistant.ReceiptProcessing.Api/FinancialAssistant.ReceiptProcessing.Api.csproj",
+      "owner": "FIN-277",
+      "nativeHostingOwner": "FIN-273",
+      "serviceName": "FinancialAssistant.receipt-processing",
+      "port": 5105,
+      "bindAddress": "127.0.0.1",
+      "liveness": "/health/live",
+      "readiness": "/health/ready",
+      "dependsOn": [
+        "aspnet-runtime",
+        "postgresql",
+        "rabbitmq"
+      ],
+      "qualification": "not-tested",
+      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-277 must replace in-memory authoritative stores"
+    },
+    {
+      "id": "analytics",
+      "project": "backend/services/analytics/FinancialAssistant.Analytics.Api/FinancialAssistant.Analytics.Api.csproj",
+      "owner": "FIN-275",
+      "nativeHostingOwner": "FIN-273",
+      "serviceName": "FinancialAssistant.analytics",
+      "port": 5106,
+      "bindAddress": "127.0.0.1",
+      "liveness": "/health/live",
+      "readiness": "/health/ready",
+      "dependsOn": [
+        "aspnet-runtime",
+        "postgresql",
+        "rabbitmq"
+      ],
+      "qualification": "not-tested",
+      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-275 must replace in-memory authoritative stores"
+    },
+    {
+      "id": "financial-score",
+      "project": "backend/services/financial-score/FinancialAssistant.FinancialScore.Api/FinancialAssistant.FinancialScore.Api.csproj",
+      "owner": "FIN-275",
+      "nativeHostingOwner": "FIN-273",
+      "serviceName": "FinancialAssistant.financial-score",
+      "port": 5107,
+      "bindAddress": "127.0.0.1",
+      "liveness": "/health/live",
+      "readiness": "/health/ready",
+      "dependsOn": [
+        "aspnet-runtime",
+        "postgresql",
+        "rabbitmq"
+      ],
+      "qualification": "not-tested",
+      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-275 must replace in-memory authoritative stores"
+    },
+    {
+      "id": "recommendations-notifications",
+      "project": "backend/services/recommendations-notifications/FinancialAssistant.RecommendationsNotifications.Api/FinancialAssistant.RecommendationsNotifications.Api.csproj",
+      "owner": "FIN-275",
+      "nativeHostingOwner": "FIN-273",
+      "serviceName": "FinancialAssistant.recommendations-notifications",
+      "port": 5108,
+      "bindAddress": "127.0.0.1",
+      "liveness": "/health/live",
+      "readiness": "/health/ready",
+      "dependsOn": [
+        "aspnet-runtime",
+        "postgresql",
+        "rabbitmq"
+      ],
+      "qualification": "not-tested",
+      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-275 must replace in-memory authoritative stores"
+    },
+    {
+      "id": "monitoring",
+      "project": "backend/services/monitoring/FinancialAssistant.Monitoring.Api/FinancialAssistant.Monitoring.Api.csproj",
+      "owner": "FIN-277",
+      "nativeHostingOwner": "FIN-273",
+      "serviceName": "FinancialAssistant.monitoring",
+      "port": 5110,
+      "bindAddress": "127.0.0.1",
+      "liveness": "/health/live",
+      "readiness": "/health/ready",
+      "dependsOn": [
+        "aspnet-runtime",
+        "postgresql",
+        "rabbitmq"
+      ],
+      "qualification": "not-tested",
+      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-277 must replace in-memory authoritative stores"
+    },
+    {
+      "id": "income",
+      "project": "backend/services/income/FinancialAssistant.Income.Api/FinancialAssistant.Income.Api.csproj",
+      "owner": "FIN-275",
+      "nativeHostingOwner": "FIN-273",
+      "serviceName": "FinancialAssistant.income",
+      "port": 5111,
+      "bindAddress": "127.0.0.1",
+      "liveness": "/health/live",
+      "readiness": "/health/ready",
+      "dependsOn": [
+        "aspnet-runtime",
+        "postgresql",
+        "rabbitmq"
+      ],
+      "qualification": "not-tested",
+      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-275 must replace in-memory authoritative stores"
+    },
+    {
+      "id": "expense",
+      "project": "backend/services/expense/FinancialAssistant.Expense.Api/FinancialAssistant.Expense.Api.csproj",
+      "owner": "FIN-275",
+      "nativeHostingOwner": "FIN-273",
+      "serviceName": "FinancialAssistant.expense",
+      "port": 5112,
+      "bindAddress": "127.0.0.1",
+      "liveness": "/health/live",
+      "readiness": "/health/ready",
+      "dependsOn": [
+        "aspnet-runtime",
+        "postgresql",
+        "rabbitmq"
+      ],
+      "qualification": "not-tested",
+      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-275 must replace in-memory authoritative stores"
+    },
+    {
+      "id": "audit",
+      "project": "backend/services/audit/FinancialAssistant.Audit.Api/FinancialAssistant.Audit.Api.csproj",
+      "owner": "FIN-277",
+      "nativeHostingOwner": "FIN-273",
+      "serviceName": "FinancialAssistant.audit",
+      "port": 5113,
+      "bindAddress": "127.0.0.1",
+      "liveness": "/health/live",
+      "readiness": "/health/ready",
+      "dependsOn": [
+        "aspnet-runtime",
+        "postgresql",
+        "rabbitmq"
+      ],
+      "qualification": "not-tested",
+      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-277 must replace in-memory authoritative stores"
+    },
+    {
+      "id": "ai-orchestration",
+      "project": "backend/services/ai-orchestration/FinancialAssistant.AiOrchestration.Api/FinancialAssistant.AiOrchestration.Api.csproj",
+      "owner": "FIN-274",
+      "nativeHostingOwner": "FIN-273",
+      "serviceName": "FinancialAssistant.ai-orchestration",
+      "port": 5114,
+      "bindAddress": "127.0.0.1",
+      "liveness": "/health/live",
+      "readiness": "/health/ready",
+      "dependsOn": [
+        "aspnet-runtime",
+        "postgresql",
+        "rabbitmq"
+      ],
+      "qualification": "not-tested",
+      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-274 must replace in-memory authoritative stores"
+    },
+    {
+      "id": "mcp",
+      "project": "backend/services/mcp/FinancialAssistant.Mcp.Api/FinancialAssistant.Mcp.Api.csproj",
+      "owner": "FIN-273",
+      "nativeHostingOwner": "FIN-273",
+      "serviceName": "FinancialAssistant.mcp",
+      "port": 5115,
+      "bindAddress": "127.0.0.1",
+      "liveness": "/health/live",
+      "readiness": "/health/ready",
+      "dependsOn": [
+        "aspnet-runtime",
+        "monitoring",
+        "audit"
+      ],
+      "qualification": "not-tested",
+      "dataOwnership": "No financial authority; authenticated diagnostics only"
+    }
+  ],
+  "assets": [
+    {
+      "id": "admin-web",
+      "source": "web-admin/monitoring-ui/package.json",
+      "owner": "FIN-277",
+      "dependsOn": [
+        "gateway",
+        "monitoring"
+      ],
+      "deployment": "Prebuilt static assets through authenticated HTTPS; no Node/npm on tester machine",
+      "qualification": "not-tested"
+    },
+    {
+      "id": "wpf-wizard",
+      "source": null,
+      "owner": "FIN-279",
+      "dependsOn": [
+        "desktop-runtime"
+      ],
+      "deployment": "WPF operator UI, separate from privileged engine",
+      "qualification": "not-implemented"
+    },
+    {
+      "id": "installation-engine",
+      "source": null,
+      "owner": "FIN-278",
+      "dependsOn": [],
+      "deployment": "Authenticated elevated worker and durable plan journal; fixed operations, not arbitrary commands",
+      "qualification": "not-implemented"
+    }
+  ],
+  "capabilities": [
+    {
+      "id": "receipt-storage",
+      "owner": "FIN-277",
+      "decision": "Encrypted native files and PostgreSQL metadata; no MinIO requirement",
+      "qualification": "not-implemented"
+    },
+    {
+      "id": "cache",
+      "owner": "FIN-277",
+      "decision": "Bounded in-process disposable cache only; durable session/idempotency/quota authority in PostgreSQL, no Redis Windows port",
+      "qualification": "not-implemented"
+    },
+    {
+      "id": "event-delivery",
+      "owner": "FIN-276",
+      "decision": "RabbitMQ durable queues with atomic owned-state/outbox and consumer inbox; no in-memory acceptance",
+      "qualification": "not-implemented"
+    },
+    {
+      "id": "search",
+      "owner": "FIN-205",
+      "decision": "Elasticsearch 8.19.21 Windows candidate pinned from vendor checksum for retained read/operational contracts; three-OS support, bundled JDK, binary trust and license review outstanding",
+      "qualification": "blocked"
+    },
+    {
+      "id": "metrics-traces-alerts",
+      "owner": "FIN-277",
+      "decision": "Prometheus 3.14.0, Alertmanager 0.34.1, Grafana OSS 13.2.2 and Jaeger/tools 2.21.0 candidates pinned; Jaeger uses Elasticsearch 8.x, not memory. SCM wrapper, privacy filters, retention, support and binary trust remain unqualified. No cloud export or default credentials.",
+      "qualification": "blocked"
+    },
+    {
+      "id": "https",
+      "owner": "FIN-207",
+      "decision": "Kestrel gateway HTTPS candidate at port443; certificate trust/ACL/rotation and static admin hosting must be implemented and verified",
+      "qualification": "not-implemented"
+    },
+    {
+      "id": "secret-recovery",
+      "owner": "FIN-208",
+      "decision": "Protected native secret store plus separately recoverable encryption keys; no plaintext CLI secrets",
+      "qualification": "not-implemented"
+    },
+    {
+      "id": "backup",
+      "owner": "FIN-209",
+      "decision": "Consistent PostgreSQL/files/config/keys/event and retained-index recovery; preserve data on uninstall",
+      "qualification": "not-implemented"
+    },
+    {
+      "id": "providers",
+      "owner": "FIN-215",
+      "decision": "LLM/OCR/push/SMS/OAuth integrations disabled until separately authorized and configured; unavailable is not successful",
+      "qualification": "not-tested"
+    }
+  ],
+  "packaging": {
+    "candidate": "NSIS 3.12 with WPF UI and separate deployment engine",
+    "source": "https://nsis.sourceforge.io/Download",
+    "licenseSource": "https://nsis.sourceforge.io/License",
+    "qualification": "blocked",
+    "reason": "Exact compiler payload digest/notices and signed installer trust identity pending; no build-tool installation authorized; native bootstrap must obtain consent and provision the Desktop Runtime before launching framework-dependent WPF.",
+    "rejectedDefaults": [
+      "Unsupported old WiX release",
+      "Unapproved WiX maintenance fee",
+      "Hand-written MSI transaction engine",
+      "Docker or WSL wrapper"
+    ]
+  },
+  "blockers": [
+    {
+      "code": "PACKAGE-QUALIFICATION",
+      "owner": "FIN-272",
+      "detail": "PostgreSQL exact payload revision/digest, native dependency signature/license verification, support matrices and unattended flags/exit-code qualification remain outstanding."
+    },
+    {
+      "code": "SEARCH-OBSERVABILITY",
+      "owner": "FIN-272",
+      "detail": "Exact retained search and native metrics/trace/dashboard package choices are not qualified; no silent omission."
+    },
+    {
+      "code": "SIGNED-ARTIFACTS",
+      "owner": "FIN-280",
+      "detail": "No signed product payloads or installer trust identity exist; source commit and provider metadata are not artifact verification."
+    },
+    {
+      "code": "RUNTIME-IMPLEMENTATION",
+      "owner": "FIN-273",
+      "detail": "SCM hosting, durable adapters and final endpoint wiring still require FIN-273 through FIN-277; audit/income port5111 collision must be resolved."
+    },
+    {
+      "code": "HOST-ACCEPTANCE",
+      "owner": "FIN-206",
+      "detail": "All three Windows targets lack actual installed-host lifecycle evidence; planning is not permission to install."
+    }
+  ]
+}
