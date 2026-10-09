@@ -45,7 +45,13 @@
       "hashAlgorithm": "SHA512",
       "hash": "2dc2f346a4bcb53ab15ab6ab84348c02eb31b0a3d4e8e06aac73b4c89f1b001af01943ed4c5735fa5585f1dd731a942d2034577dfe937f4454367ff2d6edf929",
       "integritySource": "https://builds.dotnet.microsoft.com/dotnet/release-metadata/8.0/releases.json",
-      "signature": "Authenticode Microsoft publisher; binary chain/revocation verification pending",
+      "signature": "Installer Authenticode reported Valid for Microsoft on 2026-10-09; selected contents and release-time chain/revocation checks remain pending",
+      "localInspection": {
+        "verifiedAt": "2026-10-09", "digestVerified": true, "downloadBytes": 28661152,
+        "installerSignatureStatus": "Valid", "signer": "Microsoft Corporation (.NET)",
+        "signerThumbprint": "BB793DB742624269BB5F4515BBE9A3DF418F588D", "fileVersion": "8.0.31.36420",
+        "binarySignaturesVerified": false, "licenseReviewComplete": false, "executed": false
+      },
       "license": "Microsoft .NET redistribution terms and bundled notices; exact payload review pending",
       "supportEnds": "2026-11-10",
       "silentArguments": [
@@ -67,7 +73,13 @@
       "hashAlgorithm": "SHA512",
       "hash": "39c032419a5d6fc786280f7f69af9aebc137b1bc59c560a3cf7b7a4effa68b664f8e7325c941bad8a6134f7adb0f6b3fd2b6eb9376760070b0cc080873cc5a26",
       "integritySource": "https://builds.dotnet.microsoft.com/dotnet/release-metadata/8.0/releases.json",
-      "signature": "Authenticode Microsoft publisher; binary chain/revocation verification pending",
+      "signature": "Installer Authenticode reported Valid for Microsoft on 2026-10-09; selected contents and release-time chain/revocation checks remain pending",
+      "localInspection": {
+        "verifiedAt": "2026-10-09", "digestVerified": true, "downloadBytes": 10505248,
+        "installerSignatureStatus": "Valid", "signer": "Microsoft Corporation",
+        "signerThumbprint": "1D77A9B9E8FE2075D9AD15123257FB90DB0DA4A1", "fileVersion": "8.0.31.26421",
+        "binarySignaturesVerified": false, "licenseReviewComplete": false, "executed": false
+      },
       "license": "Microsoft .NET redistribution terms and bundled notices; exact payload review pending",
       "supportEnds": "2026-11-10",
       "silentArguments": [
@@ -91,7 +103,13 @@
       "hashAlgorithm": "SHA512",
       "hash": "605189223cf0a64bfb5453520b794d1d386a97c7e65e3944feaf9214db1a8b247f66c569265aef4204447baf5b5ff19559c323d887e1318f17deb28a5af0fa12",
       "integritySource": "https://builds.dotnet.microsoft.com/dotnet/release-metadata/8.0/releases.json",
-      "signature": "Authenticode Microsoft publisher; binary chain/revocation verification pending",
+      "signature": "Installer Authenticode reported Valid for Microsoft on 2026-10-09; selected contents and release-time chain/revocation checks remain pending",
+      "localInspection": {
+        "verifiedAt": "2026-10-09", "digestVerified": true, "downloadBytes": 58715896,
+        "installerSignatureStatus": "Valid", "signer": "Microsoft Corporation (.NET)",
+        "signerThumbprint": "BB793DB742624269BB5F4515BBE9A3DF418F588D", "fileVersion": "8.0.31.36421",
+        "binarySignaturesVerified": false, "licenseReviewComplete": false, "executed": false
+      },
       "license": "Microsoft .NET redistribution terms and bundled notices; exact payload review pending",
       "supportEnds": "2026-11-10",
       "silentArguments": [
@@ -133,7 +151,9 @@
         ]
       },
       "license": "PostgreSQL License plus EDB archive and all bundled dependency terms pending",
-      "supportEnds": null,
+      "supportEnds": "2030-11-14",
+      "supportSource": "https://www.postgresql.org/support/versioning/",
+      "supportScope": "Upstream PostgreSQL major 18 maintenance; not an EDB Windows artifact support entitlement or three-target host acceptance",
       "silentArguments": [],
       "dependsOn": [],
       "ports": [
@@ -151,7 +171,13 @@
       "hashAlgorithm": "SHA256",
       "hash": "7ed735569fb9bc44368e40d86a08c71f1b70cba5a18154417b882214e1da66d4",
       "integritySource": "https://api.github.com/repos/erlang/otp/releases/tags/OTP-27.3.4.17",
-      "signature": "Release digest captured; binary publisher/signature trust verification pending",
+      "signature": "Installer Authenticode reported Valid for Ericsson AB on 2026-10-09; selected contents and release-time chain/revocation checks remain pending",
+      "localInspection": {
+        "verifiedAt": "2026-10-09", "digestVerified": true, "downloadBytes": 139907560,
+        "installerSignatureStatus": "Valid", "signer": "Ericsson AB",
+        "signerThumbprint": "B8705FFE42FEFA60B16FECA00BD4189817C0D681", "fileVersion": "27.3.4.17",
+        "binarySignaturesVerified": false, "licenseReviewComplete": false, "executed": false
+      },
       "license": "Apache-2.0 and bundled notices; complete binary redistribution review pending",
       "supportEnds": null,
       "silentArguments": [
@@ -173,7 +199,13 @@
       "hashAlgorithm": "SHA256",
       "hash": "e7f8a8dc326714ca5b964e27f987b020398a4a3f4b52c4d85d8f342b0b0e4e7d",
       "integritySource": "https://api.github.com/repos/rabbitmq/rabbitmq-server/releases/tags/v4.3.5",
-      "signature": "Detached .exe.asc at the same release; pin trusted signing key and verify before use",
+      "signature": "Installer Authenticode reported Valid for VMware, Inc. on 2026-10-09; detached .exe.asc key verification, selected contents and release-time chain/revocation checks remain pending",
+      "localInspection": {
+        "verifiedAt": "2026-10-09", "digestVerified": true, "downloadBytes": 23900216,
+        "installerSignatureStatus": "Valid", "signer": "VMware, Inc.",
+        "signerThumbprint": "1E8D6AA6207875E089A0C16C7903C63A630FC1A2", "fileVersion": "4.3.5",
+        "binarySignaturesVerified": false, "licenseReviewComplete": false, "executed": false
+      },
       "license": "MPL-2.0 and bundled notices; no commercial support entitlement assumed",
       "supportEnds": "2026-11-30",
       "silentArguments": [
@@ -198,7 +230,18 @@
       "hashAlgorithm": "SHA512",
       "hash": "869020baa1d5cef826a7640962013cb0886be6405023002c1510bc3237fec78702000a8ff2c0443dd72f675159e8daf3893cf865e5b33195afe068e312f12370",
       "integritySource": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.19.21-windows-x86_64.zip.sha512",
-      "signature": "Published checksum only; archive signature, bundled JDK and service wrapper trust pending",
+      "signature": "ZIP SHA512 locally verified; selected bundled Java and Apache service EXEs reported Authenticode Valid. Archive provenance, all contents and release-time trust remain pending",
+      "localInspection": {
+        "verifiedAt": "2026-10-09", "digestVerified": true, "downloadBytes": 525338532,
+        "archiveEntries": 1582, "archiveFiles": 1380, "declaredExpandedBytes": 862252161,
+        "noticeCandidateCount": 261, "binarySignaturesVerified": false, "licenseReviewComplete": false,
+        "bundledJdk": { "version": "26.0.2", "runtimeVersion": "26.0.2+10-55", "implementor": "Oracle Corporation", "architecture": "x86_64", "operatingSystem": "Windows" },
+        "checkedBinaries": [
+          { "entry": "elasticsearch-8.19.21/bin/elasticsearch-service-x64.exe", "machine": "Amd64", "fileVersion": "1.3.1.0", "signatureStatus": "Valid", "signer": "The Apache Software Foundation", "sha256": "3ca64e24a2e344afee2fbe0294b52792594b8a213f359b4e95371ba88c5846c0" },
+          { "entry": "elasticsearch-8.19.21/bin/elasticsearch-service-mgr.exe", "machine": "I386", "fileVersion": "1.3.1.0", "signatureStatus": "Valid", "signer": "The Apache Software Foundation", "sha256": "aa5afe67bf84c0edac917858767f7e1b63aeab4fba9e25b50f9d34c83e68401d" },
+          { "entry": "elasticsearch-8.19.21/jdk/bin/java.exe", "machine": "Amd64", "fileVersion": "26.0.2.0", "signatureStatus": "Valid", "signer": "Oracle America, Inc.", "sha256": "a802ecc238d9de7e8d3446bbb159eb149104ec13383a018f3683ccbd45c83741" }
+        ]
+      },
       "license": "Elastic distribution and bundled JDK/notices review pending; no paid features or support entitlement",
       "dependsOn": [],
       "ports": [
@@ -227,7 +270,21 @@
       "hash": "e57fbb99e4d0bc734d2f2b3aeb68c02fba38862259dc99a95c27ea46d9ccba0a",
       "integritySource": "https://api.github.com/repos/prometheus/prometheus/releases/tags/v3.14.0",
       "downloadBytes": 110095743,
-      "signature": "Release asset digest only; binary provenance/trust verification pending",
+      "signature": "Release asset digest locally verified; selected PE binaries are NotSigned. Provenance/application-control trust remains pending",
+      "localInspection": {
+        "verifiedAt": "2026-10-09",
+        "digestVerified": true,
+        "archiveEntries": 5,
+        "archiveFiles": 5,
+        "declaredExpandedBytes": 261754839,
+        "noticeCandidateCount": 2,
+        "binarySignaturesVerified": false,
+        "licenseReviewComplete": false,
+        "checkedBinaries": [
+          { "entry": "prometheus-3.14.0.windows-amd64/prometheus.exe", "machine": "Amd64", "signatureStatus": "NotSigned", "sha256": "cdac9d751a8b5dc978f9d1c1b708185f98ea3a4e42eca6e0b2c8ebf4cb472eeb" },
+          { "entry": "prometheus-3.14.0.windows-amd64/promtool.exe", "machine": "Amd64", "signatureStatus": "NotSigned", "sha256": "78b0d964ce421256ae3fab858194f890541553d59feba0e5ae24550a1704197a" }
+        ]
+      },
       "architecture": "x64",
       "supportEnds": null,
       "silentArguments": [],
@@ -248,7 +305,21 @@
       "hash": "69624d6ce3674dbcf8cefc5a93d7028d00bbd5e0196a8384907f51593a495fef",
       "integritySource": "https://api.github.com/repos/prometheus/alertmanager/releases/tags/v0.34.1",
       "downloadBytes": 40131065,
-      "signature": "Release asset digest only; binary provenance/trust verification pending",
+      "signature": "Release asset digest locally verified; selected PE binaries are NotSigned. Provenance/application-control trust remains pending",
+      "localInspection": {
+        "verifiedAt": "2026-10-09",
+        "digestVerified": true,
+        "archiveEntries": 5,
+        "archiveFiles": 5,
+        "declaredExpandedBytes": 80778691,
+        "noticeCandidateCount": 2,
+        "binarySignaturesVerified": false,
+        "licenseReviewComplete": false,
+        "checkedBinaries": [
+          { "entry": "alertmanager-0.34.1.windows-amd64/alertmanager.exe", "machine": "Amd64", "signatureStatus": "NotSigned", "sha256": "179b69ceb43a58e331135d022e9f76b0b4dd9630c11dc491eee2ef0aa2dfcf26" },
+          { "entry": "alertmanager-0.34.1.windows-amd64/amtool.exe", "machine": "Amd64", "signatureStatus": "NotSigned", "sha256": "0d09e6bffb7e2bd4407bf54488d1da1504ac5bbb2e2b47ffc34339445eb3030f" }
+        ]
+      },
       "architecture": "x64",
       "supportEnds": null,
       "silentArguments": [],
@@ -274,7 +345,28 @@
       "hash": "197c4b42aba6983b3d9cbca3577a0e14191bcb9431fde1b6661471b6fece39fc",
       "integritySource": "https://api.github.com/repos/jaegertracing/jaeger/releases/tags/v2.21.0",
       "downloadBytes": 64683817,
-      "signature": "Detached .zip.asc published; trusted signing key and binary verification pending",
+      "releaseSbom": {
+        "origin": "https://github.com/jaegertracing/jaeger/releases/download/v2.21.0/jaeger-SBOM.spdx.json",
+        "hashAlgorithm": "SHA256", "hash": "39b253ce6cb2779922f623d730a0544acb9b5d0976d193ee190ccfefd500e164",
+        "digestVerifiedAt": "2026-10-09", "downloadBytes": 17909102, "format": "SPDX-2.3",
+        "selectedBinaryChecksumMatches": 3,
+        "coverageScope": "jaeger.exe, jaeger-es-rollover.exe and jaeger-esmapping-generator.exe have matching file checksums; all three file licenses are NOASSERTION. Complete dependency attribution/notices remain pending"
+      },
+      "signature": "Release asset digest locally verified; jaeger.exe is NotSigned. Detached .zip.asc published; trusted signing key verification pending",
+      "localInspection": {
+        "verifiedAt": "2026-10-09",
+        "digestVerified": true,
+        "archiveEntries": 3,
+        "archiveFiles": 2,
+        "declaredExpandedBytes": 140133888,
+        "noticeCandidateCount": 0,
+        "binarySignaturesVerified": false,
+        "licenseReviewComplete": false,
+        "checkedBinaries": [
+          { "entry": "jaeger-2.21.0-windows-amd64/jaeger.exe", "machine": "Amd64", "signatureStatus": "NotSigned", "sha256": "d42156cceff213cb24a0595ca5a2de0008de7d09298ddca6e17a464b9ffdaf35" }
+        ],
+        "excludedCandidates": [ "jaeger-2.21.0-windows-amd64/example-hotrod.exe" ]
+      },
       "architecture": "x64",
       "supportEnds": null,
       "silentArguments": [],
@@ -295,7 +387,22 @@
       "hash": "65c055e3501c5dd4d87c79989e7b8081376bdbd74783e64a4d477a3a470a7840",
       "integritySource": "https://api.github.com/repos/jaegertracing/jaeger/releases/tags/v2.21.0",
       "downloadBytes": 41148088,
-      "signature": "Detached .zip.asc published; trusted signing key and binary verification pending",
+      "signature": "Release asset digest locally verified; selected tools are NotSigned. Detached .zip.asc published; trusted signing key verification pending",
+      "localInspection": {
+        "verifiedAt": "2026-10-09",
+        "digestVerified": true,
+        "archiveEntries": 4,
+        "archiveFiles": 3,
+        "declaredExpandedBytes": 80453120,
+        "noticeCandidateCount": 0,
+        "binarySignaturesVerified": false,
+        "licenseReviewComplete": false,
+        "checkedBinaries": [
+          { "entry": "jaeger-tools-2.21.0-windows-amd64/jaeger-es-rollover.exe", "machine": "Amd64", "signatureStatus": "NotSigned", "sha256": "9c2b4df54b5d1cf479710fbc8295a6624d285d7f42e2651e046e79d7d3cfd82f" },
+          { "entry": "jaeger-tools-2.21.0-windows-amd64/jaeger-esmapping-generator.exe", "machine": "Amd64", "signatureStatus": "NotSigned", "sha256": "89191baf318d81eb83a08e57733008d1acdf888ba42a1fa1e0102c9b86dc8994" }
+        ],
+        "excludedCandidates": [ "jaeger-tools-2.21.0-windows-amd64/jaeger-es-index-cleaner.exe" ]
+      },
       "architecture": "x64",
       "supportEnds": null,
       "silentArguments": [],
@@ -308,7 +415,21 @@
       "hashAlgorithm": "SHA256",
       "hash": "6f6abfb4f833320b874949aec8726f0b794465ba6adf72d67345bccf43ff256d",
       "integritySource": "https://grafana.com/grafana/download/13.2.2?edition=oss&platform=windows",
-      "signature": "MSI publisher/signature, service registration and unattended properties not verified",
+      "signature": "MSI SHA256 locally verified; Windows Authenticode reported NotSigned on 2026-10-09. Publisher trust and application-control compatibility remain pending",
+      "localInspection": {
+        "verifiedAt": "2026-10-09", "digestVerified": true, "downloadBytes": 491490816,
+        "installerSignatureStatus": "NotSigned", "binarySignaturesVerified": false,
+        "licenseReviewComplete": false, "executed": false,
+        "readOnlyMsiMetadata": {
+          "productName": "GrafanaOSS", "productVersion": "13.2.2.0", "manufacturer": "Grafana Labs",
+          "productCode": "{F48551B0-6992-47E7-B39E-3B729AB20EBF}", "upgradeCode": "{35C7D2A9-6E23-4645-B975-E8693A1CEF10}",
+          "fileRows": 13359, "declaredFileBytes": 1380406797, "noticeCandidateCount": 129,
+          "serviceInstall": { "name": "Grafana", "serviceType": 16, "startType": 2, "startName": "LocalSystem" },
+          "serviceControlEvent": 163,
+          "bundledWrapper": "nssm.exe; 331264 declared bytes; version/signature/notices not yet inspected",
+          "lifecycleVerified": false
+        }
+      },
       "license": "AGPL-3.0 OSS edition; corresponding source and bundled notices obligations require review; no Enterprise activation",
       "dependsOn": [
         "prometheus"

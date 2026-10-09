@@ -99,15 +99,23 @@ published hash is not evidence that downloaded bytes or a signature were checked
 
 | Candidate | Evidence and unresolved qualification |
 | --- | --- |
-| .NET Runtime, ASP.NET Core Runtime and Desktop Runtime 8.0.31 x64 | Official SHA-512 metadata captured; signature chain/revocation and binary notices pending |
+| .NET Runtime, ASP.NET Core Runtime and Desktop Runtime 8.0.31 x64 | Downloaded EXEs match official SHA-512; installer Authenticode Valid for Microsoft; contained files, notices and lifecycle pending |
 | PostgreSQL 18.6-5 x64 EDB binary archive | Publisher SHA-256 and exact archive URL/size captured; binary trust, application-control compatibility, prerequisites and bundled terms pending |
-| Erlang/OTP 27.3.4.17 x64 | Official release asset SHA-256 captured; binary trust and unattended lifecycle not tested |
-| RabbitMQ 4.3.5 | Official release asset SHA-256 and detached-signature location captured; signing-key trust and native lifecycle not tested |
+| Erlang/OTP 27.3.4.17 x64 | Downloaded EXE matches official SHA-256; installer Authenticode Valid for Ericsson AB; contained files and unattended lifecycle pending |
+| RabbitMQ 4.3.5 | Downloaded EXE matches official SHA-256; installer Authenticode Valid for VMware, Inc.; detached-key trust, contained files and native lifecycle pending |
 | NSIS 3.13 build-time packaging candidate | Official release and Microsoft WinGet installer digest captured; local compiler trust/notices, bootstrap and product signing identity pending |
-| Elasticsearch 8.19.21; Prometheus 3.14.0; Alertmanager 0.34.1; Jaeger and tools 2.21.0; Grafana OSS 13.2.2 | Exact Windows artifact URLs and published hashes captured; service hosting, support and binary qualification remain blocked |
+| Elasticsearch 8.19.21; Prometheus 3.14.0; Alertmanager 0.34.1; Jaeger and tools 2.21.0; Grafana OSS 13.2.2 | All six downloaded payload digests match; selected PE/signature and SBOM evidence recorded; service hosting, notices, support and complete trust qualification remain blocked |
 
 See [search and observability qualification](search-observability.md) for the
 candidate signal paths, additional ports, service-wrapper gap and per-OS evidence.
+
+On 2026-10-09 passive Windows checks of the three .NET EXEs and Erlang/RabbitMQ
+EXEs reported Authenticode `Valid`, with the publishers above. Exact sizes,
+file versions and certificate thumbprints are retained in the manifest. These
+are observations of the installer files on this machine, not a permanent trust
+allowlist, proof of all bundled files or installed-host acceptance. Revalidate
+expected publisher, chain and revocation at release/install time; never accept
+a different payload merely because it uses the same certificate. No EXE was run.
 
 Microsoft's [runtime composition and installer options](https://learn.microsoft.com/en-us/dotnet/core/install/windows)
 distinguish the base runtime from ASP.NET and Desktop. ASP.NET alone does not
@@ -127,6 +135,9 @@ that the current package remains the newest patch at future packaging time.
 [PostgreSQL's Windows page](https://www.postgresql.org/download/windows/) lists
 Server 2022/2025 for version 18; desktop comparability is not a Windows 11 test
 certificate. All three product targets still need our acceptance evidence.
+The [upstream version policy](https://www.postgresql.org/support/versioning/)
+sets major 18 maintenance through 2030-11-14; this does not certify the vendor
+Windows archive, confer commercial support or extend the .NET 8 boundary.
 On 2026-10-09 the candidate moved from revision 4 to revision 5, using the
 [publisher's exact ZIP checksum](https://github.com/EnterpriseDB/edb-installers/issues/733#issuecomment-6012030716).
 A read-only HEAD request confirmed the pinned HTTPS URL, HTTP 200 and 384620317
@@ -252,11 +263,12 @@ and explicit pending checks for handoff. Do not buy a signing certificate, activ
 a paid provider or provision paid test hosts to unblock this inventory. Metadata,
 integrity and security requirements still apply; untested is not approved.
 
-1. Verify the pinned PostgreSQL 18.6-5 payload against its publisher digest and
-inventory native dependencies, notices and application-control compatibility.
+1. Complete PostgreSQL 18.6-5 native dependency, notice and application-control
+qualification; the exact archive digest has been verified locally.
 2. Qualify the pinned search/observability candidates, service wrapper and support/license matrix.
-3. Verify downloaded payload hashes, trusted signatures, notices and redistribution
-   terms; capture exact unattended commands, exit codes and resource requirements.
+3. Complete all-content trust, notices and redistribution review for the twelve
+   digest-verified payloads; capture exact unattended commands, exit codes and
+   resource requirements. NSIS compiler payload verification remains separate.
 4. Resolve bootstrap/compiler qualification and the approved product-signing path.
 5. Publish the qualified matrix through CI/review, update Confluence and only then
    evaluate FIN-272 completion. Runtime implementation and three-host acceptance
