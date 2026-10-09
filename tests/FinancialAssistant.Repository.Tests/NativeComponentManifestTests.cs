@@ -66,21 +66,22 @@ public sealed class NativeComponentManifestTests
         Path.Combine(Root(), "infra/windows-native/component-manifest.json")))!;
 
     [Fact]
-    public void PostgreSqlArchive_IsPinnedButBlockedWithoutIntegrityEvidence()
+    public void PostgreSqlArchive_HasPublisherDigestButRemainsBlockedForBinaryTrust()
     {
         var package = ReadManifest()["packages"]!.AsArray()
             .Single(entry => entry!["id"]!.GetValue<string>() == "postgresql")!;
         Assert.Equal("18.6", package["version"]!.GetValue<string>());
-        Assert.Equal("4", package["distributionRevision"]!.GetValue<string>());
-        Assert.Equal("https://get.enterprisedb.com/postgresql/postgresql-18.6-4-windows-x64-binaries.zip",
+        Assert.Equal("5", package["distributionRevision"]!.GetValue<string>());
+        Assert.Equal("https://get.enterprisedb.com/postgresql/postgresql-18.6-5-windows-x64-binaries.zip",
             package["origin"]!.GetValue<string>());
-        Assert.Equal("https://sbp.enterprisedb.com/getfile.jsp?fileid=1260566",
-            package["discoveryRedirect"]!.GetValue<string>());
-        Assert.Equal(382815572, package["downloadSizeBytes"]!.GetValue<long>());
+        Assert.Equal(384620317, package["downloadSizeBytes"]!.GetValue<long>());
         Assert.Equal("blocked", package["qualification"]!.GetValue<string>());
-        Assert.Null(package["hashAlgorithm"]);
-        Assert.Null(package["hash"]);
-        Assert.Null(package["integritySource"]);
+        Assert.Equal("SHA256", package["hashAlgorithm"]!.GetValue<string>());
+        Assert.Equal("e2246ba91d22345bc3d017586c09ede52d9df180b1eeb480f050445f1cad84e2",
+            package["hash"]!.GetValue<string>());
+        Assert.Equal("https://github.com/EnterpriseDB/edb-installers/issues/733#issuecomment-6012030716",
+            package["integritySource"]!.GetValue<string>());
+        Assert.Contains("Smart App Control", package["signature"]!.GetValue<string>());
         Assert.Empty(package["silentArguments"]!.AsArray());
     }
 

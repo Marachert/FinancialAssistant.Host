@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "component-design",
-  "verifiedMetadataDate": "2026-09-19",
+  "verifiedMetadataDate": "2026-10-09",
   "sourceCommit": "09a6c1d4c132b5fbbe060a129a5684f9323a53b2",
   "jira": "FIN-272",
   "releaseReady": false,
@@ -108,16 +108,25 @@
     {
       "id": "postgresql",
       "version": "18.6",
-      "distributionRevision": "4",
+      "distributionRevision": "5",
       "architecture": "x64",
-      "origin": "https://get.enterprisedb.com/postgresql/postgresql-18.6-4-windows-x64-binaries.zip",
-      "discoverySource": "https://www.enterprisedb.com/download-postgresql-binaries",
-      "discoveryRedirect": "https://sbp.enterprisedb.com/getfile.jsp?fileid=1260566",
-      "downloadSizeBytes": 382815572,
-      "hashAlgorithm": null,
-      "hash": null,
-      "integritySource": null,
-      "signature": "Official archive redirect and HEAD metadata captured; authenticated digest and binary trust still unverified",
+      "origin": "https://get.enterprisedb.com/postgresql/postgresql-18.6-5-windows-x64-binaries.zip",
+      "discoverySource": "https://github.com/EnterpriseDB/edb-installers/issues/733",
+      "downloadSizeBytes": 384620317,
+      "hashAlgorithm": "SHA256",
+      "hash": "e2246ba91d22345bc3d017586c09ede52d9df180b1eeb480f050445f1cad84e2",
+      "integritySource": "https://github.com/EnterpriseDB/edb-installers/issues/733#issuecomment-6012030716",
+      "signature": "Vendor checksum published; binary trust unverified. Vendor confirms expanded component signing is planned in a future release; no Smart App Control bypass is permitted",
+      "platformTrustSource": "https://github.com/EnterpriseDB/edb-installers/issues/713#issuecomment-6040806815",
+      "localInspection": {
+        "verifiedAt": "2026-10-09",
+        "digestVerified": true,
+        "archiveEntries": 22098,
+        "archiveFiles": 20554,
+        "declaredExpandedBytes": 1010746573,
+        "binarySignaturesVerified": false,
+        "licenseReviewComplete": false
+      },
       "license": "PostgreSQL License plus EDB archive and all bundled dependency terms pending",
       "supportEnds": null,
       "silentArguments": [],
@@ -696,7 +705,7 @@
     {
       "code": "PACKAGE-QUALIFICATION",
       "owner": "FIN-272",
-      "detail": "PostgreSQL exact payload revision/digest, native dependency signature/license verification, support matrices and unattended flags/exit-code qualification remain outstanding."
+      "detail": "PostgreSQL 18.6-5 publisher digest captured; binary signature/license/native prerequisite verification, Windows application-control compatibility, support matrices and unattended lifecycle qualification remain outstanding."
     },
     {
       "code": "SEARCH-OBSERVABILITY",

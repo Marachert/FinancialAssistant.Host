@@ -1,6 +1,6 @@
 # Native Windows Component Inventory
 
-FIN-272, metadata updated 2026-09-19. **Design inventory, not a release lock or an
+FIN-272, metadata updated 2026-10-09. **Design inventory, not a release lock or an
 installer. FIN-272 remains In Progress.** The approved target is the
 [Windows-native POC](../../docs/architecture/windows-native-poc.md), without
 Docker, WSL or a Linux VM. No machine configuration is changed here.
@@ -31,6 +31,20 @@ signatures, certify licenses, query vendor support or approve a release.
 `schemaValid: true` always accompanies `releaseReady: false`. A mutated inventory
 claiming release readiness is rejected. This is not an input to an execution
 engine; FIN-278 must use a separately specified signed, fully qualified lock.
+
+For an operator-supplied payload, the separate offline inspector verifies its
+publisher digest before reading ZIP metadata:
+
+```powershell
+pwsh -NoProfile -NonInteractive -File tools/scripts/inspect-native-package.ps1 -PackageId postgresql -PayloadPath <local-archive>
+```
+
+It does not download, extract or execute files. ZIP paths must be safe and unique
+on Windows; symbolic links and configured entry/expanded-byte limits are rejected.
+The defaults (100000 entries, 12 GiB declared expanded bytes) bound inspection,
+not installation sizing. Declared sizes and notice filenames are evidence to
+review, not CRC verification, license clearance or actual installed disk usage.
+The report never claims verified binary signatures or release readiness.
 
 ## Hosts And Ports
 
@@ -80,7 +94,7 @@ published hash is not evidence that downloaded bytes or a signature were checked
 | Candidate | Evidence and unresolved qualification |
 | --- | --- |
 | .NET Runtime, ASP.NET Core Runtime and Desktop Runtime 8.0.31 x64 | Official SHA-512 metadata captured; signature chain/revocation and binary notices pending |
-| PostgreSQL 18.6-4 x64 EDB binary archive | Official exact archive URL and download size captured; authenticated digest, prerequisite inventory and bundled terms pending |
+| PostgreSQL 18.6-5 x64 EDB binary archive | Publisher SHA-256 and exact archive URL/size captured; binary trust, application-control compatibility, prerequisites and bundled terms pending |
 | Erlang/OTP 27.3.4.17 x64 | Official release asset SHA-256 captured; binary trust and unattended lifecycle not tested |
 | RabbitMQ 4.3.5 | Official release asset SHA-256 and detached-signature location captured; signing-key trust and native lifecycle not tested |
 | NSIS 3.12 build-time packaging candidate | Native compiled bootstrap plus WPF and separate elevated engine; compiler digest/notices and product signing identity pending |
@@ -107,17 +121,34 @@ that the current package remains the newest patch at future packaging time.
 [PostgreSQL's Windows page](https://www.postgresql.org/download/windows/) lists
 Server 2022/2025 for version 18; desktop comparability is not a Windows 11 test
 certificate. All three product targets still need our acceptance evidence.
-The [EDB archive listing](https://www.enterprisedb.com/download-postgresql-binaries)
-links Windows 18.6 to [file ID 1260566](https://sbp.enterprisedb.com/getfile.jsp?fileid=1260566).
-On 2026-09-19 a read-only HEAD request followed the vendor redirect to
-`postgresql-18.6-4-windows-x64-binaries.zip`, HTTP 200, 382815572 download bytes.
-The exact HTTPS payload URL is pinned in the manifest; no payload was downloaded
-or executed. The listing/file ID can change later, so it is discovery evidence,
-not the installation input. The compressed size is not installed disk usage.
-No authoritative checksum for this exact revision was found. An HTTP ETag,
-TLS connection, source archive checksum, installer EXE checksum or another ZIP
-revision's hash cannot substitute for the binary ZIP's authenticated digest.
-Hash fields remain null and qualification remains blocked. The
+On 2026-10-09 the candidate moved from revision 4 to revision 5, using the
+[publisher's exact ZIP checksum](https://github.com/EnterpriseDB/edb-installers/issues/733#issuecomment-6012030716).
+A read-only HEAD request confirmed the pinned HTTPS URL, HTTP 200 and 384620317
+compressed download bytes. The checksum applies only to
+`postgresql-18.6-5-windows-x64-binaries.zip`; it does not authenticate revision 4,
+an installer EXE or PostgreSQL source archives. The exact archive was then
+downloaded into ignored local storage and its SHA-256 matched the publisher
+value. Offline inspection found 22098 ZIP entries, 20554 files and 1010746573
+declared expanded bytes. No component was executed or installed. Declared size
+is not a measured installed footprint, and an ETag is not an integrity check.
+
+The archive includes `pgsql/server_license.txt` and
+`pgsql/commandlinetools_3rd_party_licenses.txt`, plus separate pgAdmin and
+StackBuilder notices. Server/client `bin`, `lib` and `share` entries declare
+147885345 bytes; this candidate subset is not yet an approved deployment allowlist.
+Do not ship pgAdmin, StackBuilder, their Python environment or optional extensions
+without a product requirement and qualification. Preserve all applicable notices,
+identify exact dependency versions and required source/relinking obligations before
+redistribution; merely finding a license file does not complete that review.
+
+The [vendor's signing response](https://github.com/EnterpriseDB/edb-installers/issues/713#issuecomment-6040806815)
+confirms broader component signing is planned for a future release. Reports in
+that issue concern unsigned components blocked by Windows application control.
+Do not assume a signed installer makes all bundled EXEs/DLLs trusted. Qualification
+remains blocked until the selected binaries work with the target host's protection
+policy; never turn off Smart App Control, Defender or WDAC to pass installation.
+The publisher digest does not establish Authenticode trust, native dependency
+completeness or host acceptance. The
 [PostgreSQL license](https://www.postgresql.org/about/licence/) does not by itself
 complete the license inventory of an entire vendor archive.
 
@@ -204,8 +235,8 @@ and explicit pending checks for handoff. Do not buy a signing certificate, activ
 a paid provider or provision paid test hosts to unblock this inventory. Metadata,
 integrity and security requirements still apply; untested is not approved.
 
-1. Authenticate the pinned PostgreSQL 18.6-4 archive digest and inventory all
-required native dependencies.
+1. Verify the pinned PostgreSQL 18.6-5 payload against its publisher digest and
+inventory native dependencies, notices and application-control compatibility.
 2. Qualify the pinned search/observability candidates, service wrapper and support/license matrix.
 3. Verify downloaded payload hashes, trusted signatures, notices and redistribution
    terms; capture exact unattended commands, exit codes and resource requirements.

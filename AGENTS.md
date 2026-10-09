@@ -95,17 +95,14 @@ Never commit or expose tokens, passwords, API keys, certificates, `.env` files, 
 
 ## Owner Usage Guard
 
-Owner directive, 2026-09-19: for this development, pause safely when the account's
-five-hour Codex window reaches 40% USED (60% remaining), until explicitly changed
-by the owner. Read fresh usage at resume, before substantial work phases, and
-regularly during long work; do not rely on conversation memory or a weekly value.
-At or above the threshold, start no new work: save the checkpoint, preserve edits,
-finish only necessary safe shutdown and release the owned delivery lock. If the
-five-hour reading is unavailable, stop at a safe point rather than assume capacity.
-Resume only on user request and after a fresh reading below 40%; a generic
-"continue" does not revoke this standing threshold. Never redeem credits, enable
-paid fallback or bypass the guard. This is an agent workflow guard, not a billing
-setting or a guarantee of an exact hard cap; readings and safe shutdown can lag.
+Owner directive, 2026-10-09: the previous 40% pause threshold is revoked on all
+development computers. Continue while authorized work and included subscription
+allowance remain, until the owner stops work or included usage is exhausted.
+Read fresh usage/eligibility at resume, before substantial phases and regularly
+during long work. If ordinary included use is unavailable or cannot be verified,
+save the checkpoint, preserve edits and release the owned delivery lock safely.
+Never redeem credits, enable paid fallback or incur additional spending.
+This workflow instruction does not change account billing settings.
 
 ## Completion
 

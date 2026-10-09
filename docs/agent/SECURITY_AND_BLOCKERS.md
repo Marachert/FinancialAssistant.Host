@@ -53,12 +53,12 @@ requires unapproved spending, preserve state and report the blocker.
 
 ## Delivery Blockers
 
-Owner quota guard, 2026-09-19: pause this development at 40% used in the five-hour
-Codex window (60% remaining). Apply the mandatory `AGENTS.md` usage guard at every
-resume and during work. The rule persists until explicitly changed by the owner;
-no credit redemption or paid fallback may bypass it. Missing usage information
-requires a safe stop, not an assumption of remaining capacity. This operational
-guard does not change subscription/billing settings or promise an exact hard cap.
+Owner clarification, 2026-10-09: the 40% pause threshold is revoked for Windows,
+Mac and future development. Continue within included subscription allowance until
+the owner stops work or ordinary included use is exhausted. Apply the `AGENTS.md`
+eligibility checks and safe checkpoint/lock cleanup at that boundary. Unverifiable
+eligibility requires a safe stop. No credit redemption, paid fallback or additional
+spending is authorized; this does not change subscription/billing settings.
 
 Stop autonomous delivery and report a blocker when:
 
