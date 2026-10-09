@@ -3,6 +3,7 @@ param(
     [Parameter(Mandatory)][string]$PayloadPath,
     [string]$ManifestPath = 'infra/windows-native/component-manifest.json',
     [ValidateRange(1,1000000)][int]$MaxArchiveEntries = 100000,
+    [ValidateRange(1,1073741824)][long]$MaxCentralDirectoryBytes = 67108864,
     [ValidateRange(1,1099511627776)][long]$MaxExpandedBytes = 12884901888
 )
 $ErrorActionPreference = 'Stop'
@@ -20,6 +21,73 @@ if ($payload.PSIsContainer) { throw 'Payload must be a file.' }
 $extension = [IO.Path]::GetExtension(([uri]$package.origin).AbsolutePath).ToLowerInvariant()
 if ($extension -notin @('.zip','.exe','.msi')) { throw 'Unsupported payload format.' }
 
+function Read-ZipBytes([IO.Stream]$Source,[long]$Offset,[int]$Count) {
+    if ($Offset -lt 0 -or $Offset -gt $Source.Length - $Count) { throw 'Invalid ZIP archive.' }
+    $Source.Position = $Offset
+    $buffer = [byte[]]::new($Count)
+    try { $Source.ReadExactly($buffer,0,$Count) } catch { throw 'Invalid ZIP archive.' }
+    return ,$buffer
+}
+function Test-ZipDirectoryBounds([IO.Stream]$Source) {
+    if (-not [BitConverter]::IsLittleEndian -or $Source.Length -lt 22) { throw 'Invalid ZIP archive.' }
+    # Locate EOCD within its bounded comment tail, before ZipArchive loads entry objects.
+    $tailSize = [int][Math]::Min($Source.Length,65557)
+    $tailOffset = $Source.Length - $tailSize
+    $tail = Read-ZipBytes $Source $tailOffset $tailSize
+    $endIndex = -1
+    for ($index = $tail.Length - 22; $index -ge 0; $index--) {
+        if ([BitConverter]::ToUInt32($tail,$index) -eq 0x06054B50 -and
+            $index + 22 + [BitConverter]::ToUInt16($tail,$index+20) -eq $tail.Length) { $endIndex = $index; break }
+    }
+    if ($endIndex -lt 0) { throw 'Invalid ZIP archive.' }
+    if ([BitConverter]::ToUInt16($tail,$endIndex+4) -ne 0 -or [BitConverter]::ToUInt16($tail,$endIndex+6) -ne 0) { throw 'Multi-disk ZIP archives are not supported.' }
+    $diskCount = [uint64][BitConverter]::ToUInt16($tail,$endIndex+8)
+    $expectedCount = [uint64][BitConverter]::ToUInt16($tail,$endIndex+10)
+    $directorySize = [uint64][BitConverter]::ToUInt32($tail,$endIndex+12)
+    $directoryOffset = [uint64][BitConverter]::ToUInt32($tail,$endIndex+16)
+    $metadataStart = $tailOffset + $endIndex
+    if ($expectedCount -eq [uint16]::MaxValue -or $diskCount -eq [uint16]::MaxValue -or
+        $directorySize -eq [uint32]::MaxValue -or $directoryOffset -eq [uint32]::MaxValue) {
+        $locatorOffset = $metadataStart - 20
+        $locator = Read-ZipBytes $Source $locatorOffset 20
+        if ([BitConverter]::ToUInt32($locator,0) -ne 0x07064B50 -or
+            [BitConverter]::ToUInt32($locator,4) -ne 0 -or [BitConverter]::ToUInt32($locator,16) -ne 1) { throw 'Invalid ZIP64 locator.' }
+        $zip64Offset = [BitConverter]::ToUInt64($locator,8)
+        if ($locatorOffset -lt 56 -or $zip64Offset -gt [uint64]($locatorOffset - 56)) { throw 'Invalid ZIP64 offset.' }
+        $zip64 = Read-ZipBytes $Source ([long]$zip64Offset) 56
+        $recordSize = [BitConverter]::ToUInt64($zip64,4)
+        if ([BitConverter]::ToUInt32($zip64,0) -ne 0x06064B50 -or $recordSize -lt 44 -or
+            $recordSize -ne [uint64]($locatorOffset - [long]$zip64Offset - 12)) { throw 'Invalid ZIP64 record.' }
+        if ([BitConverter]::ToUInt32($zip64,16) -ne 0 -or [BitConverter]::ToUInt32($zip64,20) -ne 0) { throw 'Multi-disk ZIP archives are not supported.' }
+        $diskCount = [BitConverter]::ToUInt64($zip64,24)
+        $expectedCount = [BitConverter]::ToUInt64($zip64,32)
+        $directorySize = [BitConverter]::ToUInt64($zip64,40)
+        $directoryOffset = [BitConverter]::ToUInt64($zip64,48)
+        $metadataStart = [long]$zip64Offset
+    }
+    if ($expectedCount -gt [uint64]$MaxArchiveEntries) { throw 'Archive entry limit exceeded.' }
+    if ($diskCount -ne $expectedCount) { throw 'Multi-disk ZIP archives are not supported.' }
+    if ($directorySize -gt [uint64]$MaxCentralDirectoryBytes) { throw 'Archive central-directory byte limit exceeded.' }
+    if ($directoryOffset -gt [uint64]$metadataStart -or $directorySize -gt [uint64]($metadataStart - [long]$directoryOffset)) { throw 'Invalid ZIP directory bounds.' }
+    $directoryEnd = [long]$directoryOffset + [long]$directorySize
+    $position = [long]$directoryOffset
+    $actualCount = 0
+    # Scan fixed record headers and skip variable fields; reject lying counts before materialization.
+    while ($position -lt $directoryEnd) {
+        if ($directoryEnd - $position -lt 46) { throw 'Invalid ZIP central directory.' }
+        $header = Read-ZipBytes $Source $position 46
+        if ([BitConverter]::ToUInt32($header,0) -ne 0x02014B50) { throw 'Invalid ZIP central directory.' }
+        $actualCount++
+        if ($actualCount -gt $MaxArchiveEntries) { throw 'Archive entry limit exceeded.' }
+        $recordLength = 46 + [int][BitConverter]::ToUInt16($header,28) +
+            [int][BitConverter]::ToUInt16($header,30) + [int][BitConverter]::ToUInt16($header,32)
+        if ($recordLength -gt $directoryEnd - $position) { throw 'Invalid ZIP central directory.' }
+        $position += $recordLength
+    }
+    if ([uint64]$actualCount -ne $expectedCount) { throw 'ZIP directory entry count mismatch.' }
+    $Source.Position = 0
+}
+
 $stream = $null
 $archive = $null
 try {
@@ -34,6 +102,7 @@ try {
     $noticeCandidates = [Collections.Generic.List[string]]::new()
     $noticeCount = 0
     if ($extension -eq '.zip') {
+        Test-ZipDirectoryBounds $stream
         try { $archive = [IO.Compression.ZipArchive]::new($stream,[IO.Compression.ZipArchiveMode]::Read,$true) }
         catch { throw 'Invalid ZIP archive.' }
         if ($archive.Entries.Count -gt $MaxArchiveEntries) { throw 'Archive entry limit exceeded.' }
@@ -46,7 +115,7 @@ try {
             if ([string]::IsNullOrWhiteSpace($name) -or $name.StartsWith('/') -or
                 $name -match '[:\x00-\x1F<>"|?*]' -or @($segments | Where-Object {
                     $_ -in @('','.', '..') -or $_.EndsWith('.') -or $_.EndsWith(' ') -or
-                    $_ -match '^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])([.]|$)'
+                    $_ -match '^(CON|PRN|AUX|NUL|COM[1-9\u00B9\u00B2\u00B3]|LPT[1-9\u00B9\u00B2\u00B3])([.]|$)'
                 }).Count -gt 0) {
                 throw 'Unsafe archive path.'
             }

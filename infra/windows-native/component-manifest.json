@@ -125,7 +125,12 @@
         "archiveFiles": 20554,
         "declaredExpandedBytes": 1010746573,
         "binarySignaturesVerified": false,
-        "licenseReviewComplete": false
+        "licenseReviewComplete": false,
+        "checkedBinaries": [
+          { "entry": "pgsql/bin/postgres.exe", "fileVersion": "18.6", "signatureStatus": "NotSigned", "sha256": "8b8bf5d400487159e3e117053d3f5a89fad0c740b310a3ac69e5720ce4f818e1" },
+          { "entry": "pgsql/bin/psql.exe", "fileVersion": "18.6", "signatureStatus": "NotSigned", "sha256": "fde952534f520909c02db04675588ecb1da8d618b6e5c93e106f42a752daf720" },
+          { "entry": "pgsql/bin/libpq.dll", "fileVersion": "18.6", "signatureStatus": "NotSigned", "sha256": "98d8e12f814ef539ded440195681c0163079dc5871d7fb278de051c2e2d4cba0" }
+        ]
       },
       "license": "PostgreSQL License plus EDB archive and all bundled dependency terms pending",
       "supportEnds": null,
@@ -689,11 +694,18 @@
     }
   ],
   "packaging": {
-    "candidate": "NSIS 3.12 with WPF UI and separate deployment engine",
+    "candidate": "NSIS 3.13 with WPF UI and separate deployment engine",
+    "version": "3.13",
+    "buildTimeOnly": true,
+    "compilerArchitecture": "x86",
+    "origin": "https://sourceforge.net/projects/nsis/files/NSIS%203/3.13/nsis-3.13-setup.exe/download",
+    "hashAlgorithm": "SHA256",
+    "hash": "db9a1038bbc0e53fef24f423fd609979bd578e942f1be1198db186d1c42652a3",
+    "integritySource": "https://github.com/microsoft/winget-pkgs/blob/ca8886c3aef0edcbb4f29552f23a4a5b9599305f/manifests/n/NSIS/NSIS/3.13/NSIS.NSIS.installer.yaml",
     "source": "https://nsis.sourceforge.io/Download",
     "licenseSource": "https://nsis.sourceforge.io/License",
     "qualification": "blocked",
-    "reason": "Exact compiler payload digest/notices and signed installer trust identity pending; no build-tool installation authorized; native bootstrap must obtain consent and provision the Desktop Runtime before launching framework-dependent WPF.",
+    "reason": "Build-tool digest is registry-published Microsoft WinGet metadata, not a verified local payload or vendor signature. Compiler trust/notices and signed product identity remain pending; no build-tool installation authorized. Native bootstrap must obtain consent and provision Desktop Runtime before launching framework-dependent WPF.",
     "rejectedDefaults": [
       "Unsupported old WiX release",
       "Unapproved WiX maintenance fee",

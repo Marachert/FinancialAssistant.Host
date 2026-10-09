@@ -41,8 +41,14 @@ pwsh -NoProfile -NonInteractive -File tools/scripts/inspect-native-package.ps1 -
 
 It does not download, extract or execute files. ZIP paths must be safe and unique
 on Windows; symbolic links and configured entry/expanded-byte limits are rejected.
-The defaults (100000 entries, 12 GiB declared expanded bytes) bound inspection,
-not installation sizing. Declared sizes and notice filenames are evidence to
+Before .NET loads ZIP entries, bounded EOCD/ZIP64 headers and a streamed directory
+scan check declared and actual counts, byte bounds and offsets. Defaults are
+100000 entries, 64 MiB central-directory bytes and 12 GiB declared expanded bytes.
+Multi-disk and nonstandard directory records are rejected. These limits bound
+inspection, not installation sizing. Reserved Windows device names include the
+superscript digits described by [Microsoft's naming rules](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file).
+Trailer/directory bounds follow [PKWARE's ZIP specification](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT).
+Declared sizes and notice filenames are evidence to
 review, not CRC verification, license clearance or actual installed disk usage.
 The report never claims verified binary signatures or release readiness.
 
@@ -97,7 +103,7 @@ published hash is not evidence that downloaded bytes or a signature were checked
 | PostgreSQL 18.6-5 x64 EDB binary archive | Publisher SHA-256 and exact archive URL/size captured; binary trust, application-control compatibility, prerequisites and bundled terms pending |
 | Erlang/OTP 27.3.4.17 x64 | Official release asset SHA-256 captured; binary trust and unattended lifecycle not tested |
 | RabbitMQ 4.3.5 | Official release asset SHA-256 and detached-signature location captured; signing-key trust and native lifecycle not tested |
-| NSIS 3.12 build-time packaging candidate | Native compiled bootstrap plus WPF and separate elevated engine; compiler digest/notices and product signing identity pending |
+| NSIS 3.13 build-time packaging candidate | Official release and Microsoft WinGet installer digest captured; local compiler trust/notices, bootstrap and product signing identity pending |
 | Elasticsearch 8.19.21; Prometheus 3.14.0; Alertmanager 0.34.1; Jaeger and tools 2.21.0; Grafana OSS 13.2.2 | Exact Windows artifact URLs and published hashes captured; service hosting, support and binary qualification remain blocked |
 
 See [search and observability qualification](search-observability.md) for the
@@ -141,6 +147,12 @@ without a product requirement and qualification. Preserve all applicable notices
 identify exact dependency versions and required source/relinking obligations before
 redistribution; merely finding a license file does not complete that review.
 
+On 2026-10-09 the three fixed entries `pgsql/bin/postgres.exe`, `psql.exe` and
+`libpq.dll` were copied to owned temporary files for read-only signature/version
+inspection, then removed. All reported version 18.6 and Authenticode `NotSigned`.
+Their SHA-256 values are retained in the manifest. They were never executed or
+registered as services; this does not establish the trust of every bundled file.
+
 The [vendor's signing response](https://github.com/EnterpriseDB/edb-installers/issues/713#issuecomment-6040806815)
 confirms broader component signing is planned for a future release. Reports in
 that issue concern unsigned components blocked by Windows application control.
@@ -160,8 +172,13 @@ assumed. [Windows installation guidance](https://www.rabbitmq.com/docs/install-w
 requires x64 Erlang, careful service/cookie configuration and compatible paths.
 An existing incompatible Erlang installation blocks unattended takeover.
 
-[NSIS 3.12](https://nsis.sourceforge.io/Download) is a candidate, not installed or
-approved here. Review its [module-specific licenses](https://nsis.sourceforge.io/License)
+[NSIS 3.13](https://nsis.sourceforge.io/Download), released 2026-09-27, is a build-time
+candidate. Its x86 compiler installer and SHA-256 are recorded from an
+[immutable Microsoft WinGet manifest](https://github.com/microsoft/winget-pkgs/blob/ca8886c3aef0edcbb4f29552f23a4a5b9599305f/manifests/n/NSIS/NSIS/3.13/NSIS.NSIS.installer.yaml).
+This registry metadata is not a vendor signature or locally verified compiler.
+No tool was installed, and the compiler installer is not a target-machine
+prerequisite. Bootstrap architecture, WPF launch and unattended behavior still
+need qualification. Review its [module-specific licenses](https://nsis.sourceforge.io/License)
 and all included plugins; use no optional third-party plugin without qualification.
 WiX/Burn is an alternative, but its current
 [maintenance-fee terms](https://docs.firegiant.com/wix/) require an applicability
