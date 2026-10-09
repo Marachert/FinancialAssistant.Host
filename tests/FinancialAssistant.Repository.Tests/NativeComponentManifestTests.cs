@@ -86,6 +86,55 @@ public sealed class NativeComponentManifestTests
     }
 
     [Theory]
+    [InlineData("dotnet-runtime")]
+    [InlineData("aspnet-runtime")]
+    [InlineData("desktop-runtime")]
+    [InlineData("postgresql")]
+    [InlineData("erlang")]
+    [InlineData("rabbitmq")]
+    [InlineData("elasticsearch")]
+    [InlineData("prometheus")]
+    [InlineData("alertmanager")]
+    [InlineData("jaeger")]
+    [InlineData("jaeger-tools")]
+    [InlineData("grafana")]
+    public async Task RequiredPackages_CannotBeRemoved(string id)
+    {
+        var manifest = ReadManifest();
+        var packages = manifest["packages"]!.AsArray();
+        packages.Remove(packages.Single(entry => entry!["id"]!.GetValue<string>() == id));
+        var result = await ValidateAsync(manifest);
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains($"Missing required package: {id}", result.Output);
+    }
+
+    [Fact]
+    public async Task RemovingEntireObservabilityTopology_IsRejected()
+    {
+        var manifest = ReadManifest();
+        var packages = manifest["packages"]!.AsArray();
+        var removed = new HashSet<string>(["elasticsearch", "prometheus", "alertmanager", "jaeger", "jaeger-tools", "grafana"]);
+        foreach (var package in packages.Where(entry => removed.Contains(entry!["id"]!.GetValue<string>())).ToArray())
+        {
+            packages.Remove(package);
+        }
+
+        var result = await ValidateAsync(manifest);
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("Missing required package: elasticsearch", result.Output);
+    }
+
+    [Fact]
+    public async Task EmptyPackages_AreRejected()
+    {
+        var manifest = ReadManifest();
+        manifest["packages"] = new JsonArray();
+        var result = await ValidateAsync(manifest);
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("Missing required package: dotnet-runtime", result.Output);
+    }
+
+    [Theory]
     [InlineData("admin-web")]
     [InlineData("wpf-wizard")]
     [InlineData("installation-engine")]

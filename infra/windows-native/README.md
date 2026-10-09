@@ -24,6 +24,10 @@ It requires explicit prerelease denial and retains every named capability and
 qualification blocker; deleting backup, secret recovery or observability cannot
 silently produce a valid inventory. Duplicate safety entries are also rejected.
 The admin web assets, WPF wizard and installation engine are mandatory entries.
+All twelve named native packages are also mandatory, even when removing a whole
+diagnostics topology leaves no dangling dependency references. Every single
+package removal, combined observability removal and an empty package set are
+covered by regression tests; design validation never means release qualification.
 Each asset must declare exactly `not-implemented`, `not-tested` or `blocked`;
 missing, non-string or release-ready qualification values are rejected.
 It reads files only. It does not download, install, run probes, verify binary

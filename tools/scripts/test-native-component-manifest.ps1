@@ -26,6 +26,9 @@ foreach ($component in $components) {
     if ($component.id -notmatch '^[a-z][a-z0-9-]+$' -or -not $ids.Add($component.id)) { throw 'Invalid or duplicate component id.' }
     if ($component.owner -notmatch '^FIN-\d+$') { throw "Missing owner: $($component.id)" }
 }
+foreach ($required in @('dotnet-runtime','aspnet-runtime','desktop-runtime','postgresql','erlang','rabbitmq','elasticsearch','prometheus','alertmanager','jaeger','jaeger-tools','grafana')) {
+    if ($required -cnotin @($manifest.packages | ForEach-Object { $_.id })) { throw "Missing required package: $required" }
+}
 foreach ($required in @('admin-web','wpf-wizard','installation-engine')) {
     if ($required -cnotin @($manifest.assets | ForEach-Object { $_.id })) { throw "Missing required asset: $required" }
 }
