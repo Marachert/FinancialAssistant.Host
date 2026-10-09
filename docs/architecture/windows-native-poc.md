@@ -56,9 +56,17 @@ and user authorization remain mandatory even on the same host.
 
 ## Native Component Plan
 
-FIN-272 must inventory every required component, select compatible supported
-versions and prove unattended installation, health, upgrade and redistribution
-rights. This table is a target, not an approved binary bill of materials.
+FIN-272 inventories every required component, pins exact native candidates and
+records known evidence, unknowns, owners and release blockers. Owner-approved
+phase split, 2026-10-09: complete unattended installation/health/upgrade,
+signature/prerequisite/license/support/resource qualification and three-target
+acceptance remain later mandatory gates, not FIN-272 closure prerequisites.
+FIN-278 owns safe enforcement and installation behavior; FIN-280 owns the final
+qualified signed artifacts, compiler/bootstrap and notices/SBOM; FIN-281 owns
+the actual Windows matrix, with FIN-206 final acceptance. FIN-273/277 still own
+service/wrapper and adapter implementation. Inventory Done does not approve any
+package or installer, change releaseReady=false or authorize spending/installation.
+This table is a target, not an approved binary bill of materials.
 
 The [native component inventory](../../infra/windows-native/README.md) records
 source hosts, proposed non-conflicting ports, package metadata and explicit
@@ -73,7 +81,7 @@ qualification gaps. Its read-only validator cannot approve a release.
 | RabbitMQ and Erlang | Compatible native Windows packages and service | FIN-276; real event convergence, deduplication, retry and recovery |
 | Receipts and file metadata | Encrypted service-owned native file storage with durable metadata | FIN-277; ACLs, safe paths, retention and portable recovery |
 | Cache | Bounded disposable native/in-process adapter where semantics allow | FIN-277; no financial/session/idempotency authority in volatile cache |
-| Search/operational indices | Native Elasticsearch only where retained contracts require it | FIN-272/205; not an Elasticsearch-first financial database |
+| Search/operational indices | Native Elasticsearch only where retained contracts require it | FIN-272 inventory, FIN-280 package qualification, FIN-205 contract/runtime validation; not financial authority |
 | Monitoring/Audit/MCP/admin | Required services plus supported native collectors or protected local sinks | FIN-277/216; no silent loss of required metrics, audit or diagnostics |
 | HTTPS and configuration | Supported Windows-native perimeter and protected configuration | FIN-207/208; certificate/key ACLs, rotation, firewall and trust tests |
 

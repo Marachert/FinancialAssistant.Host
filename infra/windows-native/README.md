@@ -1,7 +1,8 @@
 # Native Windows Component Inventory
 
 FIN-272, metadata updated 2026-10-09. **Design inventory, not a release lock or an
-installer. FIN-272 remains In Progress.** The approved target is the
+installer. FIN-272 inventory scope is ready for guarded delivery; Jira remains
+In Progress until merge/evidence/closure.** The approved target is the
 [Windows-native POC](../../docs/architecture/windows-native-poc.md), without
 Docker, WSL or a Linux VM. No machine configuration is changed here.
 
@@ -223,7 +224,8 @@ publicly. Extra plugins are off unless specifically required. A readiness probe
 must authenticate and check publish/confirm/consume, not only process existence.
 
 Resource sizing remains **unmeasured**. Do not present guessed CPU/RAM/disk figures
-as minimum requirements. FIN-272 qualification must record selected payload sizes,
+as minimum requirements. The inventory records selected payload sizes;
+FIN-280's qualified release metadata must include
 expanded footprint, current+new binary staging, database/receipt growth, retained
 logs/indices, backup headroom and temporary extraction allowance. FIN-281/206 must
 measure representative synthetic workloads and enforce tested preflight thresholds.
@@ -260,6 +262,23 @@ unconfigured. A disabled provider is unavailable, never a successful test result
 
 ## Remaining FIN-272 Work
 
+Owner-approved phase split, 2026-10-09: FIN-272 delivers this versioned inventory,
+the tested non-release validator/offline inspector, pinned evidence, ownership
+and explicit unknowns/release blockers. Complete package qualification is a later
+release gate, not a prerequisite for closing this inventory ticket. This replaces
+earlier instructions requiring full qualification before FIN-272 completion.
+
+| Required later evidence | Delivery owner |
+| --- | --- |
+| Safe package verification/enforcement, prerequisite consent, resource preflight, owned unattended install/reboot/resume | FIN-278 |
+| Qualified compiler/bootstrap, final signatures/trust, native prerequisites, notices/EULAs/SBOM, redistribution and support metadata | FIN-280 |
+| Separate actual Windows 11 / Server 2022 / Server 2025 lifecycle and negative-test matrix | FIN-281, with FIN-206 final acceptance |
+| SCM hosting, safe wrappers/identities, gateway wiring and native adapters | FIN-273 / FIN-277 and their existing dependent gates |
+
+Every unresolved item below is handed off to those owners. Inventory completion
+never approves a payload, permits privileged installation, waives a release gate
+or changes `releaseReady: false`. Additional-spend authorization remains zero.
+
 Owner clarification, 2026-09-18: paid operations are excluded from POC development
 and testing. Final installed-POC testing is owner-run after development. Continue
 the manifest, implementation and free verification; prepare reproducible scripts
@@ -274,9 +293,9 @@ qualification; the exact archive digest has been verified locally.
    digest-verified payloads; capture exact unattended commands, exit codes and
    resource requirements. NSIS compiler payload verification remains separate.
 4. Resolve bootstrap/compiler qualification and the approved product-signing path.
-5. Publish the qualified matrix through CI/review, update Confluence and only then
-   evaluate FIN-272 completion. Runtime implementation and three-host acceptance
-   remain later gates, even after package metadata is complete.
+5. Publish the separately qualified release matrix through CI/review in FIN-280,
+   with FIN-278 enforcement and FIN-281/206 installed-target evidence. FIN-272's
+   inventory merge/closure is not that release approval.
 
 No additional spending, package/tool installation or machine changes are authorized
 by this document. Current POC completion remains 183/207 (88.4%); first-user testing

@@ -837,13 +837,13 @@
   "blockers": [
     {
       "code": "PACKAGE-QUALIFICATION",
-      "owner": "FIN-272",
+      "owner": "FIN-280",
       "detail": "PostgreSQL 18.6-5 publisher digest captured; binary signature/license/native prerequisite verification, Windows application-control compatibility, support matrices and unattended lifecycle qualification remain outstanding."
     },
     {
       "code": "SEARCH-OBSERVABILITY",
-      "owner": "FIN-272",
-      "detail": "Exact retained search and native metrics/trace/dashboard package choices are not qualified; no silent omission."
+      "owner": "FIN-277",
+      "detail": "Native service/wrapper and metrics/trace/dashboard implementation requires FIN-277; package trust/notices/support qualification remains FIN-280 and runtime contracts FIN-205. No silent omission or release approval from FIN-272 inventory completion."
     },
     {
       "code": "SIGNED-ARTIFACTS",
