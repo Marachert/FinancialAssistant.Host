@@ -1,8 +1,8 @@
 # Native Windows Component Inventory
 
 FIN-272, metadata updated 2026-10-09. **Design inventory, not a release lock or an
-installer. FIN-272 inventory scope is ready for guarded delivery; Jira remains
-In Progress until merge/evidence/closure.** The approved target is the
+installer. FIN-272 inventory scope is merged through PR270 and verified Done;
+final qualification remains a release gate.** The approved target is the
 [Windows-native POC](../../docs/architecture/windows-native-poc.md), without
 Docker, WSL or a Linux VM. No machine configuration is changed here.
 
@@ -265,7 +265,7 @@ FIN-208 owns secret protection and key recovery; FIN-209 owns consistent restore
 LLM/OCR/push/SMS/OAuth integration remains separately authorized and disabled when
 unconfigured. A disabled provider is unavailable, never a successful test result.
 
-## Remaining FIN-272 Work
+## Release Qualification Handoff
 
 Owner-approved phase split, 2026-10-09: FIN-272 delivers this versioned inventory,
 the tested non-release validator/offline inspector, pinned evidence, ownership
@@ -303,5 +303,5 @@ qualification; the exact archive digest has been verified locally.
    inventory merge/closure is not that release approval.
 
 No additional spending, package/tool installation or machine changes are authorized
-by this document. Current POC completion remains 183/207 (88.4%); first-user testing
+by this document. Current POC completion is 184/207 (88.9%); first-user testing
 is Not Ready. See [the progress ledger](../../docs/agent/POC_PROGRESS.md).
