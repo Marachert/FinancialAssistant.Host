@@ -62,7 +62,7 @@
       "dependsOn": [],
       "ports": [],
       "probe": "dotnet --list-runtimes: Microsoft.NETCore.App 8.0.31 x64",
-      "owner": "FIN-272",
+      "owner": "FIN-280",
       "qualification": "metadata-only"
     },
     {
@@ -92,7 +92,7 @@
       ],
       "ports": [],
       "probe": "dotnet --list-runtimes: Microsoft.AspNetCore.App 8.0.31 x64",
-      "owner": "FIN-272",
+      "owner": "FIN-280",
       "qualification": "metadata-only"
     },
     {
@@ -160,7 +160,7 @@
         5432
       ],
       "probe": "pg_isready plus authenticated SELECT 1 and expected per-service schema version",
-      "owner": "FIN-272",
+      "owner": "FIN-280",
       "qualification": "blocked"
     },
     {

@@ -114,7 +114,7 @@ try {
             $segments = $name.TrimEnd('/').Split('/')
             if ([string]::IsNullOrWhiteSpace($name) -or $name.StartsWith('/') -or
                 $name -match '[:\x00-\x1F<>"|?*]' -or @($segments | Where-Object {
-                    $_ -in @('','.', '..') -or $_.EndsWith('.') -or $_.EndsWith(' ') -or
+                    $_.Length -gt 255 -or $_ -in @('','.', '..') -or $_.EndsWith('.') -or $_.EndsWith(' ') -or
                     $_ -match '^(CON|PRN|AUX|NUL|COM[1-9\u00B9\u00B2\u00B3]|LPT[1-9\u00B9\u00B2\u00B3])([.]|$)'
                 }).Count -gt 0) {
                 throw 'Unsafe archive path.'

@@ -94,8 +94,9 @@ paid substitute or silent loss of functionality may be used to clear the gate.
 Applications remain C#/.NET 8 until a separately tested compatibility change.
 The package decision must review runtime support before release: .NET 8 support
 ends on 2026-11-10 according to Microsoft's lifecycle notice. Bundling a runtime
-does not extend support. FIN-272 must either constrain the release/support window
-or create the necessary supported-runtime migration work; no SDK upgrade is
+does not extend support. FIN-272 records the constrained candidate window;
+FIN-280 must recheck it and deliver any necessary supported-runtime migration
+before a release or supported operation extending past that boundary. No SDK upgrade is
 performed by this architecture change.
 
 ## Package And State Layout
@@ -196,7 +197,7 @@ authorization before those actions; no additional spending is assumed.
 | --- | --- |
 | FIN-270 | Parent story; close only after children and dependent release gates |
 | FIN-271 | This decision, documentation synchronization and backlog reconciliation |
-| FIN-272 | Native component/support/package manifest decision |
+| FIN-272 | Native candidate inventory, evidence and explicit qualification blockers |
 | FIN-273 | Native service hosting, gateway routes and trust |
 | FIN-274 | Durable identity/profile/workflow state |
 | FIN-275 | Durable financial/insight state |
@@ -204,7 +205,7 @@ authorization before those actions; no additional spending is assumed.
 | FIN-277 | Native receipt/cache/diagnostic adapters |
 | FIN-278 | Restart-safe privileged installation engine |
 | FIN-279 | WPF installation/maintenance wizard |
-| FIN-280 | Versioned packages, update/repair/uninstall |
+| FIN-280 | Final package/bootstrap trust, prerequisites/notices/support qualification and versioned update/repair/uninstall |
 | FIN-281 | Windows lifecycle automation/harness |
 | FIN-204/205/206 | Actual business E2E, retained search validation, installed-host acceptance |
 | FIN-207/208/209 | Native HTTPS, secrets and verified recovery |
@@ -218,8 +219,10 @@ percentage drop is not lost delivered work. Recompute the
 
 ## Source Verification
 
-Official sources reviewed 2026-09-15; exact package/support decisions remain
-FIN-272 work and must be rechecked at packaging time:
+Official baseline sources reviewed 2026-09-15; FIN-272 inventory evidence was
+updated 2026-10-09. FIN-280 owns mandatory packaging-time source/version/support,
+signature/prerequisite/notices rechecks and final qualification. FIN-278 enforces
+the qualified lock; FIN-281/206 supply actual target-host acceptance:
 
 - [Microsoft Windows Service hosting](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/windows-service)
 - [PostgreSQL Windows packages](https://www.postgresql.org/download/windows/)

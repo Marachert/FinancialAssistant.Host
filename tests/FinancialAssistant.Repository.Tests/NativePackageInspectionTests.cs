@@ -29,6 +29,8 @@ public sealed class NativePackageInspectionTests
     [Theory]
     [InlineData("zip64")]
     [InlineData("comment")]
+    [InlineData("component-255")]
+    [InlineData("unicode-component-255")]
     public async Task BoundedZipMetadata_AcceptsZip64AndComments(string mutation)
     {
         var result = await InspectAsync(mutation, "SHA256");
@@ -48,6 +50,9 @@ public sealed class NativePackageInspectionTests
     [InlineData("drive", "Unsafe archive path")]
     [InlineData("reserved", "Unsafe archive path")]
     [InlineData("trailing-dot", "Unsafe archive path")]
+    [InlineData("long-file-component", "Unsafe archive path")]
+    [InlineData("long-directory-component", "Unsafe archive path")]
+    [InlineData("long-unicode-component", "Unsafe archive path")]
     [InlineData("file-parent", "Archive file is also a parent directory")]
     [InlineData("duplicate", "Duplicate Windows archive path")]
     [InlineData("symlink", "Archive symbolic links")]
@@ -98,6 +103,11 @@ public sealed class NativePackageInspectionTests
                         "drive" => "C:/outside.txt",
                         "reserved" => "package/CON.txt",
                         "trailing-dot" => "package/content.",
+                        "component-255" => "package/" + new string('a', 255),
+                        "unicode-component-255" => "package/" + string.Concat(Enumerable.Repeat("\U0001F600", 127)) + "a",
+                        "long-file-component" => "package/" + new string('a', 256),
+                        "long-directory-component" => "package/" + new string('a', 256) + "/content.txt",
+                        "long-unicode-component" => "package/" + string.Concat(Enumerable.Repeat("\U0001F600", 128)),
                         "com-superscript-1" => "package/COM\u00B9.txt",
                         "com-superscript-2" => "package/COM\u00B2.txt",
                         "com-superscript-3" => "package/COM\u00B3.txt",

@@ -46,6 +46,9 @@ pwsh -NoProfile -NonInteractive -File tools/scripts/inspect-native-package.ps1 -
 
 It does not download, extract or execute files. ZIP paths must be safe and unique
 on Windows; symbolic links and configured entry/expanded-byte limits are rejected.
+Every path component is limited to 255 UTF-16 code units, including directory
+names and surrogate pairs. Total deployment path/volume/long-path policy remains
+an installation-engine check; this is not permission to materialize arbitrary paths.
 Before .NET loads ZIP entries, bounded EOCD/ZIP64 headers and a streamed directory
 scan check declared and actual counts, byte bounds and offsets. Defaults are
 100000 entries, 64 MiB central-directory bytes and 12 GiB declared expanded bytes.
