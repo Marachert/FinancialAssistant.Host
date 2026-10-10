@@ -4,11 +4,12 @@ using FinancialAssistant.Identity.Application;
 using FinancialAssistant.Identity.Infrastructure;
 using FinancialAssistant.Identity.Infrastructure.Configuration;
 using FinancialAssistant.Identity.Infrastructure.Health;
+using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = FinancialAssistantHost.CreateBuilder(args, "identity");
 
 builder.AddFinancialAssistantObservability();
 builder.Services.AddEndpointsApiExplorer();

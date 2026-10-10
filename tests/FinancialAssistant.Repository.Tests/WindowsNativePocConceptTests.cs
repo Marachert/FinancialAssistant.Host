@@ -13,7 +13,8 @@ public sealed class WindowsNativePocConceptTests
         {
             "Windows 11", "Windows Server 2022", "Windows Server 2025",
             "Desktop Experience", "no Docker, WSL or Linux VM requirement",
-            "Approved target, not implemented or runtime accepted",
+            "Approved target; component inventory delivered, installed runtime not accepted",
+            "Windows Service hosting module", "not installed SCM acceptance",
             "retains data and backups by default", "First-user testing remains",
             "No SDK, Git checkout", "FIN-270", "FIN-281"
         })

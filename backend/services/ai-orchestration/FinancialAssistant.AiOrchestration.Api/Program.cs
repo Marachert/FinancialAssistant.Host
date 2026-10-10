@@ -5,11 +5,12 @@ using FinancialAssistant.AiOrchestration.Application.Abstractions;
 using FinancialAssistant.AiOrchestration.Contracts;
 using FinancialAssistant.AiOrchestration.Infrastructure;
 using FinancialAssistant.AiOrchestration.Infrastructure.Prompts;
+using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = FinancialAssistantHost.CreateBuilder(args, "ai-orchestration");
 
 builder.AddFinancialAssistantObservability();
 
@@ -70,6 +71,8 @@ builder.Services
         tags: new[] { "ready" });
 
 var app = builder.Build();
+
+app.UseWindowsNativeRequestBoundary();
 
 var runtimeProviderOptions = app.Services
     .GetRequiredService<IOptions<AiOrchestrationOptions>>()

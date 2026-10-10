@@ -3,10 +3,11 @@ using FinancialAssistant.RecommendationsNotifications.Api.Security;
 using FinancialAssistant.RecommendationsNotifications.Application;
 using FinancialAssistant.RecommendationsNotifications.Contracts;
 using FinancialAssistant.RecommendationsNotifications.Infrastructure;
+using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
 using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = FinancialAssistantHost.CreateBuilder(args, "recommendations-notifications");
 
 builder.AddFinancialAssistantObservability();
 builder.Services.AddEndpointsApiExplorer();

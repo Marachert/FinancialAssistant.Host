@@ -228,6 +228,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.O
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Observability.Tests", "backend\shared\observability\FinancialAssistant.Shared.Observability.Tests\FinancialAssistant.Shared.Observability.Tests.csproj", "{75C15E67-A926-41C5-8488-4F2E8BBE4BB5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{91488650-2D7C-4415-AE87-33D6FB3D159D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "hosting", "hosting", "{193D4FA9-418C-4E44-8DB2-BB0444F10B53}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Hosting", "backend\shared\hosting\FinancialAssistant.Shared.Hosting\FinancialAssistant.Shared.Hosting.csproj", "{710BFC4E-18D2-4197-B3E1-29FE9D96FED8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Hosting.Tests", "backend\shared\hosting\FinancialAssistant.Shared.Hosting.Tests\FinancialAssistant.Shared.Hosting.Tests.csproj", "{28EA6B3F-8AE8-4976-926D-6AA8442C0467}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -646,6 +654,14 @@ Global
 		{75C15E67-A926-41C5-8488-4F2E8BBE4BB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75C15E67-A926-41C5-8488-4F2E8BBE4BB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75C15E67-A926-41C5-8488-4F2E8BBE4BB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{710BFC4E-18D2-4197-B3E1-29FE9D96FED8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{710BFC4E-18D2-4197-B3E1-29FE9D96FED8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{710BFC4E-18D2-4197-B3E1-29FE9D96FED8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{710BFC4E-18D2-4197-B3E1-29FE9D96FED8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28EA6B3F-8AE8-4976-926D-6AA8442C0467}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28EA6B3F-8AE8-4976-926D-6AA8442C0467}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28EA6B3F-8AE8-4976-926D-6AA8442C0467}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28EA6B3F-8AE8-4976-926D-6AA8442C0467}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7AC3F48D-624D-4E99-8B8A-4D491602CEE2} = {FB7E6B6E-BA1A-4D09-96DE-E4179EB6DA47}
@@ -692,5 +708,9 @@ Global
 		{FA9A573B-2FF4-4504-92AC-386DD18966AA} = {E4052B71-1B3D-4F76-B0BB-A4D53FD1D6AA}
 		{BDF58C44-461E-4477-A750-292CEDD1A978} = {E4052B71-1B3D-4F76-B0BB-A4D53FD1D6AA}
 		{919DBD12-756E-4F1B-98C1-74F7C1355C13} = {51475809-EB99-422C-A37B-CC36F9A42BB0}
+		{91488650-2D7C-4415-AE87-33D6FB3D159D} = {FB7E6B6E-BA1A-4D09-96DE-E4179EB6DA47}
+		{193D4FA9-418C-4E44-8DB2-BB0444F10B53} = {91488650-2D7C-4415-AE87-33D6FB3D159D}
+		{710BFC4E-18D2-4197-B3E1-29FE9D96FED8} = {193D4FA9-418C-4E44-8DB2-BB0444F10B53}
+		{28EA6B3F-8AE8-4976-926D-6AA8442C0467} = {193D4FA9-418C-4E44-8DB2-BB0444F10B53}
 	EndGlobalSection
 EndGlobal

@@ -3,11 +3,12 @@ using FinancialAssistant.ReceiptProcessing.Api.Security;
 using FinancialAssistant.ReceiptProcessing.Application;
 using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
 using FinancialAssistant.ReceiptProcessing.Infrastructure;
+using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = FinancialAssistantHost.CreateBuilder(args, "receipt-processing");
 
 builder.AddFinancialAssistantObservability();
 builder.Services.Configure<FormOptions>(options =>

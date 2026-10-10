@@ -1,7 +1,7 @@
 # Windows-Native POC Deployment
 
 Decision date: 2026-09-15. User-approved change. Story: FIN-270; baseline: FIN-271.
-Status: **Approved target, not implemented or runtime accepted**.
+Status: **Approved target; component inventory delivered, installed runtime not accepted**.
 
 ## Decision
 
@@ -71,6 +71,15 @@ This table is a target, not an approved binary bill of materials.
 The [native component inventory](../../infra/windows-native/README.md) records
 source hosts, proposed non-conflicting ports, package metadata and explicit
 qualification gaps. Its read-only validator cannot approve a release.
+
+The [Windows Service hosting module](../../backend/shared/hosting/README.md)
+implements a separate `WindowsNative` process profile for all fifteen API hosts,
+canonical loopback endpoints, explicit stable-secret validation, native Gateway
+route/JWT configuration and a non-executing service ownership/recovery plan.
+Its free code tests and unqualified publish candidates are not installed SCM
+acceptance or a complete WPF deployment. Durable adapters, protected configuration,
+HTTPS, installer orchestration, package qualification and the actual three-Windows
+matrix remain separate delivery gates. Existing developer/test profiles remain.
 
 | Component | Native target | Owner and release gate |
 | --- | --- | --- |

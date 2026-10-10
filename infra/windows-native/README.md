@@ -6,6 +6,11 @@ final qualification remains a release gate.** The approved target is the
 [Windows-native POC](../../docs/architecture/windows-native-poc.md), without
 Docker, WSL or a Linux VM. No machine configuration is changed here.
 
+FIN-273's [hosting contract](../../backend/shared/hosting/README.md) documents the
+native process profile, canonical service ports, required trust and non-executing
+SCM plan. Its publish script creates explicitly unqualified win-x64 candidates,
+not an installer or qualified release; the inventory remains `releaseReady=false`.
+
 ## Read-Only Verification
 
 [component-manifest.json](component-manifest.json) inventories all 15 production

@@ -1,5 +1,6 @@
 using FinancialAssistant.Expense.Infrastructure;
 using FinancialAssistant.Income.Infrastructure;
+using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
 using FinancialAssistant.TransactionIntake.Api.Endpoints;
 using FinancialAssistant.TransactionIntake.Api.Security;
@@ -7,7 +8,7 @@ using FinancialAssistant.TransactionIntake.Application;
 using FinancialAssistant.TransactionIntake.Infrastructure;
 using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = FinancialAssistantHost.CreateBuilder(args, "transaction-intake");
 
 builder.AddFinancialAssistantObservability();
 builder.Services.AddEndpointsApiExplorer();
