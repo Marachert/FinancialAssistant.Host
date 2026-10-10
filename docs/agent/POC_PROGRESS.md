@@ -150,7 +150,7 @@ Current delivery (native scope revision supersedes previous scope totals):
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 13 | 13 | 100.0% |
 | FIN-38 | P9 Testing, Windows deployment, and release readiness | 8 | 31 | 25.8% |
-| **Total** | **Canonical POC leaf scope** | **183** | **207** | **88.4%** |
+| **Total** | **Canonical POC leaf scope** | **184** | **207** | **88.9%** |
 
 ## First-User-Test Gates
 
