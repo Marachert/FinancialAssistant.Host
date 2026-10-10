@@ -308,5 +308,5 @@ qualification; the exact archive digest has been verified locally.
    inventory merge/closure is not that release approval.
 
 No additional spending, package/tool installation or machine changes are authorized
-by this document. Current POC completion is 184/207 (88.9%); first-user testing
+by this document. Current POC completion is 185/207 (89.4%); first-user testing
 is Not Ready. See [the progress ledger](../../docs/agent/POC_PROGRESS.md).
