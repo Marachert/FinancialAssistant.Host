@@ -180,6 +180,42 @@ public sealed class NativeHostingTests
     private static Dictionary<string, string?> Secrets(NativeServiceDefinition service) =>
         service.RequiredSecretKeys.ToDictionary(key => key, _ => (string?)SyntheticSecret);
 
+    [Fact]
+    public void NativeMonitoring_ReplacesLegacyTargets_WithEveryOtherCanonicalHost()
+    {
+        var service = NativeServiceCatalog.Get("monitoring");
+        var builder = WebApplication.CreateBuilder();
+        builder.Configuration.AddJsonFile(Path.Combine(FindRoot(),
+            "backend/services/monitoring/FinancialAssistant.Monitoring.Api/appsettings.json"));
+        builder.Configuration.AddInMemoryCollection(Secrets(service));
+        FinancialAssistantHost.ConfigureNative(builder, service);
+        var targets = builder.Configuration.GetSection("Monitoring:Services").GetChildren().ToArray();
+        Assert.Equal(14, targets.Length);
+        Assert.DoesNotContain(targets, target => target["Name"] is "financial-summary" or "monitoring");
+        foreach (var target in NativeServiceCatalog.Services.Where(target => target.Id != "monitoring"))
+        {
+            Assert.Single(targets, configured => configured["Name"] == target.Id && configured["BaseAddress"] == target.BaseAddress);
+        }
+
+        Assert.Equal("http://127.0.0.1:15672", builder.Configuration["Monitoring:RabbitMq:ManagementBaseAddress"]);
+        Assert.Equal("http://127.0.0.1:9200", builder.Configuration["Monitoring:Elasticsearch:BaseAddress"]);
+    }
+
+    [Theory]
+    [InlineData("14")]
+    [InlineData("9999")]
+    [InlineData("01")]
+    [InlineData("foreign")]
+    public void NativeMonitoring_RejectsExtraOrAmbiguousTargetIndices(string index)
+    {
+        var service = NativeServiceCatalog.Get("monitoring");
+        var builder = WebApplication.CreateBuilder();
+        var values = Secrets(service);
+        values[$"Monitoring:Services:{index}:BaseAddress"] = "https://synthetic.invalid";
+        builder.Configuration.AddInMemoryCollection(values);
+        Assert.Throws<InvalidOperationException>(() => FinancialAssistantHost.ConfigureNative(builder, service));
+    }
+
     private static IConfiguration Configuration(Dictionary<string, string?> values) =>
         new ConfigurationBuilder().AddInMemoryCollection(values).Build();
 

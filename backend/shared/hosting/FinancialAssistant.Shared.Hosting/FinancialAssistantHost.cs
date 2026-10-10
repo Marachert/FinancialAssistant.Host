@@ -65,6 +65,29 @@ public static class FinancialAssistantHost
                 ["Mcp:Audit:Mode"] = "Http"
             });
         }
+        else if (service.Id == "monitoring")
+        {
+            var targets = NativeServiceCatalog.Services.Where(target => target.Id != "monitoring").ToArray();
+            foreach (var child in builder.Configuration.GetSection("Monitoring:Services").GetChildren())
+            {
+                if (!int.TryParse(child.Key, out var index) || index < 0 || index >= targets.Length
+                    || child.Key != index.ToString(System.Globalization.CultureInfo.InvariantCulture))
+                {
+                    throw new InvalidOperationException("Native monitoring service target indices must belong to the canonical catalog.");
+                }
+            }
+
+            var overrides = new Dictionary<string, string?>();
+            for (var index = 0; index < targets.Length; index++)
+            {
+                overrides[$"Monitoring:Services:{index}:Name"] = targets[index].Id;
+                overrides[$"Monitoring:Services:{index}:BaseAddress"] = targets[index].BaseAddress;
+            }
+
+            overrides["Monitoring:RabbitMq:ManagementBaseAddress"] = "http://127.0.0.1:15672";
+            overrides["Monitoring:Elasticsearch:BaseAddress"] = "http://127.0.0.1:9200";
+            builder.Configuration.AddInMemoryCollection(overrides);
+        }
 
         builder.Services.AddSingleton(service);
         builder.Services.Configure<HostOptions>(options =>

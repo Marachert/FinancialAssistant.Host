@@ -43,6 +43,12 @@ receipt events target Intake 5104. Profile and AI require a trusted hop secret f
 all non-health requests; forged user headers alone confer no trust. Existing
 service-specific authorization remains in place.
 
+Native Monitoring replaces the legacy target array with the fourteen other hosts
+from the same catalog, including Gateway and Audit, excluding itself and the
+nonexistent Financial Summary API. Audit is reported at 5113 and AI at 5114;
+RabbitMQ management and Elasticsearch probes are pinned to IPv4 loopback.
+Extra or ambiguous array indices fail rather than retaining foreign probe targets.
+
 Native Gateway readiness probes unique downstream `/health/ready` endpoints,
 with two-second timeouts, no redirects and no private-body inspection. A missing
 or unhealthy process yields 503. SCM dependency running-state is not application
