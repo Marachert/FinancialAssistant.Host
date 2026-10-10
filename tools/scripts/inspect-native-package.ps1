@@ -122,7 +122,10 @@ try {
             if (-not $names.Add($name.TrimEnd('/'))) { throw 'Duplicate Windows archive path.' }
             $unixType = ($entry.ExternalAttributes -shr 16) -band 0xF000
             if ($unixType -eq 0xA000) { throw 'Archive symbolic links are not supported.' }
-            if ($name.EndsWith('/')) { continue }
+            if ($name.EndsWith('/')) {
+                if ($entry.Length -ne 0) { throw 'Archive directory contains data.' }
+                continue
+            }
             $null = $fileNames.Add($name)
             $fileCount++
             if ($entry.Length -gt $MaxExpandedBytes - $expandedBytes) { throw 'Archive expanded-byte limit exceeded.' }

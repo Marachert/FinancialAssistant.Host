@@ -31,6 +31,7 @@ public sealed class NativePackageInspectionTests
     [InlineData("comment")]
     [InlineData("component-255")]
     [InlineData("unicode-component-255")]
+    [InlineData("empty-directory")]
     public async Task BoundedZipMetadata_AcceptsZip64AndComments(string mutation)
     {
         var result = await InspectAsync(mutation, "SHA256");
@@ -53,6 +54,8 @@ public sealed class NativePackageInspectionTests
     [InlineData("long-file-component", "Unsafe archive path")]
     [InlineData("long-directory-component", "Unsafe archive path")]
     [InlineData("long-unicode-component", "Unsafe archive path")]
+    [InlineData("directory-data", "Archive directory contains data")]
+    [InlineData("oversized-directory", "Archive directory contains data")]
     [InlineData("file-parent", "Archive file is also a parent directory")]
     [InlineData("duplicate", "Duplicate Windows archive path")]
     [InlineData("symlink", "Archive symbolic links")]
@@ -122,6 +125,15 @@ public sealed class NativePackageInspectionTests
                     using (var stream = archive.CreateEntry("package/LICENSE.txt").Open()) { stream.Write("test notice"u8); }
                     if (mutation == "duplicate") { archive.CreateEntry("PACKAGE/content.txt"); }
                     if (mutation == "file-parent") { archive.CreateEntry("package/content.txt/child.txt"); }
+                    if (mutation is "empty-directory" or "directory-data" or "oversized-directory")
+                    {
+                        var directory = archive.CreateEntry("package/data/");
+                        if (mutation != "empty-directory")
+                        {
+                            using var stream = directory.Open();
+                            stream.Write(new byte[mutation == "oversized-directory" ? 101 : 1]);
+                        }
+                    }
                 }
             }
 
@@ -189,6 +201,7 @@ public sealed class NativePackageInspectionTests
             if (mutation is "entry-limit" or "preflight-entry-limit" or "forged-entry-count") { start.ArgumentList.Add("-MaxArchiveEntries"); start.ArgumentList.Add("1"); }
             if (mutation == "directory-size-limit") { start.ArgumentList.Add("-MaxCentralDirectoryBytes"); start.ArgumentList.Add("1"); }
             if (mutation == "byte-limit") { start.ArgumentList.Add("-MaxExpandedBytes"); start.ArgumentList.Add("1"); }
+            if (mutation == "oversized-directory") { start.ArgumentList.Add("-MaxExpandedBytes"); start.ArgumentList.Add("100"); }
             using var process = Process.Start(start) ?? throw new InvalidOperationException("PowerShell did not start.");
             var stdout = process.StandardOutput.ReadToEndAsync();
             var stderr = process.StandardError.ReadToEndAsync();

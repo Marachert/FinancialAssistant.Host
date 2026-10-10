@@ -46,6 +46,8 @@ pwsh -NoProfile -NonInteractive -File tools/scripts/inspect-native-package.ps1 -
 
 It does not download, extract or execute files. ZIP paths must be safe and unique
 on Windows; symbolic links and configured entry/expanded-byte limits are rejected.
+Directory entries must declare zero uncompressed bytes; data-bearing directories
+are rejected rather than silently omitted from the expanded-byte accounting.
 Every path component is limited to 255 UTF-16 code units, including directory
 names and surrogate pairs. Total deployment path/volume/long-path policy remains
 an installation-engine check; this is not permission to materialize arbitrary paths.
