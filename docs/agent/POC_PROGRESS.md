@@ -141,9 +141,12 @@ Current delivery (native scope revision supersedes previous scope totals):
   all five exact-head CI checks passed and every review channel was empty
 - current documentation includes the implementation map, preferred storage policy,
   source-to-Confluence maintenance map and explicit financial authorization limits
-- FIN-270 is the priority parent; FIN-271 defines the concept and FIN-272 the inventory
-- next implementation leaf is FIN-273 after FIN-272 closure publication;
-  follow native-host/TLS/secrets/recovery dependencies before FIN-204 E2E
+- FIN-270 is the priority parent; FIN-271/272/273 concept, inventory and hosting
+  implementation are Done, without installed-runtime acceptance
+- next ranked native implementation leaf is FIN-274 after FIN-273 closure
+  publication; re-read its hierarchy and dependencies before branching
+- FIN-207/208/209 TLS, protected secrets and backup/recovery remain separate
+  required release gates; satisfy native runtime dependencies before FIN-204 E2E
 
 ## Epic Progress
 
