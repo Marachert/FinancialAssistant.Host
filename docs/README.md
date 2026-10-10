@@ -5,6 +5,7 @@ Developer, architecture, security, API, event, and delivery documentation worksp
 ## Start here
 
 - [Windows-native POC and WPF installer decision](architecture/windows-native-poc.md)
+- [Native component inventory and qualification gaps](../infra/windows-native/README.md)
 
 - [POC readiness and closure statistics](agent/POC_PROGRESS.md)
 - [POC QA strategy and test scope](engineering/poc-qa-strategy.md)

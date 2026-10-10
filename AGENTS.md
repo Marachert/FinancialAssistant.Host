@@ -93,6 +93,17 @@ Do not weaken or delete a valid test merely to make CI green.
 
 Never commit or expose tokens, passwords, API keys, certificates, `.env` files, production configuration, real identities, personal financial data, receipts, raw OCR data, or real LLM prompts/responses. Use synthetic test data and environment-provided credentials.
 
+## Owner Usage Guard
+
+Owner directive, 2026-10-09: the previous 40% pause threshold is revoked on all
+development computers. Continue while authorized work and included subscription
+allowance remain, until the owner stops work or included usage is exhausted.
+Read fresh usage/eligibility at resume, before substantial phases and regularly
+during long work. If ordinary included use is unavailable or cannot be verified,
+save the checkpoint, preserve edits and release the owned delivery lock safely.
+Never redeem credits, enable paid fallback or incur additional spending.
+This workflow instruction does not change account billing settings.
+
 ## Completion
 
 Keep affected GitHub documentation and Confluence pages synchronized using

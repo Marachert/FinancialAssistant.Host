@@ -29,6 +29,13 @@ FIN-270's children. Existing Compose material is historical/developer baseline;
 keep valid tests and evidence, but do not treat it as native runtime acceptance.
 This change does not authorize machine installation or additional spending.
 
+Owner clarification, 2026-09-18: no paid operations during POC development or
+testing. The agent delivers implementation, free automated verification and a
+reproducible test handoff; the owner performs final installed-POC testing after
+development. Live paid providers stay disabled. Pending owner acceptance is not
+passed evidence and must not stop unrelated no-cost implementation. Follow the
+zero-additional-spend policy in `SECURITY_AND_BLOCKERS.md`.
+
 ## Service Architecture
 
 Each business service owns its data and business capability. Separate synchronous REST flows from asynchronous RabbitMQ event flows. REST is used for immediate request/response operations; events are published after owned state changes and for decoupled processing.

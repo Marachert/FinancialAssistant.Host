@@ -56,9 +56,21 @@ and user authorization remain mandatory even on the same host.
 
 ## Native Component Plan
 
-FIN-272 must inventory every required component, select compatible supported
-versions and prove unattended installation, health, upgrade and redistribution
-rights. This table is a target, not an approved binary bill of materials.
+FIN-272 inventories every required component, pins exact native candidates and
+records known evidence, unknowns, owners and release blockers. Owner-approved
+phase split, 2026-10-09: complete unattended installation/health/upgrade,
+signature/prerequisite/license/support/resource qualification and three-target
+acceptance remain later mandatory gates, not FIN-272 closure prerequisites.
+FIN-278 owns safe enforcement and installation behavior; FIN-280 owns the final
+qualified signed artifacts, compiler/bootstrap and notices/SBOM; FIN-281 owns
+the actual Windows matrix, with FIN-206 final acceptance. FIN-273/277 still own
+service/wrapper and adapter implementation. Inventory Done does not approve any
+package or installer, change releaseReady=false or authorize spending/installation.
+This table is a target, not an approved binary bill of materials.
+
+The [native component inventory](../../infra/windows-native/README.md) records
+source hosts, proposed non-conflicting ports, package metadata and explicit
+qualification gaps. Its read-only validator cannot approve a release.
 
 | Component | Native target | Owner and release gate |
 | --- | --- | --- |
@@ -69,7 +81,7 @@ rights. This table is a target, not an approved binary bill of materials.
 | RabbitMQ and Erlang | Compatible native Windows packages and service | FIN-276; real event convergence, deduplication, retry and recovery |
 | Receipts and file metadata | Encrypted service-owned native file storage with durable metadata | FIN-277; ACLs, safe paths, retention and portable recovery |
 | Cache | Bounded disposable native/in-process adapter where semantics allow | FIN-277; no financial/session/idempotency authority in volatile cache |
-| Search/operational indices | Native Elasticsearch only where retained contracts require it | FIN-272/205; not an Elasticsearch-first financial database |
+| Search/operational indices | Native Elasticsearch only where retained contracts require it | FIN-272 inventory, FIN-280 package qualification, FIN-205 contract/runtime validation; not financial authority |
 | Monitoring/Audit/MCP/admin | Required services plus supported native collectors or protected local sinks | FIN-277/216; no silent loss of required metrics, audit or diagnostics |
 | HTTPS and configuration | Supported Windows-native perimeter and protected configuration | FIN-207/208; certificate/key ACLs, rotation, firewall and trust tests |
 
@@ -82,8 +94,9 @@ paid substitute or silent loss of functionality may be used to clear the gate.
 Applications remain C#/.NET 8 until a separately tested compatibility change.
 The package decision must review runtime support before release: .NET 8 support
 ends on 2026-11-10 according to Microsoft's lifecycle notice. Bundling a runtime
-does not extend support. FIN-272 must either constrain the release/support window
-or create the necessary supported-runtime migration work; no SDK upgrade is
+does not extend support. FIN-272 records the constrained candidate window;
+FIN-280 must recheck it and deliver any necessary supported-runtime migration
+before a release or supported operation extending past that boundary. No SDK upgrade is
 performed by this architecture change.
 
 ## Package And State Layout
@@ -153,6 +166,14 @@ behavior must use native Windows mechanisms and be tested on the target host.
 
 ## Acceptance And Authorization
 
+Owner decision, 2026-09-18: all paid development/testing operations are excluded
+from the agent's POC work. The owner will run final installed-POC acceptance after
+development. Deliver the installer, reproducible test harness/checklist and known
+limitations; continue no-cost implementation and automated checks without waiting
+for paid infrastructure or provider access. Use synthetic doubles for paid APIs,
+and mark live-provider and owner-run results pending, not passed or waived.
+No paid license, certificate, hosted runner or trial is activated by the agent.
+
 FIN-281 supplies the lifecycle test harness. FIN-206 independently records actual
 installed-host acceptance on all three OS targets; FIN-204 records business E2E.
 Test clean install, reboot, failed prerequisite, non-admin rejection, port
@@ -176,7 +197,7 @@ authorization before those actions; no additional spending is assumed.
 | --- | --- |
 | FIN-270 | Parent story; close only after children and dependent release gates |
 | FIN-271 | This decision, documentation synchronization and backlog reconciliation |
-| FIN-272 | Native component/support/package manifest decision |
+| FIN-272 | Native candidate inventory, evidence and explicit qualification blockers |
 | FIN-273 | Native service hosting, gateway routes and trust |
 | FIN-274 | Durable identity/profile/workflow state |
 | FIN-275 | Durable financial/insight state |
@@ -184,7 +205,7 @@ authorization before those actions; no additional spending is assumed.
 | FIN-277 | Native receipt/cache/diagnostic adapters |
 | FIN-278 | Restart-safe privileged installation engine |
 | FIN-279 | WPF installation/maintenance wizard |
-| FIN-280 | Versioned packages, update/repair/uninstall |
+| FIN-280 | Final package/bootstrap trust, prerequisites/notices/support qualification and versioned update/repair/uninstall |
 | FIN-281 | Windows lifecycle automation/harness |
 | FIN-204/205/206 | Actual business E2E, retained search validation, installed-host acceptance |
 | FIN-207/208/209 | Native HTTPS, secrets and verified recovery |
@@ -198,8 +219,10 @@ percentage drop is not lost delivered work. Recompute the
 
 ## Source Verification
 
-Official sources reviewed 2026-09-15; exact package/support decisions remain
-FIN-272 work and must be rechecked at packaging time:
+Official baseline sources reviewed 2026-09-15; FIN-272 inventory evidence was
+updated 2026-10-09. FIN-280 owns mandatory packaging-time source/version/support,
+signature/prerequisite/notices rechecks and final qualification. FIN-278 enforces
+the qualified lock; FIN-281/206 supply actual target-host acceptance:
 
 - [Microsoft Windows Service hosting](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/windows-service)
 - [PostgreSQL Windows packages](https://www.postgresql.org/download/windows/)

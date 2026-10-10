@@ -5,6 +5,9 @@ repeatable infrastructure bootstrap tooling.
 
 ## Assets
 
+- [Native component inventory](windows-native/README.md), package candidates and
+  read-only consistency validation; not a release-approved installer manifest.
+
 - [Windows-native WPF installer target](../docs/architecture/windows-native-poc.md)
   for Windows 11 and Server 2022/2025 without Docker/WSL; FIN-270 implementation
   and installed-host acceptance remain open.
