@@ -19,5 +19,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../../shared/observability/FinancialAssistant.Shared.Observability/FinancialAssistant.Shared.Observability.csproj" />
+    <ProjectReference Include="../../../shared/hosting/FinancialAssistant.Shared.Hosting/FinancialAssistant.Shared.Hosting.csproj" />
   </ItemGroup>
 </Project>

@@ -3,10 +3,11 @@ using FinancialAssistant.Monitoring.Api.Health;
 using FinancialAssistant.Monitoring.Api.Security;
 using FinancialAssistant.Monitoring.Contracts;
 using FinancialAssistant.Monitoring.Infrastructure;
+using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
 using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = FinancialAssistantHost.CreateBuilder(args, "monitoring");
 
 builder.AddFinancialAssistantObservability();
 builder.Services.AddEndpointsApiExplorer();

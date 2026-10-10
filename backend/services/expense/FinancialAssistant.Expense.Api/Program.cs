@@ -3,10 +3,11 @@ using FinancialAssistant.Expense.Api.Security;
 using FinancialAssistant.Expense.Application;
 using FinancialAssistant.Expense.Contracts;
 using FinancialAssistant.Expense.Infrastructure;
+using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
 using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = FinancialAssistantHost.CreateBuilder(args, "expense");
 
 builder.AddFinancialAssistantObservability();
 builder.Services.AddEndpointsApiExplorer();

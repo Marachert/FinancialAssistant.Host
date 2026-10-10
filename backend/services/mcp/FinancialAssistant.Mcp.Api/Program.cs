@@ -4,11 +4,12 @@ using FinancialAssistant.Mcp.Api.Tools;
 using FinancialAssistant.Mcp.Application;
 using FinancialAssistant.Mcp.Contracts;
 using FinancialAssistant.Mcp.Infrastructure;
+using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
 using Microsoft.AspNetCore.Authentication;
 using ModelContextProtocol.Server;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = FinancialAssistantHost.CreateBuilder(args, "mcp");
 
 builder.AddFinancialAssistantObservability();
 builder.Services.AddHttpContextAccessor();

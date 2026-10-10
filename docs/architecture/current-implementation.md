@@ -22,7 +22,7 @@ installer or accepted native Windows runtime is claimed by this document.
 | Mobile | Home/Add/Insights/Settings, authentication/onboarding, text/receipt draft review, dashboard, inbox and resilience states | Native audio, complete wallet/debt/reserve flows, signed stores and tester acceptance are not all delivered |
 | Monitoring/Audit/MCP | Safe operational aggregates, append-only audit contracts and six allowlisted read-only MCP tools | Durable history, complete producer wiring and approved operational acceptance |
 | Admin web | Protected React dashboard, memory-only sessions, service status, bounded recent/failed jobs and AI/OCR summaries | Support lookup is disabled; job history is process-local (200 observations, 24 hours), not a durable job scheduler |
-| Infrastructure | Retained legacy Compose topology/runbooks | WPF installer and native Windows services, durable adapters, approved host/TLS/secrets/recovery and real client installation (FIN-270) |
+| Infrastructure | Retained legacy Compose topology/runbooks; versioned native inventory and [Windows Service process hosting](../../backend/shared/hosting/README.md) | WPF installer, actual registered Windows Service acceptance, durable adapters, approved host/TLS/secrets/recovery and real client installation (FIN-270) |
 
 The internal admin app is not a consumer web application. The product still targets
 Android, iOS and Web, but repository directories alone do not establish delivery.

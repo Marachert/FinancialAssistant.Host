@@ -4,10 +4,13 @@ using FinancialAssistant.PublicApiGateway.Observability;
 using FinancialAssistant.PublicApiGateway.RateLimiting;
 using FinancialAssistant.PublicApiGateway.Routing;
 using FinancialAssistant.PublicApiGateway.Security;
+using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
 using Microsoft.Extensions.Options;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = FinancialAssistantHost.CreateBuilder(args, "gateway");
+
+builder.AddWindowsNativeGatewayProfile();
 
 builder.AddFinancialAssistantObservability();
 builder.Services

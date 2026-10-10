@@ -1,10 +1,11 @@
 using FinancialAssistant.Profile.Api.Endpoints;
 using FinancialAssistant.Profile.Application;
 using FinancialAssistant.Profile.Infrastructure;
+using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
 using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = FinancialAssistantHost.CreateBuilder(args, "profile");
 
 builder.AddFinancialAssistantObservability();
 builder.Services.AddEndpointsApiExplorer();
@@ -24,6 +25,8 @@ builder.Services.AddProfileInfrastructure();
 builder.Services.AddFinancialAssistantHealthChecks();
 
 var app = builder.Build();
+
+app.UseWindowsNativeRequestBoundary();
 
 app.UseFinancialAssistantCorrelation();
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))

@@ -4,10 +4,11 @@ using FinancialAssistant.FinancialScore.Application;
 using FinancialAssistant.FinancialScore.Contracts;
 using FinancialAssistant.FinancialScore.Domain;
 using FinancialAssistant.FinancialScore.Infrastructure;
+using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
 using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = FinancialAssistantHost.CreateBuilder(args, "financial-score");
 
 builder.AddFinancialAssistantObservability();
 builder.Services.AddEndpointsApiExplorer();
