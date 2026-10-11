@@ -93,6 +93,13 @@ FIN-277 encrypted objects; FIN-276 durable event delivery. FIN-286 qualifies the
 complete domain migration/retention/concurrency/crash/restart suite. Actual SCM,
 installer/package and three-Windows acceptance remain FIN-278/280/281/206.
 
+FIN-275 now retains authoritative Income/Expense and their authenticated APIs;
+FIN-287 owns separate Summary/Analytics adapters, FIN-288 Score/Recommendations/
+Notifications/preferences and FIN-289 append-only Audit storage. This explicit
+[original-scope decomposition](../../../docs/engineering/native-financial-persistence-scope.md)
+adds unfinished leaf units only; these adapters are not claimed implemented by
+the inventory, and FIN-286 must qualify all four siblings.
+
 ## Verification
 
 Unit tests cover identities, key separation, encryption binding/tampering,
