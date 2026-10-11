@@ -133,8 +133,13 @@ public sealed class NativeHostingTests
     [Fact]
     public async Task NativeConsoleBuild_UsesPublishedContentRootAndBoundedShutdown()
     {
-        var builder = FinancialAssistantHost.CreateBuilder(
-            ["--environment", "WindowsNative", "--Profile:Gateway:SharedSecret", SyntheticSecret], "profile");
+        var arguments = new List<string> { "--environment", "WindowsNative" };
+        foreach (var pair in Secrets(NativeServiceCatalog.Get("profile")))
+        {
+            arguments.Add("--" + pair.Key);
+            arguments.Add(pair.Value!);
+        }
+        var builder = FinancialAssistantHost.CreateBuilder(arguments.ToArray(), "profile");
         await using var app = builder.Build();
         Assert.Equal(Path.GetFullPath(AppContext.BaseDirectory).TrimEnd(Path.DirectorySeparatorChar),
             app.Environment.ContentRootPath.TrimEnd(Path.DirectorySeparatorChar));

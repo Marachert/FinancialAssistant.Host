@@ -30,8 +30,11 @@ Android, iOS and Web, but repository directories alone do not establish delivery
 FIN-282 adds [native Identity PostgreSQL adapters](../engineering/identity-native-persistence.md)
 for accounts, sessions, challenges/rate state and transactional outbox intents.
 Development adapters remain process-local. Native broker delivery/readiness is
-explicitly pending FIN-276; Profile/Category and other domain adapters remain their
-own follow-on tickets. This is not installed-host or first-user acceptance.
+explicitly pending FIN-276. FIN-283 adds [separate Profile/Category PostgreSQL
+adapters](../engineering/profile-category-native-persistence.md), exact preferences/
+catalog rehydration, owner-isolated updates and atomic Category/outbox intents.
+Other domain adapters remain their own follow-on tickets. This is not installed-host
+or first-user acceptance; developer/test adapters remain process-local.
 
 ## End-To-End User Scenario
 

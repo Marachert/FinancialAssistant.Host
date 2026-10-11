@@ -26,7 +26,10 @@ were fixed, evidenced and resolved only after green. Actual synthetic PostgreSQL
 initial/crash/restart, atomic state/outbox, owner isolation, provider-lock separation,
 hard-retention bounds and owned cleanup passed; no registered service or installed
 matrix is claimed. Native broker readiness remains pending FIN-276. Profile/Category
-FIN-283 is next after closure publication; remaining domain/event/object/installer
+FIN-283 now implements [native Profile/Category storage](../../docs/engineering/profile-category-native-persistence.md)
+under review: exact preferences/catalog rehydration, owner-isolated concurrency,
+atomic Category/outbox and deletion/replay markers. This does not add completed
+ticket credit before actual merge/Jira closure. Remaining domain/event/object/installer
 and three-Windows gates remain required. Current [ledger](../../docs/agent/POC_PROGRESS.md)
 is187/212 (88.2%), +0.5pp; FIN-2705/16 and FIN-38 P9 11/36 (30.6%), first-user Not Ready.
 

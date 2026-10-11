@@ -26,6 +26,15 @@ public sealed record UserCategoryCatalog
         Categories.FirstOrDefault(category =>
             string.Equals(category.Id, categoryId, StringComparison.Ordinal));
 
+    public static UserCategoryCatalog Rehydrate(string userId, IReadOnlyList<CategoryDefinition> categories)
+    {
+        if (string.IsNullOrWhiteSpace(userId) || userId.Length > 128 || userId != userId.Trim() || userId.Any(char.IsControl)
+            || categories is null || categories.Count is < 1 or > 100 || categories.Any(category => category is null)
+            || categories.Select(category => category.Id).Distinct(StringComparer.Ordinal).Count() != categories.Count)
+        { throw new ArgumentException("Stored category catalog is invalid."); }
+        return new UserCategoryCatalog(userId, Array.AsReadOnly(categories.ToArray()));
+    }
+
     public UserCategoryCatalog Replace(CategoryDefinition category)
     {
         ArgumentNullException.ThrowIfNull(category);

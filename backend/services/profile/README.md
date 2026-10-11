@@ -59,7 +59,13 @@ Users can update preferences through `PUT /users/me/preferences`. Currency codes
 
 ## Storage
 
-FIN-19 uses an in-memory `IProfileStore` adapter so local development and CI can exercise the service contract without production infrastructure. A future persistence increment must replace it with Profile-owned durable storage. Other services must not read Profile storage directly.
+Development and Testing retain the in-memory `IProfileStore`. FIN-283 selects
+`PostgresProfileStore` only in WindowsNative with explicit protected configuration.
+It preserves decimal preferences and timestamps, serializes owner-scoped updates,
+and retains deletion markers against stale registration replay. Other services
+must not read Profile storage directly. Native lifecycle readiness remains blocked
+by FIN-276; durable preferences alone do not establish installed POC acceptance.
+See [native persistence/configuration/verification](../../../docs/engineering/profile-category-native-persistence.md).
 
 ## Runtime and verification
 

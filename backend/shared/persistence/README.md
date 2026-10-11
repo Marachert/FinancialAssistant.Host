@@ -2,7 +2,8 @@
 
 FIN-274 supplies infrastructure, not completed native domain adapters. Npgsql
 8.0.9 targets the existing .NET 8 baseline. Owning adapters select this store through
-their explicit native profile; FIN-282 introduces Identity wiring. Developer in-memory wiring remains
+their explicit native profile; FIN-282 introduces Identity wiring and FIN-283
+introduces separate Profile/Category wiring. Developer in-memory wiring remains
 unchanged. Foundation tests are not installed-Windows or first-user acceptance.
 
 ## Ownership And Provisioning
@@ -64,6 +65,13 @@ owner/id/revision. `DeletePageItemAsync` constrains a cursor to the requested
 bucket/owner and checks its revision, with the same conflict/rollback policy as
 ID-based deletion. Cursors never authorize access to another owner or service.
 
+FIN-283 supplies reusable technical `NativePostgresSettings`, a strict versioned
+`OwnedRecordCodec`, safe HTTP storage-failure mapping and owned-storage readiness.
+Domain DTOs and transaction coordinators remain in their owning services. Native
+key decoding clears intermediate byte arrays after `RecordProtection` copies them;
+unknown JSON members/versions and missing required fields fail closed. Readiness
+does not imply event delivery while FIN-276 is pending.
+
 ## Migration, Recovery And Follow-On Work
 
 Version 1 creates owned encrypted records and a checksum/version ledger in one
@@ -103,6 +111,10 @@ crash-stops and restarts that database, then verifies persisted encrypted state.
 Cleanup checks executable/PID/start-time ownership before stopping the test process,
 removes the temporary password file and restores child test environment variables.
 It never registers SCM services or changes OS trust/registry/security policy.
+Select `-Scenario Identity` for the Identity adapter checks or
+`-Scenario ProfileCategory` for exact preferences/taxonomy, concurrent updates,
+atomic category/outbox rollback, erasure/replay, cross-role denial and crash/restart.
+Each scenario uses the same verified, fresh, owned fixture and cleanup guards.
 Unsigned-package execution blocked by Windows policy must remain Blocked; do not
 bypass it. Passing a local database test is not package redistribution qualification.
 

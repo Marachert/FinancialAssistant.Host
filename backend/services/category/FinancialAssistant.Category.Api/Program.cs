@@ -4,6 +4,7 @@ using FinancialAssistant.Category.Application;
 using FinancialAssistant.Category.Infrastructure;
 using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
+using FinancialAssistant.Shared.Persistence;
 using Microsoft.OpenApi.Models;
 
 var builder = FinancialAssistantHost.CreateBuilder(args, "category");
@@ -22,11 +23,13 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 builder.Services.AddCategoryApplication();
-builder.Services.AddCategoryInfrastructure();
+var windowsNative = builder.Environment.IsEnvironment(FinancialAssistantHost.NativeEnvironment);
+builder.Services.AddCategoryInfrastructure(builder.Configuration, windowsNative);
 builder.Services.AddSingleton<CategoryGatewayAuthenticator>();
 builder.Services.AddFinancialAssistantHealthChecks();
 
 var app = builder.Build();
+if (windowsNative) { app.UseOwnedStorageFailureBoundary(); }
 
 app.UseFinancialAssistantCorrelation();
 _ = app.Services.GetRequiredService<CategoryGatewayAuthenticator>();
@@ -46,8 +49,8 @@ app.MapGet("/category/info", (IHostEnvironment environment) => Results.Ok(new
     service = "financial-assistant-category-service",
     status = "running",
     environment = environment.EnvironmentName,
-    storageProvider = "in-memory",
-    eventPublisher = "in-memory"
+    storageProvider = windowsNative ? "PostgreSQL" : "in-memory",
+    eventPublisher = windowsNative ? "durable-outbox-pending-transport" : "in-memory"
 }));
 
 app.MapCategoryEndpoints();

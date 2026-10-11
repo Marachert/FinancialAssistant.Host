@@ -48,7 +48,14 @@ Search is deterministic: exact matches precede prefix matches, which precede sub
 
 ## Current adapters
 
-FIN-20 uses in-memory catalog storage and an in-memory event publisher so the domain and HTTP contracts are executable in local development and CI without production infrastructure. Future increments must replace these adapters with Category-owned persistence and RabbitMQ publication. Other services must not read Category storage directly.
+Development and Testing retain in-memory catalog/event adapters. FIN-283 selects
+separate Category-owned PostgreSQL storage in WindowsNative. Alias updates and
+encrypted outbox intents commit atomically; no-op/replayed aliases do not increment
+versions or emit duplicate intents. Pending messages are not marked published by
+the development publisher. Bounded cleanup removes only published messages after
+30 days. Native transport/inbox qualification and readiness remain pending FIN-276,
+not implemented RabbitMQ delivery. Other services must not read Category tables.
+See [native persistence/configuration/verification](../../../docs/engineering/profile-category-native-persistence.md).
 
 ## Verification
 

@@ -3,6 +3,7 @@ using FinancialAssistant.Profile.Application;
 using FinancialAssistant.Profile.Infrastructure;
 using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
+using FinancialAssistant.Shared.Persistence;
 using Microsoft.OpenApi.Models;
 
 var builder = FinancialAssistantHost.CreateBuilder(args, "profile");
@@ -21,12 +22,14 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 builder.Services.AddProfileApplication();
-builder.Services.AddProfileInfrastructure();
+var windowsNative = builder.Environment.IsEnvironment(FinancialAssistantHost.NativeEnvironment);
+builder.Services.AddProfileInfrastructure(builder.Configuration, windowsNative);
 builder.Services.AddFinancialAssistantHealthChecks();
 
 var app = builder.Build();
 
 app.UseWindowsNativeRequestBoundary();
+if (windowsNative) { app.UseOwnedStorageFailureBoundary(); }
 
 app.UseFinancialAssistantCorrelation();
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
@@ -44,7 +47,7 @@ app.MapGet("/profile/info", (IHostEnvironment environment) => Results.Ok(new
     service = "financial-assistant-profile-service",
     status = "running",
     environment = environment.EnvironmentName,
-    storageProvider = "in-memory"
+    storageProvider = windowsNative ? "PostgreSQL" : "in-memory"
 }));
 
 app.MapProfileEndpoints();
