@@ -1,11 +1,19 @@
 # POC Readiness Progress
 
-Last updated: 2026-10-10
+Last updated: 2026-10-11
 
 ## Current Snapshot
 
-POC backlog completion after FIN-274 persistence decomposition is **87.3%**:
-**185 of 212 canonical POC leaf tickets are Done**.
+POC backlog completion after FIN-274 foundation closure is **87.7%**:
+**186 of 212 canonical POC leaf tickets are Done**.
+
+The fresh 2026-10-11 04:36:46 UTC census contains 286 unique Jira issues and
+confirms 186/212 after actual PR274 merge and FIN-274 Done. This is +0.5 percentage
+points calculated before rounding (100/212 = 0.4717 pp), from 185/212 (87.3%).
+FIN-270 remains In Progress with 4/16 children Done; FIN-38 P9 is 10/36 (27.8%).
+FIN-274 delivers the shared PostgreSQL foundation, not completed native domain
+adapters or an installed POC. FIN-282 is the next ranked leaf after this closure
+ledger is merged and dependencies are read fresh. First-user testing is Not Ready.
 
 The fresh 2026-10-10 19:50 UTC census contains 286 unique Jira issues. FIN-274's
 original multi-owner persistence work is split into a PostgreSQL foundation and
@@ -13,9 +21,9 @@ five sibling leaves FIN-282 through FIN-286 under FIN-270. All original capabili
 remain required; no new product features or completed work were added/removed.
 The leaf-count denominator grows from 207 to 212: 185/207 (89.4%) becomes 185/212
 (87.3%), a -2.1 percentage-point scope/granularity adjustment calculated before rounding, not a
-delivery regression. FIN-270 is In Progress with 3/16 children Done. FIN-274 is
-the active foundation leaf; domain adapters and end-to-end persistence verification
-are separate unfinished siblings. First-user testing remains Not Ready.
+delivery regression. At decomposition FIN-270 had 3/16 children Done and FIN-274
+was the active foundation leaf; domain adapters and end-to-end persistence
+verification remain separate unfinished siblings. First-user testing is Not Ready.
 
 The historical FIN-273 closure census contains 281 unique Jira issues and confirms 185/207
 after verified FIN-273 merge and Jira Done. This is a +0.5 percentage-point change
@@ -46,6 +54,26 @@ for the readiness gates below.
 
 Latest canonical and Jira closure:
 
+- FIN-274 - Build service-owned PostgreSQL durable-state foundation
+- implementation PR: https://github.com/Marachert/FinancialAssistant.Host/pull/274
+- actual merge: https://github.com/Marachert/FinancialAssistant.Host/commit/dfa29529776ff91f7bb86720bccd45c2198d2b48
+- merged at: `2026-10-11T04:34:34Z`
+- final head: `c5ff972e4afeafb76b8a517e33a1d86b662a325f`
+- exact-head CI: Backend38111590088, Mobile38111590086, Admin38111590087; all five checks succeeded
+- previous/current completion: 185/212 (87.3%) to 186/212 (87.7%); +0.5 pp before rounding
+- two ACL/CHECK findings fixed, answered with commit/test/CI evidence and resolved
+  only after green; final channels clear and protected merge verified
+- local full baseline923/923 across24projects, zero skipped; final fixture-safety3/3
+  and persistence19/19; build/format/privacy1069/docs144links388 pass
+- actual isolated PostgreSQL18.6 role/schema/table/column ACL, default-grant/missing-role,
+  all seven CHECKs, weakened/unvalidated constraints, key loss/rotation, revision,
+  replay, atomic-prefix rollback, cancellation/concurrency and restart checks passed;
+  owned processes stopped, no SCM registration or package qualification inferred
+- domain behavior remains FIN-282/283/284/285/286 with FIN-275/276/277 prerequisites;
+  FIN-270 is In Progress with 4/16 children Done and first-user testing is Not Ready
+
+Previous canonical closure (historical pre-decomposition scope):
+
 - FIN-273 - Host backend services natively under Windows Service Control Manager
 - implementation PR: https://github.com/Marachert/FinancialAssistant.Host/pull/272
 - actual merge: https://github.com/Marachert/FinancialAssistant.Host/commit/ea766a9172d0b4ad49ce49c4721b6e7c3d676f52
@@ -56,8 +84,8 @@ Latest canonical and Jira closure:
 - current completion: 185 / 207, or 89.4%
 - change: +0.5 percentage points
 - at FIN-273 closure FIN-270 had 3/11 children Done; after decomposition it has
-  3/16 children Done and remains In Progress; FIN-274 is the active native child,
-  subject to fresh dependency-aware selection including FIN-207/208/209
+  3/16 children Done and remained In Progress; FIN-274 was next, subject to fresh
+  dependency-aware selection including FIN-207/208/209
 - one actionable Monitoring target review thread was fixed, answered and resolved
   after fixing-head CI;
   final merge channels were clear, with no branch-protection bypass
@@ -108,17 +136,21 @@ numerator and denominator unchanged.
 
 Current delivery (native scope revision supersedes previous scope totals):
 
+- FIN-274 is verified Done after guarded PR274 merge at
+  `dfa29529776ff91f7bb86720bccd45c2198d2b48`; per-service PostgreSQL infrastructure
+  is not completion of the separately tracked native domain adapters
 - FIN-273 is Done through guarded merged PR #272; FIN-271/272 remain historical
 - native hosting implementation is merged at `ea766a9172d0b4ad49ce49c4721b6e7c3d676f52`
   after exact-head Backend, Mobile and Admin Web CI and a clear review-channel audit
-- current canonical completion is 185/212 (87.3%) after five persistence leaves
-  decompose FIN-274; FIN-271/272/273 remain Done and earlier closure percentages
+- current canonical completion is 186/212 (87.7%) after FIN-274 foundation closure;
+  five persistence leaves retain the original domain requirements. FIN-271/272/273
+  remain Done and earlier closure percentages
   remain historical, with no lost delivery
 - FIN-31 P7 progress is 18/18 (100.0%); all 33 direct children and the epic are
   verified Done
 - FIN-36 P8 progress is 13/13 (100.0%); all children are Done and the epic remains
   In Progress for unverified integrated log/metric/trace, audit, admin and MCP evidence
-- FIN-38 P9 progress is 9/36 (25.0%) after decomposition; the epic remains In Progress
+- FIN-38 P9 progress is 10/36 (27.8%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
@@ -153,9 +185,9 @@ Current delivery (native scope revision supersedes previous scope totals):
   all five exact-head CI checks passed and every review channel was empty
 - current documentation includes the implementation map, preferred storage policy,
   source-to-Confluence maintenance map and explicit financial authorization limits
-- FIN-270 is the priority parent; FIN-271/272/273 concept, inventory and hosting
-  implementation are Done, without installed-runtime acceptance
-- next ranked native implementation leaf is FIN-274 after FIN-273 closure
+- FIN-270 is the priority parent; FIN-271/272/273/274 concept, inventory, hosting
+  and PostgreSQL foundation are Done, without installed-runtime acceptance
+- next ranked native implementation leaf is FIN-282 after FIN-274 closure
   publication; re-read its hierarchy and dependencies before branching
 - FIN-274 is the PostgreSQL foundation; FIN-282 Identity, FIN-283 Profile/Category,
   FIN-284 Intake, FIN-285 Receipt/OCR/AI metadata and FIN-286 persistence integration
@@ -176,8 +208,8 @@ Current delivery (native scope revision supersedes previous scope totals):
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 20 | 20 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 13 | 13 | 100.0% |
-| FIN-38 | P9 Testing, Windows deployment, and release readiness | 9 | 36 | 25.0% |
-| **Total** | **Canonical POC leaf scope** | **185** | **212** | **87.3%** |
+| FIN-38 | P9 Testing, Windows deployment, and release readiness | 10 | 36 | 27.8% |
+| **Total** | **Canonical POC leaf scope** | **186** | **212** | **87.7%** |
 
 ## First-User-Test Gates
 
@@ -365,3 +397,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-10-10 | FIN-272 | PR 270 verified merged as 52ca12d5269f8ebe6bf20c958b553f540cbcc151 and Jira Done; 184/207 after live census; inventory/inspection only under owner-approved phase split, not package qualification or installed acceptance | 88.9% | +0.5 pp |
 | 2026-10-10 | FIN-273 | PR 272 verified merged as ea766a9172d0b4ad49ce49c4721b6e7c3d676f52 and Jira Done; 185/207 after live census; hosting code/free verification under owner-approved phase split, not SCM installation or first-user acceptance | 89.4% | +0.5 pp |
 | 2026-10-10 | FIN-274 decomposition | Original persistence scope retained in foundation plus FIN-282–286; five additional leaf units, no completed work lost/new product features; denominator 207 to 212, Done remains 185 | 87.3% | -2.1 pp scope adjustment |
+| 2026-10-11 | FIN-274 | PR274 verified merged as dfa29529776ff91f7bb86720bccd45c2198d2b48 and Jira Done; 186/212 after fresh census; service-owned PostgreSQL foundation only, domain adapters and installed acceptance remain mandatory | 87.7% | +0.5 pp |
