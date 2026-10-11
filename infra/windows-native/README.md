@@ -328,8 +328,10 @@ qualification; the exact archive digest has been verified locally.
    inventory merge/closure is not that release approval.
 
 No additional spending, package/tool installation or machine changes are authorized
-by this document. Current POC completion is 186/212 (87.7%) after FIN-274's
-foundation closure; historical FIN-273 closure is 185/207 (89.4%). The five-leaf
+by this document. Current POC completion is 187/212 (88.2%) after FIN-282's
+native Identity closure, +0.5 percentage points before rounding; FIN-270 is5/16
+children Done and FIN-38 P9 is11/36 (30.6%). Historical FIN-274 foundation closure
+is186/212 (87.7%); historical FIN-273 closure is185/207 (89.4%). The five-leaf
 persistence decomposition preserved the original domain requirements.
 No delivered work was lost. First-user testing
 is Not Ready. See [the progress ledger](../../docs/agent/POC_PROGRESS.md).
