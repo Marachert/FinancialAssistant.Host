@@ -12,7 +12,7 @@ public sealed class OwnedPostgresStore : IAsyncDisposable
     private readonly RecordProtection protection;
     internal static string MigrationSql(string schema) => $"""
         CREATE TABLE {schema}.schema_versions(version integer PRIMARY KEY, checksum text NOT NULL,
-            index_marker bytea NOT NULL CHECK(octet_length(index_marker)=32));
+            index_marker bytea NOT NULL CHECK(octet_length(index_marker)=32), constraint_signature text NOT NULL);
         CREATE TABLE {schema}.encryption_keys(key_id text PRIMARY KEY, marker bytea NOT NULL CHECK(octet_length(marker)=32));
         CREATE TABLE {schema}.records(
             bucket text NOT NULL CHECK(length(bucket) BETWEEN 1 AND 64),
@@ -57,12 +57,14 @@ public sealed class OwnedPostgresStore : IAsyncDisposable
             {
                 await using var create = new NpgsqlCommand(MigrationSql(schema), connection);
                 await create.ExecuteNonQueryAsync(token);
-                await using var version = new NpgsqlCommand($"INSERT INTO {schema}.schema_versions VALUES (1,$1,$2)", connection);
+                await using var version = new NpgsqlCommand($"INSERT INTO {schema}.schema_versions VALUES (1,$1,$2,$3)", connection);
                 version.Parameters.AddWithValue(Checksum(schema));
                 version.Parameters.AddWithValue(protection.Index(options.Identity.ServiceId, "index-key-marker", "v1"));
+                version.Parameters.AddWithValue(await ConstraintSignatureAsync(connection, options.Identity, token));
                 await version.ExecuteNonQueryAsync(token);
             }
 
+            await ValidateAccessListsAsync(connection, options.Identity, token);
             await ValidateVersionAsync(connection, options.Identity, true, token);
             await ValidateKeysAsync(connection, options.Identity, protection, true, token);
             await transaction.CommitAsync(token);
@@ -71,6 +73,19 @@ public sealed class OwnedPostgresStore : IAsyncDisposable
         {
             throw new StorageUnavailableException();
         }
+    }
+
+    private static async Task<string> ConstraintSignatureAsync(NpgsqlConnection connection, StorageIdentity identity, CancellationToken token)
+    {
+        await using var command = new NpgsqlCommand("""
+            SELECT string_agg(c.relname || '|' || k.conname || '|' || k.contype::text || '|' || k.convalidated::text || '|' ||
+              pg_get_constraintdef(k.oid,false),E'\n' ORDER BY c.relname,k.conname)
+            FROM pg_constraint k JOIN pg_class c ON c.oid=k.conrelid JOIN pg_namespace n ON n.oid=c.relnamespace
+            WHERE n.nspname=$1 AND c.relname IN('records','schema_versions','encryption_keys')
+            """, connection);
+        command.Parameters.AddWithValue(identity.Schema);
+        if (await command.ExecuteScalarAsync(token) is not string signature) { throw new StorageUnavailableException(); }
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(signature)));
     }
 
     internal static async Task ValidateOwnershipAsync(NpgsqlConnection connection, StorageIdentity identity,
@@ -97,6 +112,38 @@ public sealed class OwnedPostgresStore : IAsyncDisposable
         {
             throw new StorageUnavailableException();
         }
+        await reader.DisposeAsync();
+        await ValidateAccessListsAsync(connection, identity, token);
+    }
+
+    private static async Task ValidateAccessListsAsync(NpgsqlConnection connection, StorageIdentity identity, CancellationToken token)
+    {
+        const string sql = """
+            WITH principals AS (SELECT (SELECT oid FROM pg_roles WHERE rolname=$2) AS owner_id,
+              (SELECT oid FROM pg_roles WHERE rolname=$3) AS runtime_id),
+            owned_tables AS (SELECT c.* FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+              WHERE n.nspname=$1 AND c.relname IN('records','schema_versions','encryption_keys')),
+            table_grants AS (
+              SELECT c.relname,c.relowner,a.* FROM owned_tables c
+                CROSS JOIN LATERAL aclexplode(COALESCE(c.relacl,acldefault('r',c.relowner))) a
+              UNION ALL
+              SELECT c.relname,c.relowner,a.* FROM owned_tables c JOIN pg_attribute col ON col.attrelid=c.oid
+                CROSS JOIN LATERAL aclexplode(col.attacl) a WHERE col.attnum>0 AND NOT col.attisdropped)
+            SELECT p.owner_id IS NULL OR p.runtime_id IS NULL OR EXISTS(SELECT 1 FROM pg_namespace n CROSS JOIN principals p
+              CROSS JOIN LATERAL aclexplode(COALESCE(n.nspacl,acldefault('n',n.nspowner))) a
+              WHERE n.nspname=$1 AND (a.grantee NOT IN(p.owner_id,p.runtime_id) OR a.grantor<>p.owner_id
+                OR (a.grantee=p.runtime_id AND (a.privilege_type<>'USAGE' OR a.is_grantable))))
+              OR EXISTS(SELECT 1 FROM table_grants a CROSS JOIN principals p
+                WHERE a.grantee NOT IN(p.owner_id,p.runtime_id) OR a.grantor<>p.owner_id
+                  OR (a.grantee=p.runtime_id AND (a.is_grantable OR
+                    (a.relname='records' AND a.privilege_type NOT IN('SELECT','INSERT','UPDATE','DELETE')) OR
+                    (a.relname<>'records' AND a.privilege_type<>'SELECT')))) FROM principals p
+            """;
+        await using var command = new NpgsqlCommand(sql, connection);
+        command.Parameters.AddWithValue(identity.Schema);
+        command.Parameters.AddWithValue(identity.MigrationRole);
+        command.Parameters.AddWithValue(identity.RuntimeRole);
+        if (await command.ExecuteScalarAsync(token) is not false) { throw new StorageUnavailableException(); }
     }
 
     private static async Task ValidateVersionAsync(NpgsqlConnection connection, StorageIdentity identity, bool migration, CancellationToken token)
@@ -125,7 +172,7 @@ public sealed class OwnedPostgresStore : IAsyncDisposable
               (SELECT count(*) FROM pg_constraint WHERE contype='p' AND convalidated AND
                 ((conrelid=to_regclass($3) AND conkey=ARRAY[1,2,3]::smallint[]) OR
                  (conrelid=to_regclass($4) AND conkey=ARRAY[1]::smallint[]) OR
-                 (conrelid=to_regclass($5) AND conkey=ARRAY[1]::smallint[])))
+                 (conrelid=to_regclass($5) AND conkey=ARRAY[1]::smallint[]))), constraint_signature
             FROM {identity.Schema}.schema_versions
             """, connection);
         command.Parameters.AddWithValue(identity.Schema);
@@ -134,15 +181,19 @@ public sealed class OwnedPostgresStore : IAsyncDisposable
         command.Parameters.AddWithValue(identity.Schema + ".schema_versions");
         command.Parameters.AddWithValue(identity.Schema + ".encryption_keys");
         await using var reader = await command.ExecuteReaderAsync(token);
-        if (!await reader.ReadAsync(token) || reader.GetInt32(0) != 1 || reader.GetString(1) != Checksum(identity.Schema) ||
+        if (!await reader.ReadAsync(token)) { throw new StorageUnavailableException(); }
+        var signature = reader.IsDBNull(11) ? "" : reader.GetString(11);
+        if (reader.GetInt32(0) != 1 || reader.GetString(1) != Checksum(identity.Schema) ||
             reader.GetInt64(2) != 3 || (!migration && (!reader.GetBoolean(3) || reader.GetBoolean(4) || reader.GetBoolean(5))) ||
             reader.IsDBNull(6) || reader.GetString(6) != "bucket:text:true|owner_hash:bytea:true|record_hash:bytea:true|revision:bigint:true|payload:bytea:true" ||
-            reader.IsDBNull(7) || reader.GetString(7) != "version:integer:true|checksum:text:true|index_marker:bytea:true" ||
+            reader.IsDBNull(7) || reader.GetString(7) != "version:integer:true|checksum:text:true|index_marker:bytea:true|constraint_signature:text:true" ||
             reader.IsDBNull(8) || reader.GetString(8) != "key_id:text:true|marker:bytea:true" || (!migration && reader.GetBoolean(9)) || reader.GetInt64(10) != 3 ||
             await reader.ReadAsync(token))
         {
             throw new StorageUnavailableException();
         }
+        await reader.DisposeAsync();
+        if (signature != await ConstraintSignatureAsync(connection, identity, token)) { throw new StorageUnavailableException(); }
     }
 
     private static async Task ValidateKeysAsync(NpgsqlConnection connection, StorageIdentity identity,

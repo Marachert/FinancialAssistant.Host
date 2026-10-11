@@ -233,6 +233,70 @@ try
     await Sql(admin, $"ALTER ROLE {identity.RuntimeRole} NOSUPERUSER");
     Check(await store.IsReadyAsync());
 
+    stage = "foreign/PUBLIC/schema/column grants and grant options fail closed";
+    var category = new StorageIdentity("category");
+    var categoryOptions = new OwnedPostgresOptions(category, database, port, password);
+    await Sql(admin, $"CREATE ROLE {category.MigrationRole} LOGIN PASSWORD '{password}'; CREATE ROLE {category.RuntimeRole} LOGIN PASSWORD '{password}'; GRANT CONNECT ON DATABASE {database} TO {category.MigrationRole},{category.RuntimeRole}; CREATE SCHEMA {category.Schema} AUTHORIZATION {category.MigrationRole}; REVOKE ALL ON SCHEMA {category.Schema} FROM PUBLIC; GRANT USAGE ON SCHEMA {category.Schema} TO {category.RuntimeRole};");
+    await Sql(admin, $"ALTER ROLE {category.RuntimeRole} RENAME TO fa_test_missing_category");
+    try { await OwnedPostgresStore.MigrateAsync(categoryOptions, protection); throw new FixtureFailure(); }
+    catch (StorageUnavailableException) { }
+    await Sql(admin, $"ALTER ROLE fa_test_missing_category RENAME TO {category.RuntimeRole}");
+    await Sql(admin, $"ALTER DEFAULT PRIVILEGES FOR ROLE {category.MigrationRole} IN SCHEMA {category.Schema} GRANT SELECT ON TABLES TO PUBLIC");
+    try { await OwnedPostgresStore.MigrateAsync(categoryOptions, protection); throw new FixtureFailure(); }
+    catch (StorageUnavailableException) { }
+    await using (var absent = new NpgsqlCommand("SELECT to_regclass($1)::text", admin))
+    {
+        absent.Parameters.AddWithValue(category.Schema + ".records");
+        Check(await absent.ExecuteScalarAsync() is not string);
+    }
+    await Sql(admin, $"ALTER DEFAULT PRIVILEGES FOR ROLE {category.MigrationRole} IN SCHEMA {category.Schema} REVOKE SELECT ON TABLES FROM PUBLIC");
+    await OwnedPostgresStore.MigrateAsync(categoryOptions, protection);
+    foreach (var grant in new[]
+    {
+        ($"GRANT SELECT ON {identity.Schema}.records TO PUBLIC", $"REVOKE SELECT ON {identity.Schema}.records FROM PUBLIC"),
+        ($"GRANT UPDATE ON {identity.Schema}.records TO {profile.RuntimeRole}", $"REVOKE UPDATE ON {identity.Schema}.records FROM {profile.RuntimeRole}"),
+        ($"GRANT SELECT(payload) ON {identity.Schema}.records TO {profile.RuntimeRole}", $"REVOKE SELECT(payload) ON {identity.Schema}.records FROM {profile.RuntimeRole}"),
+        ($"GRANT USAGE ON SCHEMA {identity.Schema} TO {profile.RuntimeRole}", $"REVOKE USAGE ON SCHEMA {identity.Schema} FROM {profile.RuntimeRole}"),
+        ($"GRANT SELECT ON {identity.Schema}.records TO {identity.RuntimeRole} WITH GRANT OPTION", $"REVOKE GRANT OPTION FOR SELECT ON {identity.Schema}.records FROM {identity.RuntimeRole}"),
+        ($"GRANT SELECT ON {identity.Schema}.schema_versions TO PUBLIC", $"REVOKE SELECT ON {identity.Schema}.schema_versions FROM PUBLIC"),
+        ($"GRANT SELECT ON {identity.Schema}.encryption_keys TO PUBLIC", $"REVOKE SELECT ON {identity.Schema}.encryption_keys FROM PUBLIC")
+    })
+    {
+        await Sql(admin, grant.Item1);
+        Check(!await store.IsReadyAsync());
+        await Sql(admin, grant.Item2);
+        Check(await store.IsReadyAsync());
+    }
+    stage = "missing or weakened CHECK constraints fail closed";
+    var checks = new List<(string Table, string Name, string Definition)>();
+    await using (var constraints = new NpgsqlCommand($"SELECT c.relname,k.conname,pg_get_constraintdef(k.oid,false) FROM pg_constraint k JOIN pg_class c ON c.oid=k.conrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=$1 AND k.contype='c' ORDER BY c.relname,k.conname", admin))
+    {
+        constraints.Parameters.AddWithValue(identity.Schema);
+        await using var reader = await constraints.ExecuteReaderAsync();
+        while (await reader.ReadAsync()) { checks.Add((reader.GetString(0), reader.GetString(1), reader.GetString(2))); }
+    }
+    Check(checks.Count == 7);
+    foreach (var constraint in checks)
+    {
+        Check(constraint.Table is "records" or "schema_versions" or "encryption_keys" && constraint.Name.All(character => char.IsAsciiLetterOrDigit(character) || character == '_'));
+        await Sql(admin, $"ALTER TABLE {identity.Schema}.{constraint.Table} DROP CONSTRAINT {constraint.Name}");
+        Check(!await store.IsReadyAsync());
+        await Sql(admin, $"ALTER TABLE {identity.Schema}.{constraint.Table} ADD CONSTRAINT {constraint.Name} {constraint.Definition}");
+        Check(await store.IsReadyAsync());
+    }
+    await Sql(admin, $"ALTER TABLE {identity.Schema}.records DROP CONSTRAINT records_revision_check");
+    Check(!await store.IsReadyAsync());
+    await Sql(admin, $"ALTER TABLE {identity.Schema}.records ADD CONSTRAINT records_revision_check CHECK(revision>=-1)");
+    Check(!await store.IsReadyAsync());
+    try { await OwnedPostgresStore.MigrateAsync(identityOptions, protection); throw new FixtureFailure(); }
+    catch (StorageUnavailableException) { }
+    await Sql(admin, $"ALTER TABLE {identity.Schema}.records DROP CONSTRAINT records_revision_check; ALTER TABLE {identity.Schema}.records ADD CONSTRAINT records_revision_check CHECK(revision>=0)");
+    Check(await store.IsReadyAsync());
+    await Sql(admin, $"ALTER TABLE {identity.Schema}.encryption_keys DROP CONSTRAINT encryption_keys_marker_check; ALTER TABLE {identity.Schema}.encryption_keys ADD CONSTRAINT encryption_keys_marker_check CHECK(octet_length(marker)=32) NOT VALID");
+    Check(!await store.IsReadyAsync());
+    await Sql(admin, $"ALTER TABLE {identity.Schema}.encryption_keys VALIDATE CONSTRAINT encryption_keys_marker_check");
+    Check(await store.IsReadyAsync());
+
     stage = "schema drift fails readiness";
     await Sql(admin, $"ALTER TABLE {identity.Schema}.records RENAME COLUMN payload TO wrong_payload");
     Check(!await store.IsReadyAsync());
@@ -302,7 +366,7 @@ try
     // Only the synthetic test removes the unused v2 marker; production key removal needs its own migration.
     await Sql(admin, $"DELETE FROM {identity.Schema}.encryption_keys WHERE key_id='v2'");
     Check(await store.IsReadyAsync());
-    Console.WriteLine("PASS initial PostgreSQL: migration, role isolation, encryption/key manifest/rotation, replay, atomic commit/rollback, revision race, deletion, cancellation, schema drift, lock timeout and negative readiness.");
+    Console.WriteLine("PASS initial PostgreSQL: migration, complete ACL/constraint validation, role isolation, encryption/key manifest/rotation, replay, atomic commit/rollback, revision race, deletion, cancellation, schema drift, lock timeout and negative readiness.");
     return 0;
 }
 catch

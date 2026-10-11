@@ -24,6 +24,9 @@ superuser, database/role creation, replication, bypass-RLS or role membership.
 Runtime cannot CREATE or inherit/SET ROLE to the owner. Checks reject foreign
 application-schema access, wrong identities, owners or schema versions. Grants
 and ownership are revalidated on every transaction/readiness connection.
+Schema, table and column ACLs must contain only the expected migration/runtime
+principals and owner grantor; PUBLIC/foreign grants and runtime grant options are
+rejected even when the current connection still has the expected permissions.
 Provisioning and destructive production migrations are not performed here.
 
 ## Record And Transaction Contract
@@ -58,8 +61,13 @@ commit-outcome uncertainty requires idempotent read/reconciliation by the caller
 ## Migration, Recovery And Follow-On Work
 
 Version 1 creates owned encrypted records and a checksum/version ledger in one
-transaction. Repeated application is idempotent, mismatched/newer versions fail
-closed, and no down/destructive migration is provided. Future migrations must be
+transaction. Repeated application is idempotent. A PostgreSQL catalog-derived
+signature of all owned constraints, including
+definitions and validation state, is recorded only at initial creation and checked
+on readiness/migration; dropped, weakened, extra or NOT VALID checks cannot be
+silently re-baselined by rerunning migration. PostgreSQL-major upgrades require
+explicit compatible schema-signature verification under FIN-286/280.
+Mismatched/newer versions fail closed, and no down/destructive migration is provided. Future migrations must be
 additive, ordered, reviewed and covered by compatible-upgrade tests. Rollback
 means retain data and run the compatible previous version, not drop tables.
 Back up database plus separately protected encryption/index keys consistently;
