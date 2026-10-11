@@ -112,9 +112,25 @@ public sealed record CategoryDefinition
             Kind,
             SortOrder,
             normalizedAliases,
-            Version + 1,
+            checked(Version + 1),
             CreatedAtUtc,
             updatedAtUtc);
+    }
+
+    public static CategoryDefinition Rehydrate(string id, string key, string displayName, string localizationKey,
+        string iconKey, string colorKey, string kind, int sortOrder, IReadOnlyList<string> aliases, int version,
+        DateTimeOffset createdAtUtc, DateTimeOffset updatedAtUtc)
+    {
+        var values = new[] { id, key, displayName, localizationKey, iconKey, colorKey, kind };
+        if (values.Any(value => value != NormalizeRequired(value, "snapshot", MaximumSearchLength))
+            || kind is not CategoryKinds.Income and not CategoryKinds.Expense || sortOrder < 0 || version < 1
+            || updatedAtUtc < createdAtUtc || aliases is null)
+        { throw new ArgumentException("Stored category is invalid."); }
+        var validatedAliases = NormalizeAliases(aliases);
+        if (!aliases.SequenceEqual(validatedAliases, StringComparer.Ordinal))
+        { throw new ArgumentException("Stored aliases are not canonical."); }
+        return new CategoryDefinition(id, key, displayName, localizationKey, iconKey, colorKey, kind,
+            sortOrder, validatedAliases, version, createdAtUtc, updatedAtUtc);
     }
 
     public int GetMatchScore(string normalizedQuery)

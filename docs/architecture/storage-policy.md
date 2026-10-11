@@ -34,6 +34,14 @@ in-memory development adapters. The local Compose assets still include
 Elasticsearch and service-owned index templates. Inspect each service's
 dependency injection and the selected environment before asserting durability.
 
+FIN-282 selects native Identity adapters; FIN-283 selects separate native
+[Profile/Category adapters](../engineering/profile-category-native-persistence.md).
+Their native profiles require protected stable keys/owner credentials with no
+in-memory fallback. Category state and outbox intents commit atomically, but live
+RabbitMQ delivery/inbox qualification and native readiness remain FIN-276. Active
+preferences/catalogs are retained until authorized deletion; minimal replay
+markers and pending intents are retained until a qualified lifecycle horizon.
+
 Elasticsearch remains appropriate for controlled search, read projections,
 operational indices and explicitly retained legacy adapter contracts. It is not
 the universal authoritative financial database. Existing index naming, ownership,

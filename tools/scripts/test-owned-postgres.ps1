@@ -1,5 +1,5 @@
 param([Parameter(Mandatory)][string] $ArchivePath,
-    [ValidateSet('Foundation','Identity')][string] $Scenario = 'Foundation')
+    [ValidateSet('Foundation','Identity','ProfileCategory')][string] $Scenario = 'Foundation')
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if (-not $IsWindows) { throw 'This fixture uses the Windows PostgreSQL archive, not Docker/WSL.' }
@@ -72,6 +72,8 @@ try {
     $env:FA_PERSISTENCE_TEST_MODE = 'initial'
     $project = Join-Path $repo $(if ($Scenario -eq 'Identity') {
         'backend/services/identity/FinancialAssistant.Identity.Persistence.Integration/FinancialAssistant.Identity.Persistence.Integration.csproj'
+    } elseif ($Scenario -eq 'ProfileCategory') {
+        'backend/services/profile/FinancialAssistant.ProfileCategory.Persistence.Integration/FinancialAssistant.ProfileCategory.Persistence.Integration.csproj'
     } else {
         'backend/shared/persistence/FinancialAssistant.Shared.Persistence.Integration/FinancialAssistant.Shared.Persistence.Integration.csproj'
     })

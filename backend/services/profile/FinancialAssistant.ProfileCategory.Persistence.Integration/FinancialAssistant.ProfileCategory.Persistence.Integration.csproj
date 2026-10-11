@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../FinancialAssistant.Profile.Infrastructure/FinancialAssistant.Profile.Infrastructure.csproj" />
+    <ProjectReference Include="../../category/FinancialAssistant.Category.Infrastructure/FinancialAssistant.Category.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

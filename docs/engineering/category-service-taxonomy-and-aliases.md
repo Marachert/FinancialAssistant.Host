@@ -40,7 +40,14 @@ An actual alias change publishes `category.updated.v1` with user ID, category ID
 
 ## Ownership and persistence
 
-The current in-memory store and publisher are development adapters. Production adapters must be environment-configured, owned by Category Service, and preserve atomic version updates. RabbitMQ publication must use an outbox or equivalent reliable handoff when durable persistence is introduced.
+Development and Testing retain in-memory store/publisher adapters. FIN-283 selects
+explicit Category-owned PostgreSQL storage in WindowsNative. Catalog values and
+timestamps rehydrate exactly; normalized alias no-op preserves versions, while
+actual changes atomically persist state and an encrypted outbox intent. See the
+[native contract](profile-category-native-persistence.md) for configuration,
+retention, deletion/replay markers and actual synthetic PostgreSQL tests. Native
+RabbitMQ transport/inbox and readiness remain pending FIN-276; no fake publication
+or installed release acceptance is claimed.
 
 No service may read Category tables or search indices directly. Consumers use Category API contracts or versioned events.
 

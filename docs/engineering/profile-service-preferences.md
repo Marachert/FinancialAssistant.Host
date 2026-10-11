@@ -71,7 +71,13 @@ Notification fields are preference placeholders only; delivery is owned by a lat
 
 ## Storage and privacy
 
-The FIN-19 runtime adapter is in-memory for local development and CI. Production persistence is deferred to a later storage increment and must be Profile-owned. Other services and the API Gateway must use Profile APIs/events rather than querying Profile storage directly.
+Development and Testing retain the FIN-19 in-memory adapter. FIN-283 introduces
+explicit WindowsNative Profile-owned PostgreSQL storage with exact decimal/
+preference/timestamp rehydration, atomic owner updates and replay-safe deletion
+markers. See the [native contract](profile-category-native-persistence.md) for
+protected configuration, retention and synthetic crash/restart verification.
+Other services and the gateway use Profile APIs/events, never its tables. Native
+lifecycle readiness remains pending FIN-276; installed acceptance is not claimed.
 
 Profile logs and evidence must remain privacy-safe. Do not log raw user identifiers alongside preference payloads, and do not store financial transactions, receipts, OCR text, or LLM prompts/responses in Profile.
 

@@ -7,6 +7,7 @@ namespace FinancialAssistant.Shared.Persistence;
 
 public sealed class OwnedPostgresStore : IAsyncDisposable
 {
+    public string ServiceId => identity.ServiceId;
     private readonly StorageIdentity identity;
     private readonly NpgsqlDataSource source;
     private readonly RecordProtection protection;

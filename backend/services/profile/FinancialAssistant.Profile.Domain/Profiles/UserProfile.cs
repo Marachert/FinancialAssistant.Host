@@ -38,4 +38,13 @@ public sealed record UserProfile
 
     public UserProfile UpdatePreferences(UserProfilePreferences preferences, DateTimeOffset updatedAtUtc) =>
         new(UserId, preferences, CreatedAtUtc, updatedAtUtc);
+
+    public static UserProfile Rehydrate(string userId, UserProfilePreferences preferences,
+        DateTimeOffset createdAtUtc, DateTimeOffset updatedAtUtc)
+    {
+        if (string.IsNullOrWhiteSpace(userId) || userId.Length > 128 || userId != userId.Trim()
+            || userId.Any(char.IsControl) || preferences is null || updatedAtUtc < createdAtUtc)
+        { throw new ArgumentException("Stored profile is invalid."); }
+        return new UserProfile(userId, preferences, createdAtUtc, updatedAtUtc);
+    }
 }
