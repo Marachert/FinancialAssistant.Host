@@ -17,6 +17,19 @@ The manifest's `sourceCommit` retains the original package-inventory evidence;
 updated persistence ownership is tracked in the scoped implementation PR, not a
 claim of signed artifacts, installed adapters or release qualification.
 
+FIN-282's [native Identity contract](../../docs/engineering/identity-native-persistence.md)
+is merged through [PR276](https://github.com/Marachert/FinancialAssistant.Host/pull/276)
+as `d8530fb8a6dde87559fc07fc52dd89352e0afd9e` at `2026-10-11T12:14:21Z` and Jira Done.
+Final head `e12c388f842942fa8951c53c0e2ca2370e0df559` passed all five checks
+(Backend38137763784, Mobile38137763793, Admin38137763841); both valid review findings
+were fixed, evidenced and resolved only after green. Actual synthetic PostgreSQL
+initial/crash/restart, atomic state/outbox, owner isolation, provider-lock separation,
+hard-retention bounds and owned cleanup passed; no registered service or installed
+matrix is claimed. Native broker readiness remains pending FIN-276. Profile/Category
+FIN-283 is next after closure publication; remaining domain/event/object/installer
+and three-Windows gates remain required. Current [ledger](../../docs/agent/POC_PROGRESS.md)
+is187/212 (88.2%), +0.5pp; FIN-2705/16 and FIN-38 P9 11/36 (30.6%), first-user Not Ready.
+
 ## Read-Only Verification
 
 [component-manifest.json](component-manifest.json) inventories all 15 production
