@@ -11,6 +11,7 @@ docs/engineering/identity-api-contracts.md
 docs/engineering/identity-email-registration-login.md
 docs/engineering/identity-session-lifecycle.md
 docs/engineering/identity-event-publishing.md
+docs/engineering/identity-native-persistence.md
 docs/engineering/google-sign-in-backend-validation.md
 docs/engineering/apple-sign-in-backend-validation.md
 docs/engineering/phone-verification-authentication.md
@@ -96,7 +97,11 @@ All events use the shared versioned envelope with event ID, event type, occurren
 
 Application code enqueues event intents through `IIdentityEventPublisher`. `IdentityOutboxDispatcher` publishes pending messages through `IIdentityEventTransport`. RabbitMQ mode uses the durable `fa.events` topic exchange, persistent mandatory messages, and publisher confirmations.
 
-The active outbox is development-only and process-local. It retries transport failures but is not crash durable and is not shared between replicas. Production Elasticsearch outbox persistence must close the state-to-event-intent gap explicitly.
+Development uses a process-local outbox. WindowsNative selects an encrypted
+PostgreSQL outbox and commits identity state and event intents together. Native
+transport is explicitly `DurableOutboxPendingTransport`: no in-memory dispatcher
+can mark durable intents published. Reliable RabbitMQ wiring remains FIN-276,
+and native readiness remains unhealthy until that gate is implemented.
 
 ## Operational logging
 
@@ -140,7 +145,14 @@ IIdentityEventOutbox
 IIdentityEventTransport
 ```
 
-The current in-memory adapters support local execution and CI. They are not production persistence: state is lost on restart and is not shared between replicas. Production Elasticsearch adapters must preserve duplicate, provider-subject uniqueness, account-link, challenge reservation, attempt increment, one-time completion, rotation, replay, revocation, and outbox semantics.
+In-memory adapters remain the developer/CI defaults. WindowsNative requires
+explicit PostgreSQL/NativePostgres configuration and stable protected keys; it
+never falls back to process-local state. FIN-282 supplies account/credential/link,
+session-family, phone workflow/rate and outbox adapters using the service-owned
+FIN-274 foundation. See the [native persistence contract](../../../docs/engineering/identity-native-persistence.md)
+for atomicity, migration, bounded retention/deletion, test commands and remaining
+installer/broker/installed-host acceptance. Historical Elasticsearch document
+contracts do not define the native authoritative store.
 
 ## Configuration
 

@@ -12,6 +12,7 @@ Developer, architecture, security, API, event, and delivery documentation worksp
 - [MVP end-to-end user scenarios](engineering/mvp-e2e-scenarios.md)
 - [Current implementation versus product target](architecture/current-implementation.md)
 - [Service-owned storage policy](architecture/storage-policy.md)
+- [Native identity persistence and verification](engineering/identity-native-persistence.md)
 - [Confluence/GitHub maintenance map](agent/DOCUMENTATION_MAINTENANCE.md)
 - [September 2026 documentation audit](reviews/documentation-audit-20260910.md)
 

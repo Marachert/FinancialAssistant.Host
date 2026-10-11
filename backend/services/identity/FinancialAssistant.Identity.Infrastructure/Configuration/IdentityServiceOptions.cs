@@ -19,6 +19,17 @@ public sealed class IdentityStorageOptions
     public int SchemaVersion { get; set; } = 1;
     public int InitialGeneration { get; set; } = 1;
     public IdentityCleanupOptions Cleanup { get; set; } = new();
+    public IdentityPostgresOptions Postgres { get; set; } = new();
+}
+
+public sealed class IdentityPostgresOptions
+{
+    public string Database { get; set; } = string.Empty;
+    public int Port { get; set; }
+    public string Password { get; set; } = string.Empty;
+    public string IndexKey { get; set; } = string.Empty;
+    public string ActiveEncryptionKeyId { get; set; } = string.Empty;
+    public Dictionary<string, string> EncryptionKeys { get; set; } = new(StringComparer.Ordinal);
 }
 
 public sealed class IdentityCleanupOptions

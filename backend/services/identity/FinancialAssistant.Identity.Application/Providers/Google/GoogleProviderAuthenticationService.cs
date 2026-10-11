@@ -17,6 +17,7 @@ public sealed partial class GoogleProviderAuthenticationService : IGoogleProvide
     private readonly IInitialSessionIssuer sessionIssuer;
     private readonly IIdentityEventPublisher eventPublisher;
     private readonly ISystemClock clock;
+    private readonly IIdentityMutationScope mutationScope;
 
     public GoogleProviderAuthenticationService(
         IGoogleIdentityTokenValidator tokenValidator,
@@ -26,7 +27,8 @@ public sealed partial class GoogleProviderAuthenticationService : IGoogleProvide
         IEmailLookupHasher emailLookupHasher,
         IInitialSessionIssuer sessionIssuer,
         IIdentityEventPublisher eventPublisher,
-        ISystemClock clock)
+        ISystemClock clock,
+        IIdentityMutationScope? mutationScope = null)
     {
         this.tokenValidator = tokenValidator;
         this.identifierHasher = identifierHasher;
@@ -36,6 +38,7 @@ public sealed partial class GoogleProviderAuthenticationService : IGoogleProvide
         this.sessionIssuer = sessionIssuer;
         this.eventPublisher = eventPublisher;
         this.clock = clock;
+        this.mutationScope = mutationScope ?? new DirectIdentityMutationScope();
     }
 
     public async Task<IdentityOperationResult<AuthSessionResponse>> AuthenticateAsync(
@@ -63,7 +66,13 @@ public sealed partial class GoogleProviderAuthenticationService : IGoogleProvide
             return ProviderAuthenticationFailed();
         }
 
-        var principal = validation.Principal;
+        return await mutationScope.RunAsync(token => AuthenticateValidatedAsync(
+            validation.Principal, request, correlationId, token), cancellationToken);
+    }
+
+    private async Task<IdentityOperationResult<AuthSessionResponse>> AuthenticateValidatedAsync(
+        GoogleIdentityPrincipal principal, GoogleSignInRequest request, string correlationId, CancellationToken cancellationToken)
+    {
         var subjectHash = identifierHasher.Hash(ProviderName, "subject", principal.Subject);
         var existingLink = await federatedAccountStore.FindProviderLinkAsync(
             ProviderName,

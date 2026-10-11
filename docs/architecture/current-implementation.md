@@ -27,6 +27,12 @@ installer or accepted native Windows runtime is claimed by this document.
 The internal admin app is not a consumer web application. The product still targets
 Android, iOS and Web, but repository directories alone do not establish delivery.
 
+FIN-282 adds [native Identity PostgreSQL adapters](../engineering/identity-native-persistence.md)
+for accounts, sessions, challenges/rate state and transactional outbox intents.
+Development adapters remain process-local. Native broker delivery/readiness is
+explicitly pending FIN-276; Profile/Category and other domain adapters remain their
+own follow-on tickets. This is not installed-host or first-user acceptance.
+
 ## End-To-End User Scenario
 
 The implemented contracts support this flow when the required routes, adapters

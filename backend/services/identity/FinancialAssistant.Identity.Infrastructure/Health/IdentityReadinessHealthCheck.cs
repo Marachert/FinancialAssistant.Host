@@ -1,5 +1,6 @@
 using FinancialAssistant.Identity.Infrastructure.Configuration;
 using FinancialAssistant.Identity.Infrastructure.Storage;
+using FinancialAssistant.Shared.Persistence;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
@@ -8,13 +9,15 @@ namespace FinancialAssistant.Identity.Infrastructure.Health;
 public sealed class IdentityReadinessHealthCheck : IHealthCheck
 {
     private readonly IOptions<IdentityServiceOptions> options;
+    private readonly OwnedPostgresStore? durableStore;
 
-    public IdentityReadinessHealthCheck(IOptions<IdentityServiceOptions> options)
+    public IdentityReadinessHealthCheck(IOptions<IdentityServiceOptions> options, OwnedPostgresStore? durableStore = null)
     {
         this.options = options;
+        this.durableStore = durableStore;
     }
 
-    public Task<HealthCheckResult> CheckHealthAsync(
+    public async Task<HealthCheckResult> CheckHealthAsync(
         HealthCheckContext context,
         CancellationToken cancellationToken = default)
     {
@@ -54,7 +57,14 @@ public sealed class IdentityReadinessHealthCheck : IHealthCheck
         }
 
         var authentication = configuration.Authentication;
-        if (!string.Equals(
+        if (durableStore is not null)
+        {
+            if (!await durableStore.IsReadyAsync(cancellationToken))
+            { failures.Add("Identity durable storage is not ready."); }
+            // Never advertise the pending FIN-276 event transport as a ready installed system.
+            failures.Add("Native identity broker delivery is pending FIN-276.");
+        }
+        else if (!string.Equals(
                 authentication.RuntimeAdapter,
                 "InMemoryDevelopment",
                 StringComparison.OrdinalIgnoreCase))
@@ -87,7 +97,7 @@ public sealed class IdentityReadinessHealthCheck : IHealthCheck
             ? HealthCheckResult.Healthy("Identity service registration configuration is ready.")
             : HealthCheckResult.Unhealthy(string.Join(" ", failures));
 
-        return Task.FromResult(result);
+        return result;
     }
 
     private static void ValidateGoogleProvider(

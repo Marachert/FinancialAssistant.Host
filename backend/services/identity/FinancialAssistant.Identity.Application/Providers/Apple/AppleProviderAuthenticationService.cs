@@ -16,6 +16,7 @@ public sealed partial class AppleProviderAuthenticationService : IAppleProviderA
     private readonly IInitialSessionIssuer sessionIssuer;
     private readonly IIdentityEventPublisher eventPublisher;
     private readonly ISystemClock clock;
+    private readonly IIdentityMutationScope mutationScope;
 
     public AppleProviderAuthenticationService(
         IAppleIdentityTokenValidator tokenValidator,
@@ -25,7 +26,8 @@ public sealed partial class AppleProviderAuthenticationService : IAppleProviderA
         IEmailLookupHasher emailLookupHasher,
         IInitialSessionIssuer sessionIssuer,
         IIdentityEventPublisher eventPublisher,
-        ISystemClock clock)
+        ISystemClock clock,
+        IIdentityMutationScope? mutationScope = null)
     {
         this.tokenValidator = tokenValidator;
         this.identifierHasher = identifierHasher;
@@ -35,6 +37,7 @@ public sealed partial class AppleProviderAuthenticationService : IAppleProviderA
         this.sessionIssuer = sessionIssuer;
         this.eventPublisher = eventPublisher;
         this.clock = clock;
+        this.mutationScope = mutationScope ?? new DirectIdentityMutationScope();
     }
 
     public async Task<IdentityOperationResult<AuthSessionResponse>> AuthenticateAsync(
@@ -65,7 +68,13 @@ public sealed partial class AppleProviderAuthenticationService : IAppleProviderA
             return ProviderAuthenticationFailed();
         }
 
-        var principal = validation.Principal;
+        return await mutationScope.RunAsync(token => AuthenticateValidatedAsync(
+            validation.Principal, request, correlationId, token), cancellationToken);
+    }
+
+    private async Task<IdentityOperationResult<AuthSessionResponse>> AuthenticateValidatedAsync(
+        AppleIdentityPrincipal principal, AppleSignInRequest request, string correlationId, CancellationToken cancellationToken)
+    {
         var subjectHash = identifierHasher.Hash(ProviderName, "subject", principal.Subject);
         var existingLink = await federatedAccountStore.FindProviderLinkAsync(
             ProviderName,

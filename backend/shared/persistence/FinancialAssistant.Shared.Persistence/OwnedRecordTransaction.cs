@@ -5,6 +5,7 @@ using Npgsql;
 namespace FinancialAssistant.Shared.Persistence;
 
 public sealed record DurableRecord(long Revision, byte[] Payload);
+public sealed record OwnedRecordItem(string Cursor, long Revision, byte[] Payload);
 
 public sealed class OwnedRecordTransaction
 {
@@ -87,6 +88,44 @@ public sealed class OwnedRecordTransaction
         finally { Exit(); }
     }
 
+    public async Task<IReadOnlyList<OwnedRecordItem>> ReadPageAsync(string bucket, string owner,
+        string? afterCursor = null, int pageSize = 100)
+    {
+        if (pageSize is < 1 or > 100) { throw new ArgumentOutOfRangeException(nameof(pageSize)); }
+        byte[]? cursor = null;
+        if (afterCursor is not null)
+        {
+            if (afterCursor.Length != 64 || !afterCursor.All(char.IsAsciiHexDigit))
+            {
+                throw new ArgumentException("Invalid owned storage cursor.", nameof(afterCursor));
+            }
+            cursor = Convert.FromHexString(afterCursor);
+        }
+        Enter();
+        try
+        {
+            var hashes = Hashes(bucket, owner, "page_scope");
+            var sql = $"SELECT record_hash,revision,payload FROM {identity.Schema}.records WHERE bucket=$1 AND owner_hash=$2" +
+                (cursor is null ? "" : " AND record_hash>$4") + " ORDER BY record_hash LIMIT $3";
+            await using var command = new NpgsqlCommand(sql, connection);
+            command.Parameters.AddWithValue(bucket);
+            command.Parameters.AddWithValue(hashes.Owner);
+            command.Parameters.AddWithValue(pageSize);
+            if (cursor is not null) { command.Parameters.AddWithValue(cursor); }
+            await using var reader = await command.ExecuteReaderAsync(token);
+            var records = new List<OwnedRecordItem>();
+            while (await reader.ReadAsync(token))
+            {
+                var id = reader.GetFieldValue<byte[]>(0);
+                var revision = reader.GetInt64(1);
+                records.Add(new OwnedRecordItem(Convert.ToHexString(id), revision,
+                    protection.Decrypt(reader.GetFieldValue<byte[]>(2), AssociatedData(bucket, hashes.Owner, id, revision))));
+            }
+            return records;
+        }
+        finally { Exit(); }
+    }
+
     public Task<bool> InsertAsync(string bucket, string owner, string id, byte[] payload) =>
         WriteAsync(bucket, owner, id, -1, payload);
 
@@ -130,6 +169,24 @@ public sealed class OwnedRecordTransaction
             command.Parameters.AddWithValue(bucket);
             command.Parameters.AddWithValue(hashes.Owner);
             command.Parameters.AddWithValue(hashes.Id);
+            command.Parameters.AddWithValue(expectedRevision);
+            return TrackWrite(await command.ExecuteNonQueryAsync(token) == 1);
+        }
+        finally { Exit(); }
+    }
+
+    public async Task<bool> DeletePageItemAsync(string bucket, string owner, string cursor, long expectedRevision)
+    {
+        if (expectedRevision < 0 || cursor is null || cursor.Length != 64 || !cursor.All(char.IsAsciiHexDigit))
+        { throw new ArgumentException("Invalid owned record deletion cursor or revision."); }
+        Enter();
+        try
+        {
+            var hashes = Hashes(bucket, owner, "page_scope");
+            await using var command = new NpgsqlCommand($"DELETE FROM {identity.Schema}.records WHERE bucket=$1 AND owner_hash=$2 AND record_hash=$3 AND revision=$4", connection);
+            command.Parameters.AddWithValue(bucket);
+            command.Parameters.AddWithValue(hashes.Owner);
+            command.Parameters.AddWithValue(Convert.FromHexString(cursor));
             command.Parameters.AddWithValue(expectedRevision);
             return TrackWrite(await command.ExecuteNonQueryAsync(token) == 1);
         }

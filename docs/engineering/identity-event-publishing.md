@@ -1,5 +1,15 @@
 # Identity Event Publishing Baseline
 
+## Native Persistence Increment
+
+FIN-282's [native Identity contract](identity-native-persistence.md) adds an
+encrypted PostgreSQL outbox sharing the transaction with accounts/initial sessions
+and session mutations. Developer in-memory transport remains unchanged. Native
+mode is `DurableOutboxPendingTransport`: the dispatcher is not registered, durable
+intents cannot be falsely acknowledged by an in-memory transport, and readiness
+stays unhealthy for pending FIN-276 broker delivery. No new inbound Identity
+consumer/inbox or installed-host acceptance is claimed by this increment.
+
 ## Purpose
 
 FIN-77 introduces the Identity Service integration-event publishing baseline for:

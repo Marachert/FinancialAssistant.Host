@@ -7,8 +7,10 @@ This document defines the FIN-85 storage contract for the Financial Assistant Id
 Identity Service is authoritative for accounts, authentication credential metadata,
 refresh sessions and external provider links. This document preserves the FIN-85
 Elasticsearch adapter contract, not a claim that the running Identity store uses
-Elasticsearch. Current wiring is in-memory; the preferred durable authoritative
-target is service-owned PostgreSQL under [storage policy](../architecture/storage-policy.md).
+Elasticsearch. Development wiring remains in-memory; FIN-282's explicit WindowsNative
+profile selects [service-owned PostgreSQL adapters](identity-native-persistence.md)
+under [storage policy](../architecture/storage-policy.md). The legacy document
+shapes below are compatibility/design contracts, not native authoritative tables.
 Deterministic authentication and lifecycle rules remain in Application and Domain.
 
 FIN-85 defines documents, index names, aliases, sensitive-field rules, and cleanup policy. Elasticsearch client/bootstrap implementation is intentionally deferred to a later storage integration increment.

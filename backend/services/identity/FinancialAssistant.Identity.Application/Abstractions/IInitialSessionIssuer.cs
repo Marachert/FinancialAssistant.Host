@@ -5,9 +5,10 @@ namespace FinancialAssistant.Identity.Application.Abstractions;
 
 public interface IInitialSessionIssuer
 {
-    AuthSessionResponse Issue(
+    Task<AuthSessionResponse> IssueAsync(
         IdentityAccount account,
         IdentityClientContext client,
         string authenticationMethod,
-        DateTimeOffset issuedAtUtc);
+        DateTimeOffset issuedAtUtc,
+        CancellationToken cancellationToken = default);
 }

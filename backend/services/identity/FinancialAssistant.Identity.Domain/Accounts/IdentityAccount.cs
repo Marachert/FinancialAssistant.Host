@@ -21,6 +21,19 @@ public sealed record IdentityAccount
         IdentityAccountStatus.Active,
         Array.AsReadOnly(new[] { "user" }),
         createdAtUtc);
+
+    public static IdentityAccount Rehydrate(string id, IdentityAccountStatus status,
+        IReadOnlyList<string> roles, DateTimeOffset createdAtUtc)
+    {
+        if (!Guid.TryParseExact(id, "N", out _) || !Enum.IsDefined(status) || roles is null || roles.Count is < 1 or > 32 ||
+            roles.Any(role => string.IsNullOrWhiteSpace(role) || role.Length > 64 ||
+                role.Any(character => !char.IsAsciiLetterOrDigit(character) && character is not ('_' or '-' or '.' or ':'))) ||
+            roles.Distinct(StringComparer.Ordinal).Count() != roles.Count)
+        {
+            throw new ArgumentException("Stored identity account is invalid.");
+        }
+        return new IdentityAccount(id, status, Array.AsReadOnly(roles.ToArray()), createdAtUtc);
+    }
 }
 
 public enum IdentityAccountStatus

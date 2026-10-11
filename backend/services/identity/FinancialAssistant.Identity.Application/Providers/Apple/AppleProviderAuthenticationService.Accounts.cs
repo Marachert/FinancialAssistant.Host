@@ -43,11 +43,11 @@ public sealed partial class AppleProviderAuthenticationService
                     cancellationToken);
         }
 
-        var session = sessionIssuer.Issue(
+        var session = await sessionIssuer.IssueAsync(
             account,
             request.Client,
             AuthenticationMethod,
-            now);
+            now, cancellationToken);
         await PublishRegistrationAsync(account.Id, correlationId, now, cancellationToken);
         await PublishSignInAsync(
             account.Id,
@@ -80,11 +80,11 @@ public sealed partial class AppleProviderAuthenticationService
             subjectHash,
             now,
             cancellationToken);
-        var session = sessionIssuer.Issue(
+        var session = await sessionIssuer.IssueAsync(
             account,
             request.Client,
             AuthenticationMethod,
-            now);
+            now, cancellationToken);
         await PublishSignInAsync(
             account.Id,
             session.User.SessionId,

@@ -34,7 +34,8 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 builder.Services.AddIdentityApplication();
-builder.Services.AddIdentityInfrastructure(builder.Configuration);
+builder.Services.AddIdentityInfrastructure(builder.Configuration,
+    builder.Environment.IsEnvironment(FinancialAssistantHost.NativeEnvironment));
 builder.Services.AddIdentityRateLimiting(builder.Configuration);
 builder.Services
     .AddFinancialAssistantHealthChecks()
