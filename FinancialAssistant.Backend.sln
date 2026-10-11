@@ -236,6 +236,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.H
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Hosting.Tests", "backend\shared\hosting\FinancialAssistant.Shared.Hosting.Tests\FinancialAssistant.Shared.Hosting.Tests.csproj", "{28EA6B3F-8AE8-4976-926D-6AA8442C0467}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "persistence", "persistence", "{468168BC-4D00-4DE1-8A90-7CE8FC808003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Persistence", "backend\shared\persistence\FinancialAssistant.Shared.Persistence\FinancialAssistant.Shared.Persistence.csproj", "{12089E7E-E469-4AB7-A1C0-D58FF744DCE0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Persistence.Tests", "backend\shared\persistence\FinancialAssistant.Shared.Persistence.Tests\FinancialAssistant.Shared.Persistence.Tests.csproj", "{B0E7C766-AE58-4C94-B804-78562A0E7545}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Persistence.Integration", "backend\shared\persistence\FinancialAssistant.Shared.Persistence.Integration\FinancialAssistant.Shared.Persistence.Integration.csproj", "{488BC0E0-9A17-4D3B-9293-3ACD15B4A91D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -662,6 +670,18 @@ Global
 		{28EA6B3F-8AE8-4976-926D-6AA8442C0467}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28EA6B3F-8AE8-4976-926D-6AA8442C0467}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28EA6B3F-8AE8-4976-926D-6AA8442C0467}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12089E7E-E469-4AB7-A1C0-D58FF744DCE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12089E7E-E469-4AB7-A1C0-D58FF744DCE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12089E7E-E469-4AB7-A1C0-D58FF744DCE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12089E7E-E469-4AB7-A1C0-D58FF744DCE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0E7C766-AE58-4C94-B804-78562A0E7545}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0E7C766-AE58-4C94-B804-78562A0E7545}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0E7C766-AE58-4C94-B804-78562A0E7545}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0E7C766-AE58-4C94-B804-78562A0E7545}.Release|Any CPU.Build.0 = Release|Any CPU
+		{488BC0E0-9A17-4D3B-9293-3ACD15B4A91D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{488BC0E0-9A17-4D3B-9293-3ACD15B4A91D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{488BC0E0-9A17-4D3B-9293-3ACD15B4A91D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{488BC0E0-9A17-4D3B-9293-3ACD15B4A91D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7AC3F48D-624D-4E99-8B8A-4D491602CEE2} = {FB7E6B6E-BA1A-4D09-96DE-E4179EB6DA47}
@@ -712,5 +732,9 @@ Global
 		{193D4FA9-418C-4E44-8DB2-BB0444F10B53} = {91488650-2D7C-4415-AE87-33D6FB3D159D}
 		{710BFC4E-18D2-4197-B3E1-29FE9D96FED8} = {193D4FA9-418C-4E44-8DB2-BB0444F10B53}
 		{28EA6B3F-8AE8-4976-926D-6AA8442C0467} = {193D4FA9-418C-4E44-8DB2-BB0444F10B53}
+		{468168BC-4D00-4DE1-8A90-7CE8FC808003} = {91488650-2D7C-4415-AE87-33D6FB3D159D}
+		{12089E7E-E469-4AB7-A1C0-D58FF744DCE0} = {468168BC-4D00-4DE1-8A90-7CE8FC808003}
+		{B0E7C766-AE58-4C94-B804-78562A0E7545} = {468168BC-4D00-4DE1-8A90-7CE8FC808003}
+		{488BC0E0-9A17-4D3B-9293-3ACD15B4A91D} = {468168BC-4D00-4DE1-8A90-7CE8FC808003}
 	EndGlobalSection
 EndGlobal

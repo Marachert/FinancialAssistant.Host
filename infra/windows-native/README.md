@@ -11,6 +11,12 @@ native process profile, canonical service ports, required trust and non-executin
 SCM plan. Its publish script creates explicitly unqualified win-x64 candidates,
 not an installer or qualified release; the inventory remains `releaseReady=false`.
 
+FIN-274's [persistence foundation](../../backend/shared/persistence/README.md)
+is distinct from domain owners FIN-282/283/284/285 and full integration FIN-286.
+The manifest's `sourceCommit` retains the original package-inventory evidence;
+updated persistence ownership is tracked in the scoped implementation PR, not a
+claim of signed artifacts, installed adapters or release qualification.
+
 ## Read-Only Verification
 
 [component-manifest.json](component-manifest.json) inventories all 15 production
@@ -69,7 +75,7 @@ The report never claims verified binary signatures or release readiness.
 
 ## Hosts And Ports
 
-These are proposed installer assignments, not current working configuration.
+These are canonical WindowsNative hosting assignments, not installed acceptance.
 Every internal listener binds to `127.0.0.1`; only the separately configured HTTPS
 gateway endpoint may be exposed. Local binding never replaces authentication.
 SCM lifetime, service identities and final gateway destinations belong to FIN-273.
@@ -77,11 +83,11 @@ SCM lifetime, service identities and final gateway destinations belong to FIN-27
 | Host | Proposed port | Native state/adapter owner |
 | --- | --- | --- |
 | Public gateway | 5100 | FIN-273, no financial authority |
-| Identity | 5101 | FIN-274 |
-| Profile | 5102 | FIN-274 |
-| Category | 5103 | FIN-274 |
-| Transaction intake | 5104 | FIN-274 |
-| Receipt processing | 5105 | FIN-277 |
+| Identity | 5101 | FIN-282, foundation FIN-274 |
+| Profile | 5102 | FIN-283, foundation FIN-274 |
+| Category | 5103 | FIN-283, foundation FIN-274 |
+| Transaction intake | 5104 | FIN-284, financial APIs FIN-275 |
+| Receipt processing | 5105 | FIN-285 metadata; FIN-277 encrypted objects |
 | Analytics | 5106 | FIN-275 |
 | Financial score | 5107 | FIN-275 |
 | Recommendations and notifications, one existing host | 5108 | FIN-275 |
@@ -89,13 +95,14 @@ SCM lifetime, service identities and final gateway destinations belong to FIN-27
 | Income | 5111 | FIN-275 |
 | Expense | 5112 | FIN-275 |
 | Audit | 5113 | FIN-277 |
-| AI orchestration | 5114 | FIN-274 |
+| AI orchestration | 5114 | FIN-285 metadata; paid providers disabled |
 | MCP, never a public gateway route | 5115 | FIN-273 |
 
-Existing gateway configuration sends both Income and Audit to port 5111, leaves
-many destinations disabled and models recommendations/notifications as separate
-destinations although one host implements them. The manifest deliberately does
-not overwrite those settings. FIN-273 must reconcile them and test real routing.
+Historical developer gateway settings sent Income and Audit to port 5111 and
+left destinations disabled. Merged FIN-273 code corrects the WindowsNative
+profile: Audit5113, Income5111 and both recommendation/notification destinations
+on their one 5108 host, with all known routes active. Developer settings remain
+unchanged; installed routing/SCM acceptance is still pending.
 All hosts expose the shared `/health/live` and `/health/ready` contract; readiness
 must gain actual dependency/schema checks before it can prove native operation.
 The graph describes prerequisite startup/readiness ordering, not financial data
@@ -308,5 +315,7 @@ qualification; the exact archive digest has been verified locally.
    inventory merge/closure is not that release approval.
 
 No additional spending, package/tool installation or machine changes are authorized
-by this document. Current POC completion is 185/207 (89.4%); first-user testing
+by this document. Current POC completion is 185/212 (87.3%) after FIN-274's
+five-leaf persistence decomposition; historical FIN-273 closure is 185/207 (89.4%).
+No delivered work was lost. First-user testing
 is Not Ready. See [the progress ledger](../../docs/agent/POC_PROGRESS.md).

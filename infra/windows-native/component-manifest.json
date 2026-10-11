@@ -477,7 +477,7 @@
     {
       "id": "identity",
       "project": "backend/services/identity/FinancialAssistant.Identity.Api/FinancialAssistant.Identity.Api.csproj",
-      "owner": "FIN-274",
+      "owner": "FIN-282",
       "nativeHostingOwner": "FIN-273",
       "serviceName": "FinancialAssistant.identity",
       "port": 5101,
@@ -490,12 +490,12 @@
         "rabbitmq"
       ],
       "qualification": "not-tested",
-      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-274 must replace in-memory authoritative stores"
+      "dataOwnership": "FIN-282 Identity stores over FIN-274 foundation; FIN-276 owned-state/outbox/inbox atomicity"
     },
     {
       "id": "profile",
       "project": "backend/services/profile/FinancialAssistant.Profile.Api/FinancialAssistant.Profile.Api.csproj",
-      "owner": "FIN-274",
+      "owner": "FIN-283",
       "nativeHostingOwner": "FIN-273",
       "serviceName": "FinancialAssistant.profile",
       "port": 5102,
@@ -508,12 +508,12 @@
         "rabbitmq"
       ],
       "qualification": "not-tested",
-      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-274 must replace in-memory authoritative stores"
+      "dataOwnership": "FIN-283 Profile stores with a separate role/schema over FIN-274 foundation"
     },
     {
       "id": "category",
       "project": "backend/services/category/FinancialAssistant.Category.Api/FinancialAssistant.Category.Api.csproj",
-      "owner": "FIN-274",
+      "owner": "FIN-283",
       "nativeHostingOwner": "FIN-273",
       "serviceName": "FinancialAssistant.category",
       "port": 5103,
@@ -526,12 +526,12 @@
         "rabbitmq"
       ],
       "qualification": "not-tested",
-      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-274 must replace in-memory authoritative stores"
+      "dataOwnership": "FIN-283 Category stores with a separate role/schema; FIN-276 atomic lifecycle events"
     },
     {
       "id": "transaction-intake",
       "project": "backend/services/transaction-intake/FinancialAssistant.TransactionIntake.Api/FinancialAssistant.TransactionIntake.Api.csproj",
-      "owner": "FIN-274",
+      "owner": "FIN-284",
       "nativeHostingOwner": "FIN-273",
       "serviceName": "FinancialAssistant.transaction-intake",
       "port": 5104,
@@ -544,12 +544,12 @@
         "rabbitmq"
       ],
       "qualification": "not-tested",
-      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-274 must replace in-memory authoritative stores"
+      "dataOwnership": "FIN-284 Intake drafts/idempotency/workflow; FIN-275 financial APIs, never cross-service SQL; FIN-276 atomic lifecycle events"
     },
     {
       "id": "receipt-processing",
       "project": "backend/services/receipt-processing/FinancialAssistant.ReceiptProcessing.Api/FinancialAssistant.ReceiptProcessing.Api.csproj",
-      "owner": "FIN-277",
+      "owner": "FIN-285",
       "nativeHostingOwner": "FIN-273",
       "serviceName": "FinancialAssistant.receipt-processing",
       "port": 5105,
@@ -562,7 +562,7 @@
         "rabbitmq"
       ],
       "qualification": "not-tested",
-      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-277 must replace in-memory authoritative stores"
+      "dataOwnership": "FIN-285 Receipt/OCR metadata; FIN-277 encrypted objects/ACLs/retention/recovery; FIN-276 atomic lifecycle events"
     },
     {
       "id": "analytics",
@@ -693,7 +693,7 @@
     {
       "id": "ai-orchestration",
       "project": "backend/services/ai-orchestration/FinancialAssistant.AiOrchestration.Api/FinancialAssistant.AiOrchestration.Api.csproj",
-      "owner": "FIN-274",
+      "owner": "FIN-285",
       "nativeHostingOwner": "FIN-273",
       "serviceName": "FinancialAssistant.ai-orchestration",
       "port": 5114,
@@ -706,7 +706,7 @@
         "rabbitmq"
       ],
       "qualification": "not-tested",
-      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-274 must replace in-memory authoritative stores"
+      "dataOwnership": "FIN-285 minimized AI metadata/usage idempotency in separate role/schema; no raw prompts/responses or paid provider activation"
     },
     {
       "id": "mcp",
@@ -853,7 +853,7 @@
     {
       "code": "RUNTIME-IMPLEMENTATION",
       "owner": "FIN-273",
-      "detail": "SCM hosting, durable adapters and final endpoint wiring still require FIN-273 through FIN-277; audit/income port5111 collision must be resolved."
+      "detail": "FIN-273 hosting and native Audit5113/Income5111 routing code is merged, not installed acceptance. Durable adapters require FIN-274/275/276/277/282/283/284/285/286; actual SCM lifecycle remains FIN-278/281."
     },
     {
       "code": "HOST-ACCEPTANCE",
