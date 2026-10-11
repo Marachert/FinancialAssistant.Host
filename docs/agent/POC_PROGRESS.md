@@ -4,10 +4,20 @@ Last updated: 2026-10-10
 
 ## Current Snapshot
 
-POC backlog completion after FIN-273 closure is **89.4%**:
-**185 of 207 canonical POC leaf tickets are Done**.
+POC backlog completion after FIN-274 persistence decomposition is **87.3%**:
+**185 of 212 canonical POC leaf tickets are Done**.
 
-The fresh 2026-10-10 census contains 281 unique Jira issues and confirms 185/207
+The fresh 2026-10-10 19:50 UTC census contains 286 unique Jira issues. FIN-274's
+original multi-owner persistence work is split into a PostgreSQL foundation and
+five sibling leaves FIN-282 through FIN-286 under FIN-270. All original capabilities
+remain required; no new product features or completed work were added/removed.
+The leaf-count denominator grows from 207 to 212: 185/207 (89.4%) becomes 185/212
+(87.3%), a -2.1 percentage-point scope/granularity adjustment calculated before rounding, not a
+delivery regression. FIN-270 is In Progress with 3/16 children Done. FIN-274 is
+the active foundation leaf; domain adapters and end-to-end persistence verification
+are separate unfinished siblings. First-user testing remains Not Ready.
+
+The historical FIN-273 closure census contains 281 unique Jira issues and confirms 185/207
 after verified FIN-273 merge and Jira Done. This is a +0.5 percentage-point change
 from 184/207 (88.9%), calculated before rounding. FIN-273 delivers Windows Service
 hosting code for fifteen APIs, native routing/trust/readiness configuration and a
@@ -45,7 +55,8 @@ Latest canonical and Jira closure:
 - previous current-scope completion: 184 / 207, or 88.9%
 - current completion: 185 / 207, or 89.4%
 - change: +0.5 percentage points
-- FIN-270 remains In Progress: 3/11 children Done; FIN-274 is the next native child,
+- at FIN-273 closure FIN-270 had 3/11 children Done; after decomposition it has
+  3/16 children Done and remains In Progress; FIN-274 is the active native child,
   subject to fresh dependency-aware selection including FIN-207/208/209
 - one actionable Monitoring target review thread was fixed, answered and resolved
   after fixing-head CI;
@@ -100,13 +111,14 @@ Current delivery (native scope revision supersedes previous scope totals):
 - FIN-273 is Done through guarded merged PR #272; FIN-271/272 remain historical
 - native hosting implementation is merged at `ea766a9172d0b4ad49ce49c4721b6e7c3d676f52`
   after exact-head Backend, Mobile and Admin Web CI and a clear review-channel audit
-- current canonical completion is 185/207 (89.4%); eleven native installer leaves
-  added, FIN-271/272/273 Done; previous closures remain historical +0.5 pp
+- current canonical completion is 185/212 (87.3%) after five persistence leaves
+  decompose FIN-274; FIN-271/272/273 remain Done and earlier closure percentages
+  remain historical, with no lost delivery
 - FIN-31 P7 progress is 18/18 (100.0%); all 33 direct children and the epic are
   verified Done
 - FIN-36 P8 progress is 13/13 (100.0%); all children are Done and the epic remains
   In Progress for unverified integrated log/metric/trace, audit, admin and MCP evidence
-- FIN-38 P9 progress is 9/31 (29.0%); the epic remains In Progress
+- FIN-38 P9 progress is 9/36 (25.0%) after decomposition; the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
@@ -145,6 +157,9 @@ Current delivery (native scope revision supersedes previous scope totals):
   implementation are Done, without installed-runtime acceptance
 - next ranked native implementation leaf is FIN-274 after FIN-273 closure
   publication; re-read its hierarchy and dependencies before branching
+- FIN-274 is the PostgreSQL foundation; FIN-282 Identity, FIN-283 Profile/Category,
+  FIN-284 Intake, FIN-285 Receipt/OCR/AI metadata and FIN-286 persistence integration
+  retain its original domain/verification scope; prerequisites can override rank
 - FIN-207/208/209 TLS, protected secrets and backup/recovery remain separate
   required release gates; satisfy native runtime dependencies before FIN-204 E2E
 
@@ -161,8 +176,8 @@ Current delivery (native scope revision supersedes previous scope totals):
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 20 | 20 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 13 | 13 | 100.0% |
-| FIN-38 | P9 Testing, Windows deployment, and release readiness | 9 | 31 | 29.0% |
-| **Total** | **Canonical POC leaf scope** | **185** | **207** | **89.4%** |
+| FIN-38 | P9 Testing, Windows deployment, and release readiness | 9 | 36 | 25.0% |
+| **Total** | **Canonical POC leaf scope** | **185** | **212** | **87.3%** |
 
 ## First-User-Test Gates
 
@@ -349,3 +364,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-09-15 | FIN-271 | PR 268 verified merged and Jira Done after infrastructure-index review fix; Windows-native WPF installer concept/backlog only; scope expanded to 207 before closure, not a completed installer | 88.4% | +0.5 pp |
 | 2026-10-10 | FIN-272 | PR 270 verified merged as 52ca12d5269f8ebe6bf20c958b553f540cbcc151 and Jira Done; 184/207 after live census; inventory/inspection only under owner-approved phase split, not package qualification or installed acceptance | 88.9% | +0.5 pp |
 | 2026-10-10 | FIN-273 | PR 272 verified merged as ea766a9172d0b4ad49ce49c4721b6e7c3d676f52 and Jira Done; 185/207 after live census; hosting code/free verification under owner-approved phase split, not SCM installation or first-user acceptance | 89.4% | +0.5 pp |
+| 2026-10-10 | FIN-274 decomposition | Original persistence scope retained in foundation plus FIN-282–286; five additional leaf units, no completed work lost/new product features; denominator 207 to 212, Done remains 185 | 87.3% | -2.1 pp scope adjustment |

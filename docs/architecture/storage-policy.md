@@ -11,13 +11,25 @@ not financial authority. FIN-274/275 implement missing durable service-owned
 stores; FIN-277 supplies native protected receipt/cache adapters. Existing
 Compose infrastructure is not the new POC deployment mechanism.
 
+FIN-274's original multi-owner scope is explicitly decomposed: FIN-274 owns the
+PostgreSQL foundation; FIN-282 Identity, FIN-283 Profile/Category, FIN-284 Intake,
+FIN-285 Receipt/OCR/AI metadata and FIN-286 persistence integration retain the
+required domain behavior and verification. Each is a separate leaf under FIN-270;
+no original requirement is removed or claimed complete by foundation delivery.
+FIN-284 depends on FIN-275-owned financial APIs, not direct cross-service SQL;
+FIN-285 coordinates FIN-277's encrypted object storage. Reliable lifecycle delivery
+remains FIN-276. The [scope ledger](../agent/POC_PROGRESS.md) records the five extra
+leaf units separately from feature completion and installed-host acceptance.
+
 PostgreSQL is the preferred target for durable authoritative financial records,
 workflow state, idempotency, inbox/outbox and audit persistence. Each service owns
 its schema, access, migrations, retention and recovery; another service must use
 the owner's API or versioned events, never its tables.
 
-This is a target decision, not a claim that PostgreSQL repositories, migrations,
-deployment or restore verification are complete. Current service wiring includes
+The [FIN-274 foundation contract](../../backend/shared/persistence/README.md)
+defines explicit role/schema separation, encrypted records and atomic transactions.
+Its scoped implementation is not a claim of complete native domain repositories, installed
+deployment or full restore qualification. Current production service wiring includes
 in-memory development adapters. The local Compose assets still include
 Elasticsearch and service-owned index templates. Inspect each service's
 dependency injection and the selected environment before asserting durability.

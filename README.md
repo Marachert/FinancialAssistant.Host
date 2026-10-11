@@ -67,6 +67,8 @@ backend/
     building-blocks/               Technical cross-cutting utilities
     contracts/                     Stable versioned integration contracts
     elasticsearch/                 Low-level Elasticsearch helpers
+    hosting/                       Native Windows Service hosting and pure plans
+    persistence/                   Owned PostgreSQL/encrypted-record foundation
     testing/                       Deterministic test helpers and synthetic fixtures
   templates/service-template/      Reusable .NET 8 service template
 

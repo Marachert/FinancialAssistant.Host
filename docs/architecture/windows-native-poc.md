@@ -85,10 +85,11 @@ matrix remain separate delivery gates. Existing developer/test profiles remain.
 | --- | --- | --- |
 | WPF wizard and engine | Separate UI and privileged deployment engine | FIN-278/279; resumable steps and UI validation |
 | .NET APIs/workers | Versioned win-x64 applications with Windows Service lifetime | FIN-273; all required hosts, real gateway routes and trust configuration |
-| Identity/Profile/Category/Intake | Service-owned durable state, migrations and idempotency | FIN-274; restart and owner-isolation evidence |
+| PostgreSQL foundation | Service-owned roles/schemas, encrypted records, migrations and transactions | FIN-274; does not complete domain adapters |
+| Identity/Profile/Category/Intake | Service-owned durable state and domain idempotency | FIN-282/283/284; FIN-286 integration; Intake uses FIN-275 financial APIs |
 | Financial/insight services | PostgreSQL authoritative records and owned derived state | FIN-275; deterministic decimals/currencies, atomic owner commit/outbox, rebuild |
 | RabbitMQ and Erlang | Compatible native Windows packages and service | FIN-276; real event convergence, deduplication, retry and recovery |
-| Receipts and file metadata | Encrypted service-owned native file storage with durable metadata | FIN-277; ACLs, safe paths, retention and portable recovery |
+| Receipts and file metadata | Encrypted service-owned native file storage with durable metadata | FIN-277 objects/ACLs/recovery; FIN-285 Receipt/OCR/AI metadata |
 | Cache | Bounded disposable native/in-process adapter where semantics allow | FIN-277; no financial/session/idempotency authority in volatile cache |
 | Search/operational indices | Native Elasticsearch only where retained contracts require it | FIN-272 inventory, FIN-280 package qualification, FIN-205 contract/runtime validation; not financial authority |
 | Monitoring/Audit/MCP/admin | Required services plus supported native collectors or protected local sinks | FIN-277/216; no silent loss of required metrics, audit or diagnostics |
@@ -208,7 +209,7 @@ authorization before those actions; no additional spending is assumed.
 | FIN-271 | This decision, documentation synchronization and backlog reconciliation |
 | FIN-272 | Native candidate inventory, evidence and explicit qualification blockers |
 | FIN-273 | Native service hosting, gateway routes and trust |
-| FIN-274 | Durable identity/profile/workflow state |
+| FIN-274 | Service-owned PostgreSQL foundation; domain adapters FIN-282/283/284/285 and integration FIN-286 |
 | FIN-275 | Durable financial/insight state |
 | FIN-276 | Durable RabbitMQ delivery and convergence |
 | FIN-277 | Native receipt/cache/diagnostic adapters |
