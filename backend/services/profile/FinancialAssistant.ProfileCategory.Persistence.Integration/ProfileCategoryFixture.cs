@@ -154,6 +154,13 @@ try
     try { await outbox.MarkPublishedAsync(pending[0] with { EventId = Guid.NewGuid().ToString("D") }, now); throw new FixtureFailure(); }
     catch (StorageUnavailableException) { }
 
+    stage = "invalid native request metadata cannot mutate state or enqueue intents";
+    try { await categoryService.SeedDefaultsAsync(new UserRegisteredCategoryEvent(null!, now, "synthetic", "synthetic"), default); throw new FixtureFailure(); }
+    catch (ArgumentException) { }
+    try { await categoryService.ReplaceAliasesAsync(first, "expense.food", new UpdateCategoryAliasesRequest(new[] { "invalid" }, new string('x', 257)), default); throw new FixtureFailure(); }
+    catch (ArgumentException) { }
+    Check((await categories.GetAsync(first, default))?.Find("expense.food")?.Version == 2 && (await outbox.ReadPendingAsync()).Count == 1);
+
     stage = "real service outbox failure rolls back alias state and event";
     await using (var faulty = CategoryProvider(categorySettings, failOutbox: true))
     {

@@ -67,19 +67,13 @@ public sealed class CategoryService : ICategoryService
         UpdateCategoryAliasesRequest request,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(request);
-        if (request.Aliases is null)
-        {
-            throw new ArgumentException("Aliases are required.", nameof(request));
-        }
-
-        var normalizedUserId = NormalizeUserId(userId);
+        var normalizedUserId = ValidateAliasRequest(userId, categoryId, request);
         var normalizedCategoryId = NormalizeCategoryId(categoryId);
         var updatedAtUtc = clock.UtcNow;
         var result = await store.ReplaceAliasesAsync(
             normalizedUserId,
             normalizedCategoryId,
-            request.Aliases,
+            request.Aliases!,
             updatedAtUtc,
             cancellationToken);
 
@@ -105,6 +99,18 @@ public sealed class CategoryService : ICategoryService
         }
 
         return ToResponse(result.Category);
+    }
+
+    public static string ValidateAliasRequest(string userId, string categoryId, UpdateCategoryAliasesRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.Aliases is null) { throw new ArgumentException("Aliases are required.", nameof(request)); }
+        var owner = NormalizeUserId(userId);
+        _ = NormalizeCategoryId(categoryId);
+        var correlation = request.CorrelationId?.Trim();
+        if (correlation is not null && (correlation.Length > 256 || correlation.Any(char.IsControl)))
+        { throw new ArgumentException("Correlation ID must contain at most 256 printable characters.", nameof(request)); }
+        return owner;
     }
 
     private static string NormalizeUserId(string userId)

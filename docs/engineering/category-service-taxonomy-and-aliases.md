@@ -40,6 +40,10 @@ An actual alias change publishes `category.updated.v1` with user ID, category ID
 
 ## Ownership and persistence
 
+Alias request correlation IDs are trimmed, limited to 256 characters and must not
+contain control characters. Invalid metadata or missing/null registration owners
+returns 400 in both native and development adapters before owned storage access.
+
 Development and Testing retain in-memory store/publisher adapters. FIN-283 selects
 explicit Category-owned PostgreSQL storage in WindowsNative. Catalog values and
 timestamps rehydrate exactly; normalized alias no-op preserves versions, while

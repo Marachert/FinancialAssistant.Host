@@ -33,6 +33,11 @@ outbox intent together. No Profile access to Category tables or broker dependenc
 inside a SQL transaction. Reliable transport/inbox wiring remains FIN-276; a
 pending native intent is never falsely marked published by a development adapter.
 
+Category registration validates missing/null owners before opening native storage.
+Alias requests validate normalized correlation IDs (at most 256 characters, no
+control characters) in both adapters before any store access. Invalid input returns
+400, not an unhandled 500 or a retryable storage 503; REST routes/DTOs are unchanged.
+
 ## Configuration, Retention And Acceptance
 
 WindowsNative requires explicit stable PostgreSQL role credentials/index/encryption
