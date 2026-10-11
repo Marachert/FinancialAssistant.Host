@@ -26,12 +26,20 @@ were fixed, evidenced and resolved only after green. Actual synthetic PostgreSQL
 initial/crash/restart, atomic state/outbox, owner isolation, provider-lock separation,
 hard-retention bounds and owned cleanup passed; no registered service or installed
 matrix is claimed. Native broker readiness remains pending FIN-276. Profile/Category
-FIN-283 now implements [native Profile/Category storage](../../docs/engineering/profile-category-native-persistence.md)
-under review: exact preferences/catalog rehydration, owner-isolated concurrency,
-atomic Category/outbox and deletion/replay markers. This does not add completed
-ticket credit before actual merge/Jira closure. Remaining domain/event/object/installer
+FIN-283 [native Profile/Category storage](../../docs/engineering/profile-category-native-persistence.md)
+is merged through [PR278](https://github.com/Marachert/FinancialAssistant.Host/pull/278)
+as `dba7624e84bcfac7991fc41610e8ad829716e0e6` at `2026-10-11T18:01:35Z` and Jira Done.
+Final head `246ec784ea061a468ad51b8906ca2604da591b1f` passed all five checks
+(Backend38161517454, Mobile38161517466, Admin38161517445); both input-validation
+findings were fixed/regressed, evidenced and resolved only after green. Exact
+preferences/catalog rehydration, owner-isolated concurrency, atomic Category/outbox,
+deletion/replay and real crash/restart passed with owned cleanup; local baseline
+plus review reruns 955/955 in 24 projects, zero skips. Minimal replay markers and
+pending metadata remain retained until qualified lifecycle horizons, not full
+cross-service privacy erasure. FIN-284 is next after closure publication;
+remaining domain/event/object/installer
 and three-Windows gates remain required. Current [ledger](../../docs/agent/POC_PROGRESS.md)
-is187/212 (88.2%), +0.5pp; FIN-2705/16 and FIN-38 P9 11/36 (30.6%), first-user Not Ready.
+is 188/212 (88.7%), +0.5 pp; FIN-270 6/16 and FIN-38 P9 12/36 (33.3%), first-user Not Ready.
 
 ## Read-Only Verification
 
@@ -331,9 +339,10 @@ qualification; the exact archive digest has been verified locally.
    inventory merge/closure is not that release approval.
 
 No additional spending, package/tool installation or machine changes are authorized
-by this document. Current POC completion is 187/212 (88.2%) after FIN-282's
-native Identity closure, +0.5 percentage points before rounding; FIN-270 is5/16
-children Done and FIN-38 P9 is11/36 (30.6%). Historical FIN-274 foundation closure
+by this document. Current POC completion is 188/212 (88.7%) after FIN-283's
+native Profile/Category closure, +0.5 percentage points before rounding; FIN-270 is 6/16
+children Done and FIN-38 P9 is 12/36 (33.3%). Historical FIN-282 Identity closure
+is 187/212 (88.2%); historical FIN-274 foundation closure
 is186/212 (87.7%); historical FIN-273 closure is185/207 (89.4%). The five-leaf
 persistence decomposition preserved the original domain requirements.
 No delivered work was lost. First-user testing
