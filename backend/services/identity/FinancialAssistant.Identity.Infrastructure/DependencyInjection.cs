@@ -7,6 +7,7 @@ using FinancialAssistant.Identity.Infrastructure.Authentication;
 using FinancialAssistant.Identity.Infrastructure.Configuration;
 using FinancialAssistant.Identity.Infrastructure.Health;
 using FinancialAssistant.Identity.Infrastructure.Messaging;
+using FinancialAssistant.Identity.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -21,7 +22,8 @@ public static class DependencyInjection
 
     public static IServiceCollection AddIdentityInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        bool windowsNative = false)
     {
         services.Configure<IdentityServiceOptions>(
             configuration.GetSection(IdentityServiceOptions.SectionName));
@@ -42,13 +44,21 @@ public static class DependencyInjection
 
         services.AddSingleton(keyMaterial);
         services.AddSingleton(phonePolicy);
-        services.AddSingleton<InMemoryIdentityAccountStore>();
-        services.AddSingleton<IIdentityAccountStore>(provider =>
-            provider.GetRequiredService<InMemoryIdentityAccountStore>());
-        services.AddSingleton<IIdentityFederatedAccountStore>(provider =>
-            provider.GetRequiredService<InMemoryIdentityAccountStore>());
-        services.AddSingleton<IIdentitySessionStore, InMemoryIdentitySessionStore>();
-        services.AddSingleton<IPhoneVerificationChallengeStore, InMemoryPhoneVerificationChallengeStore>();
+        if (windowsNative)
+        {
+            NativeIdentityPersistence.Register(services, identityOptions);
+        }
+        else
+        {
+            services.AddSingleton<InMemoryIdentityAccountStore>();
+            services.AddSingleton<IIdentityAccountStore>(provider =>
+                provider.GetRequiredService<InMemoryIdentityAccountStore>());
+            services.AddSingleton<IIdentityFederatedAccountStore>(provider =>
+                provider.GetRequiredService<InMemoryIdentityAccountStore>());
+            services.AddSingleton<IIdentitySessionStore, InMemoryIdentitySessionStore>();
+            services.AddSingleton<IPhoneVerificationChallengeStore, InMemoryPhoneVerificationChallengeStore>();
+            services.AddSingleton<IIdentityEventOutbox, InMemoryIdentityEventOutbox>();
+        }
         services.AddSingleton<IPhoneVerificationProvider, DisabledPhoneVerificationProvider>();
         services.AddSingleton<IEmailLookupHasher, HmacEmailLookupHasher>();
         services.AddSingleton<IIdentityProviderIdentifierHasher, HmacIdentityProviderIdentifierHasher>();
@@ -61,21 +71,23 @@ public static class DependencyInjection
         services.AddScoped<IInitialSessionIssuer, OpaqueInitialSessionIssuer>();
         services.AddSingleton<ISystemClock, SystemClock>();
 
-        services.AddSingleton<IIdentityEventOutbox, InMemoryIdentityEventOutbox>();
         services.AddSingleton<IIdentityEventSubjectHasher, HmacIdentityEventSubjectHasher>();
         services.AddSingleton<IIdentityEventPublisher, OutboxIdentityEventPublisher>();
-        if (string.Equals(identityOptions.Events.Mode, "RabbitMq", StringComparison.OrdinalIgnoreCase))
+        if (!windowsNative)
         {
-            services.AddSingleton<IIdentityEventTransport, RabbitMqIdentityEventTransport>();
-        }
-        else
-        {
-            services.AddSingleton<InMemoryIdentityEventTransport>();
-            services.AddSingleton<IIdentityEventTransport>(provider =>
-                provider.GetRequiredService<InMemoryIdentityEventTransport>());
-        }
+            if (string.Equals(identityOptions.Events.Mode, "RabbitMq", StringComparison.OrdinalIgnoreCase))
+            {
+                services.AddSingleton<IIdentityEventTransport, RabbitMqIdentityEventTransport>();
+            }
+            else
+            {
+                services.AddSingleton<InMemoryIdentityEventTransport>();
+                services.AddSingleton<IIdentityEventTransport>(provider =>
+                    provider.GetRequiredService<InMemoryIdentityEventTransport>());
+            }
 
-        services.AddHostedService<IdentityOutboxDispatcher>();
+            services.AddHostedService<IdentityOutboxDispatcher>();
+        }
         services.AddSingleton<IdentityReadinessHealthCheck>();
 
         services

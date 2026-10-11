@@ -5,8 +5,10 @@ namespace FinancialAssistant.Repository.Tests;
 
 public sealed class OwnedPostgresFixtureTests
 {
-    [Fact]
-    public async Task MissingFixtureConfigurationFailsWithoutDatabaseMutation()
+    [Theory]
+    [InlineData("backend/shared/persistence/FinancialAssistant.Shared.Persistence.Integration/bin/Release/net8.0/FinancialAssistant.Shared.Persistence.Integration.dll", "FAIL PostgreSQL integration at fixture validation")]
+    [InlineData("backend/services/identity/FinancialAssistant.Identity.Persistence.Integration/bin/Release/net8.0/FinancialAssistant.Identity.Persistence.Integration.dll", "FAIL identity PostgreSQL at owned fixture validation")]
+    public async Task MissingFixtureConfigurationFailsWithoutDatabaseMutation(string executable, string expectedFailure)
     {
         var start = new ProcessStartInfo("dotnet")
         {
@@ -16,7 +18,7 @@ public sealed class OwnedPostgresFixtureTests
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
-        start.ArgumentList.Add(Path.Combine(Root(), "backend/shared/persistence/FinancialAssistant.Shared.Persistence.Integration/bin/Release/net8.0/FinancialAssistant.Shared.Persistence.Integration.dll"));
+        start.ArgumentList.Add(Path.Combine(Root(), executable));
         foreach (var name in new[] { "FA_PERSISTENCE_TEST_PASSWORD", "FA_PERSISTENCE_TEST_PORT", "FA_PERSISTENCE_TEST_DIRECTORY", "FA_PERSISTENCE_TEST_MODE" })
         {
             start.Environment.Remove(name);
@@ -33,7 +35,7 @@ public sealed class OwnedPostgresFixtureTests
             throw;
         }
         Assert.Equal(1, process.ExitCode);
-        Assert.Contains("FAIL PostgreSQL integration at fixture validation", await output + await error);
+        Assert.Contains(expectedFailure, await output + await error);
     }
 
     [Fact]
@@ -88,6 +90,7 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("$saved[$name]", script);
         Assert.Contains("releaseReady=$false", script);
         Assert.Contains("--auth-host=scram-sha-256", script);
+        Assert.Contains("[ValidateSet('Foundation','Identity')]", script);
         Assert.DoesNotContain("New-Service", script);
         Assert.DoesNotContain("sc.exe", script);
         Assert.DoesNotContain("Unblock-File", script);

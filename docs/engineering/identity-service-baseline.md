@@ -11,6 +11,12 @@ This page preserves layer ownership, not the old skeleton-only status.
 See [API contracts](identity-api-contracts.md), [sessions](identity-session-lifecycle.md)
 and [events](identity-event-publishing.md).
 
+FIN-282 introduces [native PostgreSQL identity persistence](identity-native-persistence.md)
+with atomic state/session/outbox operations, explicit protected configuration,
+fail-closed readiness and bounded restart-safe retention/deletion. Development
+adapters stay process-local; native broker delivery remains FIN-276 and installed
+Windows/WPF acceptance is not implied.
+
 ## Component boundaries
 
 ### API

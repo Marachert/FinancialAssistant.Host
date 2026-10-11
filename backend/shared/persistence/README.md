@@ -1,8 +1,8 @@
 # Service-Owned PostgreSQL Foundation
 
 FIN-274 supplies infrastructure, not completed native domain adapters. Npgsql
-8.0.9 targets the existing .NET 8 baseline. No production API selects this store
-until its owning adapter ticket is delivered. Developer in-memory wiring remains
+8.0.9 targets the existing .NET 8 baseline. Owning adapters select this store through
+their explicit native profile; FIN-282 introduces Identity wiring. Developer in-memory wiring remains
 unchanged. Foundation tests are not installed-Windows or first-user acceptance.
 
 ## Ownership And Provisioning
@@ -57,6 +57,12 @@ The caller maps that typed conflict or re-reads outside the failed transaction;
 there is no automatic callback replay (which could repeat external effects).
 Exceptions/cancellation roll back;
 commit-outcome uncertainty requires idempotent read/reconciliation by the caller.
+
+FIN-282 adds owner-scoped keyset pages (1..100 records) using opaque HMAC cursors,
+not plaintext IDs or offsets. Reads authenticate every payload with its stored
+owner/id/revision. `DeletePageItemAsync` constrains a cursor to the requested
+bucket/owner and checks its revision, with the same conflict/rollback policy as
+ID-based deletion. Cursors never authorize access to another owner or service.
 
 ## Migration, Recovery And Follow-On Work
 

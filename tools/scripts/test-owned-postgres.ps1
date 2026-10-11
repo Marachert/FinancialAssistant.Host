@@ -1,4 +1,5 @@
-param([Parameter(Mandatory)][string] $ArchivePath)
+param([Parameter(Mandatory)][string] $ArchivePath,
+    [ValidateSet('Foundation','Identity')][string] $Scenario = 'Foundation')
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if (-not $IsWindows) { throw 'This fixture uses the Windows PostgreSQL archive, not Docker/WSL.' }
@@ -69,7 +70,11 @@ try {
     $env:FA_PERSISTENCE_TEST_PORT = [string]$port
     $env:FA_PERSISTENCE_TEST_DIRECTORY = $data
     $env:FA_PERSISTENCE_TEST_MODE = 'initial'
-    $project = Join-Path $repo 'backend/shared/persistence/FinancialAssistant.Shared.Persistence.Integration/FinancialAssistant.Shared.Persistence.Integration.csproj'
+    $project = Join-Path $repo $(if ($Scenario -eq 'Identity') {
+        'backend/services/identity/FinancialAssistant.Identity.Persistence.Integration/FinancialAssistant.Identity.Persistence.Integration.csproj'
+    } else {
+        'backend/shared/persistence/FinancialAssistant.Shared.Persistence.Integration/FinancialAssistant.Shared.Persistence.Integration.csproj'
+    })
     Push-Location $repo
     try {
         & dotnet run --project $project --no-build --configuration Release
@@ -99,7 +104,7 @@ try {
     } finally {
         foreach ($name in $saved.Keys) { [Environment]::SetEnvironmentVariable($name, $saved[$name], 'Process') }
         if (Test-Path -LiteralPath $passwordFile) { Remove-Item -LiteralPath $passwordFile -Force }
-        @{passed=$passed;cleanupSucceeded=$cleanupSucceeded;installed=$false;releaseReady=$false;fixture=[IO.Path]::GetRelativePath($repo,$run);archiveDigest=$package[0].hash;verifiedAt=[datetime]::UtcNow.ToString('o')} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $run 'result.json') -Encoding utf8NoBOM
+        @{passed=$passed;cleanupSucceeded=$cleanupSucceeded;scenario=$Scenario;installed=$false;releaseReady=$false;fixture=[IO.Path]::GetRelativePath($repo,$run);archiveDigest=$package[0].hash;verifiedAt=[datetime]::UtcNow.ToString('o')} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $run 'result.json') -Encoding utf8NoBOM
     }
 }
 Write-Output 'Owned local PostgreSQL fixture passed and stopped; installed/runtime qualification remains pending.'

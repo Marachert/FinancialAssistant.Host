@@ -47,7 +47,8 @@ public static class NativeServiceCatalog
         {
             Define("gateway", 5100, "Gateway:Security:AccessTokenSigningKey", "Gateway:DownstreamAuthentication:SharedSecret"),
             Define("identity", 5101, "Identity:Authentication:AccessTokenSigningKey", "Identity:Authentication:LookupHmacKey",
-                "Identity:Authentication:RefreshTokenHashKey", "Identity:Providers:IdentifierHmacKey", "Identity:Events:UserIdHmacKey"),
+                "Identity:Authentication:RefreshTokenHashKey", "Identity:Providers:IdentifierHmacKey", "Identity:Events:UserIdHmacKey",
+                "Identity:Storage:Postgres:Password", "Identity:Storage:Postgres:IndexKey"),
             Define("profile", 5102, "Profile:Gateway:SharedSecret"),
             Define("category", 5103, "Category:Gateway:SharedSecret"),
             Define("transaction-intake", 5104, "TransactionIntake:Gateway:SharedSecret", "ReceiptProcessing:Events:SharedSecret"),

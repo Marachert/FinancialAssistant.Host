@@ -1,5 +1,15 @@
 # Identity Access and Refresh Session Lifecycle
 
+## Native Persistence Increment
+
+FIN-282's [native Identity contract](identity-native-persistence.md) replaces
+process-local sessions in WindowsNative with normalized encrypted PostgreSQL rows,
+durable family revocation tombstones and cross-process transaction serialization.
+Native state/event intents commit together; initial-session issuance is asynchronous
+end-to-end. Developer adapters and public REST contracts are unchanged. Replay
+records remain through refresh expiry plus terminal retention. Broker readiness,
+installer provisioning and installed-Windows acceptance remain separate gates.
+
 ## Purpose
 
 FIN-76 activates the complete version 1 session lifecycle for mobile and web clients:

@@ -62,7 +62,7 @@ public sealed partial class PhoneVerificationAuthenticationService
                 cancellationToken);
         }
 
-        var session = sessionIssuer.Issue(account, client, AuthenticationMethod, now);
+        var session = await sessionIssuer.IssueAsync(account, client, AuthenticationMethod, now, cancellationToken);
         await PublishRegistrationAsync(account.Id, correlationId, now, cancellationToken);
         await PublishSignInAsync(account.Id, session.User.SessionId, correlationId, now, cancellationToken);
         return IdentityOperationResult<AuthSessionResponse>.Success(session);
@@ -88,7 +88,7 @@ public sealed partial class PhoneVerificationAuthenticationService
             phoneSubjectHash,
             now,
             cancellationToken);
-        var session = sessionIssuer.Issue(account, client, AuthenticationMethod, now);
+        var session = await sessionIssuer.IssueAsync(account, client, AuthenticationMethod, now, cancellationToken);
         await PublishSignInAsync(account.Id, session.User.SessionId, correlationId, now, cancellationToken);
         return IdentityOperationResult<AuthSessionResponse>.Success(session);
     }

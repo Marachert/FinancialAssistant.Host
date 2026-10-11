@@ -18,5 +18,6 @@
     <ProjectReference Include="../FinancialAssistant.Identity.Application/FinancialAssistant.Identity.Application.csproj" />
     <ProjectReference Include="../FinancialAssistant.Identity.Contracts/FinancialAssistant.Identity.Contracts.csproj" />
     <ProjectReference Include="../FinancialAssistant.Identity.Domain/FinancialAssistant.Identity.Domain.csproj" />
+    <ProjectReference Include="../../../shared/persistence/FinancialAssistant.Shared.Persistence/FinancialAssistant.Shared.Persistence.csproj" />
   </ItemGroup>
 </Project>

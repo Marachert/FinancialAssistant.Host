@@ -14,17 +14,14 @@ public sealed class OpaqueInitialSessionIssuer : IInitialSessionIssuer
         this.sessionService = sessionService;
     }
 
-    public AuthSessionResponse Issue(
+    public Task<AuthSessionResponse> IssueAsync(
         IdentityAccount account,
         IdentityClientContext client,
         string authenticationMethod,
-        DateTimeOffset issuedAtUtc)
+        DateTimeOffset issuedAtUtc,
+        CancellationToken cancellationToken = default)
     {
         _ = issuedAtUtc;
-        return sessionService
-            .IssueAsync(account, client, authenticationMethod)
-            .ConfigureAwait(false)
-            .GetAwaiter()
-            .GetResult();
+        return sessionService.IssueAsync(account, client, authenticationMethod, cancellationToken);
     }
 }
