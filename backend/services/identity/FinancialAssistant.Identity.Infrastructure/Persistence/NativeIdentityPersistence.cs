@@ -26,6 +26,7 @@ public static class NativeIdentityPersistence
             || options.Storage.Cleanup.RemovedCredentialRetentionDays < 1 || options.Storage.Cleanup.RemovedProviderLinkRetentionDays < 1
             || options.Storage.Cleanup.HardMaximumSessionDocumentDays < options.Authentication.RefreshTokenLifetimeDays
             || options.Storage.Cleanup.HardMaximumSessionDocumentDays < options.Storage.Cleanup.TerminalSessionRetentionDays
+            || options.Storage.Cleanup.HardMaximumSessionDocumentDays < (long)options.Authentication.RefreshTokenLifetimeDays + options.Storage.Cleanup.TerminalSessionRetentionDays
             || new[] { options.Storage.Cleanup.TerminalSessionRetentionDays, options.Storage.Cleanup.DeletedAccountRetentionDays,
                 options.Storage.Cleanup.RemovedCredentialRetentionDays, options.Storage.Cleanup.RemovedProviderLinkRetentionDays,
                 options.Storage.Cleanup.HardMaximumSessionDocumentDays }.Any(days => days > 3650)
@@ -73,6 +74,7 @@ public static class NativeIdentityPersistence
         services.AddSingleton(_ => CreateProtection(options.Storage.Postgres));
         services.AddSingleton(provider => new OwnedPostgresStore(CreateOptions(options.Storage.Postgres), provider.GetRequiredService<RecordProtection>()));
         services.AddSingleton<IdentityPersistenceContext>();
+        services.AddSingleton<IIdentityMutationScope, NativeIdentityMutationScope>();
         services.AddSingleton<IdentityPersistenceMaintenance>();
         services.AddHostedService<IdentityPersistenceMaintenanceWorker>();
         services.AddSingleton<PostgresIdentityAccountStore>();

@@ -110,12 +110,14 @@ public sealed class IdentityPersistenceMaintenance(IdentityPersistenceContext co
                 var session = await IdentityPersistenceContext.ReadAsync<IdentitySessionRecord>(records, "sessions", location.Family, location.Id)
                     ?? throw new StorageUnavailableException();
                 IdentityRecordValidation.Require(session.Id == location.Id && session.AccountId == location.AccountId);
+                ValidateReplayWindow(session.IssuedAtUtc, session.RefreshTokenExpiresAtUtc);
                 // Retain old credentials until their whole validity window plus replay retention has ended.
                 if (now < session.RefreshTokenExpiresAtUtc.AddDays(retention.TerminalSessionRetentionDays)) { return false; }
                 await DeleteSessionAsync(records, location);
                 return true;
             case "families":
                 var family = IdentityPersistenceContext.Decode<PostgresIdentitySessionStore.FamilyState>(value);
+                ValidateReplayWindow(family.LatestIssuedAtUtc, family.ExpiresAtUtc);
                 if (now < family.ExpiresAtUtc.AddDays(retention.TerminalSessionRetentionDays)
                     || (await records.ReadPageAsync("sessions", family.Family, pageSize: 1)).Count != 0) { return false; }
                 var revoked = await records.GetAsync("family_revocations", Owner, family.Family);
@@ -166,6 +168,13 @@ public sealed class IdentityPersistenceMaintenance(IdentityPersistenceContext co
             && state.TokenFamilyIdHash is { Length: 64 } && state.TokenFamilyIdHash.All(char.IsAsciiHexDigit)
             && Convert.ToHexString(Convert.FromHexString(state.TokenFamilyIdHash)) == location.Family);
         await records.DeleteAsync("sessions", location.Family, location.Id, session.Revision);
+    }
+    private void ValidateReplayWindow(DateTimeOffset issuedAtUtc, DateTimeOffset expiresAtUtc)
+    {
+        var retention = options.Value.Storage.Cleanup;
+        // A shorter policy must not silently truncate retained replay evidence from an older configuration.
+        IdentityRecordValidation.Require(expiresAtUtc >= issuedAtUtc && expiresAtUtc - issuedAtUtc
+            + TimeSpan.FromDays(retention.TerminalSessionRetentionDays) <= TimeSpan.FromDays(retention.HardMaximumSessionDocumentDays));
     }
     private static void Validate(DeletionJob job) => IdentityRecordValidation.Require(IdentityRecordValidation.Id(job.AccountId)
         && job.Phase >= 0 && job.Phase <= DeletionBuckets.Length && (job.Phase < DeletionBuckets.Length || job.CompletedAtUtc is not null));

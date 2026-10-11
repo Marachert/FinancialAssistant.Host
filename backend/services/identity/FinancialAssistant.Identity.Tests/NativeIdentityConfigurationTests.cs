@@ -53,6 +53,11 @@ public sealed class NativeIdentityConfigurationTests
         options = Options();
         options.Authentication.RefreshTokenHashKey = "";
         Assert.Throws<InvalidOperationException>(() => NativeIdentityPersistence.Validate(options));
+        options = Options();
+        options.Authentication.RefreshTokenLifetimeDays = 90;
+        Assert.Throws<InvalidOperationException>(() => NativeIdentityPersistence.Validate(options));
+        options.Storage.Cleanup.HardMaximumSessionDocumentDays = 120;
+        NativeIdentityPersistence.Validate(options);
     }
 
     [Fact]

@@ -38,6 +38,9 @@ async bridge is now async end-to-end so PostgreSQL I/O and cancellation do
 not block request threads. Developer/testing adapters retain their existing behavior.
 Provider validation/delivery is not a financial transaction; paid phone/AI/OCR
 providers remain disabled, and no live provider acceptance is inferred.
+Google/Apple request and external token validation run before the native mutation
+scope. Cold-key discovery, key rotation or an unavailable issuer must never hold
+Identity's global SQL lock; only the validated account/session/outbox work is scoped.
 
 Sessions are individual records owned by a token-family key, with encrypted
 session locators. Family revocation has a durable tombstone, so refresh/reuse,
@@ -114,6 +117,12 @@ keep every registered key for decryption. Runtime credentials use `fa_identity`,
 not the migration owner. Migrations are run separately with the migration role's
 credential by installer-owned provisioning; the API never creates tables/roles.
 Maximum native access lifetime is 60 minutes and refresh lifetime 90 days.
+The session hard maximum must cover refresh lifetime plus terminal retention;
+90-day refresh with 30-day retention therefore requires a hard maximum of at least
+120 days, not 90. Cleanup also checks actual retained session/family validity
+windows and fails closed if a shorter changed policy cannot preserve their replay
+window. Family metadata follows the latest live session; it is not purged while
+that family has retained sessions.
 Phone delivery stays Disabled. No values belong in Git or command-line arguments.
 
 Build the full backend solution in Release, then on Windows run:

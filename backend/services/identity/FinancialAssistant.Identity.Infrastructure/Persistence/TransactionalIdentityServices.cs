@@ -11,10 +11,14 @@ namespace FinancialAssistant.Identity.Infrastructure.Persistence;
 
 internal static class IdentityTransactionResult
 {
-    internal static async Task<IdentityOperationResult<T>> RunAsync<T>(IdentityPersistenceContext context,
+    internal static Task<IdentityOperationResult<T>> RunAsync<T>(IdentityPersistenceContext context,
+        Func<CancellationToken, Task<IdentityOperationResult<T>>> operation, CancellationToken cancellationToken) =>
+        MapErrorsAsync(token => context.RunAsync(operation, token), cancellationToken);
+
+    internal static async Task<IdentityOperationResult<T>> MapErrorsAsync<T>(
         Func<CancellationToken, Task<IdentityOperationResult<T>>> operation, CancellationToken cancellationToken)
     {
-        try { return await context.RunAsync(operation, cancellationToken); }
+        try { return await operation(cancellationToken); }
         catch (Exception exception) when (exception is StorageUnavailableException or StorageConflictException
             || exception is OperationCanceledException && !cancellationToken.IsCancellationRequested)
         {
@@ -57,19 +61,19 @@ internal sealed class TransactionalIdentitySessionService(
 }
 
 internal sealed class TransactionalGoogleAuthenticationService(
-    GoogleProviderAuthenticationService inner, IdentityPersistenceContext context) : IGoogleProviderAuthenticationService
+    GoogleProviderAuthenticationService inner) : IGoogleProviderAuthenticationService
 {
     public Task<IdentityOperationResult<AuthSessionResponse>> AuthenticateAsync(GoogleSignInRequest request,
         string correlationId, CancellationToken cancellationToken = default) =>
-        IdentityTransactionResult.RunAsync(context, token => inner.AuthenticateAsync(request, correlationId, token), cancellationToken);
+        IdentityTransactionResult.MapErrorsAsync(token => inner.AuthenticateAsync(request, correlationId, token), cancellationToken);
 }
 
 internal sealed class TransactionalAppleAuthenticationService(
-    AppleProviderAuthenticationService inner, IdentityPersistenceContext context) : IAppleProviderAuthenticationService
+    AppleProviderAuthenticationService inner) : IAppleProviderAuthenticationService
 {
     public Task<IdentityOperationResult<AuthSessionResponse>> AuthenticateAsync(AppleSignInRequest request,
         string correlationId, CancellationToken cancellationToken = default) =>
-        IdentityTransactionResult.RunAsync(context, token => inner.AuthenticateAsync(request, correlationId, token), cancellationToken);
+        IdentityTransactionResult.MapErrorsAsync(token => inner.AuthenticateAsync(request, correlationId, token), cancellationToken);
 }
 
 internal sealed class TransactionalPhoneAuthenticationService(

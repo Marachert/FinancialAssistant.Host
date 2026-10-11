@@ -6,6 +6,8 @@ using FinancialAssistant.Identity.Application.Authentication;
 using FinancialAssistant.Identity.Application.Messaging;
 using FinancialAssistant.Identity.Application.Phone;
 using FinancialAssistant.Identity.Application.Providers;
+using FinancialAssistant.Identity.Application.Providers.Apple;
+using FinancialAssistant.Identity.Application.Providers.Google;
 using FinancialAssistant.Identity.Application.Sessions;
 using FinancialAssistant.Identity.Contracts.Auth;
 using FinancialAssistant.Identity.Domain.Accounts;
@@ -115,6 +117,26 @@ try
     { Check((await accounts.FindAccountByIdAsync(competingAccounts[i].Id) is not null) == results[i]); }
     var active = competingAccounts[Array.IndexOf(results, true)];
 
+    stage = "slow external provider validation never holds the identity SQL lock";
+    var deferredGoogle = new DeferredGoogleValidator();
+    var deferredApple = new DeferredAppleValidator();
+    await using (var external = Provider(options, google: deferredGoogle, apple: deferredApple))
+    using (var scope = external.CreateScope())
+    {
+        var client = new IdentityClientContext("synthetic-provider-client", "web", "0.0-test");
+        var googleTask = scope.ServiceProvider.GetRequiredService<IGoogleProviderAuthenticationService>()
+            .AuthenticateAsync(new GoogleSignInRequest("synthetic-provider-token".PadRight(96, 'x'), client), "synthetic-google");
+        var appleTask = scope.ServiceProvider.GetRequiredService<IAppleProviderAuthenticationService>()
+            .AuthenticateAsync(new AppleSignInRequest("synthetic-provider-token".PadRight(96, 'x'), "synthetic-provider-nonce", client), "synthetic-apple");
+        try
+        {
+            await Task.WhenAll(deferredGoogle.Started.Task, deferredApple.Started.Task).WaitAsync(TimeSpan.FromSeconds(2));
+            Check(await accounts.FindAccountByIdAsync(retainedId).WaitAsync(TimeSpan.FromSeconds(2)) is not null);
+        }
+        finally { deferredGoogle.Release.TrySetResult(); deferredApple.Release.TrySetResult(); }
+        Check((await googleTask).IsSuccess && (await appleTask).IsSuccess);
+    }
+
     stage = "atomic registration session and outbox through native composition";
     using (var scope = provider.CreateScope())
     {
@@ -215,6 +237,28 @@ try
     Check(await accounts.FindAccountByIdAsync(deleted.Id) is null);
     Check((await outbox.ReadPendingAsync(100, now.AddYears(1))).Any(message => message.Envelope.EventId == "77777777-7777-7777-7777-777777777777"));
 
+    stage = "configured hard maximum covers actual persisted replay windows";
+    var longOptions = Options(database, port, password);
+    longOptions.Authentication.RefreshTokenLifetimeDays = 90;
+    longOptions.Storage.Cleanup.HardMaximumSessionDocumentDays = 120;
+    await using (var longProvider = Provider(longOptions))
+    {
+        var longSessions = longProvider.GetRequiredService<IIdentitySessionStore>();
+        var longMaintenance = longProvider.GetRequiredService<IdentityPersistenceMaintenance>();
+        var longSession = Session(Guid.NewGuid().ToString("N"), active.Id, Hash('b'), Hash('c'), now.AddDays(-90))
+            with
+        { RefreshTokenExpiresAtUtc = now };
+        Check(await longSessions.TryCreateAsync(longSession));
+        try { await maintenance.CleanupBatchAsync(now.AddDays(29)); throw new FixtureFailure(); }
+        catch (StorageUnavailableException) { }
+        Check(await longSessions.FindByIdAsync(longSession.Id) is not null);
+        for (var batch = 0; batch < 14; batch++) { await longMaintenance.CleanupBatchAsync(now.AddDays(29)); }
+        Check(await longSessions.FindByIdAsync(longSession.Id) is not null);
+        for (var batch = 0; batch < 14; batch++) { await longMaintenance.CleanupBatchAsync(now.AddDays(30)); }
+        Check(await longSessions.FindByIdAsync(longSession.Id) is null);
+        Check((await sessions.FindByIdAsync(sessionId))?.Status == IdentitySessionStatus.Revoked);
+    }
+
     stage = "owned keyset pages and encrypted-at-rest content";
     await context.WithRecordsAsync(async (records, _) =>
     {
@@ -282,13 +326,16 @@ static IdentityServiceOptions Options(string database, int port, string password
     Providers = new() { IdentifierHmacKey = new string('i', 64) },
     Events = new() { Mode = "DurableOutboxPendingTransport", UserIdHmacKey = new string('e', 64) }
 };
-static ServiceProvider Provider(IdentityServiceOptions options, bool failOutbox = false)
+static ServiceProvider Provider(IdentityServiceOptions options, bool failOutbox = false,
+    IGoogleIdentityTokenValidator? google = null, IAppleIdentityTokenValidator? apple = null)
 {
     using var stream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(new { Identity = options }));
     var configuration = new ConfigurationBuilder().AddJsonStream(stream).Build();
     var services = new ServiceCollection();
     services.AddLogging(); services.AddRouting(); services.AddIdentityApplication(); services.AddIdentityInfrastructure(configuration, true);
     if (failOutbox) { services.Replace(ServiceDescriptor.Singleton<IIdentityEventOutbox>(provider => new FaultingOutbox(new PostgresIdentityEventOutbox(provider.GetRequiredService<IdentityPersistenceContext>())))); }
+    if (google is not null) { services.Replace(ServiceDescriptor.Singleton(google)); }
+    if (apple is not null) { services.Replace(ServiceDescriptor.Singleton(apple)); }
     return services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 }
 static string Hash(char character) => new(character, 64);
@@ -303,6 +350,26 @@ static void Check(bool value) { if (!value) { throw new FixtureFailure(); } }
 static async Task Sql(NpgsqlConnection connection, string sql)
 { await using var command = new NpgsqlCommand(sql, connection); await command.ExecuteNonQueryAsync(); }
 sealed class FixtureFailure : Exception;
+sealed class DeferredGoogleValidator : IGoogleIdentityTokenValidator
+{
+    internal TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    internal TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public async Task<GoogleIdentityTokenValidationResult> ValidateAsync(string value, CancellationToken token = default)
+    {
+        Started.TrySetResult(); await Release.Task.WaitAsync(token);
+        return GoogleIdentityTokenValidationResult.Valid(new GoogleIdentityPrincipal("synthetic-deferred-google", null, false, null));
+    }
+}
+sealed class DeferredAppleValidator : IAppleIdentityTokenValidator
+{
+    internal TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    internal TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public async Task<AppleIdentityTokenValidationResult> ValidateAsync(string value, string nonce, CancellationToken token = default)
+    {
+        Started.TrySetResult(); await Release.Task.WaitAsync(token);
+        return AppleIdentityTokenValidationResult.Valid(new AppleIdentityPrincipal("synthetic-deferred-apple", null, false, false));
+    }
+}
 sealed class FaultingOutbox(IIdentityEventOutbox inner) : IIdentityEventOutbox
 {
     public async Task EnqueueAsync(IdentityIntegrationEventEnvelope envelope, CancellationToken token = default)

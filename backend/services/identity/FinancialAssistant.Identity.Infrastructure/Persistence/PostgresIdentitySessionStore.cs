@@ -29,7 +29,8 @@ public sealed class PostgresIdentitySessionStore : IIdentitySessionStore
             await records.InsertAsync("sessions", family, session.Id, IdentityPersistenceContext.Encode(session));
             await IdentityPersistenceContext.WriteAsync(records, "families", Owner, family,
                 new FamilyState(family, session.AccountId, directory is not null && directory.ExpiresAtUtc > session.RefreshTokenExpiresAtUtc
-                    ? directory.ExpiresAtUtc : session.RefreshTokenExpiresAtUtc));
+                    ? directory.ExpiresAtUtc : session.RefreshTokenExpiresAtUtc,
+                    directory is not null && directory.ExpiresAtUtc > session.RefreshTokenExpiresAtUtc ? directory.LatestIssuedAtUtc : session.IssuedAtUtc));
             return true;
         }, cancellationToken);
 
@@ -67,7 +68,8 @@ public sealed class PostgresIdentitySessionStore : IIdentitySessionStore
             var directory = await IdentityPersistenceContext.ReadAsync<FamilyState>(records, "families", Owner, HashKey(current.TokenFamilyIdHash));
             await IdentityPersistenceContext.WriteAsync(records, "families", Owner, HashKey(current.TokenFamilyIdHash),
                 new FamilyState(HashKey(current.TokenFamilyIdHash), current.AccountId, directory is not null && directory.ExpiresAtUtc > replacement.RefreshTokenExpiresAtUtc
-                    ? directory.ExpiresAtUtc : replacement.RefreshTokenExpiresAtUtc));
+                    ? directory.ExpiresAtUtc : replacement.RefreshTokenExpiresAtUtc,
+                    directory is not null && directory.ExpiresAtUtc > replacement.RefreshTokenExpiresAtUtc ? directory.LatestIssuedAtUtc : replacement.IssuedAtUtc));
             return SessionRotationStoreResult.Success;
         }, cancellationToken);
 
@@ -144,6 +146,6 @@ public sealed class PostgresIdentitySessionStore : IIdentitySessionStore
     }
 
     internal sealed record SessionLocation(string Id, string AccountId, string Family);
-    internal sealed record FamilyState(string Family, string AccountId, DateTimeOffset ExpiresAtUtc);
+    internal sealed record FamilyState(string Family, string AccountId, DateTimeOffset ExpiresAtUtc, DateTimeOffset LatestIssuedAtUtc);
     private sealed record FamilyRevocation(DateTimeOffset AtUtc);
 }
