@@ -38,7 +38,9 @@ before native Intake confirmation work; do not mark a blocked ticket Done or use
 in-process financial repositories to avoid the owner boundary.
 
 - FIN-275 depends on completed FIN-274 and delivers authoritative Income/Expense
-  storage plus authenticated confirmation/reconciliation APIs for FIN-284.
+  storage and idempotent matching-owner event consumption for FIN-284. Existing
+  authenticated financial-owner APIs are reconciliation/status reads only for
+  Intake confirmation, never a second write path.
 - FIN-287 depends on FIN-274/275 for separate Summary/Analytics projections.
 - FIN-288 depends on FIN-275/287 and the completed FIN-283 Profile contract.
 - FIN-289 depends on FIN-274 and preserves the existing FIN-193 audit policy.
@@ -53,8 +55,15 @@ siblings remain required for FIN-270. A scope-planning PR does not complete FIN-
 FIN-275 preserves exact deterministic financial values, per-currency totals,
 owner isolation, manual/confirmed origins, immutable matching confirmation replay,
 revision ordering, corrections and archive/restore. A financial commit and its
-minimized outbox must be atomic. Intake uses authenticated owner APIs, never
-financial tables or native in-process repositories. Do not hold SQL locks over
+minimized outbox must be atomic. Intake commits its durable `transaction.confirmed.v1`
+outbox and returns confirmation intent (201 first/200 replay), without promising
+that the authoritative record is visible. FIN-276 delivers to the matching
+Income/Expense inbox/store/outbox asynchronously; downstream failure does not roll
+back committed Intake state. Any owner API used by Intake is read-only status/
+reconciliation, never a synchronous financial write or duplicate event path.
+Preserve the [canonical end-to-end flow](../architecture/financial-core-e2e-flow.md).
+Intake never writes financial tables or registers native in-process financial
+repositories. Existing owner manual-write APIs remain separate. Do not hold SQL locks over
 external HTTP/broker calls. No new physical financial-delete endpoint is authorized.
 
 FIN-287 preserves rebuildable owner/currency projections, currency moves,

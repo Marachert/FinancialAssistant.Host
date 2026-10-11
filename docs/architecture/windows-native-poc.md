@@ -86,8 +86,9 @@ matrix remain separate delivery gates. Existing developer/test profiles remain.
 | WPF wizard and engine | Separate UI and privileged deployment engine | FIN-278/279; resumable steps and UI validation |
 | .NET APIs/workers | Versioned win-x64 applications with Windows Service lifetime | FIN-273; all required hosts, real gateway routes and trust configuration |
 | PostgreSQL foundation | Service-owned roles/schemas, encrypted records, migrations and transactions | FIN-274; does not complete domain adapters |
-| Identity/Profile/Category/Intake | Service-owned durable state and domain idempotency | FIN-282/283/284; FIN-286 integration; Intake uses FIN-275 financial APIs |
-| Financial/insight services | PostgreSQL authoritative records and owned derived state | FIN-275; deterministic decimals/currencies, atomic owner commit/outbox, rebuild |
+| Identity/Profile/Category/Intake | Service-owned durable state and domain idempotency | FIN-282/283/284; FIN-286 integration; Intake confirmation stays on durable FIN-276 events, FIN-275 owner APIs reconcile only |
+| Financial/insight services | PostgreSQL authoritative records and separately owned derived state | FIN-275 Income/Expense; FIN-287 Summary/Analytics; FIN-288 Score/Recommendations/Notifications; decimals/currencies, atomic owner outbox, safe rebuild |
+| Audit metadata | Append-only minimized owned PostgreSQL state and retention | FIN-289; FIN-277 retains diagnostics, existing legacy ES contracts remain compatibility evidence |
 | RabbitMQ and Erlang | Compatible native Windows packages and service | FIN-276; real event convergence, deduplication, retry and recovery |
 | Receipts and file metadata | Encrypted service-owned native file storage with durable metadata | FIN-277 objects/ACLs/recovery; FIN-285 Receipt/OCR/AI metadata |
 | Cache | Bounded disposable native/in-process adapter where semantics allow | FIN-277; no financial/session/idempotency authority in volatile cache |
@@ -210,7 +211,10 @@ authorization before those actions; no additional spending is assumed.
 | FIN-272 | Native candidate inventory, evidence and explicit qualification blockers |
 | FIN-273 | Native service hosting, gateway routes and trust |
 | FIN-274 | Service-owned PostgreSQL foundation; domain adapters FIN-282/283/284/285 and integration FIN-286 |
-| FIN-275 | Durable financial/insight state |
+| FIN-275 | Durable Income/Expense records and matching-owner event confirmation; Intake owner API usage is read-only reconciliation |
+| FIN-287 | Separate Summary/Analytics projections and safe scoped rebuild; explicit Summary module-owned storage, no implied new deployable |
+| FIN-288 | Separate Score/Recommendations/Notifications/Profile/preference state and owned outbox |
+| FIN-289 | Append-only Audit metadata/retention; FIN-277 diagnostics remain required |
 | FIN-276 | Durable RabbitMQ delivery and convergence |
 | FIN-277 | Native receipt/cache/diagnostic adapters |
 | FIN-278 | Restart-safe privileged installation engine |

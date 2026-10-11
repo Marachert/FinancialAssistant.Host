@@ -88,12 +88,14 @@ Back up database plus separately protected encryption/index keys consistently;
 FIN-209 owns restore qualification. Lost keys are not recoverable from ciphertext.
 
 FIN-282 owns Identity; FIN-283 separate Profile/Category adapters; FIN-284 Intake
-and FIN-275-owned financial API boundaries; FIN-285 Receipt/OCR/AI metadata with
+and FIN-275-owned event confirmation boundaries (owner APIs reconcile only);
+FIN-285 Receipt/OCR/AI metadata with
 FIN-277 encrypted objects; FIN-276 durable event delivery. FIN-286 qualifies the
 complete domain migration/retention/concurrency/crash/restart suite. Actual SCM,
 installer/package and three-Windows acceptance remain FIN-278/280/281/206.
 
-FIN-275 now retains authoritative Income/Expense and their authenticated APIs;
+FIN-275 retains authoritative Income/Expense and matching-owner event consumption;
+Intake confirmation stays on its durable outbox, with owner API reads for reconciliation only.
 FIN-287 owns separate Summary/Analytics adapters, FIN-288 Score/Recommendations/
 Notifications/preferences and FIN-289 append-only Audit storage. This explicit
 [original-scope decomposition](../../../docs/engineering/native-financial-persistence-scope.md)

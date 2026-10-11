@@ -10,7 +10,7 @@ POC backlog completion after FIN-275 ownership decomposition is **87.4%**:
 The fresh 2026-10-11 18:42:32 UTC census contains 289 unique Jira issues. The
 [financial persistence inventory](../engineering/native-financial-persistence-scope.md)
 preserves FIN-275's seven original owners in four siblings: FIN-275 Income/Expense
-and confirmation APIs, FIN-287 Summary/Analytics, FIN-288 Score/Recommendations/
+and event-driven confirmation, FIN-287 Summary/Analytics, FIN-288 Score/Recommendations/
 Notifications, and FIN-289 append-only Audit. Three new unfinished leaf units
 change 188/212 (88.7%) to 188/215 (87.4%), a -1.2 percentage-point granularity
 adjustment calculated before rounding (-1.2374 pp). No features were added, no
@@ -299,7 +299,8 @@ Current delivery (native scope revision supersedes previous scope totals):
   without installed acceptance
 - next ranked native leaf is FIN-284, blocked by FIN-275; implement the financial
   owner prerequisite first, never Intake-owned financial tables or an unmerged base
-- FIN-275 now owns Income/Expense and confirmation APIs; FIN-287 Summary/Analytics,
+- FIN-275 owns Income/Expense and event-driven confirmation; owner APIs reconcile
+  state only for Intake, never perform synchronous confirmation writes. FIN-287 Summary/Analytics,
   FIN-288 Score/Recommendations/Notifications and FIN-289 Audit retain all its
   original remaining scope. FIN-286 explicitly depends on all four sibling leaves
 - FIN-274 is the PostgreSQL foundation; FIN-282 Identity, FIN-283 Profile/Category,

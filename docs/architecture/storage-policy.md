@@ -18,14 +18,16 @@ required domain behavior and verification. Each is a separate leaf under FIN-270
 no original requirement is removed or claimed complete by foundation delivery.
 
 FIN-275's original financial/read-model/audit persistence scope is also explicitly
-split by ownership: FIN-275 Income/Expense and authenticated confirmation APIs,
+split by ownership: FIN-275 Income/Expense and matching-owner event confirmation,
 FIN-287 separate Summary/Analytics, FIN-288 separate Score/Recommendations/
 Notifications/preferences, and FIN-289 append-only Audit metadata/retention.
 See the [inventory and acceptance boundaries](../engineering/native-financial-persistence-scope.md).
 All original requirements remain required under FIN-270; FIN-286 depends on all
 four. FIN-284 follows its blocked financial-owner prerequisite FIN-275 before
 Intake confirmation implementation. This planning does not implement adapters.
-FIN-284 depends on FIN-275-owned financial APIs, not direct cross-service SQL;
+FIN-284 commits only its durable confirmation outbox; FIN-276 delivers to the
+matching FIN-275 financial owner asynchronously. Owner APIs are read-only status/
+reconciliation for Intake, not a second confirmation write or direct SQL path;
 FIN-285 coordinates FIN-277's encrypted object storage. Reliable lifecycle delivery
 remains FIN-276. The [scope ledger](../agent/POC_PROGRESS.md) records the five extra
 leaf units separately from feature completion and installed-host acceptance.
