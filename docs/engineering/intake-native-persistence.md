@@ -48,6 +48,8 @@ HTTP call runs under SQL locks. A publisher/cancellation/storage failure before
 commit rolls back all owned writes, including identity and source markers.
 Bad input, note and correlation metadata validates before native SQL access;
 invalid merchant control characters become an explicit review ambiguity.
+OCR event/user/receipt identifiers must be canonical, bounded and control-free;
+malformed authenticated events return `400 invalid_ocr_completed_event` before SQL.
 Storage conflicts/unavailability use the shared generic 503 boundary.
 
 ## Confirmation And Delivery

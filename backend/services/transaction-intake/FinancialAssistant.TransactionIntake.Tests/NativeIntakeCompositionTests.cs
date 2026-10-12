@@ -72,7 +72,7 @@ public sealed class NativeIntakeCompositionTests
             .ConfirmAsync("owner", "draft", "unsafe\0correlation", default));
     }
 
-    private static ServiceProvider Provider() => new ServiceCollection().AddLogging().AddTransactionIntakeApplication()
+    internal static ServiceProvider Provider() => new ServiceCollection().AddLogging().AddTransactionIntakeApplication()
         .AddTransactionIntakeInfrastructure(Configuration("12"), true).BuildServiceProvider();
 
     [Fact]

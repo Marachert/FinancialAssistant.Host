@@ -4,6 +4,7 @@ using FinancialAssistant.ReceiptProcessing.Contracts;
 using FinancialAssistant.TransactionIntake.Application.Abstractions;
 using FinancialAssistant.TransactionIntake.Contracts;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace FinancialAssistant.TransactionIntake.Tests;
 
@@ -12,10 +13,12 @@ public sealed class OcrCompletedEventEndpointTests :
 {
     private readonly HttpClient client;
     private readonly IServiceProvider services;
+    private readonly TransactionIntakeWebApplicationFactory factory;
 
     public OcrCompletedEventEndpointTests(
         TransactionIntakeWebApplicationFactory factory)
     {
+        this.factory = factory;
         client = factory.CreateClient();
         services = factory.Services;
     }
@@ -102,6 +105,39 @@ public sealed class OcrCompletedEventEndpointTests :
         using var conflict = await client.SendAsync(conflictRequest);
 
         Assert.Equal(HttpStatusCode.Conflict, conflict.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("UserId", "owner\n")]
+    [InlineData("UserId", "owner\0invalid")]
+    [InlineData("UserId", " owner")]
+    [InlineData("ReceiptId", "receipt\n")]
+    [InlineData("ReceiptId", "receipt\0invalid")]
+    [InlineData("ReceiptId", " receipt")]
+    [InlineData("EventId", "event\n")]
+    [InlineData("EventId", "event\0invalid")]
+    [InlineData("EventId", " event")]
+    public async Task NativeConsumer_InvalidIdentifiersReturn400BeforeStorage(string field, string invalid)
+    {
+        await using var native = NativeIntakeCompositionTests.Provider();
+        var consumer = native.GetRequiredService<IOcrCompletedConsumer>();
+        var value = CreateEvent("synthetic_invalid_identifier");
+        value = field switch
+        {
+            "UserId" => value with { UserId = invalid },
+            "ReceiptId" => value with { ReceiptId = invalid },
+            "EventId" => value with { EventId = invalid },
+            _ => throw new ArgumentException("Unknown test field.")
+        };
+        await Assert.ThrowsAsync<InvalidOperationException>(() => consumer.ConsumeAsync(value, default));
+        using var nativeFactory = factory.WithWebHostBuilder(builder => builder.ConfigureServices(collection =>
+            collection.Replace(ServiceDescriptor.Singleton(consumer))));
+        using var nativeClient = nativeFactory.CreateClient();
+        using var request = CreateRequest(value);
+        using var response = await nativeClient.SendAsync(request);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+        Assert.Equal("invalid_ocr_completed_event", problem.GetProperty("code").GetString());
     }
 
     private static HttpRequestMessage CreateRequest(
