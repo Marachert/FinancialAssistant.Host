@@ -66,6 +66,28 @@ public sealed class NativeHostingTests
     }
 
     [Theory]
+    [InlineData("income", "Income")]
+    [InlineData("expense", "Expense")]
+    public void FinancialHosts_RequireStorageSecretsInCanonicalCatalog(string id, string prefix)
+    {
+        var service = NativeServiceCatalog.Get(id);
+        foreach (var suffix in new[] { "Password", "IndexKey" })
+        {
+            var key = $"{prefix}:Storage:Postgres:{suffix}";
+            Assert.Contains(key, service.RequiredSecretKeys);
+            var values = Secrets(service);
+            values.Remove(key);
+            Assert.Contains(key, Assert.Throws<InvalidOperationException>(() =>
+                FinancialAssistantHost.ValidateConfiguration(Configuration(values), service)).Message);
+            values[key] = SyntheticSecret + "\n";
+            var unsafeValue = Assert.Throws<InvalidOperationException>(() =>
+                FinancialAssistantHost.ValidateConfiguration(Configuration(values), service));
+            Assert.Contains(key, unsafeValue.Message);
+            Assert.DoesNotContain(SyntheticSecret, unsafeValue.Message);
+        }
+    }
+
+    [Theory]
     [InlineData(0)]
     [InlineData(31)]
     [InlineData(257)]
