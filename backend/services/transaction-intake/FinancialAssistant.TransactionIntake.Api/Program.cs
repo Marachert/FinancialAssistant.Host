@@ -2,6 +2,7 @@ using FinancialAssistant.Expense.Infrastructure;
 using FinancialAssistant.Income.Infrastructure;
 using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
+using FinancialAssistant.Shared.Persistence;
 using FinancialAssistant.TransactionIntake.Api.Endpoints;
 using FinancialAssistant.TransactionIntake.Api.Security;
 using FinancialAssistant.TransactionIntake.Application;
@@ -24,14 +25,19 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 builder.Services.AddTransactionIntakeApplication();
-builder.Services.AddIncomeInfrastructure();
-builder.Services.AddExpenseInfrastructure();
-builder.Services.AddTransactionIntakeInfrastructure();
+var windowsNative = builder.Environment.IsEnvironment(FinancialAssistantHost.NativeEnvironment);
+if (!windowsNative)
+{
+    builder.Services.AddIncomeInfrastructure();
+    builder.Services.AddExpenseInfrastructure();
+}
+builder.Services.AddTransactionIntakeInfrastructure(builder.Configuration, windowsNative);
 builder.Services.AddSingleton<TransactionIntakeGatewayAuthenticator>();
 builder.Services.AddSingleton<ReceiptEventAuthenticator>();
 builder.Services.AddFinancialAssistantHealthChecks();
 
 var app = builder.Build();
+if (windowsNative) { app.UseOwnedStorageFailureBoundary(); }
 
 app.UseFinancialAssistantCorrelation();
 _ = app.Services.GetRequiredService<TransactionIntakeGatewayAuthenticator>();
@@ -52,7 +58,7 @@ app.MapGet("/transaction-intake/info", (IHostEnvironment environment) => Results
     status = "running",
     environment = environment.EnvironmentName,
     parserProvider = "deterministic-development-adapter",
-    storageProvider = "in-memory"
+    storageProvider = windowsNative ? "PostgreSQL" : "in-memory"
 }));
 
 app.MapTransactionIntakeEndpoints();

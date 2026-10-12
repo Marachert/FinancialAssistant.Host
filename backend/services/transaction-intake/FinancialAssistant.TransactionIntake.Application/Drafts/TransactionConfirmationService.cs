@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using System.Text;
 using FinancialAssistant.TransactionIntake.Application.Abstractions;
 using FinancialAssistant.TransactionIntake.Contracts;
 using FinancialAssistant.TransactionIntake.Domain.Drafts;
@@ -253,7 +255,9 @@ public sealed class TransactionConfirmationService : ITransactionConfirmationSer
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return $"confirm-{draftId}";
+            var fallback = $"confirm-{draftId}";
+            return fallback.Length <= 128 ? fallback : "confirm-" +
+                Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(draftId)));
         }
 
         var normalized = value.Trim();

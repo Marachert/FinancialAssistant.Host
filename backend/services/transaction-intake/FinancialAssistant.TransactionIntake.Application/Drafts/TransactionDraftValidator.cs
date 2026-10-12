@@ -282,7 +282,7 @@ public sealed partial class TransactionDraftValidator
         }
 
         var normalized = string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
-        if (normalized.Length > 120)
+        if (normalized.Length > 120 || normalized.Any(char.IsControl))
         {
             ambiguities.Add("merchant");
             return null;

@@ -22,6 +22,7 @@ public sealed partial class TransactionIntakeService : ITransactionIntakeService
     private readonly ITransactionIntakeClock clock;
     private readonly ITransactionDraftIdGenerator idGenerator;
     private readonly TransactionDraftValidator validator;
+    private readonly ITransactionIntakeMutationScope? mutationScope;
 
     public TransactionIntakeService(
         ITransactionInputParser parser,
@@ -30,7 +31,8 @@ public sealed partial class TransactionIntakeService : ITransactionIntakeService
         ITransactionDraftCreatedPublisher draftCreatedPublisher,
         ITransactionIntakeClock clock,
         ITransactionDraftIdGenerator idGenerator,
-        TransactionDraftValidator validator)
+        TransactionDraftValidator validator,
+        ITransactionIntakeMutationScope? mutationScope = null)
     {
         this.parser = parser;
         this.store = store;
@@ -39,6 +41,7 @@ public sealed partial class TransactionIntakeService : ITransactionIntakeService
         this.clock = clock;
         this.idGenerator = idGenerator;
         this.validator = validator;
+        this.mutationScope = mutationScope;
     }
 
     public async Task<TransactionIntakeResult> CreateDraftAsync(
@@ -57,12 +60,14 @@ public sealed partial class TransactionIntakeService : ITransactionIntakeService
         var existing = await store.GetAsync(normalizedUserId, normalizedKey, cancellationToken);
         if (existing is not null)
         {
-            var replay = CreateReplay(existing, fingerprint);
-            await EnsureDraftCreatedEventAsync(
-                existing.Draft,
-                normalizedInput,
-                cancellationToken);
-            return replay;
+            return await MutateAsync(normalizedUserId, async token =>
+            {
+                var latest = mutationScope is null ? existing :
+                    await store.GetAsync(normalizedUserId, normalizedKey, token) ?? existing;
+                var replay = CreateReplay(latest, fingerprint);
+                await EnsureDraftCreatedEventAsync(latest.Draft, normalizedInput, token);
+                return replay;
+            }, cancellationToken);
         }
 
         var createdAtUtc = clock.UtcNow.ToUniversalTime();
@@ -77,25 +82,18 @@ public sealed partial class TransactionIntakeService : ITransactionIntakeService
             candidate,
             createdAtUtc,
             TransactionDraftSuggestionContext.AiNaturalLanguage);
-        var stored = await store.StoreIfMissingAsync(
-            normalizedUserId,
-            normalizedKey,
-            fingerprint,
-            draft,
-            cancellationToken);
-
-        if (!string.Equals(stored.Stored.InputFingerprint, fingerprint, StringComparison.Ordinal))
+        return await MutateAsync(normalizedUserId, async token =>
         {
-            throw new IdempotencyConflictException();
-        }
-
-        await EnsureDraftCreatedEventAsync(
-            stored.Stored.Draft,
-            normalizedInput,
-            cancellationToken);
-
-        return new TransactionIntakeResult(ToResponse(stored.Stored.Draft), Replayed: !stored.Created);
+            var stored = await store.StoreIfMissingAsync(normalizedUserId, normalizedKey, fingerprint, draft, token);
+            if (!string.Equals(stored.Stored.InputFingerprint, fingerprint, StringComparison.Ordinal))
+            { throw new IdempotencyConflictException(); }
+            await EnsureDraftCreatedEventAsync(stored.Stored.Draft, normalizedInput, token);
+            return new TransactionIntakeResult(ToResponse(stored.Stored.Draft), Replayed: !stored.Created);
+        }, cancellationToken);
     }
+
+    private Task<T> MutateAsync<T>(string owner, Func<CancellationToken, Task<T>> operation, CancellationToken token) =>
+        mutationScope is null ? operation(token) : mutationScope.RunAsync(owner, operation, token);
 
     private async Task EnsureDraftCreatedEventAsync(
         TransactionDraft draft,
@@ -203,6 +201,7 @@ public sealed partial class TransactionIntakeService : ITransactionIntakeService
         }
 
         var normalized = string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        if (normalized.Any(char.IsControl)) { throw new ArgumentException("Value cannot contain control characters.", parameterName); }
         if (normalized.Length > maximumLength)
         {
             throw new ArgumentException($"Value cannot exceed {maximumLength} characters.", parameterName);

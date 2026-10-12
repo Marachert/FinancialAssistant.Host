@@ -97,7 +97,7 @@ public sealed class OcrCompletedDraftConsumer : IOcrCompletedConsumer
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
     }
 
-    private static void Validate(OcrCompletedIntegrationEvent integrationEvent)
+    public static void Validate(OcrCompletedIntegrationEvent integrationEvent)
     {
         ArgumentNullException.ThrowIfNull(integrationEvent);
         if (!string.Equals(

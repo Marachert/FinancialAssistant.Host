@@ -69,6 +69,11 @@ closure ledger is actually merged and dependencies are refreshed. Fresh census
 FIN-2707/19 and FIN-38 P9 13/39 (33.3%). First-user testing remains Not Ready;
 no installed feature credit or calendar ETA.
 
+FIN-284 [native Intake storage](../../docs/engineering/intake-native-persistence.md)
+adds durable draft/index/source/confirmation-intent outboxes, not live broker or
+installer acceptance. Intake requires explicit source retention and its own
+storage secrets; no in-process native financial stores/consumers or write RPC.
+
 Financial Summary currently has no standalone API host in the fifteen-host
 catalog. FIN-287 must explicitly declare its module-owned storage identity and
 provisioning without silently sharing another owner's role or inventing a new

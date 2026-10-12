@@ -6,6 +6,18 @@ namespace FinancialAssistant.TransactionIntake.Tests;
 public sealed class TransactionDraftValidatorTests
 {
     [Fact]
+    public void Validate_ControlCharacterMerchantBecomesReviewAmbiguity()
+    {
+        var createdAt = new DateTimeOffset(2026, 10, 12, 0, 0, 0, TimeSpan.Zero);
+        var draft = new TransactionDraftValidator().Validate("synthetic-draft", "synthetic-owner", "SYNTHETICFINGERPRINT",
+            new ParsedTransactionCandidate("expense", 10m, "USD", "expense.food", "unsafe\0merchant",
+                new DateOnly(2026, 10, 12), 1m), createdAt);
+        Assert.Null(draft.Merchant);
+        Assert.True(draft.RequiresReview);
+        Assert.Contains("merchant", draft.Ambiguities);
+    }
+
+    [Fact]
     public void Validate_DoesNotPromoteInvalidParserOutputIntoDraftFields()
     {
         var validator = new TransactionDraftValidator();

@@ -23,7 +23,7 @@ FIN-287 separate Summary/Analytics, FIN-288 separate Score/Recommendations/
 Notifications/preferences, and FIN-289 append-only Audit metadata/retention.
 See the [inventory and acceptance boundaries](../engineering/native-financial-persistence-scope.md).
 All original requirements remain required under FIN-270; FIN-286 depends on all
-four. FIN-284 follows its blocked financial-owner prerequisite FIN-275 before
+four. FIN-284 follows its verified financial-owner prerequisite FIN-275 before
 Intake confirmation implementation. Planning alone did not implement adapters.
 The subsequent [native financial implementation](../engineering/financial-records-native-persistence.md)
 adds separate Income/Expense owned records, immutable confirmation originals/
@@ -55,6 +55,13 @@ in-memory fallback. Category state and outbox intents commit atomically, but liv
 RabbitMQ delivery/inbox qualification and native readiness remain FIN-276. Active
 preferences/catalogs are retained until authorized deletion; minimal replay
 markers and pending intents are retained until a qualified lifecycle horizon.
+
+FIN-284 selects [native Intake state](../engineering/intake-native-persistence.md)
+and atomic draft/source/confirmation-intent outboxes. Parsing stays outside SQL.
+Source text has mandatory explicit 1..24-hour retention, immediate read cutoff
+and bounded physical cleanup; replay or a longer setting cannot resurrect it.
+Minimal idempotency/confirmation metadata survives outbox retention. This is not
+a physical-erasure SLA under load, live broker delivery or installed acceptance.
 
 Elasticsearch remains appropriate for controlled search, read projections,
 operational indices and explicitly retained legacy adapter contracts. It is not
