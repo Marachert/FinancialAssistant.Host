@@ -3,7 +3,9 @@
 FIN-274 supplies infrastructure, not completed native domain adapters. Npgsql
 8.0.9 targets the existing .NET 8 baseline. Owning adapters select this store through
 their explicit native profile; FIN-282 introduces Identity wiring and FIN-283
-introduces separate Profile/Category wiring. Developer in-memory wiring remains
+introduces separate Profile/Category wiring; FIN-275 adds independent native
+Income/Expense financial records, transactional wrappers and outbox intents.
+Developer in-memory wiring remains
 unchanged. Foundation tests are not installed-Windows or first-user acceptance.
 
 ## Ownership And Provisioning
@@ -123,6 +125,11 @@ It never registers SCM services or changes OS trust/registry/security policy.
 Select `-Scenario Identity` for the Identity adapter checks or
 `-Scenario ProfileCategory` for exact preferences/taxonomy, concurrent updates,
 atomic category/outbox rollback, erasure/replay, cross-role denial and crash/restart.
+Select `-Scenario FinancialRecords` for independent Income/Expense, exact decimal/
+currency/origin/revision state, immutable replay after corrections, atomic outbox
+failure rollback, CAS/concurrency, bounded pending-safe retention and crash/restart.
+See the [native financial contract](../../../docs/engineering/financial-records-native-persistence.md);
+broker delivery/inbox qualification remains FIN-276.
 Each scenario uses the same verified, fresh, owned fixture and cleanup guards.
 Unsigned-package execution blocked by Windows policy must remain Blocked; do not
 bypass it. Passing a local database test is not package redistribution qualification.

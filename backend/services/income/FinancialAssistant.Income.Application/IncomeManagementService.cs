@@ -28,6 +28,21 @@ public sealed partial class IncomeManagementService : IIncomeManagementService
         this.eventPublisher = eventPublisher ?? NullIncomeRecordEventPublisher.Instance;
     }
 
+    public void ValidateCreateRequest(string userId, CreateIncomeRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        _ = NormalizeRequired(userId, nameof(userId));
+        _ = ValidateValues(request.Amount, request.Currency, request.CategoryId, request.Merchant, request.Date);
+    }
+
+    public void ValidateUpdateRequest(string userId, string recordId, UpdateIncomeRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        _ = NormalizeRequired(userId, nameof(userId));
+        _ = NormalizeRequired(recordId, nameof(recordId));
+        _ = ValidateValues(request.Amount, request.Currency, request.CategoryId, request.Merchant, request.Date);
+    }
+
     public async Task<IncomeRecordResponse> CreateAsync(
         string userId,
         CreateIncomeRequest request,

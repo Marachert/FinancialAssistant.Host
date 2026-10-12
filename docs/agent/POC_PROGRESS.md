@@ -1,6 +1,6 @@
 # POC Readiness Progress
 
-Last updated: 2026-10-11
+Last updated: 2026-10-12
 
 ## Current Snapshot
 
@@ -18,6 +18,13 @@ requirement was removed, and no completed work was lost or new delivery credited
 FIN-270 remains In Progress with 6/19 children Done; FIN-38 P9 is 12/39 (30.8%).
 FIN-284 is next by local rank but blocked by FIN-275, so the prerequisite is the
 active implementation leaf. The scope-planning PR does not complete FIN-275.
+Planning PR280 was independently verified merged at 2026-10-12T05:27:43Z as
+`f6a3e7d747a45d2c492462d3fc790b1a5c306e5e`; FIN-275 remains In Progress.
+The [native financial adapter implementation](../engineering/financial-records-native-persistence.md)
+has separate Income/Expense record/outbox transactions and free synthetic
+crash/restart verification. Implementation review/merge and Jira closure still
+gate completed-ticket credit; live broker/inbox FIN-276 and installed acceptance
+are not claimed.
 First-user testing remains Not Ready; no calendar ETA follows from percentages.
 
 Historical FIN-283 Profile/Category closure snapshot:

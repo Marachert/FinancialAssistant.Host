@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../FinancialAssistant.Income.Infrastructure/FinancialAssistant.Income.Infrastructure.csproj" />
+    <ProjectReference Include="../../expense/FinancialAssistant.Expense.Infrastructure/FinancialAssistant.Expense.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

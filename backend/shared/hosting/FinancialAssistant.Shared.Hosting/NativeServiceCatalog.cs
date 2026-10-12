@@ -57,8 +57,8 @@ public static class NativeServiceCatalog
             Define("financial-score", 5107, "FinancialScore:Gateway:SharedSecret"),
             Define("recommendations-notifications", 5108, "RecommendationsNotifications:Gateway:SharedSecret"),
             Define("monitoring", 5110, "Monitoring:Gateway:SharedSecret", "Monitoring:Signals:SharedSecret"),
-            Define("income", 5111, "Income:Gateway:SharedSecret"),
-            Define("expense", 5112, "Expense:Gateway:SharedSecret"),
+            Define("income", 5111, "Income:Gateway:SharedSecret", "Income:Storage:Postgres:Password", "Income:Storage:Postgres:IndexKey"),
+            Define("expense", 5112, "Expense:Gateway:SharedSecret", "Expense:Storage:Postgres:Password", "Expense:Storage:Postgres:IndexKey"),
             Define("audit", 5113, "Audit:Gateway:SharedSecret", "Audit:Services:SharedSecret"),
             Define("ai-orchestration", 5114, "AiOrchestration:Gateway:SharedSecret"),
             Define("mcp", 5115, "Mcp:Authentication:SharedSecret", "Mcp:Monitoring:SharedSecret", "Mcp:Audit:SharedSecret")

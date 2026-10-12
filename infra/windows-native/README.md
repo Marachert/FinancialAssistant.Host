@@ -48,6 +48,11 @@ Recommendations/Notifications, and FIN-289 Audit. This is planning, not addition
 implemented adapters. The fresh 2026-10-11 18:42:32 UTC census keeps 188 Done and
 adds three unfinished leaf units: current 188/215 (87.4%), a -1.2 pp granularity
 adjustment, not lost delivery. FIN-270 has 6/19 children Done; P9 is 12/39 (30.8%).
+The [FIN-275 financial adapter implementation](../../docs/engineering/financial-records-native-persistence.md)
+adds separate Income/Expense native stores and atomic owned outboxes, not live
+broker delivery or installer qualification. Public reconciliation reads remain
+owner-authenticated; Intake confirmation remains event-only.
+
 FIN-284 is blocked by the FIN-275 financial-owner prerequisite, which is selected
 first. First-user testing remains Not Ready; no added feature credit or ETA.
 

@@ -16,7 +16,7 @@ installer or accepted native Windows runtime is claimed by this document.
 | Gateway | REST routing, JWT/role checks, exact public allowlist, trusted context, rate limits and safe errors | Route activation and destinations are environment-controlled; not every handler is enabled by repository defaults |
 | Identity/Profile/Category | Deterministic authentication/session/provider-validation handlers, profile preferences and taxonomy | Stable secrets, durable stores and real provider configuration; phone delivery adapter is disabled by default |
 | Intake/Receipt/AI | Editable drafts, review/reject/confirm, receipt/OCR processing and controlled provider abstractions | Approved provider budgets, privacy configuration and end-to-end hosted operation |
-| Income/Expense | Owner-scoped authoritative validated records and lifecycle contracts | Durable deployment and recovery verification |
+| Income/Expense | Separate native PostgreSQL authoritative records, atomic minimized outbox, immutable confirmation replay and lifecycle contracts | Live delivery/inbox FIN-276, integrated recovery FIN-286 and installed acceptance |
 | Summary/Analytics/Score | Deterministic projections, reports, history and dashboard composition | Live event wiring, projection rebuild and deployment evidence |
 | Recommendations/Notifications | Recommendation generation, prepared notification/inbox lifecycle and preferences | Push/web adapters are non-sending placeholders; no real delivery or deferred quiet-hours scheduler claimed |
 | Mobile | Home/Add/Insights/Settings, authentication/onboarding, text/receipt draft review, dashboard, inbox and resilience states | Native audio, complete wallet/debt/reserve flows, signed stores and tester acceptance are not all delivered |
@@ -36,10 +36,15 @@ catalog rehydration, owner-isolated updates and atomic Category/outbox intents.
 Other domain adapters remain their own follow-on tickets. This is not installed-host
 or first-user acceptance; developer/test adapters remain process-local.
 
+FIN-275 adds [native Income/Expense persistence](../engineering/financial-records-native-persistence.md)
+with atomic record/outbox commits, immutable original replay checks and exact
+financial rehydration. Confirmation remains event-driven; transport is not
+implemented by the storage adapters. Developer/test stores stay process-local.
+
 The [FIN-275 ownership inventory](../engineering/native-financial-persistence-scope.md)
 separates its original seven-owner persistence scope into FIN-275 financial records/
 event confirmation, FIN-287 Summary/Analytics, FIN-288 Score/Recommendations/
-Notifications and FIN-289 append-only Audit. This planning does not implement them;
+Notifications and FIN-289 append-only Audit. Planning does not implement those siblings;
 FIN-284 follows its blocked financial-owner prerequisite rather than writing those
 tables or using native in-process financial repositories. Confirmation remains
 Intake outbox -> FIN-276 -> matching owner inbox/store/outbox; owner APIs only
@@ -54,8 +59,9 @@ and environment are enabled and verified:
 1. Authenticate through the public gateway and complete profile/onboarding.
 2. Submit synthetic text or a receipt; Intake/Receipt/AI produce a draft with
    candidate fields, confidence and explicit ambiguities.
-3. Review, correct, reject or confirm. Confirmation invokes deterministic
-   validation and the owning Income/Expense write; AI never writes the ledger.
+3. Review, correct, reject or confirm. Confirmation validates deterministically
+   and records Intake outbox intent; the matching Income/Expense commit follows
+   asynchronously, never a synchronous write RPC. AI never writes the ledger.
 4. Owned events feed projections, dashboard/score and recommendation preparation.
 5. Read the resulting financial overview and inbox through protected APIs.
 6. Operators inspect safe monitoring/audit signals, not raw user input or receipts.

@@ -26,6 +26,11 @@ fail with configuration key names only. No secrets are generated or logged.
 FIN-208 supplies protected configuration/secret references and per-service ACLs;
 environment input here is a bootstrap contract, not that protection mechanism.
 
+The catalog also requires each activated Income/Expense PostgreSQL Password and
+IndexKey alongside its gateway secret. These are separate owner storage inputs,
+not reusable gateway credentials; persistence validates the retained encryption
+key set separately.
+
 Identity and Gateway must receive the same signing material, issuer and audience.
 The existing Identity SHA-512 key derivation and HS256 Gateway validation remain
 authoritative. All gateway-authenticated downstream services receive the same
