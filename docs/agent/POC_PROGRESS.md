@@ -4,8 +4,23 @@ Last updated: 2026-10-12
 
 ## Current Snapshot
 
-POC backlog completion after FIN-275 ownership decomposition is **87.4%**:
-**188 of 215 canonical POC leaf tickets are Done**.
+POC backlog completion after verified FIN-275 closure is **87.9%**:
+**189 of 215 canonical POC leaf tickets are Done**.
+
+The fresh 2026-10-12 13:26:08 UTC census contains 289 unique Jira issues.
+FIN-275 is verified Done after actual PR281 merge at
+`fae3226412e05bef6a6a398f30fec0327889173b`, merged `2026-10-12T08:14:15Z`.
+This is +0.5 percentage points before rounding (100/215 = 0.4651 pp), from
+188/215 (87.4%). FIN-270 remains In Progress with 7/19 children Done; FIN-38 P9
+is 13/39 (33.3%). Native Income/Expense records and minimized outboxes commit
+atomically, with immutable confirmation replay, exact financial snapshots and
+free actual fixture crash/restart verification. Live broker/inbox FIN-276,
+integrated recovery FIN-286 and installed/owner acceptance remain separate.
+FIN-284 is next by local rank with FIN-274/275 Done prerequisites; start only
+after this closure ledger is actually merged and dependencies are read fresh.
+First-user testing remains Not Ready; no calendar ETA follows from percentages.
+
+Historical FIN-275 ownership decomposition snapshot:
 
 The fresh 2026-10-11 18:42:32 UTC census contains 289 unique Jira issues. The
 [financial persistence inventory](../engineering/native-financial-persistence-scope.md)
@@ -15,17 +30,13 @@ Notifications, and FIN-289 append-only Audit. Three new unfinished leaf units
 change 188/212 (88.7%) to 188/215 (87.4%), a -1.2 percentage-point granularity
 adjustment calculated before rounding (-1.2374 pp). No features were added, no
 requirement was removed, and no completed work was lost or new delivery credited.
-FIN-270 remains In Progress with 6/19 children Done; FIN-38 P9 is 12/39 (30.8%).
-FIN-284 is next by local rank but blocked by FIN-275, so the prerequisite is the
-active implementation leaf. The scope-planning PR does not complete FIN-275.
+At that checkpoint FIN-270 had 6/19 children Done and FIN-38 P9 was 12/39 (30.8%).
+FIN-284 was blocked by FIN-275, so the prerequisite was selected first.
+The scope-planning PR did not complete FIN-275.
 Planning PR280 was independently verified merged at 2026-10-12T05:27:43Z as
-`f6a3e7d747a45d2c492462d3fc790b1a5c306e5e`; FIN-275 remains In Progress.
-The [native financial adapter implementation](../engineering/financial-records-native-persistence.md)
-has separate Income/Expense record/outbox transactions and free synthetic
-crash/restart verification. Implementation review/merge and Jira closure still
-gate completed-ticket credit; live broker/inbox FIN-276 and installed acceptance
-are not claimed.
-First-user testing remains Not Ready; no calendar ETA follows from percentages.
+`f6a3e7d747a45d2c492462d3fc790b1a5c306e5e`; FIN-275 remained In Progress until
+the subsequent [native financial implementation](../engineering/financial-records-native-persistence.md)
+was reviewed, actually merged and verified Done. Planning alone added no credit.
 
 Historical FIN-283 Profile/Category closure snapshot:
 
@@ -94,7 +105,7 @@ a +0.5 percentage-point closure after the separate scope adjustment.
 
 Approved target: [Windows-native WPF installer](../architecture/windows-native-poc.md)
 on Windows 11 and Server 2022/2025, without Docker/WSL. Identity and separate
-Profile/Category adapters are merged;
+Profile/Category and Income/Expense adapters are merged;
 the remaining domain adapters, broker, installer and installed-host acceptance
 remain unfinished capabilities.
 
@@ -103,6 +114,35 @@ completed backlog scope; it is not an estimate of elapsed time or a substitute
 for the readiness gates below.
 
 Latest canonical and Jira closure:
+
+- FIN-275 - Persist native Income and Expense records and confirmation boundaries
+- implementation PR: https://github.com/Marachert/FinancialAssistant.Host/pull/281
+- actual merge: https://github.com/Marachert/FinancialAssistant.Host/commit/fae3226412e05bef6a6a398f30fec0327889173b
+- merged at: `2026-10-12T08:14:15Z`
+- final head: `7907369d967a89be78c7663cd3d06c414f985b3a`
+- exact-head CI: Backend38221608361, Mobile38221608355, Admin38221608347;
+  all five checks succeeded, no pending/cancelled/skipped checks
+- previous/current completion: 188/215 (87.4%) to 189/215 (87.9%);
+  +0.5 pp before rounding (100/215 = 0.4651 pp)
+- valid catalog-secret finding fixed/regressed/useful, replied `4245878617`
+  with commit/test/CI evidence and resolved only after green; final channels clear
+- full baseline 964/964 plus scoped review rerun: latest per-project 966/966
+  across 24 projects, zero failures/skips; Income15/Expense15/Hosting56/Repository316;
+  scoped build zero warnings/errors, full build five existing cache warnings;
+  format passed with existing workspace warnings, privacy1125, Markdown148/443 links zero
+- actual isolated PostgreSQL initial/crash/restart passed exact full snapshot hashes,
+  two owners/currencies, separate role/key isolation and SQL denial, concurrent
+  confirmation/update, stale CAS, corrected/conflicting/alternate replay,
+  create/update/confirmation atomic publisher-failure rollback, strict malformed state,
+  pending-safe bounded retention and replay after physical creation-event cleanup
+- owned fixtures stopped; 22 affected Confluence actual-merge bodies read-back verified;
+  no paid provider/API/runner/credit/fallback, production mutation or SCM registration
+- authoritative/archived records and immutable replay state do not automatically expire;
+  published-only outbox retention is 30 days and 25 scanned records per maintenance pass;
+  live RabbitMQ/inbox qualification remains FIN-276, integrated lifecycle/recovery FIN-286
+- FIN-270 remains In Progress 7/19; FIN-38 P9 is 13/39 (33.3%), first-user Not Ready
+
+Previous canonical closure (historical Profile/Category snapshot):
 
 - FIN-283 - Persist native profile preferences and category catalogs
 - implementation PR: https://github.com/Marachert/FinancialAssistant.Host/pull/278
@@ -246,6 +286,9 @@ numerator and denominator unchanged.
 
 Current delivery (native scope revision supersedes previous scope totals):
 
+- FIN-275 is verified Done after guarded PR281 merge at
+  `fae3226412e05bef6a6a398f30fec0327889173b`; separate financial-owned native
+  records and atomic outbox/replay guards are not live broker/installed acceptance
 - FIN-283 is verified Done after guarded PR278 merge at
   `dba7624e84bcfac7991fc41610e8ad829716e0e6`; separate Profile/Category durable
   adapters and atomic outbox intents are not broker/installer/first-user acceptance
@@ -258,7 +301,7 @@ Current delivery (native scope revision supersedes previous scope totals):
 - FIN-273 is Done through guarded merged PR #272; FIN-271/272 remain historical
 - native hosting implementation is merged at `ea766a9172d0b4ad49ce49c4721b6e7c3d676f52`
   after exact-head Backend, Mobile and Admin Web CI and a clear review-channel audit
-- current canonical completion is 188/215 (87.4%) after FIN-275 ownership decomposition;
+- current canonical completion is 189/215 (87.9%) after verified FIN-275 closure;
   five persistence leaves retain the original domain requirements. FIN-271/272/273
   remain Done and earlier closure percentages
   remain historical, with no lost delivery
@@ -266,7 +309,7 @@ Current delivery (native scope revision supersedes previous scope totals):
   verified Done
 - FIN-36 P8 progress is 13/13 (100.0%); all children are Done and the epic remains
   In Progress for unverified integrated log/metric/trace, audit, admin and MCP evidence
-- FIN-38 P9 progress is 12/39 (30.8%); the epic remains In Progress
+- FIN-38 P9 progress is 13/39 (33.3%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
@@ -301,11 +344,11 @@ Current delivery (native scope revision supersedes previous scope totals):
   all five exact-head CI checks passed and every review channel was empty
 - current documentation includes the implementation map, preferred storage policy,
   source-to-Confluence maintenance map and explicit financial authorization limits
-- FIN-270 is the priority parent with 6/19 children Done; FIN-271/272/273/274/282/283
-  concept, inventory, hosting, foundation, Identity and Profile/Category are Done,
+- FIN-270 is the priority parent with 7/19 children Done; FIN-271/272/273/274/282/283/275
+  concept, inventory, hosting, foundation, Identity, Profile/Category and financial stores are Done,
   without installed acceptance
-- next ranked native leaf is FIN-284, blocked by FIN-275; implement the financial
-  owner prerequisite first, never Intake-owned financial tables or an unmerged base
+- next ranked native leaf is FIN-284 with FIN-274/275 verified Done prerequisites;
+  never use Intake-owned financial tables or start from an unmerged base
 - FIN-275 owns Income/Expense and event-driven confirmation; owner APIs reconcile
   state only for Intake, never perform synchronous confirmation writes. FIN-287 Summary/Analytics,
   FIN-288 Score/Recommendations/Notifications and FIN-289 Audit retain all its
@@ -329,8 +372,8 @@ Current delivery (native scope revision supersedes previous scope totals):
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 20 | 20 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 13 | 13 | 100.0% |
-| FIN-38 | P9 Testing, Windows deployment, and release readiness | 12 | 39 | 30.8% |
-| **Total** | **Canonical POC leaf scope** | **188** | **215** | **87.4%** |
+| FIN-38 | P9 Testing, Windows deployment, and release readiness | 13 | 39 | 33.3% |
+| **Total** | **Canonical POC leaf scope** | **189** | **215** | **87.9%** |
 
 ## First-User-Test Gates
 
@@ -522,3 +565,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-10-11 | FIN-282 | PR276 verified merged as d8530fb8a6dde87559fc07fc52dd89352e0afd9e and Jira Done; fresh census187/212; native Identity state/outbox with provider-lock and hard-retention review regressions, not broker/installer/installed acceptance | 88.2% | +0.5 pp |
 | 2026-10-11 | FIN-283 | PR278 verified merged as dba7624e84bcfac7991fc41610e8ad829716e0e6 and Jira Done; fresh census 188/212; separate Profile/Category state and atomic outbox, reviewed input-validation regressions; not broker/installer/installed acceptance | 88.7% | +0.5 pp |
 | 2026-10-11 | FIN-275 decomposition | Original seven-owner financial persistence scope retained in FIN-275/287/288/289; three additional unfinished sibling units, no new features or completed work lost; denominator 212 to 215, Done stays 188 | 87.4% | -1.2 pp scope adjustment |
+| 2026-10-12 | FIN-275 | PR281 verified merged as fae3226412e05bef6a6a398f30fec0327889173b and Jira Done; fresh census189/215; separate native Income/Expense, atomic outbox and immutable corrected/post-retention replay, reviewed catalog-secret regression; not broker/installer/installed acceptance | 87.9% | +0.5 pp |
