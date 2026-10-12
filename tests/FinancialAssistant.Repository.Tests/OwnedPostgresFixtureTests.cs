@@ -9,6 +9,7 @@ public sealed class OwnedPostgresFixtureTests
     [InlineData("backend/shared/persistence/FinancialAssistant.Shared.Persistence.Integration/bin/Release/net8.0/FinancialAssistant.Shared.Persistence.Integration.dll", "FAIL PostgreSQL integration at fixture validation")]
     [InlineData("backend/services/identity/FinancialAssistant.Identity.Persistence.Integration/bin/Release/net8.0/FinancialAssistant.Identity.Persistence.Integration.dll", "FAIL identity PostgreSQL at owned fixture validation")]
     [InlineData("backend/services/profile/FinancialAssistant.ProfileCategory.Persistence.Integration/bin/Release/net8.0/FinancialAssistant.ProfileCategory.Persistence.Integration.dll", "FAIL Profile/Category PostgreSQL at owned fixture validation")]
+    [InlineData("backend/services/income/FinancialAssistant.FinancialRecords.Persistence.Integration/bin/Release/net8.0/FinancialAssistant.FinancialRecords.Persistence.Integration.dll", "FAIL Income/Expense PostgreSQL at owned fixture validation")]
     public async Task MissingFixtureConfigurationFailsWithoutDatabaseMutation(string executable, string expectedFailure)
     {
         var start = new ProcessStartInfo("dotnet")
@@ -91,7 +92,8 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("$saved[$name]", script);
         Assert.Contains("releaseReady=$false", script);
         Assert.Contains("--auth-host=scram-sha-256", script);
-        Assert.Contains("[ValidateSet('Foundation','Identity','ProfileCategory')]", script);
+        Assert.Contains("[ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords')]", script);
+        Assert.Contains("FinancialAssistant.FinancialRecords.Persistence.Integration.csproj", script);
         Assert.DoesNotContain("New-Service", script);
         Assert.DoesNotContain("sc.exe", script);
         Assert.DoesNotContain("Unblock-File", script);

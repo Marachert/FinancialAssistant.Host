@@ -5,6 +5,7 @@ using FinancialAssistant.Income.Contracts;
 using FinancialAssistant.Income.Infrastructure;
 using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
+using FinancialAssistant.Shared.Persistence;
 using Microsoft.OpenApi.Models;
 
 var builder = FinancialAssistantHost.CreateBuilder(args, "income");
@@ -23,11 +24,13 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 builder.Services.AddIncomeApplication();
-builder.Services.AddIncomeInfrastructure();
+var windowsNative = builder.Environment.IsEnvironment(FinancialAssistantHost.NativeEnvironment);
+builder.Services.AddIncomeInfrastructure(builder.Configuration, windowsNative);
 builder.Services.AddSingleton<IncomeGatewayAuthenticator>();
 builder.Services.AddFinancialAssistantHealthChecks();
 
 var app = builder.Build();
+if (windowsNative) { app.UseOwnedStorageFailureBoundary(); }
 
 app.UseFinancialAssistantCorrelation();
 _ = app.Services.GetRequiredService<IncomeGatewayAuthenticator>();
@@ -49,7 +52,7 @@ app.MapGet(
             "financial-assistant-income-service",
             "running",
             environment.EnvironmentName,
-            "in-memory",
+            windowsNative ? "PostgreSQL" : "in-memory",
             "confirmed_or_manual")));
 
 app.MapIncomeEndpoints();

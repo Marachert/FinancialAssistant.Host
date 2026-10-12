@@ -67,7 +67,13 @@ List results group active totals by currency so unlike currencies are never summ
 
 The development adapter is an owner-scoped in-memory store with atomic create and compare-and-replace updates. Confirmed events remain idempotent by transaction identifier.
 
-The durable adapter will use Income-owned PostgreSQL storage with logical `income_records`, `income_event_inbox`, and `income_event_outbox` tables. Other services must use Income APIs or events and must not query these tables.
+The WindowsNative adapter uses separate Income-owned PostgreSQL schema/roles/keys
+and encrypted versioned records. Owner mutations and minimized outbox intents
+commit atomically. Immutable originals and confirmation fingerprints reject
+conflicting replay without overwriting later corrections or emitting duplicate
+creation events. Developer/Testing adapters remain in memory. See the
+[native financial persistence contract](../../../docs/engineering/financial-records-native-persistence.md).
+Other services use authenticated read APIs or events, never this service's SQL.
 
 ## Record events
 
@@ -88,8 +94,10 @@ payloads, credentials, and idempotency keys are excluded.
 
 The development publisher is an idempotent in-memory outbox keyed by event type,
 record identifier, and revision. Confirmed-event replay repairs a missing enqueue
-without duplicating the message. The durable adapter must write the record and
-outbox row in one Income-owned PostgreSQL transaction; a RabbitMQ dispatcher retries
+without duplicating the message. The native adapter writes the record and
+outbox row in one Income-owned PostgreSQL transaction. FIN-276 still owns the live
+RabbitMQ dispatcher, delivery inbox, retries and acknowledgement qualification;
+no broker publication is claimed here. The target dispatcher retries
 transient publish failures with bounded backoff, records safe reason codes without
 payloads, and dead-letters terminal failures according to the documented topology.
 

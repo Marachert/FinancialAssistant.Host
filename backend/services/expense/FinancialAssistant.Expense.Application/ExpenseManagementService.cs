@@ -28,6 +28,21 @@ public sealed partial class ExpenseManagementService : IExpenseManagementService
         this.eventPublisher = eventPublisher ?? NullExpenseRecordEventPublisher.Instance;
     }
 
+    public void ValidateCreateRequest(string userId, CreateExpenseRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        _ = NormalizeRequired(userId, nameof(userId));
+        _ = ValidateValues(request.Amount, request.Currency, request.CategoryId, request.Merchant, request.Date);
+    }
+
+    public void ValidateUpdateRequest(string userId, string recordId, UpdateExpenseRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        _ = NormalizeRequired(userId, nameof(userId));
+        _ = NormalizeRequired(recordId, nameof(recordId));
+        _ = ValidateValues(request.Amount, request.Currency, request.CategoryId, request.Merchant, request.Date);
+    }
+
     public async Task<ExpenseRecordResponse> CreateAsync(
         string userId,
         CreateExpenseRequest request,

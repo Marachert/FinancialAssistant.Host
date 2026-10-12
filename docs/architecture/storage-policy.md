@@ -24,7 +24,10 @@ Notifications/preferences, and FIN-289 append-only Audit metadata/retention.
 See the [inventory and acceptance boundaries](../engineering/native-financial-persistence-scope.md).
 All original requirements remain required under FIN-270; FIN-286 depends on all
 four. FIN-284 follows its blocked financial-owner prerequisite FIN-275 before
-Intake confirmation implementation. This planning does not implement adapters.
+Intake confirmation implementation. Planning alone did not implement adapters.
+The subsequent [native financial implementation](../engineering/financial-records-native-persistence.md)
+adds separate Income/Expense owned records, immutable confirmation originals/
+fingerprints and atomic minimized outboxes; the derived/audit siblings remain pending.
 FIN-284 commits only its durable confirmation outbox; FIN-276 delivers to the
 matching FIN-275 financial owner asynchronously. Owner APIs are read-only status/
 reconciliation for Intake, not a second confirmation write or direct SQL path;

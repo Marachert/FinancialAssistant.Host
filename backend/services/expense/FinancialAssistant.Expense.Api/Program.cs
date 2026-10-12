@@ -5,6 +5,7 @@ using FinancialAssistant.Expense.Contracts;
 using FinancialAssistant.Expense.Infrastructure;
 using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
+using FinancialAssistant.Shared.Persistence;
 using Microsoft.OpenApi.Models;
 
 var builder = FinancialAssistantHost.CreateBuilder(args, "expense");
@@ -23,11 +24,13 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 builder.Services.AddExpenseApplication();
-builder.Services.AddExpenseInfrastructure();
+var windowsNative = builder.Environment.IsEnvironment(FinancialAssistantHost.NativeEnvironment);
+builder.Services.AddExpenseInfrastructure(builder.Configuration, windowsNative);
 builder.Services.AddSingleton<ExpenseGatewayAuthenticator>();
 builder.Services.AddFinancialAssistantHealthChecks();
 
 var app = builder.Build();
+if (windowsNative) { app.UseOwnedStorageFailureBoundary(); }
 
 app.UseFinancialAssistantCorrelation();
 _ = app.Services.GetRequiredService<ExpenseGatewayAuthenticator>();
@@ -49,7 +52,7 @@ app.MapGet(
             "financial-assistant-expense-service",
             "running",
             environment.EnvironmentName,
-            "in-memory",
+            windowsNative ? "PostgreSQL" : "in-memory",
             "confirmed_or_manual")));
 
 app.MapExpenseEndpoints();

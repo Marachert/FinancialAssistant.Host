@@ -20,8 +20,10 @@ Follow the [storage policy](../architecture/storage-policy.md),
 | Audit | `IAuditRecordStore`: immutable minimized metadata, matching-event append replay, correlation lookup, occurrence/record/expiry times and actor/subject hashes | [FIN-289](https://marachert.atlassian.net/browse/FIN-289) |
 
 These are seven existing storage owners in four sibling leaves under FIN-270,
-not a new shared business repository. Their present adapters are process-local;
-the planning change does not replace them. Keep separate schemas/roles/keys and
+not a new shared business repository. The planning change did not replace adapters.
+The subsequent [FIN-275 financial implementation](financial-records-native-persistence.md)
+adds separate native Income/Expense stores; other owners remain follow-on work.
+Keep separate schemas/roles/keys and
 owned DTOs. Shared persistence is technical infrastructure only.
 
 Financial Summary is presently a module without a standalone API/native host.
