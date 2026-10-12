@@ -46,15 +46,28 @@ retains all seven original financial/read-model/audit owners in four sibling
 leaves: FIN-275 Income/Expense, FIN-287 Summary/Analytics, FIN-288 Score/
 Recommendations/Notifications, and FIN-289 Audit. This is planning, not additional
 implemented adapters. The fresh 2026-10-11 18:42:32 UTC census keeps 188 Done and
-adds three unfinished leaf units: current 188/215 (87.4%), a -1.2 pp granularity
-adjustment, not lost delivery. FIN-270 has 6/19 children Done; P9 is 12/39 (30.8%).
+adds three unfinished leaf units: historical scope188/215 (87.4%), a -1.2 pp
+granularity adjustment, not lost delivery. At that checkpoint FIN-270 had 6/19
+children Done and P9 was 12/39 (30.8%).
 The [FIN-275 financial adapter implementation](../../docs/engineering/financial-records-native-persistence.md)
 adds separate Income/Expense native stores and atomic owned outboxes, not live
 broker delivery or installer qualification. Public reconciliation reads remain
-owner-authenticated; Intake confirmation remains event-only.
+owner-authenticated; Intake confirmation remains event-only. PR281 was independently
+verified merged as `fae3226412e05bef6a6a398f30fec0327889173b` at
+`2026-10-12T08:14:15Z` and FIN-275 is Done. Final head
+`7907369d967a89be78c7663cd3d06c414f985b3a` passed all five checks
+(Backend38221608361/Mobile38221608355/Admin38221608347); the catalog-secret
+finding was fixed/regressed/replied/resolved only green. Latest per-project
+966/966 tests across24projects, zero failures/skips; real isolated PostgreSQL
+initial/crash/restart, atomic rollback, corrected/conflicting/post-retention replay
+and pending-safe bounded retention passed with owned cleanup. Native readiness
+still waits for FIN-276, not fake delivery or installed qualification.
 
-FIN-284 is blocked by the FIN-275 financial-owner prerequisite, which is selected
-first. First-user testing remains Not Ready; no added feature credit or ETA.
+FIN-284 is next by local rank with FIN-274/275 Done prerequisites, after the
+closure ledger is actually merged and dependencies are refreshed. Fresh census
+2026-10-12 13:26:08 UTC:189/215 (87.9%), +0.5 pp before rounding(0.4651);
+FIN-2707/19 and FIN-38 P9 13/39 (33.3%). First-user testing remains Not Ready;
+no installed feature credit or calendar ETA.
 
 Financial Summary currently has no standalone API host in the fifteen-host
 catalog. FIN-287 must explicitly declare its module-owned storage identity and
@@ -360,9 +373,10 @@ qualification; the exact archive digest has been verified locally.
    inventory merge/closure is not that release approval.
 
 No additional spending, package/tool installation or machine changes are authorized
-by this document. Current POC completion is 188/215 (87.4%) after FIN-275's
-ownership decomposition, -1.2 percentage points for granularity only; FIN-270 is 6/19
-children Done and FIN-38 P9 is 12/39 (30.8%). Historical FIN-283 Profile/Category closure
+by this document. Current POC completion is 189/215 (87.9%) after FIN-275 closure,
++0.5 percentage points before rounding; FIN-270 is 7/19 children Done and
+FIN-38 P9 is 13/39 (33.3%). Historical ownership decomposition is188/21587.4%,
+-1.2 pp for granularity only. Historical FIN-283 Profile/Category closure
 is 188/212 (88.7%); historical FIN-282 Identity closure
 is 187/212 (88.2%); historical FIN-274 foundation closure
 is186/212 (87.7%); historical FIN-273 closure is185/207 (89.4%). The five-leaf
