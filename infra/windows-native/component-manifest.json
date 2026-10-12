@@ -567,7 +567,7 @@
     {
       "id": "analytics",
       "project": "backend/services/analytics/FinancialAssistant.Analytics.Api/FinancialAssistant.Analytics.Api.csproj",
-      "owner": "FIN-275",
+      "owner": "FIN-287",
       "nativeHostingOwner": "FIN-273",
       "serviceName": "FinancialAssistant.analytics",
       "port": 5106,
@@ -580,12 +580,12 @@
         "rabbitmq"
       ],
       "qualification": "not-tested",
-      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-275 must replace in-memory authoritative stores"
+      "dataOwnership": "FIN-287 owned PostgreSQL projections and publication/rebuild state; derived totals are not financial authority; FIN-276 delivery/inbox qualification"
     },
     {
       "id": "financial-score",
       "project": "backend/services/financial-score/FinancialAssistant.FinancialScore.Api/FinancialAssistant.FinancialScore.Api.csproj",
-      "owner": "FIN-275",
+      "owner": "FIN-288",
       "nativeHostingOwner": "FIN-273",
       "serviceName": "FinancialAssistant.financial-score",
       "port": 5107,
@@ -598,12 +598,12 @@
         "rabbitmq"
       ],
       "qualification": "not-tested",
-      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-275 must replace in-memory authoritative stores"
+      "dataOwnership": "FIN-288 owned PostgreSQL projections/calculations/history and authorized Profile snapshots; deterministic score, not a ledger; FIN-276 delivery/inbox qualification"
     },
     {
       "id": "recommendations-notifications",
       "project": "backend/services/recommendations-notifications/FinancialAssistant.RecommendationsNotifications.Api/FinancialAssistant.RecommendationsNotifications.Api.csproj",
-      "owner": "FIN-275",
+      "owner": "FIN-288",
       "nativeHostingOwner": "FIN-273",
       "serviceName": "FinancialAssistant.recommendations-notifications",
       "port": 5108,
@@ -616,7 +616,7 @@
         "rabbitmq"
       ],
       "qualification": "not-tested",
-      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-275 must replace in-memory authoritative stores"
+      "dataOwnership": "FIN-288 owned PostgreSQL insight/recommendation/notification/preference and publication state; no real provider sending; FIN-276 delivery/inbox qualification"
     },
     {
       "id": "monitoring",
@@ -675,7 +675,7 @@
     {
       "id": "audit",
       "project": "backend/services/audit/FinancialAssistant.Audit.Api/FinancialAssistant.Audit.Api.csproj",
-      "owner": "FIN-277",
+      "owner": "FIN-289",
       "nativeHostingOwner": "FIN-273",
       "serviceName": "FinancialAssistant.audit",
       "port": 5113,
@@ -688,7 +688,7 @@
         "rabbitmq"
       ],
       "qualification": "not-tested",
-      "dataOwnership": "Service-owned PostgreSQL role/schema and durable outbox/inbox; FIN-277 must replace in-memory authoritative stores"
+      "dataOwnership": "FIN-289 owned append-only PostgreSQL audit metadata and retention; FIN-277 diagnostics/manifest qualification remain required; not financial authority"
     },
     {
       "id": "ai-orchestration",

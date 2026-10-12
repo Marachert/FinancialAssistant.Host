@@ -4,8 +4,23 @@ Last updated: 2026-10-11
 
 ## Current Snapshot
 
-POC backlog completion after FIN-283 native Profile/Category closure is **88.7%**:
-**188 of 212 canonical POC leaf tickets are Done**.
+POC backlog completion after FIN-275 ownership decomposition is **87.4%**:
+**188 of 215 canonical POC leaf tickets are Done**.
+
+The fresh 2026-10-11 18:42:32 UTC census contains 289 unique Jira issues. The
+[financial persistence inventory](../engineering/native-financial-persistence-scope.md)
+preserves FIN-275's seven original owners in four siblings: FIN-275 Income/Expense
+and event-driven confirmation, FIN-287 Summary/Analytics, FIN-288 Score/Recommendations/
+Notifications, and FIN-289 append-only Audit. Three new unfinished leaf units
+change 188/212 (88.7%) to 188/215 (87.4%), a -1.2 percentage-point granularity
+adjustment calculated before rounding (-1.2374 pp). No features were added, no
+requirement was removed, and no completed work was lost or new delivery credited.
+FIN-270 remains In Progress with 6/19 children Done; FIN-38 P9 is 12/39 (30.8%).
+FIN-284 is next by local rank but blocked by FIN-275, so the prerequisite is the
+active implementation leaf. The scope-planning PR does not complete FIN-275.
+First-user testing remains Not Ready; no calendar ETA follows from percentages.
+
+Historical FIN-283 Profile/Category closure snapshot:
 
 The fresh 2026-10-11 18:04:51 UTC census contains 286 unique Jira issues and
 confirms 188/212 after actual PR278 merge and FIN-283 Done. This is +0.5 percentage
@@ -236,7 +251,7 @@ Current delivery (native scope revision supersedes previous scope totals):
 - FIN-273 is Done through guarded merged PR #272; FIN-271/272 remain historical
 - native hosting implementation is merged at `ea766a9172d0b4ad49ce49c4721b6e7c3d676f52`
   after exact-head Backend, Mobile and Admin Web CI and a clear review-channel audit
-- current canonical completion is 188/212 (88.7%) after FIN-283 Profile/Category closure;
+- current canonical completion is 188/215 (87.4%) after FIN-275 ownership decomposition;
   five persistence leaves retain the original domain requirements. FIN-271/272/273
   remain Done and earlier closure percentages
   remain historical, with no lost delivery
@@ -244,7 +259,7 @@ Current delivery (native scope revision supersedes previous scope totals):
   verified Done
 - FIN-36 P8 progress is 13/13 (100.0%); all children are Done and the epic remains
   In Progress for unverified integrated log/metric/trace, audit, admin and MCP evidence
-- FIN-38 P9 progress is 12/36 (33.3%); the epic remains In Progress
+- FIN-38 P9 progress is 12/39 (30.8%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
@@ -279,11 +294,15 @@ Current delivery (native scope revision supersedes previous scope totals):
   all five exact-head CI checks passed and every review channel was empty
 - current documentation includes the implementation map, preferred storage policy,
   source-to-Confluence maintenance map and explicit financial authorization limits
-- FIN-270 is the priority parent with 6/16 children Done; FIN-271/272/273/274/282/283
+- FIN-270 is the priority parent with 6/19 children Done; FIN-271/272/273/274/282/283
   concept, inventory, hosting, foundation, Identity and Profile/Category are Done,
   without installed acceptance
-- next ranked native implementation leaf is FIN-284 after FIN-283 closure
-  publication; re-read its hierarchy and dependencies before branching
+- next ranked native leaf is FIN-284, blocked by FIN-275; implement the financial
+  owner prerequisite first, never Intake-owned financial tables or an unmerged base
+- FIN-275 owns Income/Expense and event-driven confirmation; owner APIs reconcile
+  state only for Intake, never perform synchronous confirmation writes. FIN-287 Summary/Analytics,
+  FIN-288 Score/Recommendations/Notifications and FIN-289 Audit retain all its
+  original remaining scope. FIN-286 explicitly depends on all four sibling leaves
 - FIN-274 is the PostgreSQL foundation; FIN-282 Identity, FIN-283 Profile/Category,
   FIN-284 Intake, FIN-285 Receipt/OCR/AI metadata and FIN-286 persistence integration
   retain its original domain/verification scope; prerequisites can override rank
@@ -303,8 +322,8 @@ Current delivery (native scope revision supersedes previous scope totals):
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 20 | 20 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 13 | 13 | 100.0% |
-| FIN-38 | P9 Testing, Windows deployment, and release readiness | 12 | 36 | 33.3% |
-| **Total** | **Canonical POC leaf scope** | **188** | **212** | **88.7%** |
+| FIN-38 | P9 Testing, Windows deployment, and release readiness | 12 | 39 | 30.8% |
+| **Total** | **Canonical POC leaf scope** | **188** | **215** | **87.4%** |
 
 ## First-User-Test Gates
 
@@ -495,3 +514,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-10-11 | FIN-274 | PR274 verified merged as dfa29529776ff91f7bb86720bccd45c2198d2b48 and Jira Done; 186/212 after fresh census; service-owned PostgreSQL foundation only, domain adapters and installed acceptance remain mandatory | 87.7% | +0.5 pp |
 | 2026-10-11 | FIN-282 | PR276 verified merged as d8530fb8a6dde87559fc07fc52dd89352e0afd9e and Jira Done; fresh census187/212; native Identity state/outbox with provider-lock and hard-retention review regressions, not broker/installer/installed acceptance | 88.2% | +0.5 pp |
 | 2026-10-11 | FIN-283 | PR278 verified merged as dba7624e84bcfac7991fc41610e8ad829716e0e6 and Jira Done; fresh census 188/212; separate Profile/Category state and atomic outbox, reviewed input-validation regressions; not broker/installer/installed acceptance | 88.7% | +0.5 pp |
+| 2026-10-11 | FIN-275 decomposition | Original seven-owner financial persistence scope retained in FIN-275/287/288/289; three additional unfinished sibling units, no new features or completed work lost; denominator 212 to 215, Done stays 188 | 87.4% | -1.2 pp scope adjustment |

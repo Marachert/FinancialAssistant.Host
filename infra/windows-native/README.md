@@ -36,10 +36,26 @@ preferences/catalog rehydration, owner-isolated concurrency, atomic Category/out
 deletion/replay and real crash/restart passed with owned cleanup; local baseline
 plus review reruns 955/955 in 24 projects, zero skips. Minimal replay markers and
 pending metadata remain retained until qualified lifecycle horizons, not full
-cross-service privacy erasure. FIN-284 is next after closure publication;
+cross-service privacy erasure. At the FIN-283 closure checkpoint, FIN-284 was next by rank;
 remaining domain/event/object/installer
-and three-Windows gates remain required. Current [ledger](../../docs/agent/POC_PROGRESS.md)
+and three-Windows gates remain required. Historical [closure ledger](../../docs/agent/POC_PROGRESS.md)
 is 188/212 (88.7%), +0.5 pp; FIN-270 6/16 and FIN-38 P9 12/36 (33.3%), first-user Not Ready.
+
+The subsequent [FIN-275 ownership inventory](../../docs/engineering/native-financial-persistence-scope.md)
+retains all seven original financial/read-model/audit owners in four sibling
+leaves: FIN-275 Income/Expense, FIN-287 Summary/Analytics, FIN-288 Score/
+Recommendations/Notifications, and FIN-289 Audit. This is planning, not additional
+implemented adapters. The fresh 2026-10-11 18:42:32 UTC census keeps 188 Done and
+adds three unfinished leaf units: current 188/215 (87.4%), a -1.2 pp granularity
+adjustment, not lost delivery. FIN-270 has 6/19 children Done; P9 is 12/39 (30.8%).
+FIN-284 is blocked by the FIN-275 financial-owner prerequisite, which is selected
+first. First-user testing remains Not Ready; no added feature credit or ETA.
+
+Financial Summary currently has no standalone API host in the fifteen-host
+catalog. FIN-287 must explicitly declare its module-owned storage identity and
+provisioning without silently sharing another owner's role or inventing a new
+deployable/port. FIN-277 still owns diagnostic collectors/sinks and manifest
+qualification; FIN-289's Audit metadata storage does not remove that capability.
 
 ## Read-Only Verification
 
@@ -112,13 +128,13 @@ SCM lifetime, service identities and final gateway destinations belong to FIN-27
 | Category | 5103 | FIN-283, foundation FIN-274 |
 | Transaction intake | 5104 | FIN-284, financial APIs FIN-275 |
 | Receipt processing | 5105 | FIN-285 metadata; FIN-277 encrypted objects |
-| Analytics | 5106 | FIN-275 |
-| Financial score | 5107 | FIN-275 |
-| Recommendations and notifications, one existing host | 5108 | FIN-275 |
+| Analytics | 5106 | FIN-287 |
+| Financial score | 5107 | FIN-288 |
+| Recommendations and notifications, one existing host | 5108 | FIN-288 |
 | Monitoring | 5110 | FIN-277 |
 | Income | 5111 | FIN-275 |
 | Expense | 5112 | FIN-275 |
-| Audit | 5113 | FIN-277 |
+| Audit | 5113 | FIN-289 metadata; FIN-277 diagnostics wiring |
 | AI orchestration | 5114 | FIN-285 metadata; paid providers disabled |
 | MCP, never a public gateway route | 5115 | FIN-273 |
 
@@ -339,9 +355,10 @@ qualification; the exact archive digest has been verified locally.
    inventory merge/closure is not that release approval.
 
 No additional spending, package/tool installation or machine changes are authorized
-by this document. Current POC completion is 188/212 (88.7%) after FIN-283's
-native Profile/Category closure, +0.5 percentage points before rounding; FIN-270 is 6/16
-children Done and FIN-38 P9 is 12/36 (33.3%). Historical FIN-282 Identity closure
+by this document. Current POC completion is 188/215 (87.4%) after FIN-275's
+ownership decomposition, -1.2 percentage points for granularity only; FIN-270 is 6/19
+children Done and FIN-38 P9 is 12/39 (30.8%). Historical FIN-283 Profile/Category closure
+is 188/212 (88.7%); historical FIN-282 Identity closure
 is 187/212 (88.2%); historical FIN-274 foundation closure
 is186/212 (87.7%); historical FIN-273 closure is185/207 (89.4%). The five-leaf
 persistence decomposition preserved the original domain requirements.
