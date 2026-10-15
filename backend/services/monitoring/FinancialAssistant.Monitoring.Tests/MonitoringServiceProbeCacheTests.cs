@@ -41,6 +41,20 @@ public sealed class MonitoringServiceProbeCacheTests
     [InlineData(6)]
     public void LifetimeCannotBeUnbounded(int seconds) => Assert.Throws<ArgumentOutOfRangeException>(() => new MonitoringServiceProbeCache(TimeProvider.System, seconds));
 
+    [Fact]
+    public async Task SameTimestampOlderProbeCannotOverwriteNewerFailureObservation()
+    {
+        var clock = new Clock(); var cache = new MonitoringServiceProbeCache(clock, 2);
+        var target = new MonitoringServiceTargetOptions { Name = "synthetic-tied-timestamp" };
+        var older = new TaskCompletionSource<MonitoringServiceProbe>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var first = cache.GetAsync(target, () => older.Task, default);
+        var newer = new MonitoringServiceProbe(target.Name, "unavailable", 1, clock.GetUtcNow(), "transport");
+        Assert.Same(newer, await cache.GetAsync(target, () => Task.FromResult(newer), default));
+        older.SetResult(new MonitoringServiceProbe(target.Name, "healthy", 1, clock.GetUtcNow(), null));
+        await first;
+        Assert.Same(newer, await cache.GetAsync(target, () => throw new InvalidOperationException("Fresh cached observation must be retained."), default));
+    }
+
     private sealed class Clock : TimeProvider
     {
         public long Ticks { get; set; }

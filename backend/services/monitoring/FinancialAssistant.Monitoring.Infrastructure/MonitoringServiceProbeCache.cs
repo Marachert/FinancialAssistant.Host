@@ -8,6 +8,7 @@ public sealed class MonitoringServiceProbeCache
     private readonly TimeProvider clock;
     private readonly TimeSpan lifetime;
     private readonly Dictionary<string, Entry> entries = new(StringComparer.Ordinal);
+    private long nextSequence;
     public const int MaximumEntries = 32;
 
     public MonitoringServiceProbeCache(TimeProvider clock, int seconds)
@@ -23,6 +24,8 @@ public sealed class MonitoringServiceProbeCache
         token.ThrowIfCancellationRequested();
         if (target.Name.Length is < 1 or > 64 || target.BaseAddress.Length > 2048) { throw new ArgumentException("Invalid health cache target."); }
         var key = target.Name + "\n" + target.BaseAddress;
+        long started;
+        long sequence;
         lock (gate)
         {
             if (entries.TryGetValue(key, out var entry))
@@ -31,21 +34,22 @@ public sealed class MonitoringServiceProbeCache
                 if (age >= TimeSpan.Zero && age < lifetime) { return entry.Value; }
                 entries.Remove(key);
             }
+            started = clock.GetTimestamp();
+            sequence = checked(++nextSequence);
         }
-        var started = clock.GetTimestamp();
         var result = await probe();
         token.ThrowIfCancellationRequested();
         lock (gate)
         {
             var age = clock.GetElapsedTime(started);
             if (age < TimeSpan.Zero || age >= lifetime) { return result; }
-            if (entries.TryGetValue(key, out var newer) && newer.Timestamp > started) { return result; }
+            if (entries.TryGetValue(key, out var newer) && newer.Sequence > sequence) { return result; }
             if (entries.Count >= MaximumEntries && !entries.ContainsKey(key))
-            { entries.Remove(entries.MinBy(pair => pair.Value.Timestamp).Key); }
-            entries[key] = new Entry(started, result);
+            { entries.Remove(entries.MinBy(pair => pair.Value.Sequence).Key); }
+            entries[key] = new Entry(started, sequence, result);
         }
         return result;
     }
 
-    private sealed record Entry(long Timestamp, MonitoringServiceProbe Value);
+    private sealed record Entry(long Timestamp, long Sequence, MonitoringServiceProbe Value);
 }
