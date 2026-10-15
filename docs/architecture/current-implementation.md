@@ -48,7 +48,8 @@ financial-owner stores/consumers and does not promise synchronous owner visibili
 Live transport/inbox, orchestration and installed acceptance remain separate.
 Implementation PR283 was independently verified merged as
 `48c7c0941b4b58cf3f7884c5c16182a9803f6594` on 2026-10-15; FIN-284 is Done.
-The next ranked metadata leaf FIN-285 follows unfinished FIN-277 native object
+FIN-277 is Done after actual PR285 merge `dfe9692f1da22aa22e864d4eb9932d5e67316af0`
+at `2026-10-15T18:24:45Z`. The next ranked metadata leaf FIN-285 follows its native object
 storage, not an in-memory receipt object marked durable by metadata alone.
 
 The [FIN-275 ownership inventory](../engineering/native-financial-persistence-scope.md)
