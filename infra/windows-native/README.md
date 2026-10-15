@@ -63,8 +63,8 @@ initial/crash/restart, atomic rollback, corrected/conflicting/post-retention rep
 and pending-safe bounded retention passed with owned cleanup. Native readiness
 still waits for FIN-276, not fake delivery or installed qualification.
 
-FIN-284 is next by local rank with FIN-274/275 Done prerequisites, after the
-closure ledger is actually merged and dependencies are refreshed. Fresh census
+At the FIN-275 checkpoint, FIN-284 was next by local rank with FIN-274/275 Done
+prerequisites. Historical census
 2026-10-12 13:26:08 UTC:189/215 (87.9%), +0.5 pp before rounding(0.4651);
 FIN-2707/19 and FIN-38 P9 13/39 (33.3%). First-user testing remains Not Ready;
 no installed feature credit or calendar ETA.
@@ -73,6 +73,18 @@ FIN-284 [native Intake storage](../../docs/engineering/intake-native-persistence
 adds durable draft/index/source/confirmation-intent outboxes, not live broker or
 installer acceptance. Intake requires explicit source retention and its own
 storage secrets; no in-process native financial stores/consumers or write RPC.
+PR283 was independently verified merged as
+`48c7c0941b4b58cf3f7884c5c16182a9803f6594` at `2026-10-15T15:35:33Z` and
+FIN-284 is Done. Final head `4eb97460da5aa39cb7bb94dc7c54f97aa74dd8c3`
+passed all five checks (Backend38267364535/Mobile38267364389/Admin38267364375).
+The OCR identifier finding was fixed with nine native HTTP/pre-SQL regressions,
+replied and resolved only after green. Initial full975/24, final scoped54/54 and
+actual owned PostgreSQL crash/restart evidence remain separate from live broker
+and installed acceptance. Fresh census2026-10-15 16:13:51 UTC:190/215 (88.4%),
++0.5 pp before rounding; FIN-2708/19 and FIN-38 P9 14/39 (35.9%).
+FIN-285 is next by local rank but blocked by FIN-277; follow that prerequisite
+only after the closure ledger is actually merged and dependencies are read fresh.
+First-user testing remains Not Ready, with no calendar ETA inferred.
 
 Financial Summary currently has no standalone API host in the fifteen-host
 catalog. FIN-287 must explicitly declare its module-owned storage identity and
@@ -378,9 +390,10 @@ qualification; the exact archive digest has been verified locally.
    inventory merge/closure is not that release approval.
 
 No additional spending, package/tool installation or machine changes are authorized
-by this document. Current POC completion is 189/215 (87.9%) after FIN-275 closure,
-+0.5 percentage points before rounding; FIN-270 is 7/19 children Done and
-FIN-38 P9 is 13/39 (33.3%). Historical ownership decomposition is188/21587.4%,
+by this document. Current POC completion is 190/215 (88.4%) after FIN-284 closure,
++0.5 percentage points before rounding; FIN-270 is 8/19 children Done and
+FIN-38 P9 is 14/39 (35.9%). Historical FIN-275 closure is189/21587.9%.
+Historical ownership decomposition is188/21587.4%,
 -1.2 pp for granularity only. Historical FIN-283 Profile/Category closure
 is 188/212 (88.7%); historical FIN-282 Identity closure
 is 187/212 (88.2%); historical FIN-274 foundation closure
