@@ -97,19 +97,16 @@ public sealed class OcrCompletedDraftConsumer : IOcrCompletedConsumer
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
     }
 
-    private static void Validate(OcrCompletedIntegrationEvent integrationEvent)
+    public static void Validate(OcrCompletedIntegrationEvent integrationEvent)
     {
         ArgumentNullException.ThrowIfNull(integrationEvent);
         if (!string.Equals(
                 integrationEvent.EventType,
                 OcrCompletedIntegrationEvent.Name,
                 StringComparison.Ordinal) ||
-            string.IsNullOrWhiteSpace(integrationEvent.EventId) ||
-            string.IsNullOrWhiteSpace(integrationEvent.ReceiptId) ||
-            string.IsNullOrWhiteSpace(integrationEvent.UserId) ||
-            integrationEvent.EventId.Length > 200 ||
-            integrationEvent.ReceiptId.Length > 100 ||
-            integrationEvent.UserId.Length > 200 ||
+            !IsCanonicalIdentifier(integrationEvent.EventId, 200) ||
+            !IsCanonicalIdentifier(integrationEvent.ReceiptId, 100) ||
+            !IsCanonicalIdentifier(integrationEvent.UserId, 200) ||
             integrationEvent.Confidence is < 0 or > 1)
         {
             throw new InvalidOperationException("OCR completed event is invalid.");
@@ -117,6 +114,10 @@ public sealed class OcrCompletedDraftConsumer : IOcrCompletedConsumer
 
         _ = NormalizeAmbiguities(integrationEvent.Ambiguities);
     }
+
+    private static bool IsCanonicalIdentifier(string value, int maximumLength) =>
+        !string.IsNullOrWhiteSpace(value) && value.Length <= maximumLength &&
+        value == value.Trim() && !value.Any(char.IsControl);
 
     private static string[] NormalizeAmbiguities(IReadOnlyList<string> ambiguities)
     {

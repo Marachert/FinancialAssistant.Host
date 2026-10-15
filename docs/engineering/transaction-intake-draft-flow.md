@@ -34,9 +34,20 @@ Invalid candidate values are removed and represented by stable ambiguity codes. 
 
 ## Development adapters
 
+FIN-284 adds [WindowsNative owned persistence](intake-native-persistence.md).
+Draft/idempotency/source and confirmation-intent/outbox mutations are atomic;
+parsing awaits outside SQL. Native Intake does not register in-process financial
+repositories/consumers. Its 201/200 confirmation response records intent only;
+FIN-276 delivers asynchronously to the matching owner. Owner APIs reconcile/read
+only, never a second write path. Explicit source retention is mandatory; expired
+raw text cannot be restored by replay. Developer/test behavior below remains valid.
+
 The deterministic parser recognizes a bounded English keyword and amount/date subset so contracts remain executable without an external AI provider. It is not presented as general natural-language understanding. The in-memory stores demonstrate user-scoped idempotency, atomic first-write behavior, opaque payload lookup, and retryable publication state but are not durable.
 
-Production adapters must be environment-selected, preserve the application interfaces, encrypt sensitive draft and source-payload fields at rest, avoid raw financial input in logs or events, and use durable storage plus a transactional outbox. A future AI adapter may improve extraction, but deterministic backend validation remains mandatory.
+Native adapters select encrypted durable state and outbox through the explicit profile.
+Live RabbitMQ and source-fetch/provider orchestration remain FIN-276/285; this does
+not qualify an installed runtime. A future AI adapter may improve extraction,
+but deterministic backend validation remains mandatory and parsing must not hold SQL locks.
 
 ## Review, rejection, and authoritative records
 

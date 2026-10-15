@@ -130,6 +130,11 @@ currency/origin/revision state, immutable replay after corrections, atomic outbo
 failure rollback, CAS/concurrency, bounded pending-safe retention and crash/restart.
 See the [native financial contract](../../../docs/engineering/financial-records-native-persistence.md);
 broker delivery/inbox qualification remains FIN-276.
+Select `-Scenario Intake` for owned draft/index/source/confirmation transactions,
+two-owner/currency and concurrent lifecycle races, parser outside SQL, rollback,
+bounded source cleanup without replay resurrection and actual crash/restart.
+See the [native Intake contract](../../../docs/engineering/intake-native-persistence.md);
+the separate driver tests financial-owner deduplication, not live broker delivery.
 Each scenario uses the same verified, fresh, owned fixture and cleanup guards.
 Unsigned-package execution blocked by Windows policy must remain Blocked; do not
 bypass it. Passing a local database test is not package redistribution qualification.

@@ -68,7 +68,12 @@ update must echo it as `expectedRevision`; a missing or negative value is invali
 and a stale value returns `409 transaction_draft_not_editable`. The service never
 reapplies a stale client update to a newer revision.
 
-FIN-21 ships an intentionally limited deterministic parser and in-memory idempotency store for local development and CI. Production work must provide a configured parser adapter and durable encrypted idempotency/draft persistence without changing the application contract.
+FIN-21 ships a limited deterministic parser and in-memory stores for local development/CI.
+FIN-284 adds [native Intake persistence](../../../docs/engineering/intake-native-persistence.md)
+with separate PostgreSQL credentials/keys, strict drafts/indexes and atomic owned
+source/creation/confirmation outboxes. Native parsing stays outside SQL; it is
+still a limited free deterministic adapter, not general AI understanding.
+WindowsNative requires explicit bounded source retention and never falls back to memory.
 
 ## Draft-created event
 
@@ -79,8 +84,11 @@ parser output. Repeated or concurrent requests publish one logical event. If pub
 fails, retrying the same request resumes the pending publication before returning the
 stored draft.
 
-The current source-payload and publication-state store is an in-memory development adapter.
-Production delivery requires encrypted durable payload storage and a transactional outbox;
+Developer source/publication stores remain in memory. Native source text is
+separately encrypted and expires at an explicit 1..24-hour configured boundary;
+raising configuration or replay cannot restore it. Atomic native outbox/enqueue
+metadata is separate from actual broker acknowledgement. Reliable transport and
+source-fetch/orchestration qualification remain FIN-276/285;
 downstream consumers resolve the opaque reference through an authenticated owner boundary
 and deduplicate by event and job identifiers.
 
@@ -88,7 +96,13 @@ and deduplicate by event and job identifiers.
 
 FIN-22 confirms only complete income or expense drafts that require no review. The first successful confirmation stores a stable transaction result, publishes `transaction.confirmed.v1`, and synchronously delivers the development event to independently validating Income and Expense consumers. Repeated or concurrent confirmation returns the original transaction and does not publish or persist a duplicate.
 
-The current publisher and stores are in-memory development adapters. Production delivery requires a transactional outbox, durable encrypted draft and financial-record stores, and RabbitMQ consumers with the same idempotent event contract.
+Developer confirmation still uses in-process consumers. WindowsNative registers
+no Income/Expense stores or consumers: 201/200 means durable confirmation intent,
+not a visible authoritative record. Confirmation claim/result/state/outbox commit
+atomically in Intake; FIN-276 delivers asynchronously to the completed FIN-275
+owners. Owner APIs reconcile/read only; no synchronous confirmation write is added.
+Native enqueue flags are not broker acknowledgements, and readiness stays
+unhealthy pending FIN-276. Public routes/DTOs remain unchanged.
 
 ## Verification
 

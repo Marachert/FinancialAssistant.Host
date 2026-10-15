@@ -41,11 +41,17 @@ with atomic record/outbox commits, immutable original replay checks and exact
 financial rehydration. Confirmation remains event-driven; transport is not
 implemented by the storage adapters. Developer/test stores stay process-local.
 
+FIN-284 adds [native Intake drafts and confirmation intent](../engineering/intake-native-persistence.md):
+atomic owned indexes/state/outboxes, explicit bounded encrypted source retention,
+replay/rollback/restart safety and parsing outside SQL. Native Intake registers no
+financial-owner stores/consumers and does not promise synchronous owner visibility.
+Live transport/inbox, orchestration and installed acceptance remain separate.
+
 The [FIN-275 ownership inventory](../engineering/native-financial-persistence-scope.md)
 separates its original seven-owner persistence scope into FIN-275 financial records/
 event confirmation, FIN-287 Summary/Analytics, FIN-288 Score/Recommendations/
 Notifications and FIN-289 append-only Audit. Planning does not implement those siblings;
-FIN-284 follows its blocked financial-owner prerequisite rather than writing those
+FIN-284 follows its verified financial-owner prerequisite rather than writing those
 tables or using native in-process financial repositories. Confirmation remains
 Intake outbox -> FIN-276 -> matching owner inbox/store/outbox; owner APIs only
 reconcile status for Intake and never introduce another write path. All siblings remain

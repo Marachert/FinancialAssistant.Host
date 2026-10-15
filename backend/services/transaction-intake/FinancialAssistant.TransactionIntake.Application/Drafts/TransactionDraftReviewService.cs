@@ -44,23 +44,27 @@ public sealed class TransactionDraftReviewService : ITransactionDraftReviewServi
         return stored is null ? null : ToResponse(stored.Draft);
     }
 
+    public static long ValidateUpdateRequest(string userId, string draftId, TransactionDraftUpdateRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        _ = NormalizeRequired(userId, nameof(userId));
+        _ = NormalizeRequired(draftId, nameof(draftId));
+        if (request.ExpectedRevision is null or < 0)
+        { throw new ArgumentException("Expected revision must be supplied and cannot be negative.", nameof(request)); }
+        _ = NormalizeNote(request.Note);
+        return request.ExpectedRevision.Value;
+    }
+
     public async Task<TransactionDraftResponse?> UpdateAsync(
         string userId,
         string draftId,
         TransactionDraftUpdateRequest request,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        var expectedRevision = ValidateUpdateRequest(userId, draftId, request);
 
         var normalizedUserId = NormalizeRequired(userId, nameof(userId));
         var normalizedDraftId = NormalizeRequired(draftId, nameof(draftId));
-        if (request.ExpectedRevision is null or < 0)
-        {
-            throw new ArgumentException(
-                "Expected revision must be supplied and cannot be negative.",
-                nameof(request));
-        }
-
         var current = await draftStore.GetByIdAsync(
             normalizedUserId,
             normalizedDraftId,
@@ -71,7 +75,7 @@ public sealed class TransactionDraftReviewService : ITransactionDraftReviewServi
         }
 
         EnsureEditable(current);
-        if (request.ExpectedRevision.Value != current.Revision)
+        if (expectedRevision != current.Revision)
         {
             throw new DraftMutationConflictException();
         }
@@ -175,6 +179,7 @@ public sealed class TransactionDraftReviewService : ITransactionDraftReviewServi
         var normalized = string.Join(
             ' ',
             note.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        if (normalized.Any(char.IsControl)) { throw new ArgumentException("Note cannot contain control characters.", nameof(note)); }
         if (normalized.Length > MaximumNoteLength)
         {
             throw new ArgumentException(

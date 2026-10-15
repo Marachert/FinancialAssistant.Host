@@ -18,6 +18,11 @@ free actual fixture crash/restart verification. Live broker/inbox FIN-276,
 integrated recovery FIN-286 and installed/owner acceptance remain separate.
 FIN-284 is next by local rank with FIN-274/275 Done prerequisites; start only
 after this closure ledger is actually merged and dependencies are read fresh.
+Ledger PR282 was independently verified merged as
+`e1c446af3fde9b33e219773cc64d8bcf703b5ad3` at `2026-10-12T13:40:02Z`.
+FIN-284 is now In Progress from that verified main with
+[native Intake persistence](../engineering/intake-native-persistence.md);
+implementation tests do not add completed-ticket credit before review/merge/Done.
 First-user testing remains Not Ready; no calendar ETA follows from percentages.
 
 Historical FIN-275 ownership decomposition snapshot:
