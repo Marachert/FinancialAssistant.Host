@@ -5,6 +5,7 @@ public sealed class MonitoringOptions
     public const string SectionName = "Monitoring";
 
     public int ProbeTimeoutSeconds { get; init; } = 3;
+    public int ServiceProbeCacheSeconds { get; init; }
 
     public MonitoringServiceTargetOptions[] Services { get; init; } = [];
 

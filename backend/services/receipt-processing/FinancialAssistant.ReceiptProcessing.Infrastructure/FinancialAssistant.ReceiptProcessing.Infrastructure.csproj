@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../shared/native-files/FinancialAssistant.Shared.NativeFiles/FinancialAssistant.Shared.NativeFiles.csproj" />
     <ProjectReference Include="../FinancialAssistant.ReceiptProcessing.Application/FinancialAssistant.ReceiptProcessing.Application.csproj" />
     <ProjectReference Include="../FinancialAssistant.ReceiptProcessing.Contracts/FinancialAssistant.ReceiptProcessing.Contracts.csproj" />
     <ProjectReference Include="../FinancialAssistant.ReceiptProcessing.Domain/FinancialAssistant.ReceiptProcessing.Domain.csproj" />

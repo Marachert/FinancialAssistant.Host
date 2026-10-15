@@ -11,17 +11,33 @@ namespace FinancialAssistant.ReceiptProcessing.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddReceiptProcessingInfrastructure(this IServiceCollection services)
+    public static IServiceCollection AddReceiptProcessingInfrastructure(this IServiceCollection services, IConfiguration? configuration = null, bool windowsNative = false)
     {
-        services.AddSingleton<EncryptedInMemoryReceiptObjectStore>();
-        services.AddSingleton<IReceiptObjectStore>(provider =>
-            provider.GetRequiredService<EncryptedInMemoryReceiptObjectStore>());
-        services.AddSingleton<InMemoryReceiptMetadataStore>();
-        services.AddSingleton<IReceiptMetadataStore>(provider =>
-            provider.GetRequiredService<InMemoryReceiptMetadataStore>());
-        services.AddSingleton<InMemoryOcrProcessingStore>();
-        services.AddSingleton<IOcrProcessingStore>(provider =>
-            provider.GetRequiredService<InMemoryOcrProcessingStore>());
+        if (windowsNative)
+        {
+            var files = configuration?.GetSection("ReceiptProcessing:Storage:Files").Get<NativeReceiptObjectOptions>()
+                ?? throw new InvalidOperationException("Native receipt file configuration is required.");
+            files.Validate();
+            services.TryAddSingleton(TimeProvider.System);
+            services.AddSingleton(files);
+            services.AddSingleton<NativeReceiptObjectStore>();
+            services.AddSingleton<IReceiptObjectStore>(provider => provider.GetRequiredService<NativeReceiptObjectStore>());
+            services.AddSingleton<PendingNativeReceiptMetadata>();
+            services.AddSingleton<IReceiptMetadataStore>(provider => provider.GetRequiredService<PendingNativeReceiptMetadata>());
+            services.AddSingleton<IOcrProcessingStore>(provider => provider.GetRequiredService<PendingNativeReceiptMetadata>());
+            services.AddHostedService<NativeReceiptRetentionWorker>();
+            services.AddHealthChecks().AddCheck("receipt-native-workflow", () =>
+                Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Unhealthy("Durable metadata and delivery qualification remain FIN-285/276."), tags: new[] { "ready" });
+        }
+        else
+        {
+            services.AddSingleton<EncryptedInMemoryReceiptObjectStore>();
+            services.AddSingleton<IReceiptObjectStore>(provider => provider.GetRequiredService<EncryptedInMemoryReceiptObjectStore>());
+            services.AddSingleton<InMemoryReceiptMetadataStore>();
+            services.AddSingleton<IReceiptMetadataStore>(provider => provider.GetRequiredService<InMemoryReceiptMetadataStore>());
+            services.AddSingleton<InMemoryOcrProcessingStore>();
+            services.AddSingleton<IOcrProcessingStore>(provider => provider.GetRequiredService<InMemoryOcrProcessingStore>());
+        }
         services.AddSingleton<InMemoryReceiptUploadedPublisher>();
         services.AddSingleton<IReceiptUploadedPublisher>(provider =>
             provider.GetRequiredService<InMemoryReceiptUploadedPublisher>());

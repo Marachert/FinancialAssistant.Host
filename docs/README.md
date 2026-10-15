@@ -17,6 +17,7 @@ Developer, architecture, security, API, event, and delivery documentation worksp
 - [Native financial persistence ownership and prerequisites](engineering/native-financial-persistence-scope.md)
 - [Native Income and Expense persistence](engineering/financial-records-native-persistence.md)
 - [Native Intake draft and confirmation-intent persistence](engineering/intake-native-persistence.md)
+- [Native protected receipt files, health cache and local diagnostics](engineering/windows-native-adapters.md)
 - [Confluence/GitHub maintenance map](agent/DOCUMENTATION_MAINTENANCE.md)
 - [September 2026 documentation audit](reviews/documentation-audit-20260910.md)
 

@@ -252,6 +252,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Financia
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Intake.Persistence.Integration", "backend\services\transaction-intake\FinancialAssistant.Intake.Persistence.Integration\FinancialAssistant.Intake.Persistence.Integration.csproj", "{791796C3-5ECF-416B-BA26-9F1D0282634B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.NativeFiles", "backend\shared\native-files\FinancialAssistant.Shared.NativeFiles\FinancialAssistant.Shared.NativeFiles.csproj", "{750A0DE8-25B8-44E0-80D4-92091661BDC0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.NativeAdapters.Integration", "backend\shared\native-files\FinancialAssistant.NativeAdapters.Integration\FinancialAssistant.NativeAdapters.Integration.csproj", "{2CF2F05B-1287-499F-9ABF-B13AFBBF7687}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -706,6 +710,14 @@ Global
 		{791796C3-5ECF-416B-BA26-9F1D0282634B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{791796C3-5ECF-416B-BA26-9F1D0282634B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{791796C3-5ECF-416B-BA26-9F1D0282634B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{750A0DE8-25B8-44E0-80D4-92091661BDC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{750A0DE8-25B8-44E0-80D4-92091661BDC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{750A0DE8-25B8-44E0-80D4-92091661BDC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{750A0DE8-25B8-44E0-80D4-92091661BDC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2CF2F05B-1287-499F-9ABF-B13AFBBF7687}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CF2F05B-1287-499F-9ABF-B13AFBBF7687}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CF2F05B-1287-499F-9ABF-B13AFBBF7687}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CF2F05B-1287-499F-9ABF-B13AFBBF7687}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7AC3F48D-624D-4E99-8B8A-4D491602CEE2} = {FB7E6B6E-BA1A-4D09-96DE-E4179EB6DA47}

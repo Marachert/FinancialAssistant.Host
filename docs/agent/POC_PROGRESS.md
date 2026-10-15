@@ -23,6 +23,11 @@ Windows or first-user acceptance. First-user testing remains Not Ready.
 Next local-rank leaf FIN-285 is blocked by unfinished FIN-277; follow that
 prerequisite only after this closure ledger is actually merged and state is read
 fresh. No extra POC credit is assigned to this maintenance publication.
+Ledger PR284 was independently verified merged as
+`71ac513007bda25d1b56f092aa0baa7a9caad5c0` at `2026-10-15T16:24:56Z`.
+FIN-277 is now In Progress from that main for the
+[native adapter contract](../engineering/windows-native-adapters.md).
+Local tests and fixture results add no Done credit before review/actual merge/closure.
 
 Historical FIN-275 closure snapshot:
 

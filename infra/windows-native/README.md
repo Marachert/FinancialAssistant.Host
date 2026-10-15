@@ -11,6 +11,13 @@ native process profile, canonical service ports, required trust and non-executin
 SCM plan. Its publish script creates explicitly unqualified win-x64 candidates,
 not an installer or qualified release; the inventory remains `releaseReady=false`.
 
+FIN-277 implements [native receipt/cache/diagnostic adapters](../../docs/engineering/windows-native-adapters.md).
+Owned NTFS object files, ACL/path/key/retention controls, typed disposable health
+cache and a protected technical sink have free synthetic test/owned-crash fixtures.
+Receipt workflow metadata/delivery still fail closed pending FIN-285/276. No native
+collector, Elasticsearch, WPF/SCM, backup-system or three-Windows acceptance is
+granted; package/target qualification and the release-ready flag remain unchanged.
+
 FIN-274's [persistence foundation](../../backend/shared/persistence/README.md)
 is distinct from domain owners FIN-282/283/284/285 and full integration FIN-286.
 The manifest's `sourceCommit` retains the original package-inventory evidence;

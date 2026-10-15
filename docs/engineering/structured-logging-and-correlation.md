@@ -11,6 +11,11 @@ correlation in every Financial Assistant backend HTTP host. It implements the
 [backend observability strategy](../architecture/backend-observability-strategy.md)
 without enabling an external collector or paid telemetry service.
 
+FIN-277 adds an opt-in [protected native technical sink](windows-native-adapters.md)
+without changing the console/correlation baseline below. Its strict schema excludes
+messages, arbitrary state and exceptions entirely. Bounded local files and explicit
+visibility-gap readiness do not qualify collectors, alerting or installed operation.
+
 The shared implementation lives in
 `backend/shared/observability/FinancialAssistant.Shared.Observability`.
 Business services retain ownership of their operational events, event-ID ranges,

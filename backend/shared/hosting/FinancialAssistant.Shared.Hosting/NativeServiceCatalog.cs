@@ -53,7 +53,7 @@ public static class NativeServiceCatalog
             Define("category", 5103, "Category:Gateway:SharedSecret", "Category:Storage:Postgres:Password", "Category:Storage:Postgres:IndexKey"),
             Define("transaction-intake", 5104, "TransactionIntake:Gateway:SharedSecret", "ReceiptProcessing:Events:SharedSecret",
                 "TransactionIntake:Storage:Postgres:Password", "TransactionIntake:Storage:Postgres:IndexKey"),
-            Define("receipt-processing", 5105, "ReceiptProcessing:Gateway:SharedSecret", "ReceiptProcessing:Events:SharedSecret"),
+            Define("receipt-processing", 5105, "ReceiptProcessing:Gateway:SharedSecret", "ReceiptProcessing:Events:SharedSecret", "ReceiptProcessing:Storage:Files:IndexKey"),
             Define("analytics", 5106, "Analytics:Gateway:SharedSecret"),
             Define("financial-score", 5107, "FinancialScore:Gateway:SharedSecret"),
             Define("recommendations-notifications", 5108, "RecommendationsNotifications:Gateway:SharedSecret"),

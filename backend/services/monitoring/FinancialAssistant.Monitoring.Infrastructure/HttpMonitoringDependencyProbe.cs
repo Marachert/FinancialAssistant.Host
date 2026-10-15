@@ -11,7 +11,8 @@ namespace FinancialAssistant.Monitoring.Infrastructure;
 public sealed class HttpMonitoringDependencyProbe(
     HttpClient httpClient,
     IOptions<MonitoringOptions> options,
-    TimeProvider timeProvider) : IMonitoringDependencyProbe
+    TimeProvider timeProvider,
+    MonitoringServiceProbeCache? cache = null) : IMonitoringDependencyProbe
 {
     private readonly MonitoringOptions options = options.Value;
 
@@ -28,7 +29,10 @@ public sealed class HttpMonitoringDependencyProbe(
         return new MonitoringProbeSnapshot(services, rabbitMq, elasticsearch);
     }
 
-    private async Task<MonitoringServiceProbe> ProbeServiceAsync(
+    private Task<MonitoringServiceProbe> ProbeServiceAsync(MonitoringServiceTargetOptions target, CancellationToken token) =>
+        cache is null ? ProbeServiceFreshAsync(target, token) : cache.GetAsync(target, () => ProbeServiceFreshAsync(target, token), token);
+
+    private async Task<MonitoringServiceProbe> ProbeServiceFreshAsync(
         MonitoringServiceTargetOptions target,
         CancellationToken cancellationToken)
     {

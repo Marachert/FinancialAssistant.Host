@@ -3,6 +3,7 @@ using FinancialAssistant.ReceiptProcessing.Api.Security;
 using FinancialAssistant.ReceiptProcessing.Application;
 using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
 using FinancialAssistant.ReceiptProcessing.Infrastructure;
+using FinancialAssistant.ReceiptProcessing.Infrastructure.Storage;
 using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
 using Microsoft.AspNetCore.Http.Features;
@@ -26,11 +27,26 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 builder.Services.AddReceiptProcessingApplication();
-builder.Services.AddReceiptProcessingInfrastructure();
+var windowsNative = builder.Environment.IsEnvironment(FinancialAssistantHost.NativeEnvironment);
+builder.Services.AddReceiptProcessingInfrastructure(builder.Configuration, windowsNative);
 builder.Services.AddSingleton<ReceiptGatewayAuthenticator>();
 builder.Services.AddFinancialAssistantHealthChecks();
 
 var app = builder.Build();
+if (windowsNative)
+{
+    _ = app.Services.GetRequiredService<NativeReceiptObjectStore>();
+    app.Use(async (context, next) =>
+    {
+        try { await next(context); }
+        catch (NativeReceiptStorageException) when (!context.Response.HasStarted)
+        {
+            context.Response.Headers.CacheControl = "no-store";
+            await Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable, title: "Receipt storage is unavailable.",
+                extensions: new Dictionary<string, object?> { ["code"] = "receipt_storage_unavailable", ["traceId"] = context.TraceIdentifier }).ExecuteAsync(context);
+        }
+    });
+}
 
 app.UseFinancialAssistantCorrelation();
 _ = app.Services.GetRequiredService<ReceiptGatewayAuthenticator>();

@@ -2,6 +2,13 @@
 
 ## Flow
 
+This flow describes developer/Testing adapters until the required native workflow
+owners are delivered. FIN-277 adds [protected native receipt files](windows-native-adapters.md)
+with stable keys, explicit retention, deletion/replay guards and encrypted restore.
+WindowsNative rejects volatile Receipt/OCR metadata with safe 503 pending FIN-285;
+native event convergence remains FIN-276. File durability alone is not upload or
+OCR acceptance, and paid providers remain disabled.
+
 1. The authenticated gateway streams one JPEG, PNG, or WebP file to `POST /receipts`.
 2. Receipt Processing validates the declared media type and file signature, enforces a 10 MiB limit, encrypts the bytes, and stores privacy-safe metadata.
 3. `receipt.uploaded.v1` starts OCR processing.
