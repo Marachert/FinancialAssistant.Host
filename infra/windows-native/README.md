@@ -17,6 +17,10 @@ cache and a protected technical sink have free synthetic test/owned-crash fixtur
 Receipt workflow metadata/delivery still fail closed pending FIN-285/276. No native
 collector, Elasticsearch, WPF/SCM, backup-system or three-Windows acceptance is
 granted; package/target qualification and the release-ready flag remain unchanged.
+PR285 actual merge `dfe9692f1da22aa22e864d4eb9932d5e67316af0` at
+`2026-10-15T18:24:45Z` is independently verified; FIN-277 Done, final80ee33b all5CIgreen.
+Fresh census18:26:46 UTC:191/215 (88.8%), +0.5 pp before rounding; FIN-2709/19,
+P9 15/39 (38.5%). First-user Not Ready; FIN-285 follows closure-ledger merge.
 
 FIN-274's [persistence foundation](../../backend/shared/persistence/README.md)
 is distinct from domain owners FIN-282/283/284/285 and full integration FIN-286.
@@ -89,7 +93,7 @@ replied and resolved only after green. Initial full975/24, final scoped54/54 and
 actual owned PostgreSQL crash/restart evidence remain separate from live broker
 and installed acceptance. Fresh census2026-10-15 16:13:51 UTC:190/215 (88.4%),
 +0.5 pp before rounding; FIN-2708/19 and FIN-38 P9 14/39 (35.9%).
-FIN-285 is next by local rank but blocked by FIN-277; follow that prerequisite
+At the FIN-284 checkpoint FIN-285 was next but blocked by FIN-277; follow that prerequisite
 only after the closure ledger is actually merged and dependencies are read fresh.
 First-user testing remains Not Ready, with no calendar ETA inferred.
 
@@ -397,9 +401,10 @@ qualification; the exact archive digest has been verified locally.
    inventory merge/closure is not that release approval.
 
 No additional spending, package/tool installation or machine changes are authorized
-by this document. Current POC completion is 190/215 (88.4%) after FIN-284 closure,
-+0.5 percentage points before rounding; FIN-270 is 8/19 children Done and
-FIN-38 P9 is 14/39 (35.9%). Historical FIN-275 closure is189/21587.9%.
+by this document. Current POC completion is 191/215 (88.8%) after FIN-277 closure,
++0.5 percentage points before rounding; FIN-270 is 9/19 children Done and
+FIN-38 P9 is 15/39 (38.5%). Historical FIN-284 closure is190/21588.4%.
+Historical FIN-275 closure is189/21587.9%.
 Historical ownership decomposition is188/21587.4%,
 -1.2 pp for granularity only. Historical FIN-283 Profile/Category closure
 is 188/212 (88.7%); historical FIN-282 Identity closure
