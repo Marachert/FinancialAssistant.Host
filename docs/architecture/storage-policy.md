@@ -11,6 +11,13 @@ not financial authority. FIN-274/275 implement missing durable service-owned
 stores; FIN-277 supplies native protected receipt/cache adapters. Existing
 Compose infrastructure is not the new POC deployment mechanism.
 
+The [FIN-277 native adapter contract](../engineering/windows-native-adapters.md)
+implements encrypted service-owned receipt objects with durable key/retention and
+deletion metadata, not Receipt/OCR workflow persistence (FIN-285). It also provides
+bounded disposable health observations and private technical diagnostic files, never
+financial/session/idempotency/quota authority. Native Receipt metadata fails closed
+until FIN-285/276; backup/deletion consistency and installed acceptance remain gated.
+
 FIN-274's original multi-owner scope is explicitly decomposed: FIN-274 owns the
 PostgreSQL foundation; FIN-282 Identity, FIN-283 Profile/Category, FIN-284 Intake,
 FIN-285 Receipt/OCR/AI metadata and FIN-286 persistence integration retain the

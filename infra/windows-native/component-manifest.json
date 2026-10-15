@@ -762,14 +762,14 @@
     {
       "id": "receipt-storage",
       "owner": "FIN-277",
-      "decision": "Encrypted native files and PostgreSQL metadata; no MinIO requirement",
-      "qualification": "not-implemented"
+      "decision": "FIN-277 protected NTFS encrypted object adapter implemented with key/retention/tombstone and owned crash fixtures; FIN-285 PostgreSQL workflow metadata, FIN-209/286 restore consistency and installed acceptance remain required; no MinIO requirement",
+      "qualification": "blocked"
     },
     {
       "id": "cache",
       "owner": "FIN-277",
-      "decision": "Bounded in-process disposable cache only; durable session/idempotency/quota authority in PostgreSQL, no Redis Windows port",
-      "qualification": "not-implemented"
+      "decision": "FIN-277 typed process-local service-health cache implemented: optional 1-5 seconds, max32 observations with original timestamps; no session/idempotency/quota/financial authority, no Redis Windows port; installed qualification pending",
+      "qualification": "not-tested"
     },
     {
       "id": "event-delivery",
@@ -786,7 +786,7 @@
     {
       "id": "metrics-traces-alerts",
       "owner": "FIN-277",
-      "decision": "Prometheus 3.14.0, Alertmanager 0.34.1, Grafana OSS 13.2.2 and Jaeger/tools 2.21.0 candidates pinned; Jaeger uses Elasticsearch 8.x, not memory. SCM wrapper, privacy filters, retention, support and binary trust remain unqualified. No cloud export or default credentials.",
+      "decision": "FIN-277 bounded protected local technical sink implemented; not Audit authority or collector acceptance. Prometheus 3.14.0, Alertmanager 0.34.1, Grafana OSS 13.2.2 and Jaeger/tools 2.21.0 candidates remain pinned; Jaeger uses Elasticsearch 8.x, not memory. SCM wrapper, privacy filters, retention, support and binary trust remain unqualified. No cloud export or default credentials.",
       "qualification": "blocked"
     },
     {

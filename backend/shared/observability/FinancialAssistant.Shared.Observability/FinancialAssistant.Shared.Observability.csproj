@@ -7,5 +7,7 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../../native-files/FinancialAssistant.Shared.NativeFiles/FinancialAssistant.Shared.NativeFiles.csproj" />
+    <ProjectReference Include="../../hosting/FinancialAssistant.Shared.Hosting/FinancialAssistant.Shared.Hosting.csproj" />
   </ItemGroup>
 </Project>

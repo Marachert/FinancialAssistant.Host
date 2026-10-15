@@ -63,6 +63,13 @@ required for FIN-270 and integrated FIN-286 acceptance.
 
 ## End-To-End User Scenario
 
+FIN-277 adds [protected native adapters](../engineering/windows-native-adapters.md):
+restart-safe encrypted receipt objects with ACL/path/key/retention controls,
+disposable bounded service-health observations and a private technical diagnostic
+sink. Native Receipt metadata remains fail-closed until FIN-285; native reliable
+delivery remains FIN-276. The local sink does not qualify retained native collectors,
+Elasticsearch, Audit authority or installed-host acceptance. No live provider is enabled.
+
 The implemented contracts support this flow when the required routes, adapters
 and environment are enabled and verified:
 

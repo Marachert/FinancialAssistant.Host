@@ -1,5 +1,8 @@
+using FinancialAssistant.Shared.Hosting;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace FinancialAssistant.Shared.Observability;
@@ -27,6 +30,25 @@ public static class FinancialAssistantObservabilityExtensions
             new ObservabilityRuntimeIdentity(
                 builder.Environment.ApplicationName,
                 builder.Environment.EnvironmentName));
+
+        if (builder.Environment.IsEnvironment(FinancialAssistantHost.NativeEnvironment))
+        {
+            var options = builder.Configuration.GetSection("NativeDiagnostics").Get<NativeDiagnosticsOptions>() ?? new NativeDiagnosticsOptions();
+            if (options.Enabled)
+            {
+                options.Validate();
+                builder.Services.AddSingleton(provider => new NativeDiagnosticsProvider(options,
+                    provider.GetRequiredService<NativeServiceDefinition>().Id, TimeProvider.System));
+                builder.Services.AddSingleton<ILoggerProvider>(provider => provider.GetRequiredService<NativeDiagnosticsProvider>());
+                builder.Services.AddHostedService<NativeDiagnosticsWorker>();
+                builder.Services.AddHealthChecks().AddCheck<NativeDiagnosticsHealthCheck>("native-diagnostics", tags: new[] { "ready" });
+            }
+            else
+            {
+                builder.Services.AddHealthChecks().AddCheck("native-diagnostics", () =>
+                    Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Unhealthy("Native diagnostics are not configured; collector acceptance remains pending."), tags: new[] { "ready" });
+            }
+        }
 
         return builder;
     }
