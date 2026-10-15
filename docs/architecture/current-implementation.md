@@ -46,6 +46,10 @@ atomic owned indexes/state/outboxes, explicit bounded encrypted source retention
 replay/rollback/restart safety and parsing outside SQL. Native Intake registers no
 financial-owner stores/consumers and does not promise synchronous owner visibility.
 Live transport/inbox, orchestration and installed acceptance remain separate.
+Implementation PR283 was independently verified merged as
+`48c7c0941b4b58cf3f7884c5c16182a9803f6594` on 2026-10-15; FIN-284 is Done.
+The next ranked metadata leaf FIN-285 follows unfinished FIN-277 native object
+storage, not an in-memory receipt object marked durable by metadata alone.
 
 The [FIN-275 ownership inventory](../engineering/native-financial-persistence-scope.md)
 separates its original seven-owner persistence scope into FIN-275 financial records/
