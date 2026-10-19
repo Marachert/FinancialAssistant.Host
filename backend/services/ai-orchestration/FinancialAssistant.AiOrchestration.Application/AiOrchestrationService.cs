@@ -68,11 +68,13 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
             throw new AiUsageCostControlException(code);
         }
 
-        if (!usageLimiter.TryAcquire(
+        if (!await usageLimiter.TryAcquireAsync(
                 usageSubjectId,
                 route.Provider,
                 DateOnly.FromDateTime(startedAtUtc.UtcDateTime),
-                usagePolicy.PerUserDailyRequestLimit))
+                usagePolicy.PerUserDailyRequestLimit,
+                callId,
+                cancellationToken))
         {
             const string code = "daily_usage_limit_exceeded";
             await RecordAsync(AiCallStatus.CostControlRejected, null, code, 0);
@@ -171,6 +173,7 @@ public sealed class AiOrchestrationService : IAiOrchestrationService
             string? failureCategory,
             int providerRequestUnits) =>
             metadataStore.AddAsync(
+                usageSubjectId,
                 new AiCallMetadata(
                     callId,
                     request.CapabilityName,

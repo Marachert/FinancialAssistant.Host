@@ -38,4 +38,10 @@ FIN-123 adds the [AI and OCR integration test plan](../../../docs/engineering/ai
 
 FIN-124 adds the [AI and OCR release-readiness checklist](../../../docs/engineering/ai-ocr-release-readiness-checklist.md). Public release remains blocked until provider configuration, privacy and consent, cost, fallback, integration, monitoring, and support evidence all match the exact release commit and deployment identity.
 
-Runtime provider adapters and durable metadata storage are intentionally separate infrastructure additions. The current adapter is explicitly in-memory and suitable only for this delivery increment.
+FIN-285 adds [native AI persistence](../../../docs/engineering/receipt-ai-native-persistence.md):
+separate owned PostgreSQL metadata, durable asynchronous quotas and a stable-request
+journal. Native calls require `RequestId`; uncertain/repeated requests never silently
+reissue a provider call, and responses are not retained for replay. Native live
+provider enablement fails closed. Development/Testing keep their memory adapters.
+Provider runtime, installed acceptance and privacy/recovery qualification remain
+separate gates, not passed by the storage implementation.

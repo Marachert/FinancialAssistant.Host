@@ -53,6 +53,9 @@ public sealed record AiUsageCostControlPolicy
 
 public interface IAiUsageLimiter
 {
+    Task<bool> TryAcquireAsync(string usageSubjectId, string providerName, DateOnly utcDate, int dailyLimit,
+        string requestId, CancellationToken token) => Task.FromResult(TryAcquire(usageSubjectId, providerName, utcDate, dailyLimit));
+
     bool TryAcquire(
         string usageSubjectId,
         string providerName,

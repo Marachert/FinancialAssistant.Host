@@ -7,6 +7,7 @@ using FinancialAssistant.AiOrchestration.Infrastructure;
 using FinancialAssistant.AiOrchestration.Infrastructure.Prompts;
 using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
+using FinancialAssistant.Shared.Persistence;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
@@ -63,7 +64,8 @@ if (configuredProvider.IsConfigured)
 builder.Services.AddSingleton(configuredProvider.UsageCostControls.CreatePolicy());
 
 builder.Services.AddAiOrchestrationApplication();
-builder.Services.AddAiOrchestrationInfrastructure();
+builder.Services.AddAiOrchestrationInfrastructure(builder.Configuration,
+    builder.Environment.IsEnvironment(FinancialAssistantHost.NativeEnvironment));
 builder.Services
     .AddFinancialAssistantHealthChecks()
     .AddCheck<AiOrchestrationReadinessHealthCheck>(
@@ -73,6 +75,7 @@ builder.Services
 var app = builder.Build();
 
 app.UseWindowsNativeRequestBoundary();
+app.UseOwnedStorageFailureBoundary();
 
 var runtimeProviderOptions = app.Services
     .GetRequiredService<IOptions<AiOrchestrationOptions>>()

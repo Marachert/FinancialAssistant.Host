@@ -6,6 +6,7 @@ using FinancialAssistant.ReceiptProcessing.Infrastructure;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Storage;
 using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
+using FinancialAssistant.Shared.Persistence;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.OpenApi.Models;
 
@@ -39,7 +40,8 @@ if (windowsNative)
     app.Use(async (context, next) =>
     {
         try { await next(context); }
-        catch (NativeReceiptStorageException) when (!context.Response.HasStarted)
+        catch (Exception exception) when (!context.Response.HasStarted && (exception is NativeReceiptStorageException or
+            StorageUnavailableException or StorageConflictException || exception is OperationCanceledException && !context.RequestAborted.IsCancellationRequested))
         {
             context.Response.Headers.CacheControl = "no-store";
             await Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable, title: "Receipt storage is unavailable.",

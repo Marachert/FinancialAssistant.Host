@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../FinancialAssistant.AiOrchestration.Application/FinancialAssistant.AiOrchestration.Application.csproj" />
+    <ProjectReference Include="../../../shared/persistence/FinancialAssistant.Shared.Persistence/FinancialAssistant.Shared.Persistence.csproj" />
     <ProjectReference Include="../FinancialAssistant.AiOrchestration.Domain/FinancialAssistant.AiOrchestration.Domain.csproj" />
   </ItemGroup>
 </Project>

@@ -6,8 +6,10 @@ FIN-277 adds [native protected file storage](../../../docs/engineering/windows-n
 local NTFS/service-SID ACL checks, no links/traversal, stable AES-GCM key ring,
 authenticated metadata, explicit 1..24-hour retention, durable replay/deletion
 markers and encrypted portable restore. Native startup never falls back to memory.
-Receipt/OCR workflow metadata remains fail-closed (safe 503/readiness unavailable)
-until FIN-285/276. These file adapters do not certify backup/SCM/three-OS acceptance.
+FIN-285 adds [owned Receipt/OCR workflow persistence](../../../docs/engineering/receipt-ai-native-persistence.md)
+with atomic idempotency/metadata/outbox state and object verification before upload
+acceptance. Storage failures return safe503/no-store; delivery readiness remains
+blocked pending FIN-276. These adapters do not certify backup/SCM/three-OS acceptance.
 
 The asynchronous job and event responsibilities are defined in
 [`docs/engineering/async-ai-ocr-processing-flow.md`](../../../docs/engineering/async-ai-ocr-processing-flow.md).
@@ -36,6 +38,6 @@ FIN-123 adds the [AI and OCR integration test plan](../../../docs/engineering/ai
 FIN-124 adds the [AI and OCR release-readiness checklist](../../../docs/engineering/ai-ocr-release-readiness-checklist.md). It makes privacy and consent, production cost approval, manual draft and retry-later fallback, authenticated monitoring, and privacy-safe support evidence explicit public-release gates.
 
 The default receipt-upload transport and stores remain developer implementations.
-WindowsNative selects the FIN-277 object adapter but blocks volatile metadata.
-FIN-285/276 must supply owned durable workflow state and reliable delivery; native
+WindowsNative selects FIN-277 objects and FIN-285 owned PostgreSQL metadata; native
+publishers stage durable intents without claiming delivery. FIN-276 retains reliable delivery; native
 installed/backup/privacy acceptance remains required and live paid OCR stays disabled.

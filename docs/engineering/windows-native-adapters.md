@@ -77,9 +77,9 @@ matching service metadata, protected keys and a consistent recovery point. FIN-2
 of cross-service deletion, full backup recovery or key escrow.
 
 Native Receipt startup validates its object configuration and root without memory
-fallback. Receipt/OCR metadata deliberately fails closed pending FIN-285; trusted
-workflow requests return safe `503 receipt_storage_unavailable`, with no-store and
-no raw path/exception details. Readiness remains unhealthy pending FIN-285/276.
+fallback. FIN-285 supplies [owned Receipt/OCR workflow metadata](receipt-ai-native-persistence.md);
+unavailable/invalid storage returns safe `503 receipt_storage_unavailable`, with no-store and
+no raw path/exception details. Delivery readiness remains unhealthy pending FIN-276.
 Persisting files alone never acknowledges an upload backed by volatile metadata.
 Developer/Testing adapters and public routes/DTOs remain compatible; paid OCR stays
 disabled in WindowsNative.

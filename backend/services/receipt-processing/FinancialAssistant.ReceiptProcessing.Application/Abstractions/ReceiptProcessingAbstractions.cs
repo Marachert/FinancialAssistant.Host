@@ -58,6 +58,8 @@ public interface IOcrProcessingStore
 
 public interface IReceiptUploadedPublisher
 {
+    bool ConfirmsDelivery => true;
+
     Task PublishAsync(
         ReceiptUploadedIntegrationEvent integrationEvent,
         CancellationToken cancellationToken);
@@ -65,6 +67,8 @@ public interface IReceiptUploadedPublisher
 
 public interface IOcrCompletedPublisher
 {
+    bool ConfirmsDelivery => true;
+
     Task PublishAsync(
         OcrCompletedIntegrationEvent integrationEvent,
         CancellationToken cancellationToken);

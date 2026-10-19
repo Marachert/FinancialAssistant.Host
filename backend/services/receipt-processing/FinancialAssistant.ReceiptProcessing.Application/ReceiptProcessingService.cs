@@ -162,11 +162,14 @@ public sealed partial class ReceiptProcessingService : IReceiptProcessingService
             metadata.ContentType,
             metadata.UploadedAtUtc);
         await publisher.PublishAsync(integrationEvent, cancellationToken);
-        await metadataStore.MarkReceiptUploadedPublishedAsync(
-            metadata.UserId,
-            metadata.ReceiptId,
-            integrationEvent.EventId,
-            CancellationToken.None);
+        if (publisher.ConfirmsDelivery)
+        {
+            await metadataStore.MarkReceiptUploadedPublishedAsync(
+                metadata.UserId,
+                metadata.ReceiptId,
+                integrationEvent.EventId,
+                CancellationToken.None);
+        }
     }
 
     private async Task<ReceiptResponse> ToResponseAsync(
