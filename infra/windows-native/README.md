@@ -14,7 +14,8 @@ not an installer or qualified release; the inventory remains `releaseReady=false
 FIN-277 implements [native receipt/cache/diagnostic adapters](../../docs/engineering/windows-native-adapters.md).
 Owned NTFS object files, ACL/path/key/retention controls, typed disposable health
 cache and a protected technical sink have free synthetic test/owned-crash fixtures.
-Receipt workflow metadata/delivery still fail closed pending FIN-285/276. No native
+FIN-285 adds [owned Receipt/OCR and AI workflow metadata](../../docs/engineering/receipt-ai-native-persistence.md);
+delivery readiness remains blocked pending FIN-276. No native
 collector, Elasticsearch, WPF/SCM, backup-system or three-Windows acceptance is
 granted; package/target qualification and the release-ready flag remain unchanged.
 PR285 actual merge `dfe9692f1da22aa22e864d4eb9932d5e67316af0` at

@@ -102,11 +102,13 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
             }
 
             if (ocrProvider.IsExternalEnabled &&
-                !usageLimiter.TryAcquire(
+                !await usageLimiter.TryAcquireAsync(
                     integrationEvent.UserId,
                     ocrProvider.ProviderName,
                     DateOnly.FromDateTime(startedAtUtc.UtcDateTime),
-                    usagePolicy.PerUserDailyRequestLimit))
+                    usagePolicy.PerUserDailyRequestLimit,
+                    integrationEvent.EventId,
+                    cancellationToken))
             {
                 var failed = CreateMetadata(
                     integrationEvent,
@@ -275,11 +277,14 @@ public sealed class ReceiptOcrProcessor : IReceiptUploadedConsumer
         }
 
         await publisher.PublishAsync(stored.IntegrationEvent, cancellationToken);
-        await processingStore.MarkPublishedAsync(
-            stored.Metadata.UserId,
-            stored.Metadata.ReceiptId,
-            stored.IntegrationEvent.EventId,
-            CancellationToken.None);
+        if (publisher.ConfirmsDelivery)
+        {
+            await processingStore.MarkPublishedAsync(
+                stored.Metadata.UserId,
+                stored.Metadata.ReceiptId,
+                stored.IntegrationEvent.EventId,
+                CancellationToken.None);
+        }
     }
 
     private static void Validate(ReceiptUploadedIntegrationEvent integrationEvent)

@@ -209,14 +209,17 @@ public sealed class NativeReceiptObjectStoreTests
     public async Task NativeMetadataCannotAcceptProcessLocalWorkflow()
     {
         var configuration = Configuration(Options("synthetic", "synthetic", 1));
-        await using var provider = new ServiceCollection().AddLogging().AddSingleton<IConfiguration>(configuration)
-            .AddReceiptProcessingApplication().AddReceiptProcessingInfrastructure(configuration, true).BuildServiceProvider();
+        var services = new ServiceCollection().AddLogging().AddSingleton<IConfiguration>(configuration)
+            .AddReceiptProcessingApplication().AddReceiptProcessingInfrastructure(configuration, true);
+        Assert.Equal(typeof(PostgresReceiptMetadataStore), Assert.Single(services, s => s.ServiceType == typeof(IReceiptMetadataStore)).ImplementationType);
+        Assert.Equal(typeof(PostgresOcrProcessingStore), Assert.Single(services, s => s.ServiceType == typeof(IOcrProcessingStore)).ImplementationType);
+        Assert.Equal(typeof(TransactionalReceiptService), Assert.Single(services, s => s.ServiceType == typeof(IReceiptProcessingService)).ImplementationType);
+        await using var provider = services.BuildServiceProvider();
         Assert.Null(provider.GetService<InMemoryReceiptMetadataStore>());
         Assert.Null(provider.GetService<EncryptedInMemoryReceiptObjectStore>());
-        await Assert.ThrowsAsync<NativeReceiptStorageException>(() => provider.GetRequiredService<IReceiptMetadataStore>()
-            .GetByIdempotencyKeyAsync("synthetic-owner", "synthetic-key", default));
-        await Assert.ThrowsAsync<NativeReceiptStorageException>(() => provider.GetRequiredService<IOcrProcessingStore>()
-            .GetAsync("synthetic-owner", "receipt_synthetic", default));
+        if (OperatingSystem.IsWindows())
+        { Assert.Throws<ArgumentException>(() => provider.GetRequiredService<IReceiptMetadataStore>()); }
+        else { Assert.Throws<PlatformNotSupportedException>(() => provider.GetRequiredService<IReceiptMetadataStore>()); }
     }
 
     [Fact]
@@ -299,6 +302,12 @@ public sealed class NativeReceiptObjectStoreTests
         ["ReceiptProcessing:Storage:Files:IndexKey"] = options.IndexKey,
         ["ReceiptProcessing:Storage:Files:ActiveEncryptionKeyId"] = options.ActiveEncryptionKeyId,
         ["ReceiptProcessing:Storage:Files:EncryptionKeys:v1"] = options.EncryptionKeys["v1"],
+        ["ReceiptProcessing:Storage:Postgres:Database"] = "fa_synthetic_unavailable",
+        ["ReceiptProcessing:Storage:Postgres:Port"] = "65534",
+        ["ReceiptProcessing:Storage:Postgres:Password"] = "synthetic-unavailable-database-password",
+        ["ReceiptProcessing:Storage:Postgres:IndexKey"] = options.IndexKey,
+        ["ReceiptProcessing:Storage:Postgres:ActiveEncryptionKeyId"] = "v1",
+        ["ReceiptProcessing:Storage:Postgres:EncryptionKeys:v1"] = options.EncryptionKeys["v1"],
         ["ReceiptProcessing:Gateway:SharedSecret"] = ReceiptProcessingWebApplicationFactory.GatewaySecret,
         ["ReceiptProcessing:Events:SharedSecret"] = "synthetic-receipt-event-secret-for-native-tests",
         ["ReceiptProcessing:Ocr:Enabled"] = "false",

@@ -1,8 +1,11 @@
+using FinancialAssistant.ReceiptProcessing.Application;
 using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
+using FinancialAssistant.ReceiptProcessing.Contracts;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Events;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Ocr;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Storage;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Usage;
+using FinancialAssistant.Shared.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -15,6 +18,15 @@ public static class DependencyInjection
     {
         if (windowsNative)
         {
+            if (configuration?.GetValue<bool>("ReceiptProcessing:Ocr:Enabled") == true)
+            { throw new InvalidOperationException("Live OCR must remain disabled in the native POC development profile."); }
+            var settings = configuration?.GetSection("ReceiptProcessing:Storage:Postgres").Get<NativePostgresSettings>()
+                ?? throw new InvalidOperationException("Native Receipt persistence configuration is missing.");
+            var options = settings.CreateOptions("receipt-processing");
+            using (var validation = settings.CreateProtection()) { }
+            services.AddSingleton(_ => settings.CreateProtection());
+            services.AddSingleton(provider => new OwnedPostgresStore(options, provider.GetRequiredService<RecordProtection>()));
+            services.AddSingleton<ReceiptPersistenceContext>();
             var files = configuration?.GetSection("ReceiptProcessing:Storage:Files").Get<NativeReceiptObjectOptions>()
                 ?? throw new InvalidOperationException("Native receipt file configuration is required.");
             files.Validate();
@@ -22,12 +34,23 @@ public static class DependencyInjection
             services.AddSingleton(files);
             services.AddSingleton<NativeReceiptObjectStore>();
             services.AddSingleton<IReceiptObjectStore>(provider => provider.GetRequiredService<NativeReceiptObjectStore>());
-            services.AddSingleton<PendingNativeReceiptMetadata>();
-            services.AddSingleton<IReceiptMetadataStore>(provider => provider.GetRequiredService<PendingNativeReceiptMetadata>());
-            services.AddSingleton<IOcrProcessingStore>(provider => provider.GetRequiredService<PendingNativeReceiptMetadata>());
+            services.AddSingleton<IReceiptMetadataStore, PostgresReceiptMetadataStore>();
+            services.AddSingleton<IOcrProcessingStore, PostgresOcrProcessingStore>();
+            services.AddSingleton<PostgresReceiptOutbox>();
+            services.AddSingleton<IReceiptUploadedPublisher>(provider => provider.GetRequiredService<PostgresReceiptOutbox>());
+            services.AddSingleton<IOcrCompletedPublisher>(provider => provider.GetRequiredService<PostgresReceiptOutbox>());
+            services.AddSingleton<IOcrUsageLimiter, PostgresOcrUsageLimiter>();
+            services.RemoveAll<IReceiptProcessingService>();
+            services.AddSingleton<ReceiptProcessingService>();
+            services.AddSingleton<IReceiptProcessingService, TransactionalReceiptService>();
+            services.RemoveAll<IReceiptUploadedConsumer>();
+            services.AddSingleton<ReceiptOcrProcessor>();
+            services.AddSingleton<IReceiptUploadedConsumer, TransactionalReceiptUploadedConsumer>();
             services.AddHostedService<NativeReceiptRetentionWorker>();
-            services.AddHealthChecks().AddCheck("receipt-native-workflow", () =>
-                Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Unhealthy("Durable metadata and delivery qualification remain FIN-285/276."), tags: new[] { "ready" });
+            services.AddSingleton<OwnedStorageHealthCheck>();
+            services.AddHealthChecks().AddCheck<OwnedStorageHealthCheck>("receipt-owned-storage", tags: new[] { "ready" })
+                .AddCheck("receipt-native-delivery", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Unhealthy(
+                    "Durable broker delivery remains FIN-276."), tags: new[] { "ready" });
         }
         else
         {
@@ -39,7 +62,7 @@ public static class DependencyInjection
             services.AddSingleton<IOcrProcessingStore>(provider => provider.GetRequiredService<InMemoryOcrProcessingStore>());
         }
         services.AddSingleton<InMemoryReceiptUploadedPublisher>();
-        services.AddSingleton<IReceiptUploadedPublisher>(provider =>
+        services.TryAddSingleton<IReceiptUploadedPublisher>(provider =>
             provider.GetRequiredService<InMemoryReceiptUploadedPublisher>());
         services.AddSingleton<InMemoryOcrCompletedPublisher>();
         services
@@ -48,7 +71,7 @@ public static class DependencyInjection
                 client => client.Timeout = TimeSpan.FromSeconds(30))
             .ConfigurePrimaryHttpMessageHandler(() =>
                 new HttpClientHandler { AllowAutoRedirect = false });
-        services.AddSingleton<IOcrCompletedPublisher, HttpOcrCompletedPublisher>();
+        services.TryAddSingleton<IOcrCompletedPublisher, HttpOcrCompletedPublisher>();
         services.AddSingleton<IOcrCandidateNormalizer, DeterministicReceiptCandidateNormalizer>();
         services.TryAddSingleton<IOcrProviderClient, DisabledOcrProviderClient>();
         services.TryAddSingleton(provider =>

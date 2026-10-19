@@ -53,7 +53,8 @@ public static class NativeServiceCatalog
             Define("category", 5103, "Category:Gateway:SharedSecret", "Category:Storage:Postgres:Password", "Category:Storage:Postgres:IndexKey"),
             Define("transaction-intake", 5104, "TransactionIntake:Gateway:SharedSecret", "ReceiptProcessing:Events:SharedSecret",
                 "TransactionIntake:Storage:Postgres:Password", "TransactionIntake:Storage:Postgres:IndexKey"),
-            Define("receipt-processing", 5105, "ReceiptProcessing:Gateway:SharedSecret", "ReceiptProcessing:Events:SharedSecret", "ReceiptProcessing:Storage:Files:IndexKey"),
+            Define("receipt-processing", 5105, "ReceiptProcessing:Gateway:SharedSecret", "ReceiptProcessing:Events:SharedSecret", "ReceiptProcessing:Storage:Files:IndexKey",
+                "ReceiptProcessing:Storage:Postgres:Password", "ReceiptProcessing:Storage:Postgres:IndexKey"),
             Define("analytics", 5106, "Analytics:Gateway:SharedSecret"),
             Define("financial-score", 5107, "FinancialScore:Gateway:SharedSecret"),
             Define("recommendations-notifications", 5108, "RecommendationsNotifications:Gateway:SharedSecret"),
@@ -61,7 +62,8 @@ public static class NativeServiceCatalog
             Define("income", 5111, "Income:Gateway:SharedSecret", "Income:Storage:Postgres:Password", "Income:Storage:Postgres:IndexKey"),
             Define("expense", 5112, "Expense:Gateway:SharedSecret", "Expense:Storage:Postgres:Password", "Expense:Storage:Postgres:IndexKey"),
             Define("audit", 5113, "Audit:Gateway:SharedSecret", "Audit:Services:SharedSecret"),
-            Define("ai-orchestration", 5114, "AiOrchestration:Gateway:SharedSecret"),
+            Define("ai-orchestration", 5114, "AiOrchestration:Gateway:SharedSecret",
+                "AiOrchestration:Storage:Postgres:Password", "AiOrchestration:Storage:Postgres:IndexKey"),
             Define("mcp", 5115, "Mcp:Authentication:SharedSecret", "Mcp:Monitoring:SharedSecret", "Mcp:Audit:SharedSecret")
         });
 

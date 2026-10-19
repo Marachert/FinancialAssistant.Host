@@ -49,8 +49,11 @@ Live transport/inbox, orchestration and installed acceptance remain separate.
 Implementation PR283 was independently verified merged as
 `48c7c0941b4b58cf3f7884c5c16182a9803f6594` on 2026-10-15; FIN-284 is Done.
 FIN-277 is Done after actual PR285 merge `dfe9692f1da22aa22e864d4eb9932d5e67316af0`
-at `2026-10-15T18:24:45Z`. The next ranked metadata leaf FIN-285 follows its native object
-storage, not an in-memory receipt object marked durable by metadata alone.
+at `2026-10-15T18:24:45Z`. FIN-285 adds
+[Receipt/OCR and AI workflow persistence](../engineering/receipt-ai-native-persistence.md)
+on those protected native objects: atomic metadata/index/outbox state, exact candidate
+decimals and separate AI metadata/usage/request reservations. No file-only success,
+volatile native workflow fallback or paid provider is permitted.
 
 The [FIN-275 ownership inventory](../engineering/native-financial-persistence-scope.md)
 separates its original seven-owner persistence scope into FIN-275 financial records/
@@ -67,7 +70,7 @@ required for FIN-270 and integrated FIN-286 acceptance.
 FIN-277 adds [protected native adapters](../engineering/windows-native-adapters.md):
 restart-safe encrypted receipt objects with ACL/path/key/retention controls,
 disposable bounded service-health observations and a private technical diagnostic
-sink. Native Receipt metadata remains fail-closed until FIN-285; native reliable
+sink. FIN-285 native Receipt metadata fails closed when owned storage is invalid; native reliable
 delivery remains FIN-276. The local sink does not qualify retained native collectors,
 Elasticsearch, Audit authority or installed-host acceptance. No live provider is enabled.
 

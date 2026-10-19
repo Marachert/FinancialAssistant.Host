@@ -68,6 +68,8 @@ public sealed class NativeHostingTests
     [Theory]
     [InlineData("income", "Income")]
     [InlineData("expense", "Expense")]
+    [InlineData("receipt-processing", "ReceiptProcessing")]
+    [InlineData("ai-orchestration", "AiOrchestration")]
     public void FinancialHosts_RequireStorageSecretsInCanonicalCatalog(string id, string prefix)
     {
         var service = NativeServiceCatalog.Get(id);

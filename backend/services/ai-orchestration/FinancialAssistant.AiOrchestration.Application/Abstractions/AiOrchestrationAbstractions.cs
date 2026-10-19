@@ -35,6 +35,8 @@ public interface IStructuredOutputValidator
 
 public interface IAiCallMetadataStore
 {
+    Task AddAsync(string usageSubjectId, AiCallMetadata metadata, CancellationToken cancellationToken) => AddAsync(metadata, cancellationToken);
+
     Task AddAsync(AiCallMetadata metadata, CancellationToken cancellationToken);
 }
 

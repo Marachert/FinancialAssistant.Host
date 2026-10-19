@@ -53,6 +53,9 @@ public sealed record OcrUsageCostControlPolicy
 
 public interface IOcrUsageLimiter
 {
+    Task<bool> TryAcquireAsync(string userId, string providerName, DateOnly utcDate, int dailyLimit,
+        string requestId, CancellationToken token) => Task.FromResult(TryAcquire(userId, providerName, utcDate, dailyLimit));
+
     bool TryAcquire(
         string userId,
         string providerName,
