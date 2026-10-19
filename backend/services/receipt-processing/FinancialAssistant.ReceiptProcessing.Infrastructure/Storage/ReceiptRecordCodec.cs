@@ -72,7 +72,7 @@ public static class ReceiptRecordCodec
         Identifier(e.EventId); Identifier(e.UserId); Identifier(e.ReceiptId);
         if (e.EventType != OcrCompletedIntegrationEvent.Name || e.ReceiptId.Length > 100 ||
             e.OccurredAtUtc == default || e.OccurredAtUtc.Offset != TimeSpan.Zero || e.Confidence is < 0 or > 1 ||
-            e.TransactionType is not (null or "income" or "expense") || e.Amount is <= 0 ||
+            e.TransactionType is not (null or "income" or "expense") || e.Amount is < 0 ||
             e.Currency is not null && (e.Currency.Length != 3 || !e.Currency.All(c => c is >= 'A' and <= 'Z')) || e.Merchant?.Length > 500)
         { throw new ArgumentException("Invalid durable OCR completion intent."); }
         if (e.CategoryId is not null) { Identifier(e.CategoryId); }

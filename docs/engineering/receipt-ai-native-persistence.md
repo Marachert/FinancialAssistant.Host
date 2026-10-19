@@ -49,6 +49,9 @@ status, confidence, bounded ambiguity/failure codes, provider/model identity,
 logical request units and timestamps. Only normalized suggestion fields enter the
 completion intent. No receipt bytes, raw OCR text, provider response or arbitrary
 provider exception is serialized. This is never a confirmed income/expense.
+Zero totals remain valid reviewable OCR suggestions, matching the existing
+normalizer; negative totals remain invalid. This does not relax financial-owner
+validation or confirm a zero-valued transaction.
 Owner locks and revision checks, not process-local semaphores, protect persistence.
 Native live OCR is disabled; transaction-scoped processing is bounded by the owned
 store deadline and is not a design approval for a long paid provider call in SQL.
@@ -129,6 +132,11 @@ including actual application orchestration with a synthetic provider: concurrent
 stable requests invoked it once, completed/failed requests were not reissued, and
 a different subject could neither read nor attach the resulting call. This is
 free local evidence, not exact-head CI or installed acceptance.
+
+The zero-total review regression subsequently passed 92 Receipt tests, giving
+verified latest results of 1,047/1,047 across the same 24 projects. The repeated
+owned PostgreSQL fixture also retained the zero suggestion and its publication
+state across an actual restart, with cleanup confirmed at 2026-10-19 20:17:55 UTC.
 
 FIN-276/286 retain integrated delivery, privacy retention/deletion and crash/recovery
 qualification; FIN-209 retains complete backup consistency and deletion history.

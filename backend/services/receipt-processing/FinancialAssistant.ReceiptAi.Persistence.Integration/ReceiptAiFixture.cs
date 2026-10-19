@@ -145,6 +145,7 @@ try
         Check(replay.Replayed && replay.Receipt.ReceiptId == "receipt_fixture_1");
         var result = await results.GetAsync(ownerId, replay.Receipt.ReceiptId, default);
         Check(result?.IntegrationEvent?.Amount == 1234567890.123456789m && result.Metadata.OcrCompletedPublished);
+        Check((await results.GetAsync(ownerId, "receipt_zero", default))?.IntegrationEvent?.Amount == 0m);
         Check((await outbox.ReadPendingAsync()).Count == 0);
         Check(await aiMetadata.GetAsync(ownerId, "call_synthetic") is { Status: AiCallStatus.Succeeded });
         Check(await aiMetadata.GetAsync("other_owner", "call_synthetic") is null);
@@ -202,6 +203,28 @@ try
         await outbox.MarkPublishedAsync(intent, now);
         if (intent.Uploaded is not null) { await metadata.MarkReceiptUploadedPublishedAsync(ownerId, file.ReceiptId, intent.Uploaded.EventId, default); }
         else { await results.MarkPublishedAsync(ownerId, file.ReceiptId, intent.Completed!.EventId, default); }
+    }
+    Check((await outbox.ReadPendingAsync()).Count == 0);
+
+    stage = "zero-valued candidate persists without financial confirmation";
+    await objects.StoreAsync("receipt_zero", image, default);
+    var zeroFile = file with { ReceiptId = "receipt_zero", ReceiptUploadedEventId = "event_zero_uploaded", ReceiptUploadedPublished = false };
+    Check(await metadata.AddAsync("zero-total-key", zeroFile, default));
+    var zeroEvent = ocrEvent with { ReceiptId = zeroFile.ReceiptId, EventId = "event_zero_completed", Amount = 0m };
+    var zeroMetadata = ocr with
+    {
+        ReceiptId = zeroFile.ReceiptId,
+        Audit = audit with
+        { RequestId = zeroFile.ReceiptUploadedEventId, TraceId = zeroFile.ReceiptUploadedEventId }
+    };
+    await results.StoreIfMissingAsync(zeroMetadata, zeroEvent, default);
+    Check((await results.GetAsync(ownerId, zeroFile.ReceiptId, default))?.IntegrationEvent?.Amount == 0m);
+    var zeroPending = await outbox.ReadPendingAsync(); Check(zeroPending.Count == 2);
+    foreach (var intent in zeroPending)
+    {
+        await outbox.MarkPublishedAsync(intent, now);
+        if (intent.Uploaded is not null) { await metadata.MarkReceiptUploadedPublishedAsync(ownerId, intent.ReceiptId, intent.Uploaded.EventId, default); }
+        else { await results.MarkPublishedAsync(ownerId, intent.ReceiptId, intent.Completed!.EventId, default); }
     }
     Check((await outbox.ReadPendingAsync()).Count == 0);
 

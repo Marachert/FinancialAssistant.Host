@@ -2,6 +2,7 @@ using FinancialAssistant.ReceiptProcessing.Application.Abstractions;
 using FinancialAssistant.ReceiptProcessing.Contracts;
 using FinancialAssistant.ReceiptProcessing.Domain;
 using FinancialAssistant.ReceiptProcessing.Infrastructure;
+using FinancialAssistant.ReceiptProcessing.Infrastructure.Ocr;
 using FinancialAssistant.ReceiptProcessing.Infrastructure.Storage;
 using FinancialAssistant.Shared.Persistence;
 using Microsoft.Extensions.Configuration;
@@ -51,6 +52,24 @@ public sealed class ReceiptDurableContractTests
             { Audit = value.Metadata.Audit with { FailureCategory = "raw provider content" } }
         }));
         Assert.Throws<ArgumentException>(() => ReceiptRecordCodec.Processing(value with { Metadata = value.Metadata with { Status = "confirmed" } }));
+    }
+
+    [Fact]
+    public void NormalizedZeroTotalPersistsAsSuggestionWhileNegativeAmountsRemainInvalid()
+    {
+        var candidate = new DeterministicReceiptCandidateNormalizer().Normalize(
+            new OcrExtractionResult("merchant: Synthetic Store\ntotal: 0.00 USD\n2026-10-19", 0.75m, Array.Empty<string>()));
+        Assert.Equal(0m, candidate.Amount);
+        Assert.True(candidate.RequiresReview);
+        var value = Result();
+        var zero = value with { IntegrationEvent = value.IntegrationEvent! with { Amount = candidate.Amount } };
+        ReceiptRecordCodec.Processing(zero);
+        var restored = OwnedRecordCodec.Decode<StoredOcrProcessing>(1,
+            new DurableRecord(0, OwnedRecordCodec.Encode(1, zero)));
+        ReceiptRecordCodec.Processing(restored);
+        Assert.Equal(0m, restored.IntegrationEvent!.Amount);
+        Assert.Throws<ArgumentException>(() => ReceiptRecordCodec.Processing(zero with
+        { IntegrationEvent = zero.IntegrationEvent! with { Amount = -0.01m } }));
     }
 
     [Fact]
