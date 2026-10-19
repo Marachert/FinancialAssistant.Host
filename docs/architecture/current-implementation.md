@@ -54,6 +54,10 @@ at `2026-10-15T18:24:45Z`. FIN-285 adds
 on those protected native objects: atomic metadata/index/outbox state, exact candidate
 decimals and separate AI metadata/usage/request reservations. No file-only success,
 volatile native workflow fallback or paid provider is permitted.
+FIN-285 is Done after actual PR287 merge `8a3d53f9508de9eb1577ff377dbe49c73403e4a5`
+at `2026-10-19T20:26:56Z`, final297354d/all5CIgreen and zero-total review fixed.
+Its closure census is192/215(89.3%), FIN-27010/19 and P9 16/39(41.0%);
+native delivery, remaining owners, installer and first-user gates remain required.
 
 The [FIN-275 ownership inventory](../engineering/native-financial-persistence-scope.md)
 separates its original seven-owner persistence scope into FIN-275 financial records/

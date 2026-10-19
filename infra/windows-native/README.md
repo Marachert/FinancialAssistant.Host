@@ -21,7 +21,13 @@ granted; package/target qualification and the release-ready flag remain unchange
 PR285 actual merge `dfe9692f1da22aa22e864d4eb9932d5e67316af0` at
 `2026-10-15T18:24:45Z` is independently verified; FIN-277 Done, final80ee33b all5CIgreen.
 Fresh census18:26:46 UTC:191/215 (88.8%), +0.5 pp before rounding; FIN-2709/19,
-P9 15/39 (38.5%). First-user Not Ready; FIN-285 follows closure-ledger merge.
+P9 15/39 (38.5%). That FIN-277 snapshot is historical.
+FIN-285 is Done after actual PR287 merge `8a3d53f9508de9eb1577ff377dbe49c73403e4a5`
+at `2026-10-19T20:26:56Z`, final297354d/all5CIgreen/zero-total review fixed.
+Fresh2026-10-19 20:28:57 UTC census:192/215(89.3%),+0.5pp before rounding;
+FIN-27010/19, P9 16/39(41.0%). First-user Not Ready. FIN-286 remains blocked by
+unfinished delivery/derived-owner persistence; follow prerequisites only after
+this closure ledger actually merges and fresh dependency reads.
 
 FIN-274's [persistence foundation](../../backend/shared/persistence/README.md)
 is distinct from domain owners FIN-282/283/284/285 and full integration FIN-286.
@@ -402,9 +408,10 @@ qualification; the exact archive digest has been verified locally.
    inventory merge/closure is not that release approval.
 
 No additional spending, package/tool installation or machine changes are authorized
-by this document. Current POC completion is 191/215 (88.8%) after FIN-277 closure,
-+0.5 percentage points before rounding; FIN-270 is 9/19 children Done and
-FIN-38 P9 is 15/39 (38.5%). Historical FIN-284 closure is190/21588.4%.
+by this document. Current POC completion is 192/215 (89.3%) after FIN-285 closure,
++0.5 percentage points before rounding; FIN-270 is 10/19 children Done and
+FIN-38 P9 is 16/39 (41.0%). Historical FIN-277 closure is191/21588.8%.
+Historical FIN-284 closure is190/21588.4%.
 Historical FIN-275 closure is189/21587.9%.
 Historical ownership decomposition is188/21587.4%,
 -1.2 pp for granularity only. Historical FIN-283 Profile/Category closure

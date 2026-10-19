@@ -1,11 +1,28 @@
 # POC Readiness Progress
 
-Last updated: 2026-10-15
+Last updated: 2026-10-19
 
 ## Current Snapshot
 
-POC backlog completion after verified FIN-277 closure is **88.8%**:
-**191 of 215 canonical POC leaf tickets are Done**.
+POC backlog completion after verified FIN-285 closure is **89.3%**:
+**192 of 215 canonical POC leaf tickets are Done**.
+
+Fresh census2026-10-19 20:28:57 UTC:289 unique issues,192/215, up from191/215
+by100/215=0.4651 percentage points, reported +0.5 pp before rounding.
+FIN-285 is verified Done after actual PR287 merge
+`8a3d53f9508de9eb1577ff377dbe49c73403e4a5` at `2026-10-19T20:26:56Z`.
+Final `297354d99492f14a591c4eacf0c36e873bd32f96` passed all five CI checks;
+the zero-total OCR P2 was fixed, regressed, replied4318485881 and resolved onlygreen.
+Latest1047/1047 across24 projects, zero failures/skips; actual owned Windows NTFS/
+PostgreSQL immediate crash/restart verified zero candidates/outboxes and synthetic
+AI concurrency/replay/subject isolation, with cleanup. All23 postmerge Confluence
+full-body/source/actualmerge readbacks passed. FIN-270 remains In Progress10/19;
+P9 16/39 (41.0%). This is not native broker/backup/WPF/SCM/three-OS acceptance.
+First-user Not Ready. Next local-ranked FIN-286 is blocked by FIN-276/287/288/289;
+follow its prerequisite leaf only after this closure ledger is actually merged
+and the remaining persistence/delivery dependencies are read fresh.
+
+Historical FIN-277 closure snapshot:
 
 Fresh census2026-10-15 18:26:46 UTC:289 unique issues,191/215, up from190/215
 by100/215=0.4651 percentage points, reported +0.5 pp before rounding.
@@ -17,7 +34,9 @@ Latest local1024/1024 across24 projects, zero failures/skips, plus actual owned
 Windows crash/restart/10MiB/encrypted restore/deletion/junction fixtures passed.
 FIN-270 remains In Progress9/19; P9 15/39 (38.5%). Native adapter code is not
 workflow/broker/collector/full backup/installed acceptance. First-user Not Ready.
-FIN-285 is next with FIN-274/277 Done, after this closure ledger actually merges.
+At that checkpoint FIN-285 was next with FIN-274/277 Done, after its closure ledger.
+Ledger PR286 was independently verified merged as
+`41dc7254d3437b8f4ee0c408c1ae092f38de30ff` at `2026-10-19T19:00:17Z`.
 
 Historical FIN-284 closure snapshot:
 
@@ -157,6 +176,19 @@ completed backlog scope; it is not an estimate of elapsed time or a substitute
 for the readiness gates below.
 
 Latest canonical and Jira closure:
+
+- FIN-285: PR287 actual `8a3d53f9508de9eb1577ff377dbe49c73403e4a5`, merged
+  `2026-10-19T20:26:56Z`; final `297354d99492f14a591c4eacf0c36e873bd32f96`
+- all5checks green Backend39318351910/Mobile39318351919/Admin39318351754;
+  valid zero-total P2 reply4318485881/resolved onlygreen; final channels clear
+- verifiedlatest1047/24, Receipt92/AI72/Repository322/Hosting58/Persistence37;
+  fullrestore/build0errors5existingwarnings; scopedformat/privacy1174/MD151480 passed
+- actual owned NTFS/PostgreSQL crash/restart/zero candidate and outbox state,
+  synthetic AI concurrency/uncertain replay/subject isolation passed with cleanup
+- all23 postmerge Confluence readbacks verified; FIN-27010/19InProgress,
+  P9 16/39 (41.0%), first-user Not Ready; no extra spending or installed acceptance
+
+Previous canonical closure (historical native-adapter snapshot):
 
 - FIN-277: PR285 actual `dfe9692f1da22aa22e864d4eb9932d5e67316af0`, merged
   `2026-10-15T18:24:45Z`; final `80ee33b1547fcee3c2edefe8c7955a8442b69a57`
@@ -384,7 +416,7 @@ Current delivery (native scope revision supersedes previous scope totals):
 - FIN-273 is Done through guarded merged PR #272; FIN-271/272 remain historical
 - native hosting implementation is merged at `ea766a9172d0b4ad49ce49c4721b6e7c3d676f52`
   after exact-head Backend, Mobile and Admin Web CI and a clear review-channel audit
-- current canonical completion is 191/215 (88.8%) after verified FIN-277 closure;
+- current canonical completion is 192/215 (89.3%) after verified FIN-285 closure;
   five persistence leaves retain the original domain requirements. FIN-271/272/273
   remain Done and earlier closure percentages
   remain historical, with no lost delivery
@@ -392,7 +424,7 @@ Current delivery (native scope revision supersedes previous scope totals):
   verified Done
 - FIN-36 P8 progress is 13/13 (100.0%); all children are Done and the epic remains
   In Progress for unverified integrated log/metric/trace, audit, admin and MCP evidence
-- FIN-38 P9 progress is 15/39 (38.5%); the epic remains In Progress
+- FIN-38 P9 progress is 16/39 (41.0%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
@@ -427,11 +459,12 @@ Current delivery (native scope revision supersedes previous scope totals):
   all five exact-head CI checks passed and every review channel was empty
 - current documentation includes the implementation map, preferred storage policy,
   source-to-Confluence maintenance map and explicit financial authorization limits
-- FIN-270 is the priority parent with 9/19 children Done; FIN-271/272/273/274/282/283/275/284/277
-  concept, inventory, hosting, foundation, Identity, Profile/Category, financial stores, Intake and native adapters are Done,
+- FIN-270 is the priority parent with 10/19 children Done; FIN-271/272/273/274/282/283/275/284/277/285
+  concept, inventory, hosting, foundation, Identity, Profile/Category, financial stores, Intake, native adapters and Receipt/AI workflows are Done,
   without installed acceptance
-- next ranked native leaf is FIN-285 with FIN-274/277 Done;
-  start after the closure ledger merges, never from an unmerged base
+- next ranked native leaf is FIN-286, blocked by FIN-276/287/288/289;
+  follow prerequisite leaves after this closure ledger merges and fresh dependency reads,
+  never from an unmerged base or by skipping unfinished persistence/delivery
 - FIN-275 owns Income/Expense and event-driven confirmation; owner APIs reconcile
   state only for Intake, never perform synchronous confirmation writes. FIN-287 Summary/Analytics,
   FIN-288 Score/Recommendations/Notifications and FIN-289 Audit retain all its
@@ -455,8 +488,8 @@ Current delivery (native scope revision supersedes previous scope totals):
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 20 | 20 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 13 | 13 | 100.0% |
-| FIN-38 | P9 Testing, Windows deployment, and release readiness | 15 | 39 | 38.5% |
-| **Total** | **Canonical POC leaf scope** | **191** | **215** | **88.8%** |
+| FIN-38 | P9 Testing, Windows deployment, and release readiness | 16 | 39 | 41.0% |
+| **Total** | **Canonical POC leaf scope** | **192** | **215** | **89.3%** |
 
 ## First-User-Test Gates
 
@@ -651,3 +684,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-10-12 | FIN-275 | PR281 verified merged as fae3226412e05bef6a6a398f30fec0327889173b and Jira Done; fresh census189/215; separate native Income/Expense, atomic outbox and immutable corrected/post-retention replay, reviewed catalog-secret regression; not broker/installer/installed acceptance | 87.9% | +0.5 pp |
 | 2026-10-15 | FIN-284 | PR283 verified merged as 48c7c0941b4b58cf3f7884c5c16182a9803f6594 and Jira Done; fresh census190/215; native Intake atomic drafts/indexes/confirmation intent/outbox, explicit source retention and crash/replay safety; OCR identifier review regression fixed, not broker/installer/installed acceptance | 88.4% | +0.5 pp |
 | 2026-10-15 | FIN-277 | PR285 actualdfe9692f1da22aa22e864d4eb9932d5e67316af0/JiraDone; census191/215; native objects/cache/technical sink and actual owned crash/junction tests; valid cache review fixed, not workflow/collector/backup/installed acceptance | 88.8% | +0.5 pp |
+| 2026-10-19 | FIN-285 | PR287 actual8a3d53f9508de9eb1577ff377dbe49c73403e4a5/JiraDone; census192/215; Receipt/OCR atomic metadata/index/outbox and separate AI metadata/quota/request journal, zero-total review regression and actual owned crash/restart; not broker/backup/WPF/installed acceptance | 89.3% | +0.5 pp |
