@@ -2,6 +2,12 @@
 
 Related Jira: FIN-28, FIN-128, FIN-129.
 
+FIN-287 adds the [native owned persistence contract](native-projection-persistence.md):
+separate PostgreSQL projections, atomic immutable publication intents, durable
+authorized limit snapshots and scoped generation recovery. Developer/test adapters
+retain this deterministic model. Reliable source ingestion/transport and actual
+installed readiness remain separate, not implied by the baseline below.
+
 ## Ownership and authority
 
 Analytics owns a disposable dashboard projection. Income and Expense remain the

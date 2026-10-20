@@ -22,6 +22,31 @@ public sealed class ProtectionTests
         }
     }
 
+    [Fact]
+    public void SummaryModuleHasIndependentStorageWithoutInventingANativeHost()
+    {
+        var summary = new StorageIdentity("financial-summary");
+        var analytics = new StorageIdentity("analytics");
+        Assert.Equal("financial-summary", summary.ServiceId);
+        Assert.Equal("fa_financial_summary", summary.Schema);
+        Assert.Equal("fa_financial_summary", summary.RuntimeRole);
+        Assert.Equal("fa_financial_summary_migration", summary.MigrationRole);
+        Assert.NotEqual(analytics.Schema, summary.Schema);
+        Assert.NotEqual(analytics.RuntimeRole, summary.RuntimeRole);
+        Assert.DoesNotContain(NativeServiceCatalog.Services, service => service.Id == summary.ServiceId);
+        Assert.Throws<ArgumentException>(() => NativeServiceCatalog.Get(summary.ServiceId));
+    }
+
+    [Theory]
+    [InlineData("summary")]
+    [InlineData("Financial-Summary")]
+    [InlineData("financial_summary")]
+    [InlineData("financial-summary-host")]
+    [InlineData("financial-summary/api")]
+    [InlineData("financial-summary\n")]
+    public void SummaryModuleDoesNotAuthorizeAliasesOrArbitraryOwners(string id) =>
+        Assert.Throws<ArgumentException>(() => new StorageIdentity(id));
+
     [Theory]
     [InlineData("gateway")]
     [InlineData("mcp")]

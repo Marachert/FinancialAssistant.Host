@@ -17,7 +17,8 @@ installer or accepted native Windows runtime is claimed by this document.
 | Identity/Profile/Category | Deterministic authentication/session/provider-validation handlers, profile preferences and taxonomy | Stable secrets, durable stores and real provider configuration; phone delivery adapter is disabled by default |
 | Intake/Receipt/AI | Editable drafts, review/reject/confirm, receipt/OCR processing and controlled provider abstractions | Approved provider budgets, privacy configuration and end-to-end hosted operation |
 | Income/Expense | Separate native PostgreSQL authoritative records, atomic minimized outbox, immutable confirmation replay and lifecycle contracts | Live delivery/inbox FIN-276, integrated recovery FIN-286 and installed acceptance |
-| Summary/Analytics/Score | Deterministic projections, reports, history and dashboard composition | Live event wiring, projection rebuild and deployment evidence |
+| Summary/Analytics | Separate owned PostgreSQL projections, strict replay and scoped generation recovery; deterministic dashboard composition | Authorized source ingestion, reliable transport and cross-owner refresh FIN-276; integrated/installed acceptance |
+| Financial Score | Deterministic score calculation/history and dashboard composition | Owned native persistence FIN-288, reliable event wiring and deployed evidence |
 | Recommendations/Notifications | Recommendation generation, prepared notification/inbox lifecycle and preferences | Push/web adapters are non-sending placeholders; no real delivery or deferred quiet-hours scheduler claimed |
 | Mobile | Home/Add/Insights/Settings, authentication/onboarding, text/receipt draft review, dashboard, inbox and resilience states | Native audio, complete wallet/debt/reserve flows, signed stores and tester acceptance are not all delivered |
 | Monitoring/Audit/MCP | Safe operational aggregates, append-only audit contracts and six allowlisted read-only MCP tools | Durable history, complete producer wiring and approved operational acceptance |
@@ -58,6 +59,15 @@ FIN-285 is Done after actual PR287 merge `8a3d53f9508de9eb1577ff377dbe49c73403e4
 at `2026-10-19T20:26:56Z`, final297354d/all5CIgreen and zero-total review fixed.
 Its closure census is192/215(89.3%), FIN-27010/19 and P9 16/39(41.0%);
 native delivery, remaining owners, installer and first-user gates remain required.
+
+FIN-287 adds [separate native Summary/Analytics projections](../engineering/native-projection-persistence.md):
+module-owned Summary credentials without another host/port, exact durable read models,
+immutable replay/latest-revision guards, atomic Analytics publication intents and
+scoped staged rebuilds. The native settings provider distinguishes explicitly known
+unconfigured values from unavailable/expired input; native delivery readiness stays
+unhealthy until FIN-276. An Analytics-stage refresh handoff is not completed Score
+or Recommendation execution. Synthetic database evidence does not certify installed
+Windows, live broker/settings ingestion or first-user readiness.
 
 The [FIN-275 ownership inventory](../engineering/native-financial-persistence-scope.md)
 separates its original seven-owner persistence scope into FIN-275 financial records/

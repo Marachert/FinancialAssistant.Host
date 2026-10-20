@@ -12,7 +12,12 @@ unchanged. Foundation tests are not installed-Windows or first-user acceptance.
 
 Each service has `fa_<service>` schema/runtime role and a separate
 `fa_<service>_migration` schema/table owner; hyphens become underscores. Gateway
-and MCP have no business database. Only canonical service identities are accepted.
+and MCP have no business database. Only canonical service identities and the
+explicit `financial-summary` module owner are accepted. Summary has independent
+`fa_financial_summary` runtime/schema and `fa_financial_summary_migration` ownership,
+not Analytics' credentials or tables. Its storage identity does not add an SCM
+service, API host or port. FIN-287's domain adapters and protected module provisioning
+remain separate work; declaring an identity does not create any schema or grant.
 Connections are explicit IPv4 loopback, bounded pools/timeouts, no ambient
 transactions, detailed errors, parameter logging or arbitrary connection strings.
 Passwords and encryption/index keys come from protected environment/configuration,

@@ -22,14 +22,17 @@ Follow the [storage policy](../architecture/storage-policy.md),
 These are seven existing storage owners in four sibling leaves under FIN-270,
 not a new shared business repository. The planning change did not replace adapters.
 The subsequent [FIN-275 financial implementation](financial-records-native-persistence.md)
-adds separate native Income/Expense stores; other owners remain follow-on work.
+adds separate native Income/Expense stores. FIN-287 adds
+[separate Summary/Analytics adapters](native-projection-persistence.md);
+Score/Recommendation/Notification and Audit remain their own follow-on work.
 Keep separate schemas/roles/keys and
 owned DTOs. Shared persistence is technical infrastructure only.
 
 Financial Summary is presently a module without a standalone API/native host.
-The current `StorageIdentity` allowlist follows host identities, so FIN-287 must
-explicitly declare and test the module's owned storage identity/provisioning.
-Do not reuse another owner's role or create a new deployable/port by implication.
+FIN-287 explicitly allows its module storage identity and provides a separately
+owned storage/migration factory. No Analytics role, DTO, host or port is borrowed.
+Provisioning still requires protected independent keys and the foundation grants;
+the factory does not silently migrate at startup or install a service.
 Audit metadata belongs to FIN-289, while FIN-277 still owns diagnostic collectors/
 sinks and manifest qualification; no monitoring/audit capability is removed.
 
@@ -47,7 +50,9 @@ in-process financial repositories to avoid the owner boundary.
 - FIN-288 depends on FIN-275/287 and the completed FIN-283 Profile contract.
 - FIN-289 depends on FIN-274 and preserves the existing FIN-193 audit policy.
 - FIN-286 explicitly depends on FIN-275/287/288/289 in addition to the earlier
-  domain leaves. FIN-276 still owns reliable transport/inbox qualification.
+  domain leaves. FIN-276 depends on FIN-287/288/289 before reliable transport/inbox
+  and full durable consumer-convergence qualification; storage stage completion
+  does not waive that remaining integration.
 
 Jira rank is local to the parent. Prerequisites override selection order; all
 siblings remain required for FIN-270. A scope-planning PR does not complete FIN-275.

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -5,6 +6,9 @@ namespace FinancialAssistant.Shared.Persistence;
 
 public static class OwnedRecordCodec
 {
+    public static decimal CanonicalDecimal(decimal value) => decimal.Parse(value.ToString("G29", CultureInfo.InvariantCulture),
+        NumberStyles.Float, CultureInfo.InvariantCulture);
+
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     { UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow };
 

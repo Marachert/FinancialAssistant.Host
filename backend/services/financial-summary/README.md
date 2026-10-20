@@ -2,6 +2,18 @@
 
 .NET 8 event-derived financial summary baseline for FIN-100.
 
+## Native Persistence Work
+
+FIN-287 explicitly declares Financial Summary's separate `financial-summary`
+storage identity: `fa_financial_summary` schema/runtime role and its matching
+migration owner. This is a module, not a new deployable/API/SCM service or port,
+and it must not share Analytics' business role. The owned PostgreSQL adapter and
+scoped generation-rebuild implementation are described in the
+[native projection contract](../../../docs/engineering/native-projection-persistence.md).
+The existing in-memory adapter remains for developer/tests. Analytics integration,
+native composition and the complete FIN-287 delivery gate are still in progress;
+no installed-host acceptance is inferred from the synthetic database fixture.
+
 ## Responsibility
 
 Financial Summary owns a disposable read model for fast dashboard totals. Income

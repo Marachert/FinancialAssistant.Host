@@ -24,6 +24,8 @@ public interface IAnalyticsReadModelStore
 
 public interface IAnalyticsEventPublisher
 {
+    bool ConfirmsDelivery => true;
+
     Task PublishAsync(
         FinancialAssistant.Shared.Contracts.Events.IntegrationEventEnvelope<
             FinancialAssistant.Shared.Contracts.Events.AnalyticsUpdatedV1> envelope,
