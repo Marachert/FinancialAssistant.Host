@@ -18,6 +18,14 @@ FIN-285 adds [owned Receipt/OCR and AI workflow metadata](../../docs/engineering
 delivery readiness remains blocked pending FIN-276. No native
 collector, Elasticsearch, WPF/SCM, backup-system or three-Windows acceptance is
 granted; package/target qualification and the release-ready flag remain unchanged.
+
+FIN-287 adds [separate Summary/Analytics projection storage](../../docs/engineering/native-projection-persistence.md),
+strict replay/latest-revision guards, bounded scoped rebuild generations and
+Analytics transactional publication/settings snapshots. Summary remains a module
+with its own role/keys and typed migration factory, not another host or port.
+Analytics requires `Analytics:Storage:Postgres`; unknown/expired limit input fails
+closed. Reliable transport, authorized source ingestion and downstream refresh
+remain FIN-276; these adapters do not grant installed or first-user readiness.
 PR285 actual merge `dfe9692f1da22aa22e864d4eb9932d5e67316af0` at
 `2026-10-15T18:24:45Z` is independently verified; FIN-277 Done, final80ee33b all5CIgreen.
 Fresh census18:26:46 UTC:191/215 (88.8%), +0.5 pp before rounding; FIN-2709/19,

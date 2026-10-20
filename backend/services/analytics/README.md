@@ -6,23 +6,30 @@ Analytics owns a disposable, owner-hash and currency-scoped dashboard projection
 Income and Expense remain the authoritative financial sources. Drafts, raw input,
 OCR data, and AI suggestions never enter analytics totals.
 
-The hosted RabbitMQ consumer owns `fa.analytics.financial-events.v1` and binds
+The developer/legacy hosted RabbitMQ consumer owns `fa.analytics.financial-events.v1` and binds
 `income.created.v1` and `expense.created.v1` plus their update, archive, and
 restore lifecycle events. It validates each serialized shared envelope and
 acknowledges only after the projector succeeds. Record revision makes duplicate
 and out-of-order delivery idempotent. The store persists materialized daily,
 Monday-based weekly, and calendar-month totals plus monthly category totals after
 every accepted revision.
-The in-memory adapter is for the single-instance PoC; a durable production adapter
-must preserve the same owner/currency/date keys and revision rule.
+The in-memory adapter is a developer/test baseline, not native POC persistence.
+WindowsNative uses the separate owned PostgreSQL adapter and the same deterministic
+`AnalyticsSnapshotBuilder`, without an authoritative memory cache or financial SQL
+fallback. See the [native projection contract](../../../docs/engineering/native-projection-persistence.md).
+Native delivery/inbox and settings-source ingestion remain unqualified FIN-276;
+no legacy RabbitMQ consumer or memory publisher is registered in native mode.
 
 `GET /api/v1/analytics/dashboard` and the intended gateway alias
 `GET /analytics/dashboard` return daily expense-limit status, monthly income and
 expense progress, monthly category totals, a zero-filled recent trend, and
 freshness metadata. The API resolves daily expense limits from the server-side
-`IAnalyticsDailyLimitProvider`; callers cannot submit a limit. The PoC provider
+`IAnalyticsDailyLimitProvider`; callers cannot submit a limit. The developer provider
 returns unconfigured until populated by an authoritative settings/limits adapter,
 instead of inventing a financial value.
+The native provider requires a durable, fresh authorized settings snapshot. Unknown
+or expired state returns safe503/no-store; only an explicitly known unconfigured
+snapshot returns null limits. It never substitutes a volatile or fabricated zero.
 
 The API requires the trusted gateway secret and authenticated user headers. It
 hashes the user identifier before reading the projection and never exposes owner
@@ -35,7 +42,7 @@ The dashboard exposes daily, Monday-to-Sunday weekly, and calendar-month expense
 progress. Limits come only from the server-side settings boundary; each period
 returns its local calendar boundaries, configured state, limit, confirmed spend,
 non-negative remaining amount, and usage percentage rounded to two decimals.
-Missing limits stay explicitly unconfigured.
+Known missing limits stay explicitly unconfigured; an unknown native source fails closed.
 
 The tracking streak counts consecutive local dates ending on `referenceDate`
 that contain at least one active confirmed income or expense record. A gap resets
@@ -53,7 +60,11 @@ recommendation inputs, and verified atomic replacement. Progress and failure
 contracts expose safe operational evidence without owner scope or financial
 payloads.
 
-No rebuild endpoint or executor is active. The process-local
+No public rebuild endpoint or cross-owner executor is active. FIN-287 adds an
+internal owned Analytics-stage executor with durable source manifests, bounded
+staging, live-watermark checks, atomic owner/period replacement and a separate
+refresh handoff. Its stage success does not complete Score/Recommendation work.
+The process-local
 `AnalyticsProjector.RebuildAsync` global reset remains a development/test
 helper. Production work requires the trusted admin, durable checkpoint,
 staging, high-water-mark replay, and owner/period atomic-swap controls defined

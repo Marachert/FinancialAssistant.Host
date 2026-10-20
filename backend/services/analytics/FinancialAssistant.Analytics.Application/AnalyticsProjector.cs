@@ -12,15 +12,18 @@ public sealed class AnalyticsProjector
     private readonly IAnalyticsReadModelStore store;
     private readonly IAnalyticsEventPublisher? publisher;
     private readonly IAnalyticsDailyLimitProvider? dailyLimitProvider;
+    private readonly IAnalyticsProjectionTransaction? transaction;
 
     public AnalyticsProjector(
         IAnalyticsReadModelStore store,
         IAnalyticsEventPublisher? publisher = null,
-        IAnalyticsDailyLimitProvider? dailyLimitProvider = null)
+        IAnalyticsDailyLimitProvider? dailyLimitProvider = null,
+        IAnalyticsProjectionTransaction? transaction = null)
     {
         this.store = store;
         this.publisher = publisher;
         this.dailyLimitProvider = dailyLimitProvider;
+        this.transaction = transaction;
     }
 
     public async Task ApplyAsync(
@@ -28,8 +31,20 @@ public sealed class AnalyticsProjector
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(envelope);
-        var recordType = ReadRecordType(envelope.EventType);
         Validate(envelope);
+        ReadRecordType(envelope.EventType);
+        if (transaction is not null)
+        {
+            await transaction.ExecuteAsync(envelope, token => ApplyCoreAsync(envelope, token), cancellationToken);
+            return;
+        }
+        await ApplyCoreAsync(envelope, cancellationToken);
+    }
+
+    private async Task ApplyCoreAsync(IntegrationEventEnvelope<FinancialRecordChangedV1> envelope,
+        CancellationToken cancellationToken)
+    {
+        var recordType = ReadRecordType(envelope.EventType);
         var payload = envelope.Payload;
 
         var outcome = await store.UpsertIfNewerAsync(
@@ -74,11 +89,14 @@ public sealed class AnalyticsProjector
                 reportingDate,
                 payload.ChangedAtUtc,
                 cancellationToken);
-            await store.MarkPublicationCompletedAsync(
-                envelope.EventId,
-                envelope.UserIdHash!,
-                currency,
-                cancellationToken);
+            if (publisher.ConfirmsDelivery)
+            {
+                await store.MarkPublicationCompletedAsync(
+                    envelope.EventId,
+                    envelope.UserIdHash!,
+                    currency,
+                    cancellationToken);
+            }
         }
     }
 

@@ -66,9 +66,11 @@ public sealed class AnalyticsServiceBaselineTests
         Assert.Contains("current.Revision >= projection.Revision", store, StringComparison.Ordinal);
         Assert.Contains("new AnalyticsProjectionSnapshot", store, StringComparison.Ordinal);
         Assert.Contains("WeeklyTotals", Read("backend/services/analytics/FinancialAssistant.Analytics.Domain/AnalyticsReadModels.cs"), StringComparison.Ordinal);
-        Assert.Contains("StartOfWeek", store, StringComparison.Ordinal);
-        Assert.Contains("new AnalyticsMonthlyAggregate", store, StringComparison.Ordinal);
-        Assert.Contains("new AnalyticsCategoryTotal", store, StringComparison.Ordinal);
+        Assert.Contains("AnalyticsSnapshotBuilder.Build", store, StringComparison.Ordinal);
+        var calculator = Read("backend/services/analytics/FinancialAssistant.Analytics.Application/AnalyticsSnapshotBuilder.cs");
+        Assert.Contains("StartOfWeek", calculator, StringComparison.Ordinal);
+        Assert.Contains("new AnalyticsMonthlyAggregate", calculator, StringComparison.Ordinal);
+        Assert.Contains("new AnalyticsCategoryTotal", calculator, StringComparison.Ordinal);
         Assert.Contains("Unlike currencies are never mixed", documentation, StringComparison.Ordinal);
     }
 

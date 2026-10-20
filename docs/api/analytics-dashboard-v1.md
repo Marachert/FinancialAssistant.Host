@@ -39,6 +39,12 @@ authoritative limit provider and cannot be supplied by a caller. Missing,
 unparseable, or invalid query values return `400` with
 `invalid_analytics_request`; missing trusted context returns `401`.
 
+WindowsNative uses owned PostgreSQL projections and durable authorized settings
+snapshots. Storage failure, unknown settings or an observation older than two
+hours returns a safe `503` problem response with `no-store`, not zero/default
+limits or a memory fallback. Only an explicitly known unconfigured snapshot can
+return null limits. No storage identifiers or exception details are exposed.
+
 
 ## Limit progress and tracking streaks
 
@@ -46,7 +52,7 @@ The dashboard exposes daily, Monday-to-Sunday weekly, and calendar-month expense
 progress. Limits come only from the server-side settings boundary; each period
 returns its local calendar boundaries, configured state, limit, confirmed spend,
 non-negative remaining amount, and usage percentage rounded to two decimals.
-Missing limits stay explicitly unconfigured.
+Known missing limits stay explicitly unconfigured; unavailable native input is503.
 
 The tracking streak counts consecutive local dates ending on `referenceDate`
 that contain at least one active confirmed income or expense record. A gap resets

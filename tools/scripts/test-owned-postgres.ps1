@@ -1,5 +1,5 @@
 param([Parameter(Mandatory)][string] $ArchivePath,
-    [ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi')][string] $Scenario = 'Foundation')
+    [ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections')][string] $Scenario = 'Foundation')
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if (-not $IsWindows) { throw 'This fixture uses the Windows PostgreSQL archive, not Docker/WSL.' }
@@ -80,6 +80,8 @@ try {
         'backend/services/transaction-intake/FinancialAssistant.Intake.Persistence.Integration/FinancialAssistant.Intake.Persistence.Integration.csproj'
     } elseif ($Scenario -eq 'ReceiptAi') {
         'backend/services/receipt-processing/FinancialAssistant.ReceiptAi.Persistence.Integration/FinancialAssistant.ReceiptAi.Persistence.Integration.csproj'
+    } elseif ($Scenario -eq 'Projections') {
+        'backend/services/financial-summary/FinancialAssistant.Projections.Persistence.Integration/FinancialAssistant.Projections.Persistence.Integration.csproj'
     } else {
         'backend/shared/persistence/FinancialAssistant.Shared.Persistence.Integration/FinancialAssistant.Shared.Persistence.Integration.csproj'
     })

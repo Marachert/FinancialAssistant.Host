@@ -13,6 +13,13 @@ Production execution requires a trusted admin tool, durable job/checkpoint
 storage, authoritative source readers, staging projections, and an atomic
 owner/period swap.
 
+FIN-287 implements the [owned native Analytics stage](native-projection-persistence.md)
+with canonical planner identity, bounded persisted pages/manifests, captured live
+watermark, atomic scoped generation replacement and a durable refresh handoff.
+This does not activate an endpoint or complete the full ordered plan. Authorized
+source ingestion and cross-owner refresh/convergence remain FIN-276/288; actual
+installed recovery remains a separate gate. Global native reset is forbidden.
+
 ## Authority and scope
 
 A rebuild is scoped by:

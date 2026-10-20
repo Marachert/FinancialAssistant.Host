@@ -6,7 +6,8 @@ public sealed class StorageIdentity
 {
     public StorageIdentity(string serviceId)
     {
-        NativeServiceCatalog.Get(serviceId);
+        // Summary owns a module schema without becoming an SCM host or borrowing Analytics' role.
+        if (serviceId != "financial-summary") { NativeServiceCatalog.Get(serviceId); }
         if (serviceId is "gateway" or "mcp")
         {
             throw new ArgumentException("This service has no business database.", nameof(serviceId));
