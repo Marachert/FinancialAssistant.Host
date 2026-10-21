@@ -26,6 +26,11 @@ with its own role/keys and typed migration factory, not another host or port.
 Analytics requires `Analytics:Storage:Postgres`; unknown/expired limit input fails
 closed. Reliable transport, authorized source ingestion and downstream refresh
 remain FIN-276; these adapters do not grant installed or first-user readiness.
+FIN-287 is Done after actual PR289 merge
+`e6b8f6abc8dac24911eafda65f6515a7feed384a` at `2026-10-20T21:12:28Z`,
+finalf697631/all5CIgreen/completedreview no findings. Fresh census21:14:13 UTC:
+193/215(89.8%),+0.5pp before rounding, FIN-27011/19, P9 17/39(43.6%).
+First-user Not Ready; closure ledger publication is separate from runtime acceptance.
 PR285 actual merge `dfe9692f1da22aa22e864d4eb9932d5e67316af0` at
 `2026-10-15T18:24:45Z` is independently verified; FIN-277 Done, final80ee33b all5CIgreen.
 Fresh census18:26:46 UTC:191/215 (88.8%), +0.5 pp before rounding; FIN-2709/19,
@@ -416,9 +421,10 @@ qualification; the exact archive digest has been verified locally.
    inventory merge/closure is not that release approval.
 
 No additional spending, package/tool installation or machine changes are authorized
-by this document. Current POC completion is 192/215 (89.3%) after FIN-285 closure,
-+0.5 percentage points before rounding; FIN-270 is 10/19 children Done and
-FIN-38 P9 is 16/39 (41.0%). Historical FIN-277 closure is191/21588.8%.
+by this document. Current POC completion is 193/215 (89.8%) after FIN-287 closure,
++0.5 percentage points before rounding; FIN-270 is 11/19 children Done and
+FIN-38 P9 is 17/39 (43.6%). Historical FIN-285 closure is192/21589.3%.
+Historical FIN-277 closure is191/21588.8%.
 Historical FIN-284 closure is190/21588.4%.
 Historical FIN-275 closure is189/21587.9%.
 Historical ownership decomposition is188/21587.4%,
