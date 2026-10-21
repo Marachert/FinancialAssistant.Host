@@ -456,7 +456,7 @@ Current delivery (native scope revision supersedes previous scope totals):
   verified Done
 - FIN-36 P8 progress is 13/13 (100.0%); all children are Done and the epic remains
   In Progress for unverified integrated log/metric/trace, audit, admin and MCP evidence
-- FIN-38 P9 progress is 16/39 (41.0%); the epic remains In Progress
+- FIN-38 P9 progress is 17/39 (43.6%); the epic remains In Progress
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
@@ -491,16 +491,17 @@ Current delivery (native scope revision supersedes previous scope totals):
   all five exact-head CI checks passed and every review channel was empty
 - current documentation includes the implementation map, preferred storage policy,
   source-to-Confluence maintenance map and explicit financial authorization limits
-- FIN-270 is the priority parent with 10/19 children Done; FIN-271/272/273/274/282/283/275/284/277/285
-  concept, inventory, hosting, foundation, Identity, Profile/Category, financial stores, Intake, native adapters and Receipt/AI workflows are Done,
+- FIN-270 is the priority parent with 11/19 children Done; FIN-271/272/273/274/282/283/275/284/277/285/287
+  concept, inventory, hosting, foundation, Identity, Profile/Category, financial stores, Intake, native adapters, Receipt/AI workflows and Summary/Analytics projections are Done,
   without installed acceptance
-- next ranked native leaf is FIN-286, blocked by FIN-276/287/288/289;
+- next ranked native leaf is FIN-286, blocked by FIN-276/288/289;
   follow prerequisite leaves after this closure ledger merges and fresh dependency reads,
   never from an unmerged base or by skipping unfinished persistence/delivery
 - FIN-275 owns Income/Expense and event-driven confirmation; owner APIs reconcile
-  state only for Intake, never perform synchronous confirmation writes. FIN-287 Summary/Analytics,
-  FIN-288 Score/Recommendations/Notifications and FIN-289 Audit retain all its
-  original remaining scope. FIN-286 explicitly depends on all four sibling leaves
+  state only for Intake, never perform synchronous confirmation writes. FIN-287 delivers
+  separate Summary/Analytics storage. FIN-288 Score/Recommendations/Notifications
+  and FIN-289 Audit retain the unfinished owner scope; FIN-286 still verifies all
+  four sibling leaves together, with actual delivery qualified in FIN-276
 - FIN-274 is the PostgreSQL foundation; FIN-282 Identity, FIN-283 Profile/Category,
   FIN-284 Intake, FIN-285 Receipt/OCR/AI metadata and FIN-286 persistence integration
   retain its original domain/verification scope; prerequisites can override rank
@@ -520,8 +521,8 @@ Current delivery (native scope revision supersedes previous scope totals):
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 20 | 20 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 13 | 13 | 100.0% |
-| FIN-38 | P9 Testing, Windows deployment, and release readiness | 16 | 39 | 41.0% |
-| **Total** | **Canonical POC leaf scope** | **192** | **215** | **89.3%** |
+| FIN-38 | P9 Testing, Windows deployment, and release readiness | 17 | 39 | 43.6% |
+| **Total** | **Canonical POC leaf scope** | **193** | **215** | **89.8%** |
 
 ## First-User-Test Gates
 
