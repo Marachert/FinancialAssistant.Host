@@ -68,6 +68,10 @@ unconfigured values from unavailable/expired input; native delivery readiness st
 unhealthy until FIN-276. An Analytics-stage refresh handoff is not completed Score
 or Recommendation execution. Synthetic database evidence does not certify installed
 Windows, live broker/settings ingestion or first-user readiness.
+FIN-287 is Done after independently verified actual PR289 merge
+`e6b8f6abc8dac24911eafda65f6515a7feed384a` at `2026-10-20T21:12:28Z`,
+finalf697631/all5CIgreen/completedreview no findings. Its fresh closure census is
+193/215(89.8%), FIN-27011/19 and P9 17/39(43.6%); first-user Not Ready.
 
 The [FIN-275 ownership inventory](../engineering/native-financial-persistence-scope.md)
 separates its original seven-owner persistence scope into FIN-275 financial records/

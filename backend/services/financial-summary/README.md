@@ -2,7 +2,7 @@
 
 .NET 8 event-derived financial summary baseline for FIN-100.
 
-## Native Persistence Work
+## Native Persistence
 
 FIN-287 explicitly declares Financial Summary's separate `financial-summary`
 storage identity: `fa_financial_summary` schema/runtime role and its matching
@@ -10,9 +10,11 @@ migration owner. This is a module, not a new deployable/API/SCM service or port,
 and it must not share Analytics' business role. The owned PostgreSQL adapter and
 scoped generation-rebuild implementation are described in the
 [native projection contract](../../../docs/engineering/native-projection-persistence.md).
-The existing in-memory adapter remains for developer/tests. Analytics integration,
-native composition and the complete FIN-287 delivery gate are still in progress;
-no installed-host acceptance is inferred from the synthetic database fixture.
+FIN-287 is Done after the reviewed actual implementation merge. Owned Summary/
+Analytics storage and native composition are implemented; the in-memory adapter
+remains for developer/tests. Reliable source/transport integration remains FIN-276,
+integrated lifecycle/recovery FIN-286 and backup acceptance FIN-209. No installed-host
+acceptance is inferred from the synthetic database fixture.
 
 ## Responsibility
 
@@ -55,9 +57,10 @@ excluded from every total. Unlike currencies are never combined.
 ## Rebuild and freshness
 
 The in-memory adapter rebuilds by clearing the disposable projection and replaying
-the complete authorized event history in occurrence order. A durable adapter must
-build a shadow generation, verify counts and totals, then atomically switch its
-read alias so readers never observe a partial rebuild.
+the complete authorized event history in occurrence order. The native adapter
+builds a scoped shadow generation, verifies source count/digest and live watermark,
+then atomically switches its active generation. Readers never observe a partial
+rebuild, and native global reset is rejected.
 
 Queries always return their latest available projection. No-event summaries and
 summaries older than the caller's configured freshness threshold return

@@ -1,9 +1,45 @@
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace FinancialAssistant.Repository.Tests;
 
 public sealed class DocumentationMaintenanceTests
 {
+    [Fact]
+    public void CurrentProgressSummariesUseTheSameCensus()
+    {
+        var progress = Read("docs/agent/POC_PROGRESS.md");
+        var snapshot = Regex.Match(progress, @"\bP9 (\d+/\d+ \(\d+(?:\.\d+)?%\))");
+        var delivery = Regex.Match(progress, @"^- FIN-38 P9 progress is (\d+/\d+ \(\d+(?:\.\d+)?%\));", RegexOptions.Multiline);
+        Assert.True(snapshot.Success && delivery.Success);
+        Assert.Equal(snapshot.Groups[1].Value, delivery.Groups[1].Value);
+        var epic = Regex.Match(progress, @"^\| FIN-38 \| P9[^\r\n]*\| (\d+) \| (\d+) \| (\d+(?:\.\d+)?%) \|", RegexOptions.Multiline);
+        Assert.True(epic.Success);
+        Assert.Equal(snapshot.Groups[1].Value, $"{epic.Groups[1].Value}/{epic.Groups[2].Value} ({epic.Groups[3].Value})");
+        var canonical = Regex.Match(progress, @"\*\*(\d+) of (\d+) canonical POC leaf tickets are Done\*\*");
+        var percentage = Regex.Match(progress, @"POC backlog completion[^\r\n]*is \*\*(\d+(?:\.\d+)?%)\*\*");
+        var total = Regex.Match(progress, @"^\| \*\*Total\*\* \| \*\*Canonical POC leaf scope\*\* \| \*\*(\d+)\*\* \| \*\*(\d+)\*\* \| \*\*(\d+(?:\.\d+)?%)\*\* \|", RegexOptions.Multiline);
+        Assert.True(canonical.Success && percentage.Success && total.Success);
+        Assert.Equal(canonical.Groups[1].Value, total.Groups[1].Value);
+        Assert.Equal(canonical.Groups[2].Value, total.Groups[2].Value);
+        Assert.Equal(percentage.Groups[1].Value, total.Groups[3].Value);
+        var parent = Regex.Match(progress, @"In Progress\s*(\d+/\d+); P9");
+        var parentSummary = Regex.Match(progress, @"^- FIN-270 is the priority parent with (\d+/\d+) children Done;", RegexOptions.Multiline);
+        Assert.True(parent.Success && parentSummary.Success);
+        Assert.Equal(parent.Groups[1].Value, parentSummary.Groups[1].Value);
+    }
+
+    [Fact]
+    public void SummaryReadmeSeparatesMergedStorageFromPendingIntegration()
+    {
+        var summary = Read("backend/services/financial-summary/README.md");
+        Assert.Contains("FIN-287 is Done", summary, StringComparison.Ordinal);
+        Assert.Contains("FIN-276", summary, StringComparison.Ordinal);
+        Assert.Contains("FIN-286", summary, StringComparison.Ordinal);
+        Assert.Contains("FIN-209", summary, StringComparison.Ordinal);
+        Assert.DoesNotContain("complete FIN-287 delivery gate are still in progress", summary, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("docs/architecture/current-implementation.md")]
     [InlineData("docs/architecture/storage-policy.md")]
