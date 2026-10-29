@@ -9,6 +9,7 @@ Developer, architecture, security, API, event, and delivery documentation worksp
 
 - [POC readiness and closure statistics](agent/POC_PROGRESS.md)
 - [Temporary no-cost POC backlog while Jira is suspended](agent/LOCAL_BACKLOG.md)
+- [Local delivery evidence](agent/LOCAL_DELIVERY_EVIDENCE.json)
 - [POC QA strategy and test scope](engineering/poc-qa-strategy.md)
 - [MVP end-to-end user scenarios](engineering/mvp-e2e-scenarios.md)
 - [Current implementation versus product target](architecture/current-implementation.md)

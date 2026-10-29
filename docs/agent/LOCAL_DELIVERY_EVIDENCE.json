@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "trackingMode": "owner-approved-local-until-jira-restored",
+  "freshJiraCensus": false,
+  "baseline": {
+    "sourceCommit": "93ff1ef01988789e49b78068afcd0b0cd6a15553",
+    "jiraVerifiedAt": "2026-10-20T21:14:13.4223397Z",
+    "canonicalDone": 193,
+    "canonicalTotal": 215,
+    "p9Done": 17,
+    "p9Total": 39,
+    "fin270Done": 11,
+    "fin270Total": 19
+  },
+  "verifiedCompletions": [
+    {
+      "key": "FIN-288",
+      "state": "Verified Merged",
+      "jiraReconciliation": "Pending",
+      "epic": "FIN-38",
+      "parent": "FIN-270",
+      "pullRequest": "https://github.com/Marachert/FinancialAssistant.Host/pull/291",
+      "merged": true,
+      "actualMergeCommit": "c4e6a9e15ab2602aa1d68fc45b48bf4899634e60",
+      "mergedAt": "2026-10-29T10:11:34Z",
+      "finalHead": "5b9a5c04571011cbb86b2fc9b4145d7e9a89d09a",
+      "successfulChecksOnFinalHead": 5,
+      "workflowRuns": [40853974694, 40853974669, 40853974692],
+      "reviewCompletedAt": "2026-10-29T10:01:35.057400Z",
+      "unresolvedFindings": 0,
+      "postMergeConfluenceVerified": true,
+      "confluenceVersions": {
+        "458773": 121,
+        "4259842": 511,
+        "262339": 131,
+        "458753": 121,
+        "262398": 144,
+        "589905": 134,
+        "131336": 110,
+        "131095": 37
+      }
+    }
+  ],
+  "firstUserTesting": "Not Ready",
+  "additionalSpendingAuthorized": false
+}

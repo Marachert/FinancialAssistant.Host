@@ -1,6 +1,8 @@
 # Native Insight Persistence
 
-FIN-288 is In Progress. None of this working-branch work qualifies installed
+FIN-288 is locally Verified Merged through PR291; Jira reconciliation is pending.
+Actual merge `c4e6a9e15ab2602aa1d68fc45b48bf4899634e60` at `2026-10-29T10:11:34Z`.
+None of this implementation qualifies installed
 Windows, live RabbitMQ/Profile ingestion, real notification delivery or first-user
 acceptance. FIN-276 owns reliable transport/source integration, FIN-286 integrated
 recovery and FIN-278/281/206 installed qualification. No additional spending.
@@ -12,7 +14,7 @@ recovery and FIN-278/281/206 installed qualification. No additional spending.
 - Recommendations/Notifications uses `recommendations-notifications` and its
   independently provisioned `fa_recommendations_notifications` role/schema/keys
   and migration owner. Its adapter and native composition are implemented in
-  this working branch, including isolated database recovery verification.
+  the merged implementation, including isolated database recovery verification.
 - Income/Expense remain authoritative. Probabilistic wording never supplies score
   factors or changes deterministic financial facts. No cross-service SQL.
 - Profile settings are materialized from an authorized API/minimal event, never
@@ -123,14 +125,19 @@ Markdown 154 files/500 links and the unqualified native inventory passed.
 Full formatting verified zero changes across 1170 files after mechanical fixes.
 The staged 1216-file privacy baseline passed. Confluence's eight affected
 current-status pages were updated and their complete bodies verified.
-Exact-head CI/review and actual merge remain outstanding.
+Final head `5b9a5c04571011cbb86b2fc9b4145d7e9a89d09a` passed all five CI checks
+(Backend40853974694, Mobile40853974669, Admin40853974692). Configured review
+completed at10:01:35UTC with no findings; final channels clear. Protected
+expected-head squash and independent merged=true read verified the actual merge.
+All eight affected Confluence post-merge full-body readbacks passed.
 Temporary local tracking is owner-approved in
 [the POC backlog](../agent/LOCAL_BACKLOG.md); no unread Jira status is fabricated.
 
 ## Outstanding Work
 
-External CI/review and actual merge delivery gates are not yet finished.
+FIN-288 implementation delivery is verified; its closure ledger is published
+separately, with Jira reconciliation pending during the outage.
 Actual authorized source ingestion, reliable delivery and integrated installed
-recovery remain separate dependent work. Do not mark FIN-288 locally closed or add progress credit
-from a partial local build. Publish only after all delivery gates pass; reconcile
+recovery remain separate dependent work. Local completion is backed by the actual
+merge and all delivery evidence, not a partial local build. Reconcile
 actual Jira evidence/transitions only when Jira is restored.

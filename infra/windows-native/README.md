@@ -31,13 +31,15 @@ FIN-287 is Done after actual PR289 merge
 finalf697631/all5CIgreen/completedreview no findings. Fresh census21:14:13 UTC:
 193/215(89.8%),+0.5pp before rounding, FIN-27011/19, P9 17/39(43.6%).
 First-user Not Ready; closure ledger publication is separate from runtime acceptance.
-FIN-288's unmerged working branch adds [separate Score and Recommendations/Notifications
+FIN-288 adds [separate Score and Recommendations/Notifications
 storage](../../docs/engineering/native-insights-persistence.md), strict source replay,
 atomic immutable outboxes, explicit settings/preferences and lifecycle/read markers.
 Both native hosts require their own PostgreSQL configuration/keys; memory fallback
 and legacy consumers are not registered. Combined isolated PostgreSQL crash/restart
 verification passed on 2026-10-29, not installed Windows or live delivery acceptance.
-FIN-276/286 and installer qualification remain required; no progress credit yet.
+PR291 is verified merged as `c4e6a9e15ab2602aa1d68fc45b48bf4899634e60` at
+`2026-10-29T10:11:34Z`, final5b9a5c0/all5CIgreen/completedreview no findings.
+Jira reconciliation is pending; FIN-276/286 and installer qualification remain required.
 PR285 actual merge `dfe9692f1da22aa22e864d4eb9932d5e67316af0` at
 `2026-10-15T18:24:45Z` is independently verified; FIN-277 Done, final80ee33b all5CIgreen.
 Fresh census18:26:46 UTC:191/215 (88.8%), +0.5 pp before rounding; FIN-2709/19,
@@ -428,9 +430,11 @@ qualification; the exact archive digest has been verified locally.
    inventory merge/closure is not that release approval.
 
 No additional spending, package/tool installation or machine changes are authorized
-by this document. Current POC completion is 193/215 (89.8%) after FIN-287 closure,
-+0.5 percentage points before rounding; FIN-270 is 11/19 children Done and
-FIN-38 P9 is 17/39 (43.6%). Historical FIN-285 closure is192/21589.3%.
+by this document. Current locally verified POC completion is 194/215 (90.2%) after
+FIN-288 closure, +0.5 percentage points before rounding; FIN-270 is12/19 locally
+verified complete and FIN-38 P9 is18/39(46.2%). This is not a new live Jira census;
+last live baseline remains193/215(89.8%), with Jira reconciliation pending.
+Historical FIN-287 closure is193/21589.8%. Historical FIN-285 closure is192/21589.3%.
 Historical FIN-277 closure is191/21588.8%.
 Historical FIN-284 closure is190/21588.4%.
 Historical FIN-275 closure is189/21587.9%.

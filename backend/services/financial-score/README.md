@@ -16,7 +16,8 @@ The Financial Score Service calculates a deterministic, explainable personal fin
 
 Developer/test adapters retain in-memory projections, settings and history.
 FIN-288 adds separate owned PostgreSQL state, atomic calculation/publication and
-neutral first-read transactions; its complete delivery is still In Progress.
+neutral first-read transactions. PR291 is verified merged as
+`c4e6a9e15ab2602aa1d68fc45b48bf4899634e60`; Jira reconciliation remains pending.
 See the [native persistence contract](../../../docs/engineering/native-insights-persistence.md)
 for explicit capacity, replay and pending qualification boundaries.
 Native hosting requires `FinancialScore:Storage:Postgres`, never falls back to

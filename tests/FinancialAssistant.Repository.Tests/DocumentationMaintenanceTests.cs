@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Xunit;
 
@@ -21,14 +22,14 @@ public sealed class DocumentationMaintenanceTests
     public void CurrentProgressSummariesUseTheSameCensus()
     {
         var progress = Read("docs/agent/POC_PROGRESS.md");
-        var snapshot = Regex.Match(progress, @"\bP9 (\d+/\d+ \(\d+(?:\.\d+)?%\))");
+        var snapshot = Regex.Match(progress, @"^Local FIN-270 remains In Progress\d+/\d+; P9 (\d+/\d+ \(\d+(?:\.\d+)?%\))", RegexOptions.Multiline);
         var delivery = Regex.Match(progress, @"^- FIN-38 P9 progress is (\d+/\d+ \(\d+(?:\.\d+)?%\));", RegexOptions.Multiline);
         Assert.True(snapshot.Success && delivery.Success);
         Assert.Equal(snapshot.Groups[1].Value, delivery.Groups[1].Value);
         var epic = Regex.Match(progress, @"^\| FIN-38 \| P9[^\r\n]*\| (\d+) \| (\d+) \| (\d+(?:\.\d+)?%) \|", RegexOptions.Multiline);
         Assert.True(epic.Success);
         Assert.Equal(snapshot.Groups[1].Value, $"{epic.Groups[1].Value}/{epic.Groups[2].Value} ({epic.Groups[3].Value})");
-        var canonical = Regex.Match(progress, @"\*\*(\d+) of (\d+) canonical POC leaf tickets are Done\*\*");
+        var canonical = Regex.Match(progress, @"\*\*(\d+) of (\d+) canonical POC leaf tickets are (?:Done|verified complete)\*\*");
         var percentage = Regex.Match(progress, @"POC backlog completion[^\r\n]*is \*\*(\d+(?:\.\d+)?%)\*\*");
         var total = Regex.Match(progress, @"^\| \*\*Total\*\* \| \*\*Canonical POC leaf scope\*\* \| \*\*(\d+)\*\* \| \*\*(\d+)\*\* \| \*\*(\d+(?:\.\d+)?%)\*\* \|", RegexOptions.Multiline);
         Assert.True(canonical.Success && percentage.Success && total.Success);
@@ -36,9 +37,53 @@ public sealed class DocumentationMaintenanceTests
         Assert.Equal(canonical.Groups[2].Value, total.Groups[2].Value);
         Assert.Equal(percentage.Groups[1].Value, total.Groups[3].Value);
         var parent = Regex.Match(progress, @"In Progress\s*(\d+/\d+); P9");
-        var parentSummary = Regex.Match(progress, @"^- FIN-270 is the priority parent with (\d+/\d+) children Done;", RegexOptions.Multiline);
+        var parentSummary = Regex.Match(progress, @"^- FIN-270 is the priority parent with (\d+/\d+) children (?:Done|verified complete);", RegexOptions.Multiline);
         Assert.True(parent.Success && parentSummary.Success);
         Assert.Equal(parent.Groups[1].Value, parentSummary.Groups[1].Value);
+    }
+
+    [Fact]
+    public void LocalProgressRequiresUniqueActualMergeEvidenceAndKeepsJiraBaselineSeparate()
+    {
+        using var document = JsonDocument.Parse(Read("docs/agent/LOCAL_DELIVERY_EVIDENCE.json"));
+        var root = document.RootElement;
+        Assert.Equal(1, root.GetProperty("schemaVersion").GetInt32());
+        Assert.False(root.GetProperty("freshJiraCensus").GetBoolean());
+        Assert.False(root.GetProperty("additionalSpendingAuthorized").GetBoolean());
+        Assert.Equal("Not Ready", root.GetProperty("firstUserTesting").GetString());
+        var baseline = root.GetProperty("baseline");
+        Assert.Equal(193, baseline.GetProperty("canonicalDone").GetInt32());
+        Assert.Equal(215, baseline.GetProperty("canonicalTotal").GetInt32());
+        var entries = root.GetProperty("verifiedCompletions").EnumerateArray().ToArray();
+        Assert.NotEmpty(entries);
+        Assert.Equal(entries.Length, entries.Select(e => e.GetProperty("key").GetString()).Distinct().Count());
+        foreach (var entry in entries)
+        {
+            Assert.Equal("Verified Merged", entry.GetProperty("state").GetString());
+            Assert.Equal("Pending", entry.GetProperty("jiraReconciliation").GetString());
+            Assert.True(entry.GetProperty("merged").GetBoolean());
+            Assert.Matches("^[a-f0-9]{40}$", entry.GetProperty("actualMergeCommit").GetString()!);
+            Assert.Matches("^[a-f0-9]{40}$", entry.GetProperty("finalHead").GetString()!);
+            Assert.StartsWith("https://github.com/Marachert/FinancialAssistant.Host/pull/", entry.GetProperty("pullRequest").GetString());
+            Assert.Equal(TimeSpan.Zero, entry.GetProperty("mergedAt").GetDateTimeOffset().Offset);
+            Assert.True(entry.GetProperty("reviewCompletedAt").GetDateTimeOffset() <= entry.GetProperty("mergedAt").GetDateTimeOffset());
+            Assert.Equal(5, entry.GetProperty("successfulChecksOnFinalHead").GetInt32());
+            Assert.Equal(3, entry.GetProperty("workflowRuns").GetArrayLength());
+            Assert.Equal(0, entry.GetProperty("unresolvedFindings").GetInt32());
+            Assert.True(entry.GetProperty("postMergeConfluenceVerified").GetBoolean());
+            Assert.Equal(8, entry.GetProperty("confluenceVersions").EnumerateObject().Count());
+        }
+        var progress = Read("docs/agent/POC_PROGRESS.md");
+        var complete = baseline.GetProperty("canonicalDone").GetInt32() + entries.Length;
+        var total = baseline.GetProperty("canonicalTotal").GetInt32();
+        Assert.Contains($"**{complete} of {total} canonical POC leaf tickets are verified complete**", progress);
+        Assert.Contains($"**{decimal.Round(100m * complete / total, 1).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)}%**", progress);
+        var p9 = baseline.GetProperty("p9Done").GetInt32() + entries.Count(e => e.GetProperty("epic").GetString() == "FIN-38");
+        var parent = baseline.GetProperty("fin270Done").GetInt32() + entries.Count(e => e.GetProperty("parent").GetString() == "FIN-270");
+        Assert.Contains($"P9 {p9}/39", progress);
+        Assert.Contains($"In Progress{parent}/19; P9", progress);
+        Assert.Contains("not a new live Jira census", progress);
+        Assert.Contains("Jira Done and", progress);
     }
 
     [Fact]

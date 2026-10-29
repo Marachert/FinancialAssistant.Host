@@ -18,8 +18,8 @@ installer or accepted native Windows runtime is claimed by this document.
 | Intake/Receipt/AI | Editable drafts, review/reject/confirm, receipt/OCR processing and controlled provider abstractions | Approved provider budgets, privacy configuration and end-to-end hosted operation |
 | Income/Expense | Separate native PostgreSQL authoritative records, atomic minimized outbox, immutable confirmation replay and lifecycle contracts | Live delivery/inbox FIN-276, integrated recovery FIN-286 and installed acceptance |
 | Summary/Analytics | Separate owned PostgreSQL projections, strict replay and scoped generation recovery; deterministic dashboard composition | Authorized source ingestion, reliable transport and cross-owner refresh FIN-276; integrated/installed acceptance |
-| Financial Score | Deterministic score calculation/history and dashboard composition | Owned native persistence FIN-288, reliable event wiring and deployed evidence |
-| Recommendations/Notifications | Recommendation generation, prepared notification/inbox lifecycle and preferences | Push/web adapters are non-sending placeholders; no real delivery or deferred quiet-hours scheduler claimed |
+| Financial Score | Owned PostgreSQL projections, deterministic score factors/history, neutral first reads and atomic immutable outbox | Authorized settings/source ingestion and reliable delivery FIN-276; integrated/installed acceptance |
+| Recommendations/Notifications | Owned PostgreSQL facts/lifecycle, explicit preferences, trigger deduplication, prepared/read state and atomic immutable outbox | Push/web adapters are non-sending placeholders; no real delivery or deferred quiet-hours scheduler claimed |
 | Mobile | Home/Add/Insights/Settings, authentication/onboarding, text/receipt draft review, dashboard, inbox and resilience states | Native audio, complete wallet/debt/reserve flows, signed stores and tester acceptance are not all delivered |
 | Monitoring/Audit/MCP | Safe operational aggregates, append-only audit contracts and six allowlisted read-only MCP tools | Durable history, complete producer wiring and approved operational acceptance |
 | Admin web | Protected React dashboard, memory-only sessions, service status, bounded recent/failed jobs and AI/OCR summaries | Support lookup is disabled; job history is process-local (200 observations, 24 hours), not a durable job scheduler |
@@ -73,11 +73,15 @@ FIN-287 is Done after independently verified actual PR289 merge
 finalf697631/all5CIgreen/completedreview no findings. Its fresh closure census is
 193/215(89.8%), FIN-27011/19 and P9 17/39(43.6%); first-user Not Ready.
 
-FIN-288's unmerged working branch adds [native insight persistence](../engineering/native-insights-persistence.md):
+FIN-288 adds [native insight persistence](../engineering/native-insights-persistence.md):
 separate Score and Recommendations/Notifications roles, deterministic factors and
 history, atomic receipts/outboxes, lifecycle/read state and explicit settings/
 preferences. The combined isolated PostgreSQL initial/crash/restart fixture passed
-on 2026-10-29; full delivery verification remains pending. No live broker/Profile
+on 2026-10-29. PR291 is independently verified merged as
+`c4e6a9e15ab2602aa1d68fc45b48bf4899634e60` at `2026-10-29T10:11:34Z`,
+final5b9a5c0/all5CIgreen/completedreview no findings. Local fixed-scope progress is
+194/215(90.2%),P918/39(46.2%),FIN27012/19; last live Jira baseline193/215 remains
+separate with reconciliation pending. First-user Not Ready. No live broker/Profile
 ingestion, actual notification send or installed acceptance is claimed. Native
 hosts fail closed rather than selecting memory/legacy consumers. While Jira is
 suspended, [owner-approved local tracking](../agent/LOCAL_BACKLOG.md) records scope
