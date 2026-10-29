@@ -94,6 +94,8 @@ public interface IRecommendationEventPublisher
 
 public interface INotificationEventPublisher
 {
+    bool ConfirmsDelivery => true;
+
     Task PublishAsync(
         IntegrationEventEnvelope<NotificationPreparedV1> envelope,
         CancellationToken cancellationToken);

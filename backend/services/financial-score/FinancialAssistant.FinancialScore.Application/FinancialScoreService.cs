@@ -11,22 +11,25 @@ public sealed class FinancialScoreService
     private readonly IFinancialScoreEventPublisher publisher;
     private readonly FinancialScoreCalculator calculator;
     private readonly IFinancialScoreProfileSettingsProvider profileSettingsProvider;
+    private readonly IFinancialScoreTransaction? transaction;
     private readonly SemaphoreSlim applyGate = new(1, 1);
 
     public FinancialScoreService(
         IFinancialScoreStore store,
         IFinancialScoreEventPublisher publisher,
         FinancialScoreCalculator calculator,
-        IFinancialScoreProfileSettingsProvider? profileSettingsProvider = null)
+        IFinancialScoreProfileSettingsProvider? profileSettingsProvider = null,
+        IFinancialScoreTransaction? transaction = null)
     {
         this.store = store;
         this.publisher = publisher;
         this.calculator = calculator;
         this.profileSettingsProvider = profileSettingsProvider ??
             UnconfiguredFinancialScoreProfileSettingsProvider.Instance;
+        this.transaction = transaction;
     }
 
-    public async Task<FinancialScoreCalculation?> ApplyAsync(
+    public Task<FinancialScoreCalculation?> ApplyAsync(
         IntegrationEventEnvelope<FinancialRecordChangedV1> envelope,
         IReadOnlyList<FinancialScoreSemanticFactor>? semanticFactors,
         CancellationToken cancellationToken)
@@ -39,6 +42,16 @@ public sealed class FinancialScoreService
                 nameof(semanticFactors));
         }
 
+        Validate(envelope);
+        return transaction is null
+            ? ApplyCoreAsync(envelope, cancellationToken)
+            : transaction.ExecuteAsync(envelope, token => ApplyCoreAsync(envelope, token), cancellationToken);
+    }
+
+    private async Task<FinancialScoreCalculation?> ApplyCoreAsync(
+        IntegrationEventEnvelope<FinancialRecordChangedV1> envelope,
+        CancellationToken cancellationToken)
+    {
         await applyGate.WaitAsync(cancellationToken);
         try
         {
@@ -124,10 +137,21 @@ public sealed class FinancialScoreService
             NormalizeCurrency(currency),
             cancellationToken);
 
-    public async Task<FinancialScoreCalculation> GetCurrentOrCreateDefaultAsync(
+    public Task<FinancialScoreCalculation> GetCurrentOrCreateDefaultAsync(
         string userIdHash,
         string currency,
         CancellationToken cancellationToken)
+    {
+        var owner = NormalizeRequired(userIdHash, nameof(userIdHash));
+        var normalizedCurrency = NormalizeCurrency(currency);
+        return transaction is null
+            ? GetCurrentOrCreateDefaultCoreAsync(owner, normalizedCurrency, cancellationToken)
+            : transaction.ExecuteOwnerAsync(owner,
+                token => GetCurrentOrCreateDefaultCoreAsync(owner, normalizedCurrency, token), cancellationToken);
+    }
+
+    private async Task<FinancialScoreCalculation> GetCurrentOrCreateDefaultCoreAsync(
+        string userIdHash, string currency, CancellationToken cancellationToken)
     {
         var normalizedUserIdHash = NormalizeRequired(userIdHash, nameof(userIdHash));
         var normalizedCurrency = NormalizeCurrency(currency);

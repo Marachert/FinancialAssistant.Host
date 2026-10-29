@@ -32,6 +32,15 @@ Backend deterministic logic is authoritative for transactions, balances, limits,
 
 ## Delivery invariant
 
+Owner exception, 2026-10-29: while Jira is suspended, use
+`docs/agent/LOCAL_BACKLOG.md` as the active backlog and evidence ledger. Missing
+Jira access alone must not stop no-cost local development or guarded GitHub
+delivery. Follow the temporary workflow in that file, reconcile Jira when restored,
+and never claim an unread or unperformed Jira transition. GitHub review/CI, one
+active PR, security, deterministic financial authority, Confluence readback and
+zero-additional-spend gates remain mandatory. Prioritize a genuinely working POC;
+paid optional integrations stay disabled/unavailable, never fake successful.
+
 There must never be more than one active agent-owned delivery PR.
 
 Never start the next Jira leaf-ticket from an unmerged branch. Always restore state from GitHub, CI, Jira, Confluence, and the repository before deciding what to do. Do not rely on previous conversation memory.

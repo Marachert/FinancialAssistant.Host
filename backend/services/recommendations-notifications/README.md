@@ -15,9 +15,10 @@ independent deployables without changing their public contracts.
 
 Recommendations are created with `active` status, can move to nonterminal `read`, and can end as `dismissed` or `expired`; terminal recommendations cannot reactivate. The deterministic MVP rules cover high category share, monthly budget pressure, missing income, incomplete profile settings, uncategorized expenses, and positive budget progress. Status and `statusChangedAtUtc` are part of the trusted recommendation response.
 
-Notification preferences default to push and web enabled. Explicit opt-outs
+Developer notification preferences default to push and web enabled. Explicit opt-outs
 are applied before template preparation or event publication through
-`INotificationPreferenceProvider`; the checked-in adapter is in-memory.
+`INotificationPreferenceProvider`. Native Windows composition requires explicitly
+stored owner preferences; unknown preferences fail closed, never invent opt-in.
 
 No external AI or delivery provider is called. `IRecommendationWordingProvider`
 is a wording-only boundary and defaults to deterministic text. Backend facts,
@@ -32,6 +33,22 @@ used without any provider call.
 Development storage and publisher adapters are in-memory and are not
 crash-durable. RabbitMQ mode uses publisher confirms, a quorum consumer queue,
 three delayed retries, and a terminal dead-letter queue.
+
+## Native Windows Persistence
+
+FIN-288's working branch adds independently owned PostgreSQL facts, source receipts,
+recommendation lifecycle, prepared/read notification state, explicit preferences
+and compact immutable outboxes. Native composition requires
+`RecommendationsNotifications:Storage:Postgres` with its own role/schema/keys;
+it registers neither memory fallback nor legacy consumers. Authorized Profile
+snapshots distinguish known settings from unavailable/expired input. Actual
+source ingestion and reliable broker delivery remain FIN-276.
+
+Staging never claims publication or end-user delivery. Exact-envelope outbox
+acknowledgement preserves the first publication time; native gateway Delivered
+and direct publication-completion mutations are rejected. No paid provider is
+called. See [the persistence contract](../../../docs/engineering/native-insights-persistence.md)
+for limits, replay/deduplication, PostgreSQL recovery evidence and pending gates.
 
 Trusted APIs:
 
@@ -88,7 +105,7 @@ implementation.
 
 ## Notification preferences API
 
-New owners default to push and web enabled, all six known notification types
+In developer mode, new owners default to push and web enabled, all six known notification types
 enabled, and no quiet hours. Trusted GET/PUT endpoints expose an owner-scoped
 mobile-ready contract for channel toggles, enabled notification types, and
 optional local quiet hours. Unknown types and invalid quiet-hour windows are

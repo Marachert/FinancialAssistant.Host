@@ -14,7 +14,16 @@ The Financial Score Service calculates a deterministic, explainable personal fin
 
 ## POC storage
 
-The checked-in adapters store projections, Profile-settings snapshots, and score history in memory for a single-process POC. `IFinancialScoreStore` and `IFinancialScoreProfileSettingsProvider` are the boundaries for durable production adapters. Profile settings must be synchronized from an authorized Profile API or minimal event, never by querying Profile storage directly. No paid OCR, LLM, database, or messaging service is invoked by the default development configuration.
+Developer/test adapters retain in-memory projections, settings and history.
+FIN-288 adds separate owned PostgreSQL state, atomic calculation/publication and
+neutral first-read transactions; its complete delivery is still In Progress.
+See the [native persistence contract](../../../docs/engineering/native-insights-persistence.md)
+for explicit capacity, replay and pending qualification boundaries.
+Native hosting requires `FinancialScore:Storage:Postgres`, never falls back to
+memory/legacy RabbitMQ adapters and fails readiness closed pending FIN-276.
+Profile settings must be synchronized from an authorized Profile API or minimal
+event, never by querying Profile storage directly; unknown/expired input fails
+closed. No paid provider is invoked by development or these synthetic checks.
 
 ## HTTP API
 
