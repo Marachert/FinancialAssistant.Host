@@ -16,22 +16,29 @@ public sealed class NotificationTriggerService
     private readonly NotificationTemplateCatalog templates;
     private readonly INotificationEventPublisher publisher;
     private readonly INotificationPreferenceProvider? preferenceProvider;
+    private readonly IInsightProcessingTransaction? transaction;
 
     public NotificationTriggerService(
         IRecommendationNotificationStore store,
         NotificationTriggerEvaluator evaluator,
         NotificationTemplateCatalog templates,
         INotificationEventPublisher publisher,
-        INotificationPreferenceProvider? preferenceProvider = null)
+        INotificationPreferenceProvider? preferenceProvider = null,
+        IInsightProcessingTransaction? transaction = null)
     {
         this.store = store;
         this.evaluator = evaluator;
         this.templates = templates;
         this.publisher = publisher;
         this.preferenceProvider = preferenceProvider;
+        this.transaction = transaction;
     }
 
-    public async Task<IReadOnlyList<PreparedNotification>> ProcessAsync(
+    public Task<IReadOnlyList<PreparedNotification>> ProcessAsync(NotificationTriggerFacts facts, CancellationToken cancellationToken) =>
+        transaction is null ? ProcessCoreAsync(facts, cancellationToken) :
+            transaction.TriggerAsync(facts, token => ProcessCoreAsync(facts, token), cancellationToken);
+
+    private async Task<IReadOnlyList<PreparedNotification>> ProcessCoreAsync(
         NotificationTriggerFacts facts,
         CancellationToken cancellationToken)
     {
@@ -71,9 +78,10 @@ public sealed class NotificationTriggerService
                         notification.DeliveryStatus,
                         notification.PreparedAtUtc)),
                 cancellationToken);
-            await store.MarkNotificationPublishedAsync(
-                notification.NotificationId,
-                cancellationToken);
+            if (publisher.ConfirmsDelivery)
+            {
+                await store.MarkNotificationPublishedAsync(notification.NotificationId, cancellationToken);
+            }
         }
 
         return accepted;

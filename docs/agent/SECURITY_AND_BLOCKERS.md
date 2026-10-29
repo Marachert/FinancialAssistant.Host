@@ -53,6 +53,13 @@ requires unapproved spending, preserve state and report the blocker.
 
 ## Delivery Blockers
 
+Owner-approved exception, 2026-10-29: Jira-only inactivity suspension is not a
+development/delivery blocker while `LOCAL_BACKLOG.md` supplies temporary tracking.
+No access-control or license bypass is permitted. Keep all other access, privacy,
+review and financial-correctness gates. Paid optional functionality must use a
+legitimate free alternative or stay explicitly unavailable, not block independent
+POC work. No trial, provider activation, API-billed fallback or extra spending.
+
 Owner clarification, 2026-10-09: the 40% pause threshold is revoked for Windows,
 Mac and future development. Continue within included subscription allowance until
 the owner stops work or ordinary included use is exhausted. Apply the `AGENTS.md`

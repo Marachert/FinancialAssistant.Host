@@ -9,20 +9,28 @@ public sealed class NotificationPreparationService
     private readonly NotificationTemplateCatalog templates;
     private readonly INotificationEventPublisher publisher;
     private readonly INotificationPreferenceProvider? preferenceProvider;
+    private readonly IInsightProcessingTransaction? transaction;
 
     public NotificationPreparationService(
         IRecommendationNotificationStore store,
         NotificationTemplateCatalog templates,
         INotificationEventPublisher publisher,
-        INotificationPreferenceProvider? preferenceProvider = null)
+        INotificationPreferenceProvider? preferenceProvider = null,
+        IInsightProcessingTransaction? transaction = null)
     {
         this.store = store;
         this.templates = templates;
         this.publisher = publisher;
         this.preferenceProvider = preferenceProvider;
+        this.transaction = transaction;
     }
 
-    public async Task<IReadOnlyList<PreparedNotification>> ProcessAsync(
+    public Task<IReadOnlyList<PreparedNotification>> ProcessAsync(
+        IntegrationEventEnvelope<RecommendationGeneratedV1> envelope, CancellationToken cancellationToken) =>
+        transaction is null ? ProcessCoreAsync(envelope, cancellationToken) :
+            transaction.PrepareAsync(envelope, token => ProcessCoreAsync(envelope, token), cancellationToken);
+
+    private async Task<IReadOnlyList<PreparedNotification>> ProcessCoreAsync(
         IntegrationEventEnvelope<RecommendationGeneratedV1> envelope,
         CancellationToken cancellationToken)
     {
@@ -83,9 +91,10 @@ public sealed class NotificationPreparationService
                         notification.DeliveryStatus,
                         notification.PreparedAtUtc)),
                 cancellationToken);
-            await store.MarkNotificationPublishedAsync(
-                notification.NotificationId,
-                cancellationToken);
+            if (publisher.ConfirmsDelivery)
+            {
+                await store.MarkNotificationPublishedAsync(notification.NotificationId, cancellationToken);
+            }
         }
 
         return accepted;

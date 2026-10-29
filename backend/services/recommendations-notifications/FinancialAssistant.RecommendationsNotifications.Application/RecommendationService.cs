@@ -13,6 +13,7 @@ public sealed class RecommendationService
     private readonly RecommendationExplanationService explanationService;
     private readonly IRecommendationEventPublisher publisher;
     private readonly IRecommendationProfileSettingsProvider? profileSettingsProvider;
+    private readonly IInsightProcessingTransaction? transaction;
     private readonly SemaphoreSlim processGate = new(1, 1);
 
     public RecommendationService(
@@ -21,7 +22,8 @@ public sealed class RecommendationService
         IRecommendationWordingProvider wordingProvider,
         IRecommendationEventPublisher publisher,
         IRecommendationProfileSettingsProvider? profileSettingsProvider = null,
-        RecommendationExplanationService? explanationService = null)
+        RecommendationExplanationService? explanationService = null,
+        IInsightProcessingTransaction? transaction = null)
     {
         this.store = store;
         this.generator = generator;
@@ -31,9 +33,15 @@ public sealed class RecommendationService
                 new UnavailableRecommendationExplanationWordingProvider());
         this.publisher = publisher;
         this.profileSettingsProvider = profileSettingsProvider;
+        this.transaction = transaction;
     }
 
-    public async Task<IReadOnlyList<FinancialRecommendation>> ProcessAnalyticsAsync(
+    public Task<IReadOnlyList<FinancialRecommendation>> ProcessAnalyticsAsync(
+        IntegrationEventEnvelope<AnalyticsUpdatedV1> envelope, CancellationToken cancellationToken) =>
+        transaction is null ? ProcessAnalyticsCoreAsync(envelope, cancellationToken) :
+            transaction.AnalyticsAsync(envelope, token => ProcessAnalyticsCoreAsync(envelope, token), cancellationToken);
+
+    private async Task<IReadOnlyList<FinancialRecommendation>> ProcessAnalyticsCoreAsync(
         IntegrationEventEnvelope<AnalyticsUpdatedV1> envelope,
         CancellationToken cancellationToken)
     {
@@ -71,7 +79,12 @@ public sealed class RecommendationService
         }
     }
 
-    public async Task<IReadOnlyList<FinancialRecommendation>> ProcessScoreAsync(
+    public Task<IReadOnlyList<FinancialRecommendation>> ProcessScoreAsync(
+        IntegrationEventEnvelope<ScoreCalculatedV1> envelope, CancellationToken cancellationToken) =>
+        transaction is null ? ProcessScoreCoreAsync(envelope, cancellationToken) :
+            transaction.ScoreAsync(envelope, token => ProcessScoreCoreAsync(envelope, token), cancellationToken);
+
+    private async Task<IReadOnlyList<FinancialRecommendation>> ProcessScoreCoreAsync(
         IntegrationEventEnvelope<ScoreCalculatedV1> envelope,
         CancellationToken cancellationToken)
     {

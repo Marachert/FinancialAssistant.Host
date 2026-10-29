@@ -1,5 +1,14 @@
 # Autonomous Delivery Workflow
 
+## Temporary Local Tracking
+
+Owner-approved 2026-10-29: Jira is suspended and must not block no-cost POC
+development. Use [the local backlog](LOCAL_BACKLOG.md) for cached scope,
+dependencies, active ownership, actual merge evidence and Jira reconciliation.
+This replaces Jira-only read/transition/evidence gates during the outage, not
+GitHub CI/review/security or Confluence gates. Do not fabricate Jira status or
+change paid subscriptions. Restore live Jira as the tracker after reconciliation.
+
 ## State recovery
 
 Every run starts by reading current state. Never infer state from a previous run.

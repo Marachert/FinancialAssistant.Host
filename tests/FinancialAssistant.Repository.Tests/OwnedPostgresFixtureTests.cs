@@ -13,6 +13,7 @@ public sealed class OwnedPostgresFixtureTests
     [InlineData("backend/services/transaction-intake/FinancialAssistant.Intake.Persistence.Integration/bin/Release/net8.0/FinancialAssistant.Intake.Persistence.Integration.dll", "FAIL Intake PostgreSQL at owned fixture validation")]
     [InlineData("backend/services/receipt-processing/FinancialAssistant.ReceiptAi.Persistence.Integration/bin/Release/net8.0/FinancialAssistant.ReceiptAi.Persistence.Integration.dll", "FAIL Receipt/AI PostgreSQL at isolated fixture validation")]
     [InlineData("backend/services/financial-summary/FinancialAssistant.Projections.Persistence.Integration/bin/Release/net8.0/FinancialAssistant.Projections.Persistence.Integration.dll", "FAIL Projections PostgreSQL at isolated fixture validation")]
+    [InlineData("backend/services/financial-score/FinancialAssistant.Insights.Persistence.Integration/bin/Release/net8.0/FinancialAssistant.Insights.Persistence.Integration.dll", "FAIL Insights PostgreSQL at isolated fixture validation")]
     public async Task MissingFixtureConfigurationFailsWithoutDatabaseMutation(string executable, string expectedFailure)
     {
         var start = new ProcessStartInfo("dotnet")
@@ -95,7 +96,8 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("$saved[$name]", script);
         Assert.Contains("releaseReady=$false", script);
         Assert.Contains("--auth-host=scram-sha-256", script);
-        Assert.Contains("[ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections')]", script);
+        Assert.Contains("[ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights')]", script);
+        Assert.Contains("FinancialAssistant.Insights.Persistence.Integration.csproj", script);
         Assert.Contains("FinancialAssistant.Projections.Persistence.Integration.csproj", script);
         Assert.Contains("FinancialAssistant.ReceiptAi.Persistence.Integration.csproj", script);
         Assert.Contains("FinancialAssistant.Intake.Persistence.Integration.csproj", script);

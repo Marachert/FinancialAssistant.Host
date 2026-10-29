@@ -73,6 +73,16 @@ FIN-287 is Done after independently verified actual PR289 merge
 finalf697631/all5CIgreen/completedreview no findings. Its fresh closure census is
 193/215(89.8%), FIN-27011/19 and P9 17/39(43.6%); first-user Not Ready.
 
+FIN-288's unmerged working branch adds [native insight persistence](../engineering/native-insights-persistence.md):
+separate Score and Recommendations/Notifications roles, deterministic factors and
+history, atomic receipts/outboxes, lifecycle/read state and explicit settings/
+preferences. The combined isolated PostgreSQL initial/crash/restart fixture passed
+on 2026-10-29; full delivery verification remains pending. No live broker/Profile
+ingestion, actual notification send or installed acceptance is claimed. Native
+hosts fail closed rather than selecting memory/legacy consumers. While Jira is
+suspended, [owner-approved local tracking](../agent/LOCAL_BACKLOG.md) records scope
+without fabricating Jira transitions or awarding unfinished-work progress.
+
 The [FIN-275 ownership inventory](../engineering/native-financial-persistence-scope.md)
 separates its original seven-owner persistence scope into FIN-275 financial records/
 event confirmation, FIN-287 Summary/Analytics, FIN-288 Score/Recommendations/

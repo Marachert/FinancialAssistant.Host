@@ -6,6 +6,7 @@ using FinancialAssistant.FinancialScore.Domain;
 using FinancialAssistant.FinancialScore.Infrastructure;
 using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
+using FinancialAssistant.Shared.Persistence;
 using Microsoft.OpenApi.Models;
 
 var builder = FinancialAssistantHost.CreateBuilder(args, "financial-score");
@@ -24,11 +25,21 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 builder.Services.AddFinancialScoreApplication();
-builder.Services.AddFinancialScoreInfrastructure(builder.Configuration);
+var windowsNative = builder.Environment.IsEnvironment(FinancialAssistantHost.NativeEnvironment);
+builder.Services.AddFinancialScoreInfrastructure(builder.Configuration, windowsNative);
 builder.Services.AddSingleton<FinancialScoreGatewayAuthenticator>();
 builder.Services.AddFinancialAssistantHealthChecks();
 
 var app = builder.Build();
+if (windowsNative)
+{
+    app.Use(async (context, next) =>
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        await next(context);
+    });
+    app.UseOwnedStorageFailureBoundary();
+}
 
 app.UseFinancialAssistantCorrelation();
 _ = app.Services.GetRequiredService<FinancialScoreGatewayAuthenticator>();
@@ -49,7 +60,7 @@ app.MapGet(
             "financial-assistant-financial-score-service",
             "running",
             environment.EnvironmentName,
-            "in-memory",
+            windowsNative ? "PostgreSQL" : "in-memory",
             FinancialScoreFormula.Version)));
 
 app.MapFinancialScoreEndpoints();

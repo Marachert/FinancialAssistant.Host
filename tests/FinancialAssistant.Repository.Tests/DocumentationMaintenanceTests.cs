@@ -6,6 +6,18 @@ namespace FinancialAssistant.Repository.Tests;
 public sealed class DocumentationMaintenanceTests
 {
     [Fact]
+    public void TemporaryLocalTrackingPreservesNoCostAndVerifiedDeliveryGates()
+    {
+        var local = Read("docs/agent/LOCAL_BACKLOG.md");
+        Assert.Contains("Owner-approved 2026-10-29", local, StringComparison.Ordinal);
+        Assert.Contains("do not pay", local, StringComparison.Ordinal);
+        Assert.Contains("exact-head green CI", local, StringComparison.Ordinal);
+        Assert.Contains("No direct main push", local, StringComparison.Ordinal);
+        Assert.Contains("not a new live Jira census", local, StringComparison.Ordinal);
+        Assert.Contains("LOCAL_BACKLOG.md", Read("AGENTS.md"), StringComparison.Ordinal);
+        Assert.Contains("Temporary Local Tracking", Read("docs/agent/DELIVERY_WORKFLOW.md"), StringComparison.Ordinal);
+    }
+    [Fact]
     public void CurrentProgressSummariesUseTheSameCensus()
     {
         var progress = Read("docs/agent/POC_PROGRESS.md");

@@ -8,6 +8,7 @@ Developer, architecture, security, API, event, and delivery documentation worksp
 - [Native component inventory and qualification gaps](../infra/windows-native/README.md)
 
 - [POC readiness and closure statistics](agent/POC_PROGRESS.md)
+- [Temporary no-cost POC backlog while Jira is suspended](agent/LOCAL_BACKLOG.md)
 - [POC QA strategy and test scope](engineering/poc-qa-strategy.md)
 - [MVP end-to-end user scenarios](engineering/mvp-e2e-scenarios.md)
 - [Current implementation versus product target](architecture/current-implementation.md)
@@ -17,6 +18,7 @@ Developer, architecture, security, API, event, and delivery documentation worksp
 - [Native financial persistence ownership and prerequisites](engineering/native-financial-persistence-scope.md)
 - [Native Income and Expense persistence](engineering/financial-records-native-persistence.md)
 - [Native Summary and Analytics projection persistence](engineering/native-projection-persistence.md)
+- [Native Score and Recommendation/Notification persistence](engineering/native-insights-persistence.md)
 - [Native Intake draft and confirmation-intent persistence](engineering/intake-native-persistence.md)
 - [Native protected receipt files, health cache and local diagnostics](engineering/windows-native-adapters.md)
 - [Native Receipt, OCR and AI workflow persistence](engineering/receipt-ai-native-persistence.md)

@@ -10,11 +10,13 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="RabbitMQ.Client" Version="7.2.1" />
+    <InternalsVisibleTo Include="FinancialAssistant.FinancialScore.Tests" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../FinancialAssistant.FinancialScore.Application/FinancialAssistant.FinancialScore.Application.csproj" />
     <ProjectReference Include="../FinancialAssistant.FinancialScore.Domain/FinancialAssistant.FinancialScore.Domain.csproj" />
     <ProjectReference Include="../../../shared/contracts/FinancialAssistant.Shared.Contracts/FinancialAssistant.Shared.Contracts.csproj" />
+    <ProjectReference Include="../../../shared/persistence/FinancialAssistant.Shared.Persistence/FinancialAssistant.Shared.Persistence.csproj" />
   </ItemGroup>
 </Project>
