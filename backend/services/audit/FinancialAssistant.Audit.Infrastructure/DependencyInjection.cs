@@ -1,5 +1,7 @@
 using FinancialAssistant.Audit.Application;
 using FinancialAssistant.Audit.Contracts;
+using FinancialAssistant.Audit.Infrastructure.Persistence;
+using FinancialAssistant.Shared.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,7 +11,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddAuditInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        bool windowsNative = false)
     {
         var section = configuration.GetSection(AuditOptions.SectionName);
         services.Configure<AuditOptions>(section);
@@ -17,6 +20,26 @@ public static class DependencyInjection
         Validate(options);
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton(new AuditPolicy(options.AllowedProducers, options.RetentionDays));
+        if (windowsNative)
+        {
+            var settings = configuration.GetSection("Audit:Storage:Postgres").Get<NativePostgresSettings>()
+                ?? throw new InvalidOperationException("Native Audit persistence configuration is missing.");
+            var storage = settings.CreateOptions("audit");
+            using (var validation = settings.CreateProtection()) { }
+            services.AddSingleton(_ => settings.CreateProtection());
+            services.AddSingleton(provider => new OwnedPostgresStore(storage, provider.GetRequiredService<RecordProtection>()));
+            services.AddSingleton(provider => new PostgresAuditRecordStore(provider.GetRequiredService<OwnedPostgresStore>(),
+                provider.GetRequiredService<AuditPolicy>(), options.RetentionDays, provider.GetRequiredService<TimeProvider>()));
+            services.AddSingleton<IAuditRecordStore>(provider => provider.GetRequiredService<PostgresAuditRecordStore>());
+            services.AddSingleton<IAuditEventTransaction>(provider => provider.GetRequiredService<PostgresAuditRecordStore>());
+            services.AddSingleton<AuditEventService>();
+            services.AddSingleton<IAuditEventConsumer>(provider => provider.GetRequiredService<AuditEventService>());
+            services.AddSingleton<AuditEventMessageHandler>();
+            services.AddHostedService<AuditRetentionWorker>();
+            services.AddSingleton<OwnedStorageHealthCheck>();
+            services.AddHealthChecks().AddCheck<OwnedStorageHealthCheck>("audit-owned-storage", tags: new[] { "ready" });
+            return services;
+        }
         services.AddSingleton<IAuditRecordStore, InMemoryAppendOnlyAuditRecordStore>();
         services.AddSingleton<AuditEventService>();
         services.AddSingleton<IAuditEventConsumer>(provider =>

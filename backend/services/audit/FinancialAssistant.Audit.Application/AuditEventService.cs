@@ -8,9 +8,15 @@ namespace FinancialAssistant.Audit.Application;
 public sealed class AuditEventService(
     IAuditRecordStore store,
     AuditPolicy policy,
-    TimeProvider timeProvider) : IAuditEventConsumer
+    TimeProvider timeProvider,
+    IAuditEventTransaction? transaction = null) : IAuditEventConsumer
 {
-    public async Task<string> ConsumeAsync(
+    public Task<string> ConsumeAsync(IntegrationEventEnvelope<AuditEventV1> integrationEvent,
+        CancellationToken cancellationToken) => transaction is null
+            ? ConsumeCoreAsync(integrationEvent, cancellationToken)
+            : transaction.ExecuteAsync(integrationEvent, token => ConsumeCoreAsync(integrationEvent, token), cancellationToken);
+
+    private async Task<string> ConsumeCoreAsync(
         IntegrationEventEnvelope<AuditEventV1> integrationEvent,
         CancellationToken cancellationToken)
     {

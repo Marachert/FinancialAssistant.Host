@@ -5,6 +5,7 @@ using FinancialAssistant.Audit.Contracts;
 using FinancialAssistant.Audit.Infrastructure;
 using FinancialAssistant.Shared.Hosting;
 using FinancialAssistant.Shared.Observability;
+using FinancialAssistant.Shared.Persistence;
 using Microsoft.OpenApi.Models;
 
 var builder = FinancialAssistantHost.CreateBuilder(args, "audit");
@@ -20,7 +21,8 @@ builder.Services.AddSwaggerGen(options =>
             Version = "v1",
             Description = "Append-only privacy-safe event trace metadata."
         }));
-builder.Services.AddAuditInfrastructure(builder.Configuration);
+var windowsNative = builder.Environment.IsEnvironment(FinancialAssistantHost.NativeEnvironment);
+builder.Services.AddAuditInfrastructure(builder.Configuration, windowsNative);
 builder.Services.AddSingleton<AuditGatewayAuthenticator>();
 builder.Services.AddSingleton<AuditServiceAuthenticator>();
 builder.Services.AddSingleton<AuditReadinessHealthCheck>();
@@ -29,6 +31,15 @@ builder.Services
     .AddCheck<AuditReadinessHealthCheck>("configuration", tags: ["ready"]);
 
 var app = builder.Build();
+if (windowsNative)
+{
+    app.Use(async (context, next) =>
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        await next(context);
+    });
+    app.UseOwnedStorageFailureBoundary();
+}
 
 app.UseFinancialAssistantCorrelation();
 _ = app.Services.GetRequiredService<AuditGatewayAuthenticator>();
@@ -49,7 +60,7 @@ app.MapGet(
         "financial-assistant-audit-service",
         "running",
         environment.EnvironmentName,
-        "append-only-in-memory-poc",
+        windowsNative ? "append-only-PostgreSQL" : "append-only-in-memory-poc",
         "pseudonymous-audit-metadata-only")));
 app.MapAuditEndpoints();
 

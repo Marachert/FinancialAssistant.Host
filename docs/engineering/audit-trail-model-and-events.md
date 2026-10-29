@@ -33,7 +33,7 @@ stores only bounded metadata. OCR and LLM output never supplies audit facts.
 | `resourceType` | Payload | Cataloged resource class, never a resource identifier or description. |
 | `failureCategory` | Payload | Optional bounded safe reason code; never an exception message. |
 | `retentionClass` | Payload | `standard`, `security`, or `regulatory`. |
-| `expiresAtUtc` | Audit Service | Occurrence time plus the configured retention period. |
+| `expiresAtUtc` | Audit Service | Occurrence plus configured retention; native reads additionally clamp to the first expiry and shortest durably observed class period. |
 
 `actor` answers who initiated the operation. `subject` answers whose state was
 affected. A user changing their own expense can have equal pseudonymous hashes;
@@ -159,6 +159,11 @@ admin role, returns `no-store`, and does not make Audit Service a source of trut
 ## Cost and PoC posture
 
 The catalog and validation are in-process and add no paid provider or model
-dependency. The PoC uses the existing in-memory append-only store. Durable
-Elasticsearch retention, broad compliance reporting, and export remain future
-operational work and must be explicitly budgeted before activation.
+dependency. Developer/test adapters remain in-memory. FIN-289's unmerged
+[native Audit adapter](native-audit-persistence.md) uses independently owned
+PostgreSQL entries, correlation indexes, replay receipts and bounded cleanup.
+It supersedes the historical native Elasticsearch storage target, not producer
+authorization or the legacy event compatibility contract. Source ingestion,
+integrated privacy/backup recovery, installed qualification, broad reporting and
+export remain separate work. No paid operation is authorized or required for
+these local synthetic implementation checks.
