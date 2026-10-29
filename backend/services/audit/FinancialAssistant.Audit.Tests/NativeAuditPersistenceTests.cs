@@ -54,22 +54,36 @@ public sealed class NativeAuditPersistenceTests
             "business", "expense.created", "succeeded", "expense", null, "regulatory", At.AddDays(2555), "user", new string('a', 64));
         var value = AuditEntryState.From(record, e.OccurrenceId, false);
         var bytes = OwnedRecordCodec.Encode(1, value);
-        Assert.Equal(record, AuditPersistenceValidation.Decode(new DurableRecord(0, bytes), Policy()).ToRecord());
-        Assert.Throws<StorageUnavailableException>(() => AuditPersistenceValidation.Decode(new DurableRecord(1, bytes), Policy()));
+        Assert.Equal(record, AuditPersistenceValidation.Decode(new DurableRecord(0, bytes)).ToRecord());
+        Assert.Throws<StorageUnavailableException>(() => AuditPersistenceValidation.Decode(new DurableRecord(1, bytes)));
         var missing = JsonNode.Parse(bytes)!; Assert.True(missing["value"]!.AsObject().Remove("occurrenceId"));
         Assert.Throws<StorageUnavailableException>(() => AuditPersistenceValidation.Decode(new DurableRecord(0,
-            System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(missing)), Policy()));
+            System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(missing))));
         var extra = JsonNode.Parse(bytes)!; extra["value"]!["amount"] = 123;
         Assert.Throws<StorageUnavailableException>(() => AuditPersistenceValidation.Decode(new DurableRecord(0,
-            System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(extra)), Policy()));
-        Assert.Throws<ArgumentException>(() => AuditPersistenceValidation.Entry(value with { Id = "synthetic-forged" }, Policy()));
-        Assert.Throws<ArgumentException>(() => AuditPersistenceValidation.Entry(value with { LegacyActor = true }, Policy()));
+            System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(extra))));
+        Assert.Throws<ArgumentException>(() => AuditPersistenceValidation.Entry(value with { Id = "synthetic-forged" }));
+        Assert.Throws<ArgumentException>(() => AuditPersistenceValidation.Entry(value with { LegacyActor = true }));
         foreach (var actor in new string?[] { null, "USER", "unknown" })
         {
             var malformedActor = OwnedRecordCodec.Encode(1, value with { Actor = actor!, ActorHash = actor is null ? null : value.ActorHash });
-            Assert.Throws<StorageUnavailableException>(() => AuditPersistenceValidation.Decode(new DurableRecord(0, malformedActor), Policy()));
+            Assert.Throws<StorageUnavailableException>(() => AuditPersistenceValidation.Decode(new DurableRecord(0, malformedActor)));
         }
-        Assert.Throws<ArgumentException>(() => AuditPersistenceValidation.Entry(value with { ExpiresAtUtc = At.AddDays(3651) }, Policy()));
+        Assert.Throws<ArgumentException>(() => AuditPersistenceValidation.Entry(value with { ExpiresAtUtc = At.AddDays(3651) }));
+    }
+
+    [Fact]
+    public void HistoricalMetadataIsIndependentOfCurrentAdmissionButStillStrict()
+    {
+        var source = Source();
+        var revoked = new AuditPolicy(new[] { "mcp-service" }, new Dictionary<string, int> { ["standard"] = 1 });
+        Assert.Throws<ArgumentException>(() => AuditPersistenceValidation.Source(source, revoked, At));
+        var retentionRevoked = new AuditPolicy(new[] { "expense-service" }, new Dictionary<string, int> { ["standard"] = 1 });
+        Assert.Throws<ArgumentException>(() => AuditPersistenceValidation.Source(source, retentionRevoked, At));
+        AuditPolicy.ValidateHistoricalMetadata(source.Payload, source.Producer);
+        Assert.Throws<ArgumentException>(() => AuditPolicy.ValidateHistoricalMetadata(source.Payload, "mcp-service"));
+        Assert.Throws<ArgumentException>(() => AuditPolicy.ValidateHistoricalMetadata(source.Payload with { ActorIdHash = "unsafe" }, source.Producer));
+        Assert.Throws<ArgumentException>(() => AuditPolicy.ValidateHistoricalMetadata(source.Payload with { RetentionClass = "unsafe class" }, source.Producer));
     }
 
     [Fact]

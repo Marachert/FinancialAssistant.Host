@@ -21,6 +21,10 @@ internal static class AuditFixture
         var secondStore = new PostgresAuditRecordStore(secondDatabase, policy, days, clock);
         var service = new AuditEventService(store, policy, clock, store);
         var second = new AuditEventService(secondStore, policy, clock, secondStore);
+        var revokedDays = new Dictionary<string, int> { ["regulatory"] = 10 };
+        var revokedPolicy = new AuditPolicy(new[] { "mcp-service" }, revokedDays);
+        var revokedStore = new PostgresAuditRecordStore(secondDatabase, revokedPolicy, revokedDays, clock);
+        var revoked = new AuditEventService(revokedStore, revokedPolicy, clock, revokedStore);
         var main = Source("synthetic-main", "synthetic-main-correlation");
         var expired = Source("synthetic-expiring", "synthetic-expiring-correlation", standard: true);
         if (mode == "initial")
@@ -83,7 +87,7 @@ internal static class AuditFixture
             var removed = 0;
             for (var i = 0; i < 100; i++)
             {
-                var cleanup = await store.CleanupExpiredAsync(); Check(cleanup.Scanned <= 25 && cleanup.Deleted <= cleanup.Scanned);
+                var cleanup = await revokedStore.CleanupExpiredAsync(); Check(cleanup.Scanned <= 25 && cleanup.Deleted <= cleanup.Scanned);
                 removed += cleanup.Deleted; if (cleanup.NextCursor is null) { break; }
             }
             Check(removed == 31);
@@ -93,6 +97,11 @@ internal static class AuditFixture
         Check(await service.ConsumeAsync(main, default) == AuditId(main.EventId));
         var recovered = (await service.FindByCorrelationAsync(main.CorrelationId, default)).Single();
         Check(recovered.RecordedAtUtc == At.AddHours(1) && recovered.OccurredAtUtc == At && recovered.ExpiresAtUtc == At.AddDays(10));
+        Check((await revoked.FindByCorrelationAsync(main.CorrelationId, default)).Single() == recovered);
+        Check((await revoked.FindByCorrelationAsync(expired.CorrelationId, default)).Count == 0);
+        await Fails<ArgumentException>(() => revoked.ConsumeAsync(main, default));
+        await Fails<ArgumentException>(() => revoked.ConsumeAsync(Source("synthetic-revoked-new", main.CorrelationId), default));
+        Check(await MissingReceipt(database, "synthetic-revoked-new"));
         Check(await service.ConsumeAsync(expired, default) == AuditId(expired.EventId));
         Check((await service.FindByCorrelationAsync(expired.CorrelationId, default)).Count == 0);
         Check((await service.FindByCorrelationAsync("synthetic-capacity-correlation", default)).Count == 1000);

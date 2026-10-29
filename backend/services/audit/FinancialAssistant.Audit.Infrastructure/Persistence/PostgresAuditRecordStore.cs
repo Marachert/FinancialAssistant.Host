@@ -73,7 +73,7 @@ public sealed class PostgresAuditRecordStore : IAuditRecordStore, IAuditEventTra
         if (record != expected) { throw new StorageConflictException(); }
         var expiry = EffectiveExpiry(record.OccurredAtUtc, record.ExpiresAtUtc, record.RetentionClass, scope.MinimumDays);
         var value = AuditEntryState.From(record with { ExpiresAtUtc = expiry }, e.OccurrenceId, p.ActorType is null && p.ActorIdHash is null);
-        AuditPersistenceValidation.Entry(value, policy);
+        AuditPersistenceValidation.Entry(value);
         if (expiry > timeProvider.GetUtcNow())
         {
             var index = await ReadIndexAsync(scope.Records, record.CorrelationId);
@@ -99,7 +99,7 @@ public sealed class PostgresAuditRecordStore : IAuditRecordStore, IAuditEventTra
             foreach (var id in await ReadIndexAsync(records, correlationId))
             {
                 var durable = await records.GetAsync("audit_entries", Owner, id) ?? throw new StorageUnavailableException();
-                var value = AuditPersistenceValidation.Decode(durable, policy);
+                var value = AuditPersistenceValidation.Decode(durable);
                 if (value.Id != id || value.Correlation != correlationId) { throw new StorageUnavailableException(); }
                 var expires = EffectiveExpiry(value.OccurredAtUtc, value.ExpiresAtUtc, value.Retention, lifecycle.State.MinimumDays);
                 if (expires > now) { result.Add(value.ToRecord() with { ExpiresAtUtc = expires }); }
@@ -119,7 +119,7 @@ public sealed class PostgresAuditRecordStore : IAuditRecordStore, IAuditEventTra
             var now = timeProvider.GetUtcNow(); var deleted = 0;
             foreach (var item in page)
             {
-                var value = AuditPersistenceValidation.Decode(new DurableRecord(item.Revision, item.Payload), policy);
+                var value = AuditPersistenceValidation.Decode(new DurableRecord(item.Revision, item.Payload));
                 if (EffectiveExpiry(value.OccurredAtUtc, value.ExpiresAtUtc, value.Retention, lifecycle.State.MinimumDays) > now) { continue; }
                 var index = await records.GetAsync("audit_correlation", value.Correlation, value.Id) ?? throw new StorageUnavailableException();
                 if (Index(index) != value.Id) { throw new StorageUnavailableException(); }

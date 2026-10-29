@@ -34,6 +34,20 @@ public sealed class AuditPolicy(
 
     public void Validate(AuditEventV1 payload, string producer)
     {
+        if (!allowedProducers.Contains(Normalize(producer)))
+        {
+            throw new ArgumentException("Audit producer is not allowlisted.");
+        }
+        if (!retentionDays.ContainsKey(Normalize(payload.RetentionClass)))
+        {
+            throw new ArgumentException("Audit retention class is not allowlisted.");
+        }
+        ValidateHistoricalMetadata(payload, producer);
+    }
+
+    // Admission changes must not invalidate previously accepted immutable evidence.
+    public static void ValidateHistoricalMetadata(AuditEventV1 payload, string producer)
+    {
         var normalizedProducer = Normalize(producer);
         var normalizedDomain = Normalize(payload.Domain);
         var normalizedOutcome = Normalize(payload.Outcome);
@@ -42,22 +56,17 @@ public sealed class AuditPolicy(
         var normalizedResourceType = Normalize(payload.ResourceType);
         var normalizedActorType = NormalizeActorType(payload.ActorType);
 
-        if (!allowedProducers.Contains(normalizedProducer))
-        {
-            throw new ArgumentException("Audit producer is not allowlisted.");
-        }
-
         if (string.IsNullOrWhiteSpace(payload.Domain)
             || string.IsNullOrWhiteSpace(payload.Outcome)
             || string.IsNullOrWhiteSpace(payload.RetentionClass)
             || !AllowedDomains.Contains(normalizedDomain)
-            || !AllowedOutcomes.Contains(normalizedOutcome)
-            || !retentionDays.ContainsKey(normalizedRetentionClass))
+            || !AllowedOutcomes.Contains(normalizedOutcome))
         {
             throw new ArgumentException("Audit domain, outcome, or retention class is not allowlisted.");
         }
 
         EnsureSafeIdentifier(payload.Action, nameof(payload.Action));
+        EnsureSafeIdentifier(payload.RetentionClass, nameof(payload.RetentionClass));
         EnsureSafeIdentifier(payload.ResourceType, nameof(payload.ResourceType));
         if (payload.FailureCategory is not null)
         {

@@ -84,5 +84,8 @@ ingestion/expiry times. Effective expiry cannot exceed the first expiry or the
 shortest durably observed retention period for that class. Lowering then raising
 configuration or restarting cannot expose expired history again. Internal bounded
 cleanup removes expired payloads/indexes; minimized replay receipts prevent their
-recreation. This is not installed-host, live broker or full privacy/backup
+recreation. Revoking future producer/class admission does not invalidate stored
+evidence or block its cleanup; historical metadata/catalog checks remain strict.
+Revoked producers cannot submit new events or identical replay. This is not
+installed-host, live broker or full privacy/backup
 acceptance; those integration gates remain separate.

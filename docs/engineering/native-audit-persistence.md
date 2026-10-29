@@ -31,6 +31,13 @@ actor metadata preserve the existing compatibility policy; explicit actor events
 retain catalog tuple and pseudonymous actor-hash enforcement. No public update,
 delete, bulk export or unrestricted user-search endpoint is introduced.
 
+Current producer and retention-class admission applies to incoming events, not
+previously accepted evidence. Historical decoding still enforces safe fields,
+catalog tuples, actor hashes, canonical metadata and immutable timestamps without
+reapplying the current ingestion allowlist. Revoking a producer or removing a
+configured class cannot block historical reads or cleanup; durable class minima
+remain authoritative. Revoked producers cannot submit even an identical replay.
+
 ## Queries And Retention
 
 The existing authorized admin API still looks up one correlation ID. Native
@@ -58,29 +65,38 @@ receipts retain only a source fingerprint and deterministic Audit ID, not actor,
 subject or operation payload; they are not expired on an arbitrary TTL that would
 permit redelivery to recreate history. Cross-service deletion/backup consistency
 and retained-receipt privacy integration remain FIN-286/209.
+Storage-deadline cancellation is retried on the next cleanup interval, without
+faulting the worker or stopping the host. Actual shutdown cancellation exits
+normally; logs contain only the fixed unavailable/retry message.
 
 ## Verification Status
 
-Audit Release build passed with zero warnings/errors; all 25 unit/HTTP tests passed,
+Audit Release build passed with zero warnings/errors; all 30 unit/HTTP tests passed,
 including new native registration, full-envelope fingerprint, required DTO fields,
 safe metadata/legacy compatibility, immutable revision checks and actual native
 HTTP safe 503/no-store and authorization-before-storage checks. The isolated
 PostgreSQL Audit fixture passed initial and immediate-crash/restart phases;
-final hardened-adapter cleanup verified at `2026-10-29T12:07:33Z`,
+final review-hardened cleanup verified at `2026-10-29T13:30:10Z`,
 installed=false/releaseReady=false.
 It exercised separate role/key isolation, concurrent replay and full-envelope
 conflicts, callback/missing-append/injected-SQL rollback, first timestamps,
 1000-entry correlation capacity and atomic next-append refusal, persisted minimum
 retention across lower/raise/restart,31 physical expired-payload/index deletions
-and replay that cannot recreate those entries. Wrong keys fail readiness.
+and replay that cannot recreate those entries. Revoked-producer and removed-class
+historical reads/cleanup passed before and after crash/restart, while new and
+identical replay ingestion under revoked admission remained denied. Wrong keys
+fail readiness.
 Synthetic database and test-host evidence is not installed or live-delivery proof.
 Full restore/Release build passed with zero errors/five existing warnings. The
 full 1128/1128 baseline across 24 projects passed with no failures/skips, followed
-by final scoped Audit/fixture builds with zero warnings/errors and 25/25 Audit
-regressions after stored-actor hardening. These are distinct verification runs,
-not a second full-suite run inferred from a subset. Staged privacy (1227 files) and
-native inventory validation passed. Full formatting verified 0 of 1181 changed;
-Markdown (155 files/513 links) passed. Nine affected Confluence working-state full-body
+by scoped Audit/fixture builds with zero warnings/errors and 30/30 Audit
+regressions after stored-actor and review hardening. New actual-worker tests
+exercise storage-deadline/unavailable/conflict retry and shutdown, plus historical
+metadata validation independent of current admission. These are distinct runs,
+not a second full-suite run inferred from a subset. Staged privacy (1228 files) and
+native inventory validation passed. Initial full formatting verified 0 of 1181
+changed; final changed-source formatting passed after review fixes.
+Markdown (155 files/514 links) passed. Nine affected Confluence working-state full-body
 readbacks were verified. Exact-head CI/review, actual
 merge and Confluence post-merge publication remain required. No new progress credit.
 

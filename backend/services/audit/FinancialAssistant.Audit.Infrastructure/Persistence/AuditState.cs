@@ -52,7 +52,7 @@ public static class AuditPersistenceValidation
         _ = policy.ExpiresAt(source.OccurredAtUtc, source.Payload.RetentionClass);
     }
 
-    internal static void Entry(AuditEntryState value, AuditPolicy policy)
+    internal static void Entry(AuditEntryState value)
     {
         Utc(value.OccurredAtUtc); Utc(value.RecordedAtUtc); Utc(value.ExpiresAtUtc);
         if (value.Id != AuditId(value.SourceId) || value.RecordedAtUtc < value.OccurredAtUtc ||
@@ -65,19 +65,19 @@ public static class AuditPersistenceValidation
         AuditPolicy.EnsureSafeIdentifier(value.Producer, nameof(value));
         if (value.LegacyActor && (value.Actor != AuditActorTypes.Service || value.ActorHash is not null))
         { throw new ArgumentException("Invalid legacy Audit actor."); }
-        policy.Validate(new AuditEventV1(value.Domain, value.Action, value.Outcome, value.Resource,
+        AuditPolicy.ValidateHistoricalMetadata(new AuditEventV1(value.Domain, value.Action, value.Outcome, value.Resource,
             value.Failure, value.Retention, value.LegacyActor ? null : value.Actor, value.ActorHash), value.Producer);
         if (new[] { value.Domain, value.Action, value.Outcome, value.Resource, value.Retention, value.Producer }
             .Any(s => s != s.Trim().ToLowerInvariant()) || value.Failure is { } failure && failure != failure.Trim().ToLowerInvariant())
         { throw new ArgumentException("Audit metadata must be canonical."); }
     }
 
-    internal static AuditEntryState Decode(DurableRecord record, AuditPolicy policy)
+    internal static AuditEntryState Decode(DurableRecord record)
     {
         try
         {
             if (record.Revision != 0) { throw new StorageUnavailableException(); }
-            var value = OwnedRecordCodec.Decode<AuditEntryState>(1, record); Entry(value, policy); return value;
+            var value = OwnedRecordCodec.Decode<AuditEntryState>(1, record); Entry(value); return value;
         }
         catch (Exception e) when (e is ArgumentException or NullReferenceException or InvalidOperationException)
         { throw new StorageUnavailableException(); }
