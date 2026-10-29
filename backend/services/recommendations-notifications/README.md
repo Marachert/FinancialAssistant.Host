@@ -36,7 +36,7 @@ three delayed retries, and a terminal dead-letter queue.
 
 ## Native Windows Persistence
 
-FIN-288's working branch adds independently owned PostgreSQL facts, source receipts,
+FIN-288, verified merged through PR291, adds independently owned PostgreSQL facts, source receipts,
 recommendation lifecycle, prepared/read notification state, explicit preferences
 and compact immutable outboxes. Native composition requires
 `RecommendationsNotifications:Storage:Postgres` with its own role/schema/keys;
