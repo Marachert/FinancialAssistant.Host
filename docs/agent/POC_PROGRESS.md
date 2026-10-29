@@ -4,6 +4,43 @@ Last updated: 2026-10-29
 
 ## Current Snapshot
 
+POC backlog completion after verified local FIN-289 closure is **90.7%**:
+**195 of 215 canonical POC leaf tickets are verified complete**.
+
+Jira is suspended. This is **not a new live Jira census**. The last verified live
+baseline remains193/215 Done (89.8%), P9 17/39 (43.6%), FIN-27011/19. Two unique
+subsequent local completions, FIN-288 and FIN-289, raise the fixed-scope numerator
+to195. No denominator or duplicate rule changed. See [the local backlog](LOCAL_BACKLOG.md)
+and [actual delivery evidence](LOCAL_DELIVERY_EVIDENCE.json). Jira Done and
+parent transitions remain pending reconciliation, never fabricated.
+
+FIN-289 [PR293](https://github.com/Marachert/FinancialAssistant.Host/pull/293)
+was independently verified merged=true/CLOSED: actual squash
+`f870733b35bc1d74a4248f882d4426faeef1e92e` at `2026-10-29T13:53:43Z`, final head
+`77adda433b0e8f3d58c6495a50bc34617615326d`. All five exact-head checks passed
+(Backend40883169464, Mobile40883169618, Admin40883169414). Both valid timeout and
+historical-admission findings were fixed, regression-tested, answered with evidence
+(4413120306/4413122660) and resolved only after green updated-head CI. Re-review
+completed at13:36:39.395023UTC with no findings; final channels were clear.
+Full1128/1128 local baseline across24 projects passed without failures/skips,
+followed by final Audit/fixture builds with zero warnings/errors and30/30 scoped
+tests. Initial full format0/1181, final changed-source format, privacy1228,
+Markdown155/514 and actual PostgreSQL initial/crash/restart/cleanup passed; final
+fixture cleanup verified13:30:10UTC, installed=false/releaseReady=false. Nine
+affected Confluence full bodies were updated with actual merge evidence and
+read back in full.
+
+The increase from194/215 is100/215=0.4651 percentage points, reported **+0.5 pp**
+before rounding.
+Local FIN-270 remains In Progress13/19; P9 19/39 (48.7%).
+First-user testing is Not Ready: Audit persistence does not qualify live producer
+delivery, integrated privacy/backup recovery or installed Windows/WPF acceptance.
+FIN-276 is the next prerequisite, then FIN-286 and remaining security/installer
+dependencies. Publish this guarded closure ledger before starting FIN-276;
+maintenance receives no extra completion credit.
+
+Historical FIN-288 closure snapshot:
+
 POC backlog completion after verified local FIN-288 closure is **90.2%**:
 **194 of 215 canonical POC leaf tickets are verified complete**.
 
@@ -484,7 +521,7 @@ Current delivery (native scope revision supersedes previous scope totals):
 - FIN-273 is Done through guarded merged PR #272; FIN-271/272 remain historical
 - native hosting implementation is merged at `ea766a9172d0b4ad49ce49c4721b6e7c3d676f52`
   after exact-head Backend, Mobile and Admin Web CI and a clear review-channel audit
-- current locally verified canonical completion is 194/215 (90.2%) after FIN-288;
+- current locally verified canonical completion is 195/215 (90.7%) after FIN-289;
   last live Jira completion remains193/215, pending reconciliation;
   five persistence leaves retain the original domain requirements. FIN-271/272/273
   remain Done and earlier closure percentages
@@ -493,7 +530,7 @@ Current delivery (native scope revision supersedes previous scope totals):
   verified Done
 - FIN-36 P8 progress is 13/13 (100.0%); all children are Done and the epic remains
   In Progress for unverified integrated log/metric/trace, audit, admin and MCP evidence
-- FIN-38 P9 progress is 18/39 (46.2%); local evidence only, the epic remains open
+- FIN-38 P9 progress is 19/39 (48.7%); local evidence only, the epic remains open
 - FIN-27 remains In Progress because its event-driven notification delivery
   Definition of Done is not yet satisfied
 - first-user testing remains Not Ready because runtime P6, P8, and P9 gates
@@ -528,16 +565,18 @@ Current delivery (native scope revision supersedes previous scope totals):
   all five exact-head CI checks passed and every review channel was empty
 - current documentation includes the implementation map, preferred storage policy,
   source-to-Confluence maintenance map and explicit financial authorization limits
-- FIN-270 is the priority parent with 12/19 children verified complete; FIN-271/272/273/274/282/283/275/284/277/285/287/288
-  concept, inventory, hosting, foundation, Identity, Profile/Category, financial stores, Intake, native adapters, Receipt/AI workflows and Summary/Analytics projections are Done,
+- FIN-270 is the priority parent with 13/19 children verified complete; FIN-271/272/273/274/282/283/275/284/277/285/287/288/289
+  concept, inventory, hosting, foundation, Identity, Profile/Category, financial
+  stores, Intake, native adapters, Receipt/AI workflows, Summary/Analytics,
+  Score/Recommendations/Notifications and Audit storage are verified complete locally,
   without installed acceptance or a fabricated Jira transition during the outage
-- next ranked native leaf is FIN-286, blocked by FIN-276/289;
+- next ranked native leaf is FIN-286, blocked by FIN-276;
   follow prerequisite leaves after this closure ledger merges and fresh dependency reads,
   never from an unmerged base or by skipping unfinished persistence/delivery
 - FIN-275 owns Income/Expense and event-driven confirmation; owner APIs reconcile
   state only for Intake, never perform synchronous confirmation writes. FIN-287 delivers
   separate Summary/Analytics storage. FIN-288 Score/Recommendations/Notifications
-  is verified merged locally; FIN-289 Audit retains the unfinished owner scope. FIN-286 still verifies all
+  and FIN-289 Audit are verified merged locally. FIN-286 still verifies all
   four sibling leaves together, with actual delivery qualified in FIN-276
 - FIN-274 is the PostgreSQL foundation; FIN-282 Identity, FIN-283 Profile/Category,
   FIN-284 Intake, FIN-285 Receipt/OCR/AI metadata and FIN-286 persistence integration
@@ -558,8 +597,8 @@ Current delivery (native scope revision supersedes previous scope totals):
 | FIN-27 | P6 Analytics, score, recommendations, and notifications | 20 | 20 | 100.0% |
 | FIN-31 | P7 Mobile app UX and React Native implementation | 18 | 18 | 100.0% |
 | FIN-36 | P8 Observability, admin UI, audit, and MCP tooling | 13 | 13 | 100.0% |
-| FIN-38 | P9 Testing, Windows deployment, and release readiness | 18 | 39 | 46.2% |
-| **Total** | **Canonical POC leaf scope** | **194** | **215** | **90.2%** |
+| FIN-38 | P9 Testing, Windows deployment, and release readiness | 19 | 39 | 48.7% |
+| **Total** | **Canonical POC leaf scope** | **195** | **215** | **90.7%** |
 
 ## First-User-Test Gates
 
@@ -757,3 +796,4 @@ recorded with a +0.0 percentage-point change.
 | 2026-10-19 | FIN-285 | PR287 actual8a3d53f9508de9eb1577ff377dbe49c73403e4a5/JiraDone; census192/215; Receipt/OCR atomic metadata/index/outbox and separate AI metadata/quota/request journal, zero-total review regression and actual owned crash/restart; not broker/backup/WPF/installed acceptance | 89.3% | +0.5 pp |
 | 2026-10-21 | FIN-287 | PR289 actuale6b8f6abc8dac24911eafda65f6515a7feed384a/JiraDone; census193/215; separate Summary/Analytics projections, immutable atomic publication, durable settings, scoped generation recovery and both1000-record caps; not transport/source ingestion/cross-owner refresh/installed acceptance | 89.8% | +0.5 pp |
 | 2026-10-29 | FIN-288 | PR291 actualc4e6a9e15ab2602aa1d68fc45b48bf4899634e60; locally Verified Merged, Jira reconciliation pending; fixed-scope194/215, not a fresh Jira census; separate native Score/Recommendation/Notification state, atomic replay/outbox, explicit preferences and crash recovery; not live delivery or installed acceptance | 90.2% | +0.5 pp |
+| 2026-10-29 | FIN-289 | PR293 actualf870733b35bc1d74a4248f882d4426faeef1e92e; locally Verified Merged, Jira reconciliation pending; fixed-scope195/215, not a fresh Jira census; native append-only Audit metadata/replay/retention and crash recovery, reviewed timeout/admission fixes; not live delivery or installed acceptance | 90.7% | +0.5 pp |

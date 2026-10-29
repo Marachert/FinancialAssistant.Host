@@ -36,7 +36,10 @@ four. FIN-284 follows its verified financial-owner prerequisite FIN-275 before
 Intake confirmation implementation. Planning alone did not implement adapters.
 The subsequent [native financial implementation](../engineering/financial-records-native-persistence.md)
 adds separate Income/Expense owned records, immutable confirmation originals/
-fingerprints and atomic minimized outboxes; the derived/audit siblings remain pending.
+fingerprints and atomic minimized outboxes. FIN-287 Summary/Analytics, FIN-288
+Score/Recommendations/Notifications and FIN-289 Audit adapters are also merged;
+the latter two are locally verified with Jira reconciliation pending. Live delivery
+and integrated recovery remain unqualified, not implied by owned-store completion.
 FIN-284 commits only its durable confirmation outbox; FIN-276 delivers to the
 matching FIN-275 financial owner asynchronously. Owner APIs are read-only status/
 reconciliation for Intake, not a second confirmation write or direct SQL path;

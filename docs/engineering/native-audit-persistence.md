@@ -1,10 +1,21 @@
 # Native Audit Persistence
 
-FIN-289 is locally In Progress; implementation is unmerged. Isolated PostgreSQL
+FIN-289 is locally Verified Merged, with Jira reconciliation pending. Isolated PostgreSQL
 verification passed; no installed Windows, live transport, full privacy
 recovery or first-user acceptance is claimed. Jira is suspended; use the
 [owner-approved local backlog](../agent/LOCAL_BACKLOG.md), without paid access or
-fabricated transitions. Last published local completion remains 194/215 (90.2%).
+fabricated transitions. Local fixed-scope completion is195/215 (90.7%), P9 19/39
+(48.7%), FIN-27013/19 and open. The separate last live Jira baseline is193/215;
+this is not a fresh census or first-user acceptance.
+
+[PR293](https://github.com/Marachert/FinancialAssistant.Host/pull/293) was
+independently verified merged=true/CLOSED: actual squash
+`f870733b35bc1d74a4248f882d4426faeef1e92e` at `2026-10-29T13:53:43Z`, final head
+`77adda433b0e8f3d58c6495a50bc34617615326d`. All five checks passed
+(Backend40883169464, Mobile40883169618, Admin40883169414). Both valid findings were
+fixed, regression-tested, answered with evidence and resolved only after green;
+re-review completed13:36:39.395023UTC with no findings. Nine affected post-merge
+Confluence full bodies were independently read back.
 
 ## Ownership And Atomic Append
 
@@ -96,9 +107,10 @@ metadata validation independent of current admission. These are distinct runs,
 not a second full-suite run inferred from a subset. Staged privacy (1228 files) and
 native inventory validation passed. Initial full formatting verified 0 of 1181
 changed; final changed-source formatting passed after review fixes.
-Markdown (155 files/514 links) passed. Nine affected Confluence working-state full-body
-readbacks were verified. Exact-head CI/review, actual
-merge and Confluence post-merge publication remain required. No new progress credit.
+Markdown (155 files/514 links) passed for implementation delivery. Exact-head
+CI/review, actual merge and nine Confluence post-merge full-body readbacks passed.
+The guarded closure ledger records one unique local FIN-289 credit before FIN-276
+starts; documentation maintenance itself receives no extra completion credit.
 
 FIN-276 owns real delivery/producer wiring, FIN-286 integrated persistence and
 privacy recovery, FIN-209 backup consistency, FIN-278/281/206 installed target
