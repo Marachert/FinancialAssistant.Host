@@ -79,7 +79,7 @@ history, atomic receipts/outboxes, lifecycle/read state and explicit settings/
 preferences. The combined isolated PostgreSQL initial/crash/restart fixture passed
 on 2026-10-29. PR291 is independently verified merged as
 `c4e6a9e15ab2602aa1d68fc45b48bf4899634e60` at `2026-10-29T10:11:34Z`,
-final5b9a5c0/all5CIgreen/completedreview no findings. Local fixed-scope progress is
+final5b9a5c0/all5CIgreen/completedreview no findings. At FIN-288 closure, local fixed-scope progress was
 194/215(90.2%),P918/39(46.2%),FIN27012/19; last live Jira baseline193/215 remains
 separate with reconciliation pending. First-user Not Ready. No live broker/Profile
 ingestion, actual notification send or installed acceptance is claimed. Native
@@ -87,11 +87,16 @@ hosts fail closed rather than selecting memory/legacy consumers. While Jira is
 suspended, [owner-approved local tracking](../agent/LOCAL_BACKLOG.md) records scope
 without fabricating Jira transitions or awarding unfinished-work progress.
 
-FIN-289's unmerged branch adds [native append-only Audit persistence](../engineering/native-audit-persistence.md)
+FIN-289 adds merged [native append-only Audit persistence](../engineering/native-audit-persistence.md)
 with independent PostgreSQL roles/keys, immutable replay receipts, bounded
 correlation lookup and durable minimum-retention/cleanup state. Isolated database
-initial/crash/restart and native HTTP failure/access tests passed; full delivery
-verification remains pending. Audit remains minimized technical metadata, never
+initial/crash/restart and native HTTP failure/access tests passed. PR293 is
+independently verified merged as `f870733b35bc1d74a4248f882d4426faeef1e92e` at
+`2026-10-29T13:53:43Z`, final77adda4/all5CIgreen, both valid findings fixed/tested/
+evidenced/resolved after green and completed re-review no findings. Nine post-merge
+Confluence full bodies were verified. Local progress is195/215(90.7%),P919/39(48.7%),
+FIN27013/19open; last live Jira baseline remains193/215, pending reconciliation.
+First-user Not Ready. Audit remains minimized technical metadata, never
 financial authority or raw financial/provider content. Live producer/transport
 wiring, integrated privacy/backup recovery and installed acceptance remain separate.
 

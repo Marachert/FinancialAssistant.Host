@@ -71,7 +71,18 @@ public sealed class DocumentationMaintenanceTests
             Assert.Equal(3, entry.GetProperty("workflowRuns").GetArrayLength());
             Assert.Equal(0, entry.GetProperty("unresolvedFindings").GetInt32());
             Assert.True(entry.GetProperty("postMergeConfluenceVerified").GetBoolean());
-            Assert.Equal(8, entry.GetProperty("confluenceVersions").EnumerateObject().Count());
+            var versions = entry.GetProperty("confluenceVersions");
+            foreach (var page in new[] { "458773", "4259842", "262339", "458753", "262398", "589905", "131336", "131095" })
+            {
+                Assert.True(versions.TryGetProperty(page, out var version));
+                Assert.True(version.GetInt32() > 0);
+            }
+            Assert.All(versions.EnumerateObject(), page => Assert.True(page.Value.GetInt32() > 0));
+            if (entry.GetProperty("key").GetString() == "FIN-289")
+            {
+                Assert.True(versions.GetProperty("458833").GetInt32() > 0);
+                Assert.Equal(2, entry.GetProperty("reviewFixReplies").GetArrayLength());
+            }
         }
         var progress = Read("docs/agent/POC_PROGRESS.md");
         var complete = baseline.GetProperty("canonicalDone").GetInt32() + entries.Length;

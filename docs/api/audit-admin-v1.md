@@ -68,9 +68,9 @@ calculated from event occurrence time and an allowlisted retention class.
 Expired records are not returned. Durable-store physical expiry must follow the
 same policy without adding an operator mutation API.
 
-## Native Windows Candidate
+## Native Windows Storage
 
-FIN-289's unmerged [PostgreSQL implementation](../engineering/native-audit-persistence.md)
+FIN-289's merged [PostgreSQL implementation](../engineering/native-audit-persistence.md)
 preserves these public DTOs and authorization checks. Native storage has separate
 Audit roles/keys, no in-memory fallback and a1000-entry-per-correlation limit;
 capacity failure refuses the append instead of returning a truncated trail.

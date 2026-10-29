@@ -159,7 +159,7 @@ admin role, returns `no-store`, and does not make Audit Service a source of trut
 ## Cost and PoC posture
 
 The catalog and validation are in-process and add no paid provider or model
-dependency. Developer/test adapters remain in-memory. FIN-289's unmerged
+dependency. Developer/test adapters remain in-memory. FIN-289's merged
 [native Audit adapter](native-audit-persistence.md) uses independently owned
 PostgreSQL entries, correlation indexes, replay receipts and bounded cleanup.
 It supersedes the historical native Elasticsearch storage target, not producer

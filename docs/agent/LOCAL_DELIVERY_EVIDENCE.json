@@ -25,19 +25,59 @@
       "mergedAt": "2026-10-29T10:11:34Z",
       "finalHead": "5b9a5c04571011cbb86b2fc9b4145d7e9a89d09a",
       "successfulChecksOnFinalHead": 5,
-      "workflowRuns": [40853974694, 40853974669, 40853974692],
+      "workflowRuns": [
+        40853974694,
+        40853974669,
+        40853974692
+      ],
       "reviewCompletedAt": "2026-10-29T10:01:35.057400Z",
       "unresolvedFindings": 0,
       "postMergeConfluenceVerified": true,
       "confluenceVersions": {
-        "458773": 121,
-        "4259842": 511,
-        "262339": 131,
-        "458753": 121,
-        "262398": 144,
-        "589905": 134,
+        "131095": 37,
         "131336": 110,
-        "131095": 37
+        "262339": 131,
+        "262398": 144,
+        "458753": 121,
+        "458773": 121,
+        "589905": 134,
+        "4259842": 511
+      }
+    },
+    {
+      "key": "FIN-289",
+      "state": "Verified Merged",
+      "jiraReconciliation": "Pending",
+      "epic": "FIN-38",
+      "parent": "FIN-270",
+      "pullRequest": "https://github.com/Marachert/FinancialAssistant.Host/pull/293",
+      "merged": true,
+      "actualMergeCommit": "f870733b35bc1d74a4248f882d4426faeef1e92e",
+      "mergedAt": "2026-10-29T13:53:43Z",
+      "finalHead": "77adda433b0e8f3d58c6495a50bc34617615326d",
+      "successfulChecksOnFinalHead": 5,
+      "workflowRuns": [
+        40883169464,
+        40883169618,
+        40883169414
+      ],
+      "reviewCompletedAt": "2026-10-29T13:36:39.395023Z",
+      "unresolvedFindings": 0,
+      "reviewFixReplies": [
+        4413120306,
+        4413122660
+      ],
+      "postMergeConfluenceVerified": true,
+      "confluenceVersions": {
+        "131095": 42,
+        "131336": 115,
+        "262339": 136,
+        "262398": 149,
+        "458753": 126,
+        "458773": 129,
+        "458833": 24,
+        "589905": 139,
+        "4259842": 518
       }
     }
   ],
