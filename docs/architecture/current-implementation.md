@@ -87,6 +87,14 @@ hosts fail closed rather than selecting memory/legacy consumers. While Jira is
 suspended, [owner-approved local tracking](../agent/LOCAL_BACKLOG.md) records scope
 without fabricating Jira transitions or awarding unfinished-work progress.
 
+FIN-289's unmerged branch adds [native append-only Audit persistence](../engineering/native-audit-persistence.md)
+with independent PostgreSQL roles/keys, immutable replay receipts, bounded
+correlation lookup and durable minimum-retention/cleanup state. Isolated database
+initial/crash/restart and native HTTP failure/access tests passed; full delivery
+verification remains pending. Audit remains minimized technical metadata, never
+financial authority or raw financial/provider content. Live producer/transport
+wiring, integrated privacy/backup recovery and installed acceptance remain separate.
+
 The [FIN-275 ownership inventory](../engineering/native-financial-persistence-scope.md)
 separates its original seven-owner persistence scope into FIN-275 financial records/
 event confirmation, FIN-287 Summary/Analytics, FIN-288 Score/Recommendations/

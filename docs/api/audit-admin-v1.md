@@ -67,3 +67,22 @@ redelivery is idempotent; conflicting replacement is rejected. Expiry is
 calculated from event occurrence time and an allowlisted retention class.
 Expired records are not returned. Durable-store physical expiry must follow the
 same policy without adding an operator mutation API.
+
+## Native Windows Candidate
+
+FIN-289's unmerged [PostgreSQL implementation](../engineering/native-audit-persistence.md)
+preserves these public DTOs and authorization checks. Native storage has separate
+Audit roles/keys, no in-memory fallback and a1000-entry-per-correlation limit;
+capacity failure refuses the append instead of returning a truncated trail.
+Unavailable/conflicting native storage returns a generic no-store503, never a
+successful empty-memory response or database details. A malformed event still
+uses the existing400 contract; unauthenticated/non-admin requests remain401/403
+before storage access.
+
+Native replay preserves the original source identity and does not refresh first
+ingestion/expiry times. Effective expiry cannot exceed the first expiry or the
+shortest durably observed retention period for that class. Lowering then raising
+configuration or restarting cannot expose expired history again. Internal bounded
+cleanup removes expired payloads/indexes; minimized replay receipts prevent their
+recreation. This is not installed-host, live broker or full privacy/backup
+acceptance; those integration gates remain separate.

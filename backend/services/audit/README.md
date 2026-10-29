@@ -33,9 +33,13 @@ content matches; a conflicting replay is rejected rather than replacing the
 stored record. RabbitMQ uses an at-least-once quorum queue and dead-letters
 invalid or failed deliveries without requeue.
 
-The current PoC store is process-local memory. A durable implementation must
-preserve the same append-only/idempotency contract and use the Audit-owned
-Elasticsearch write alias defined by the platform naming policy.
+Developer/test storage remains process-local memory. FIN-289's unmerged native
+implementation uses separately owned PostgreSQL metadata, atomic correlation
+indexes/replay receipts and bounded retention cleanup, without a memory fallback
+or legacy consumer. Native PostgreSQL supersedes the historical Elasticsearch
+write-alias target for this POC; Elasticsearch references remain compatibility
+material, never financial authority. See [the native persistence contract](../../../docs/engineering/native-audit-persistence.md)
+for explicit bounds, retention, verification and pending integration gates.
 
 ## Retention
 

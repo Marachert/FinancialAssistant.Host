@@ -40,6 +40,12 @@ verification passed on 2026-10-29, not installed Windows or live delivery accept
 PR291 is verified merged as `c4e6a9e15ab2602aa1d68fc45b48bf4899634e60` at
 `2026-10-29T10:11:34Z`, final5b9a5c0/all5CIgreen/completedreview no findings.
 Jira reconciliation is pending; FIN-276/286 and installer qualification remain required.
+FIN-289's unmerged [Audit persistence](../../docs/engineering/native-audit-persistence.md)
+adds an independent PostgreSQL Audit identity, atomic immutable metadata/index/
+replay receipts and bounded lifecycle cleanup. Native composition requires owned
+`Audit:Storage:Postgres` keys/configuration and registers no memory/legacy consumer.
+Real isolated crash/restart and safe native HTTP tests passed, not installed
+Windows or live transport/producer acceptance. No additional progress credit yet.
 PR285 actual merge `dfe9692f1da22aa22e864d4eb9932d5e67316af0` at
 `2026-10-15T18:24:45Z` is independently verified; FIN-277 Done, final80ee33b all5CIgreen.
 Fresh census18:26:46 UTC:191/215 (88.8%), +0.5 pp before rounding; FIN-2709/19,

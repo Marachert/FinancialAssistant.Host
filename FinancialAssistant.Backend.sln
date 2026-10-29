@@ -264,6 +264,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Projecti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Insights.Persistence.Integration", "backend\services\financial-score\FinancialAssistant.Insights.Persistence.Integration\FinancialAssistant.Insights.Persistence.Integration.csproj", "{8F8289F0-8E30-44DC-BC50-3093D77F0485}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Audit.Persistence.Integration", "backend\services\audit\FinancialAssistant.Audit.Persistence.Integration\FinancialAssistant.Audit.Persistence.Integration.csproj", "{3C8AB4FA-5B13-45B2-AEB0-6D2D4B75D835}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -738,6 +740,10 @@ Global
 		{8F8289F0-8E30-44DC-BC50-3093D77F0485}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F8289F0-8E30-44DC-BC50-3093D77F0485}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F8289F0-8E30-44DC-BC50-3093D77F0485}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C8AB4FA-5B13-45B2-AEB0-6D2D4B75D835}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C8AB4FA-5B13-45B2-AEB0-6D2D4B75D835}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C8AB4FA-5B13-45B2-AEB0-6D2D4B75D835}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C8AB4FA-5B13-45B2-AEB0-6D2D4B75D835}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7AC3F48D-624D-4E99-8B8A-4D491602CEE2} = {FB7E6B6E-BA1A-4D09-96DE-E4179EB6DA47}
@@ -795,5 +801,6 @@ Global
 		{A3E2DA42-A68F-4A34-A64C-3BFD681EC48D} = {7AC3F48D-624D-4E99-8B8A-4D491602CEE2}
 		{3DF0101F-2FBA-4E3A-BAFD-67907487BDD1} = {A3E2DA42-A68F-4A34-A64C-3BFD681EC48D}
 		{8F8289F0-8E30-44DC-BC50-3093D77F0485} = {F2000001-0000-4A00-A200-000000000000}
+		{3C8AB4FA-5B13-45B2-AEB0-6D2D4B75D835} = {EB8C1011-4FC9-4232-9781-56B8BC5E35CE}
 	EndGlobalSection
 EndGlobal
