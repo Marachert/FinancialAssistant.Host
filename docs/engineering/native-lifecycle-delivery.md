@@ -240,6 +240,19 @@ fixture expectation were retained; both runs cleaned up owned processes. The
 corrected complete run passed, and all owned PostgreSQL/broker processes stopped.
 This does not qualify installed services, first-user registration or provider use.
 
+Self-review tightened the replay assertion to observe the specific original event
+completing in the real registered transactional Income consumer, then require a
+subsequent broker acknowledgement. The bounded fixture-only observer delegates
+to production behavior; it never substitutes a projector or accepts an unrelated
+counter increment as proof. The strengthened complete flow passed at
+`2026-10-30T04:38:46Z`, proof `fd4a03c923c746c09ab4f886409f3b45`, with successful
+PostgreSQL/broker cleanup and zero provider/projector calls.
+
+After this refinement, the complete `1282/1282` suite across 25 projects passed
+again without failures/skips at `2026-10-30T04:47:50Z`. The rebuild had zero errors
+and five existing cache warnings; changed-source formatting and candidate privacy/
+documentation checks remain required before the updated head is published.
+
 The repository-owned runner independently repeated the complete flow at
 `2026-10-30T03:48:01Z`, proof `facb5713df134d088c03bbd2b8626537`, with successful
 PostgreSQL/broker cleanup. Its first local listener attempt timed out and cleaned

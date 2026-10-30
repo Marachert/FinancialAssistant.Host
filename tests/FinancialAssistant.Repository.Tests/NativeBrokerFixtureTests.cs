@@ -27,6 +27,9 @@ public sealed class NativeBrokerFixtureTests
         var source = Read("backend/shared/messaging/FinancialAssistant.NativeLifecycle.Integration/FinancialDelivery.cs");
         Assert.Contains("GetServices<IHostedService>()", source);
         Assert.Contains("AcknowledgedDeliveries > acknowledgements", source);
+        Assert.Contains("observer.Read(original.EventId)", source);
+        Assert.Contains("completion.Count > completedBeforeReplay", source);
+        Assert.Contains("await inner.ConsumeAsync(value, token)", source);
         Assert.Contains("message.Confirmation?.DraftId == queued", source);
         Assert.Contains("message.Confirmation?.DraftId == state.QueuedIncomeDraft", source);
         Assert.Contains("GetSnapshotAsync(Owner", source);

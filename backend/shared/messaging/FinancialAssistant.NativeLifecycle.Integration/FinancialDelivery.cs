@@ -111,6 +111,16 @@ internal static partial class LifecycleFixture
                     case "recommendations-notifications": collection.AddRecommendationNotificationApplication().AddRecommendationNotificationInfrastructure(configuration, true); break;
                     case "audit": collection.AddAuditInfrastructure(configuration, true); break;
                 }
+                if (role == "income")
+                {
+                    var registration = collection.Single(d => d.ServiceType == typeof(ITransactionConfirmedConsumer));
+                    Check(registration.Lifetime == ServiceLifetime.Singleton && registration.ImplementationType is not null);
+                    collection.Remove(registration);
+                    collection.AddSingleton(provider => new ObservedIncomeConsumer(
+                        (ITransactionConfirmedConsumer)ActivatorUtilities.CreateInstance(provider, registration.ImplementationType!),
+                        provider.GetRequiredService<NativeRabbitConsumer>()));
+                    collection.AddSingleton<ITransactionConfirmedConsumer>(provider => provider.GetRequiredService<ObservedIncomeConsumer>());
+                }
                 var provider = collection.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
                 services.Add(role, provider); workers.Add(role, provider.GetServices<IHostedService>().ToArray());
             }
@@ -166,13 +176,20 @@ internal static partial class LifecycleFixture
             Stage = "actual broker duplicate delivery";
             var original = (await intake.GetRequiredService<ITransactionConfirmationStore>().GetAsync(User, state.FirstIncomeDraft, token))!.IntegrationEvent;
             var receiver = services["income"].GetRequiredService<NativeRabbitConsumer>();
-            var acknowledgements = receiver.AcknowledgedDeliveries;
+            var observer = services["income"].GetRequiredService<ObservedIncomeConsumer>();
+            var completedBeforeReplay = observer.Read(original.EventId)?.Count ?? 0;
             await using (var publisher = new NativeRabbitPublisher(new NativeBrokerSettings("transaction-intake", Connection(credentials, "transaction-intake"))))
             {
                 await publisher.PublishAsync(new NativePublication(NativePublication.CommandsExchange, "income.transaction-confirmed.v1",
                     TransactionConfirmedIntegrationEvent.Name, original.EventId, original.ConfirmedAtUtc, JsonSerializer.SerializeToUtf8Bytes(original, Json)), token);
             }
-            await WaitAsync(() => Task.FromResult(receiver.AcknowledgedDeliveries > acknowledgements), token);
+            await WaitAsync(() =>
+            {
+                var completion = observer.Read(original.EventId);
+                var acknowledgements = completion?.AcknowledgementsBeforeReturn ?? long.MaxValue;
+                return Task.FromResult(completion is not null && completion.Count > completedBeforeReplay &&
+                    receiver.AcknowledgedDeliveries > acknowledgements);
+            }, token);
             Check(await ConvergedAsync(services, 1250m, 113.37m, 4, token));
             WriteNew(root, "financial-restart.json", new
             {
@@ -181,6 +198,7 @@ internal static partial class LifecycleFixture
                 financialServiceWiringVerified = true,
                 postgresConvergenceVerified = true,
                 actualReplayAcknowledged = true,
+                specificReplayHandlerCompleted = true,
                 privateProfileHttpVerified = true,
                 manualProjectorCalls = 0,
                 providerInvocations = 0,
@@ -263,4 +281,26 @@ internal static partial class LifecycleFixture
     private static async Task StopAsync(IHostedService[] workers, CancellationToken token)
     { foreach (var worker in workers.Reverse()) { await worker.StopAsync(token); } }
     private sealed record Scenario(string FirstIncomeDraft, string QueuedIncomeDraft);
+
+    // Observe the real registered transactional consumer; never replace it with a fake projector.
+    private sealed class ObservedIncomeConsumer(ITransactionConfirmedConsumer inner, NativeRabbitConsumer receiver) : ITransactionConfirmedConsumer
+    {
+        private readonly object gate = new();
+        private readonly Dictionary<string, HandlerCompletion> completed = new(StringComparer.Ordinal);
+
+        public async Task ConsumeAsync(TransactionConfirmedIntegrationEvent value, CancellationToken token)
+        {
+            await inner.ConsumeAsync(value, token);
+            lock (gate)
+            {
+                var previous = completed.GetValueOrDefault(value.EventId);
+                Check(previous is not null || completed.Count < 8);
+                completed[value.EventId] = new HandlerCompletion((previous?.Count ?? 0) + 1, receiver.AcknowledgedDeliveries);
+            }
+        }
+
+        public HandlerCompletion? Read(string eventId) { lock (gate) { return completed.GetValueOrDefault(eventId); } }
+    }
+
+    private sealed record HandlerCompletion(long Count, long AcknowledgementsBeforeReturn);
 }
