@@ -2,6 +2,7 @@ using System.Globalization;
 using FinancialAssistant.Analytics.Api.Security;
 using FinancialAssistant.Analytics.Application;
 using FinancialAssistant.Analytics.Contracts;
+using FinancialAssistant.Analytics.Infrastructure;
 
 namespace FinancialAssistant.Analytics.Api.Endpoints;
 
@@ -127,6 +128,8 @@ public static class AnalyticsEndpointExtensions
             var now = timeProvider.GetUtcNow();
             var localNow = TimeZoneInfo.ConvertTime(now, timeZone);
             var ownerHash = AnalyticsOwnerHasher.Hash(userId!);
+            if (httpContext.RequestServices.GetService<NativeAnalyticsProfileSettingsLoader>() is { } profiles)
+            { await profiles.RefreshAsync(ownerHash, new[] { currency }, cancellationToken); }
             var effectiveReferenceDate =
                 referenceDate ?? DateOnly.FromDateTime(localNow.DateTime);
             var expenseLimits = await limitProvider.GetExpenseLimitsAsync(

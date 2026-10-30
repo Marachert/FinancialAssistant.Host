@@ -31,6 +31,7 @@ public static class DependencyInjection
             services.AddSingleton<ExpenseTransactionConfirmedConsumer>();
             services.AddSingleton<ITransactionConfirmedConsumer, TransactionalExpenseConfirmedConsumer>();
             services.AddHostedService<ExpenseOutboxRetentionWorker>();
+            NativeExpenseMessaging.Add(services, configuration);
             services.AddSingleton<OwnedStorageHealthCheck>();
             services.AddHealthChecks().AddCheck<OwnedStorageHealthCheck>("expense-owned-storage", tags: new[] { "ready" });
             return services;

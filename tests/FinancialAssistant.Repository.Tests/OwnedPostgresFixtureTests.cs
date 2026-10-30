@@ -97,7 +97,9 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("$saved[$name]", script);
         Assert.Contains("releaseReady=$false", script);
         Assert.Contains("--auth-host=scram-sha-256", script);
-        Assert.Contains("[ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit')]", script);
+        Assert.Contains("[ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle')]", script);
+        Assert.Contains("FinancialAssistant.NativeLifecycle.Integration.csproj", script);
+        Assert.Contains("[IO.FileMode]::CreateNew", script);
         Assert.Contains("FinancialAssistant.Audit.Persistence.Integration.csproj", script);
         Assert.Contains("FinancialAssistant.Insights.Persistence.Integration.csproj", script);
         Assert.Contains("FinancialAssistant.Projections.Persistence.Integration.csproj", script);

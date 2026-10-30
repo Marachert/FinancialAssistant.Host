@@ -29,7 +29,8 @@ public static class DependencyInjection
             services.AddSingleton(TimeProvider.System);
             services.AddSingleton(_ => settings.CreateProtection());
             services.AddSingleton(provider => new OwnedPostgresStore(storage, provider.GetRequiredService<RecordProtection>()));
-            services.AddSingleton<InsightPersistenceContext>();
+            services.AddSingleton(provider => new InsightPersistenceContext(provider.GetRequiredService<OwnedPostgresStore>(),
+                requireNativeOrder: configuration.GetValue<bool>("RecommendationsNotifications:Messaging:Enabled")));
             services.AddSingleton<IInsightProcessingTransaction>(provider => provider.GetRequiredService<InsightPersistenceContext>());
             services.AddSingleton<PostgresRecommendationNotificationStore>();
             services.AddSingleton<IRecommendationNotificationStore>(provider => provider.GetRequiredService<PostgresRecommendationNotificationStore>());
@@ -44,6 +45,7 @@ public static class DependencyInjection
             services.AddSingleton<INotificationDeliveryAdapter, WebNotificationDeliveryAdapter>();
             services.AddSingleton<INotificationRetryPolicy, ConfiguredNotificationRetryPolicy>();
             services.AddSingleton<RecommendationNotificationMessageHandler>();
+            NativeInsightMessaging.Add(services, configuration);
             services.AddSingleton<OwnedStorageHealthCheck>();
             services.AddHealthChecks().AddCheck<OwnedStorageHealthCheck>("insight-owned-storage", tags: new[] { "ready" });
             return services;

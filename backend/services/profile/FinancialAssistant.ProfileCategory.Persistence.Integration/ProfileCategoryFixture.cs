@@ -107,6 +107,10 @@ try
         var profile = await profiles.GetAsync(first, default) ?? throw new FixtureFailure();
         Check(profile.Preferences.MonthlyBudgetAmount == 12345678901234567890.12345678m && profile.Preferences.PrivacyMode == "strict"
             && profile.CreatedAtUtc == now && profile.UpdatedAtUtc == now.AddMinutes(2));
+        var settingsSnapshot = await profiles.GetFinancialSettingsAsync(OwnerHash(first), now.AddDays(1)) ?? throw new FixtureFailure();
+        Check(settingsSnapshot.MonthlyBudgetAmount == profile.Preferences.MonthlyBudgetAmount && settingsSnapshot.SourceRevision == 9
+            && settingsSnapshot.SourceVersion == "profile-9" && settingsSnapshot.OwnerHash == OwnerHash(first));
+        Check(await profiles.GetFinancialSettingsAsync(OwnerHash(second), now.AddDays(1)) is null);
         var catalog = await categories.GetAsync(first, default) ?? throw new FixtureFailure();
         await profileProvider.GetRequiredService<OwnedPostgresStore>().ExecuteAsync(new[] { first }, async (records, _) =>
         {
@@ -124,6 +128,21 @@ try
     stage = "atomic concurrent bootstrap preserves two isolated users";
     await Task.WhenAll(Enumerable.Range(0, 6).Select(_ => profiles.CreateDefaultIfMissingAsync(UserProfile.CreateDefault(first, now), default)));
     await profiles.CreateDefaultIfMissingAsync(UserProfile.CreateDefault(second, now), default);
+    stage = "owned hashed financial-settings lookup before configuration";
+    var initialSnapshot = await profiles.GetFinancialSettingsAsync(OwnerHash(first), now) ?? throw new FixtureFailure();
+    Check(initialSnapshot.MonthlyBudgetAmount == 0m && initialSnapshot.SourceRevision == 0 && initialSnapshot.SourceVersion == "profile-0");
+    Check(!JsonSerializer.Serialize(initialSnapshot).Contains(first, StringComparison.Ordinal));
+    Check(await profiles.GetFinancialSettingsAsync(new string('f', 64), now) is null);
+    stage = "corrupt financial lookup cannot become a request error or cross-owner read";
+    var corruptLookupIndex = 0;
+    foreach (var badOwner in new[] { "", "synthetic-different-profile-owner", new string('x', 129) })
+    {
+        var hash = OwnerHash("synthetic-corrupt-financial-lookup-" + corruptLookupIndex++);
+        await profileProvider.GetRequiredService<OwnedPostgresStore>().ExecuteAsync(new[] { "fixture-corrupt-lookup" }, async (records, _) =>
+        { await records.InsertAsync("financial_profile_lookup", "profile", hash, OwnedRecordCodec.Encode(1, new { Owner = badOwner })); return true; });
+        try { await profiles.GetFinancialSettingsAsync(hash, now); throw new FixtureFailure(); }
+        catch (StorageUnavailableException exception) { Check(exception.InnerException is null); }
+    }
     await Task.WhenAll(Enumerable.Range(0, 6).Select(_ => categories.CreateDefaultIfMissingAsync(UserCategoryCatalog.CreateDefault(first, now), default)));
     await categories.CreateDefaultIfMissingAsync(UserCategoryCatalog.CreateDefault(second, now), default);
     stage = "concurrent profile updates have no lost decimal increments";
@@ -135,6 +154,10 @@ try
         "sunday", 12345678901234567890.12345678m, true, true, true, true), now.AddMinutes(2)), default);
     await profiles.CreateDefaultIfMissingAsync(UserProfile.CreateDefault(first, now.AddDays(1)), default);
     Check((await profiles.GetAsync(first, default))?.Preferences.MonthlyBudgetAmount == 12345678901234567890.12345678m);
+    var configuredSnapshot = await profiles.GetFinancialSettingsAsync(OwnerHash(first), now.AddMinutes(2)) ?? throw new FixtureFailure();
+    Check(configuredSnapshot.MonthlyBudgetAmount == 12345678901234567890.12345678m && configuredSnapshot.SourceRevision == 9
+        && configuredSnapshot.SourceVersion == "profile-9" && configuredSnapshot.CurrencyCode == "USD" && configuredSnapshot.PrivacyMode == "strict"
+        && configuredSnapshot.ProfileOnboardingCompleted && configuredSnapshot.PreferencesOnboardingCompleted);
     try { await profiles.UpdateAsync(first, _ => UserProfile.CreateDefault(second, now), default); throw new FixtureFailure(); }
     catch (StorageUnavailableException) { }
 
@@ -209,6 +232,7 @@ try
 
     stage = "erasure markers prevent stale bootstrap resurrection";
     Check(await profiles.DeleteAsync(second, now.AddMinutes(3)));
+    Check(await profiles.GetFinancialSettingsAsync(OwnerHash(second), now.AddMinutes(3)) is null);
     Check(await categories.DeleteAsync(second, now.AddMinutes(3)));
     Check(!await profiles.DeleteAsync(second, now.AddMinutes(4)) && !await categories.DeleteAsync(second, now.AddMinutes(4)));
     try { await profiles.CreateDefaultIfMissingAsync(UserProfile.CreateDefault(second, now), default); throw new FixtureFailure(); }
@@ -268,6 +292,7 @@ catch
 
 static string Setting(string name) => Environment.GetEnvironmentVariable(name) ?? "";
 static string Hash<T>(T value) => Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(value)));
+static string OwnerHash(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 static void Check(bool value) { if (!value) { throw new FixtureFailure(); } }
 static async Task Sql(NpgsqlConnection connection, string sql)
 { await using var command = new NpgsqlCommand(sql, connection); await command.ExecuteNonQueryAsync(); }

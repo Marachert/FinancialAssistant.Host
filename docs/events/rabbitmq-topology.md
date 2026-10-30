@@ -10,6 +10,29 @@ of truth.
 
 ## Environment Boundary
 
+### Native Windows Lifecycle
+
+FIN-276 adds a separate opt-in native transport profile, documented in the
+[native lifecycle guide](../engineering/native-lifecycle-delivery.md). The
+baseline/Compose conventions below are retained; they do not silently configure
+an installed Windows deployment. The native profile additionally uses private
+`fa.commands` and internal `fa.retry-return` exchanges, owner-scoped durable
+quorum queues, explicit publisher-role/topic permissions and confirmed retries
+that return only to the original consumer, without peer fanout.
+
+The private `fa-source-sequence` Int64 header carries an owned publication ordinal
+for Analytics/Score snapshots. It is authenticated transport metadata, not a
+new public event field or a financial source of truth. Recommendation ingestion
+requires its immutable order mapping and authorized Profile settings; legacy
+unordered intents fail closed instead of inventing an order. Private confirmed
+transaction commands go only to Income or Expense. Prepared recommendation
+handoff remains within Recommendations/Notifications and does not send a provider.
+
+Actual isolated broker retry/restart/reconnect and combined PostgreSQL financial
+crash/restart/replay proofs passed locally. These results do not establish
+installed-service, provider, or first-user acceptance. Credentials and generated
+definitions must remain private and outside Git.
+
 Each environment uses a separate RabbitMQ virtual host:
 
 ```text

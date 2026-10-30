@@ -2,6 +2,7 @@ using FinancialAssistant.RecommendationsNotifications.Api.Security;
 using FinancialAssistant.RecommendationsNotifications.Application;
 using FinancialAssistant.RecommendationsNotifications.Contracts;
 using FinancialAssistant.RecommendationsNotifications.Domain;
+using FinancialAssistant.RecommendationsNotifications.Infrastructure;
 
 namespace FinancialAssistant.RecommendationsNotifications.Api.Endpoints;
 
@@ -395,9 +396,10 @@ public static class RecommendationNotificationEndpointExtensions
             return error;
         }
 
-        var preferences = await service.GetAsync(
-            RecommendationNotificationOwnerHasher.Hash(userId!),
-            cancellationToken);
+        var owner = RecommendationNotificationOwnerHasher.Hash(userId!);
+        if (context.RequestServices.GetService<NativeInsightProfileSettingsLoader>() is { } profile)
+        { await profile.RefreshAsync(owner, null, cancellationToken); }
+        var preferences = await service.GetAsync(owner, cancellationToken);
         return Results.Ok(MapNotificationPreferences(preferences));
     }
 

@@ -6,6 +6,12 @@ final qualification remains a release gate.** The approved target is the
 [Windows-native POC](../../docs/architecture/windows-native-poc.md), without
 Docker, WSL or a Linux VM. No machine configuration is changed here.
 
+FIN-276 working native lifecycle code and its reusable isolated broker/financial
+fixtures are described in the [lifecycle guide](../../docs/engineering/native-lifecycle-delivery.md).
+Actual synthetic financial crash/restart/replay passed locally without manual
+projector/provider calls. This local work is not yet merged or credited and does
+not make this inventory, service installation or first-user POC release-ready.
+
 FIN-273's [hosting contract](../../backend/shared/hosting/README.md) documents the
 native process profile, canonical service ports, required trust and non-executing
 SCM plan. Its publish script creates explicitly unqualified win-x64 candidates,

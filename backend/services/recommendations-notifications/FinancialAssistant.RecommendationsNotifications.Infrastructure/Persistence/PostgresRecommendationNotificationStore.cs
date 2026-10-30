@@ -7,6 +7,13 @@ namespace FinancialAssistant.RecommendationsNotifications.Infrastructure.Persist
 
 public sealed class PostgresRecommendationNotificationStore(InsightPersistenceContext context) : IRecommendationNotificationStore
 {
+    public Task<InsightSnapshot?> GetSnapshotAsync(string userIdHash, string currency, CancellationToken cancellationToken)
+    {
+        InsightPersistenceValidation.Currency(currency);
+        return context.ReadAsync<InsightSnapshot?>(userIdHash,
+            state => state.Facts.SingleOrDefault(f => f.Currency == currency)?.ToDomain(userIdHash), cancellationToken);
+    }
+
     public Task<InsightApplyResult> ApplyAnalyticsIfNewAsync(string sourceEventId, string userIdHash, string currency,
         AnalyticsInsightFacts analytics, CancellationToken cancellationToken)
     {
@@ -21,7 +28,7 @@ public sealed class PostgresRecommendationNotificationStore(InsightPersistenceCo
         { throw new StorageConflictException(); }
         var state = context.State(userIdHash);
         var previous = state.Facts.SingleOrDefault(f => f.Currency == currency) ?? new InsightFactsState(currency, null, null, null, null);
-        var accepted = IsNewer(previous.Analytics?.AtUtc, previous.AnalyticsEvent, analytics.UpdatedAtUtc, sourceEventId);
+        var accepted = source.Order is not null || IsNewer(previous.Analytics?.AtUtc, previous.AnalyticsEvent, analytics.UpdatedAtUtc, sourceEventId);
         if (!accepted) { context.Results([], true); return Task.FromResult(new InsightApplyResult(false, previous.ToDomain(userIdHash))); }
         var updated = previous with { Analytics = InsightAnalyticsState.From(analytics), AnalyticsEvent = sourceEventId };
         state.Facts.Remove(previous); state.Facts.Add(updated); context.Applied();
@@ -39,7 +46,7 @@ public sealed class PostgresRecommendationNotificationStore(InsightPersistenceCo
         { throw new StorageConflictException(); }
         var state = context.State(userIdHash);
         var previous = state.Facts.SingleOrDefault(f => f.Currency == currency) ?? new InsightFactsState(currency, null, null, null, null);
-        var accepted = IsNewer(previous.Score?.AtUtc, previous.ScoreEvent, score.CalculatedAtUtc, sourceEventId);
+        var accepted = source.Order is not null || IsNewer(previous.Score?.AtUtc, previous.ScoreEvent, score.CalculatedAtUtc, sourceEventId);
         if (!accepted) { context.Results([], true); return Task.FromResult(new InsightApplyResult(false, previous.ToDomain(userIdHash))); }
         var updated = previous with { Score = new InsightScoreState(score.Score, score.FormulaVersion, score.CalculatedAtUtc), ScoreEvent = sourceEventId };
         state.Facts.Remove(previous); state.Facts.Add(updated); context.Applied();

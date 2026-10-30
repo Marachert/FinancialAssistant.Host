@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using FinancialAssistant.FinancialScore.Application;
 using FinancialAssistant.FinancialScore.Domain;
 using FinancialAssistant.FinancialScore.Infrastructure.Persistence;
@@ -110,13 +112,89 @@ internal static class ScoreFixture
         Check((await store.GetSnapshotAsync(other, "EUR", default)).Records.Count == 0);
         var ownerPage = await context.ReadOwnerPageAsync(pageSize: 1);
         Check(ownerPage.Owners.Count == 1 && ownerPage.NextCursor is not null);
-        var nextOwners = await context.ReadOwnerPageAsync(ownerPage.NextCursor);
+        var nextOwners = await context.ReadOwnerPageAsync(ownerPage.NextCursor, pageSize: 1);
         Check(nextOwners.Owners.Count == 1 && nextOwners.Owners[0] != ownerPage.Owners[0]);
         await Unavailable(() => store.GetBySourceEventIdAsync(expense.EventId, default));
         var history = await store.GetHistoryAsync(owner, "USD", At, At.AddHours(1), null, null, 1, default);
         Check(history.Count == 1);
         var next = await store.GetHistoryAsync(owner, "USD", At, At.AddHours(1), history[0].CalculatedAtUtc, history[0].CalculationId, 101, default);
         Check(next.All(c => c.CalculationId != history[0].CalculationId));
+        if (mode == "initial") { await VerifyPublicationOrderAsync(database); }
+        await VerifyGlobalOutboxAsync(database, publisher, profile, service, mode);
+    }
+
+    private static async Task VerifyPublicationOrderAsync(OwnedPostgresStore database)
+    {
+        var owner = new string('c', 64); var locks = new[] { "owner:" + owner };
+        await database.ExecuteAsync(locks, async (records, _) =>
+        {
+            Check(await OwnedPublicationOrder.AllocateAsync(records, "fixture", owner, "synthetic-first") == 1);
+            Check(await OwnedPublicationOrder.AllocateAsync(records, "fixture", owner, "synthetic-second") == 2);
+            Check(await OwnedPublicationOrder.AllocateAsync(records, "fixture", owner, "synthetic-first") == 1);
+            return true;
+        });
+        await Unavailable(() => database.ExecuteAsync<bool>(locks, async (records, _) =>
+        {
+            Check(await OwnedPublicationOrder.AllocateAsync(records, "fixture", owner, "synthetic-rolled-back") == 3);
+            throw new StorageUnavailableException();
+        }));
+        await database.ExecuteAsync(locks, async (records, _) =>
+        {
+            await Unavailable(() => OwnedPublicationOrder.ReadRequiredAsync(records, "fixture", owner, "synthetic-rolled-back"));
+            Check(await OwnedPublicationOrder.AllocateAsync(records, "fixture", owner, "synthetic-third") == 3);
+            Check(await OwnedPublicationOrder.ReadRequiredAsync(records, "fixture", owner, "synthetic-first") == 1);
+            var head = await records.GetAsync("publication_order_head", owner, "fixture") ?? throw new FixtureFailure();
+            Check(await records.DeleteAsync("publication_order_head", owner, "fixture", head.Revision));
+            return true;
+        });
+        await Conflict(() => database.ExecuteAsync(locks, (records, _) =>
+            OwnedPublicationOrder.AllocateAsync(records, "fixture", owner, "synthetic-reused-ordinal")));
+    }
+
+    private static async Task VerifyGlobalOutboxAsync(OwnedPostgresStore database, PostgresFinancialScoreEventPublisher publisher,
+        PostgresFinancialScoreProfileSettingsProvider profile, FinancialScoreService service, string mode)
+    {
+        var owners = Enumerable.Range(0, 31).Select(index => Convert.ToHexString(SHA256.HashData(
+            Encoding.UTF8.GetBytes("synthetic-native-scan-" + index))).ToLowerInvariant()).ToArray();
+        if (mode == "initial")
+        {
+            for (var index = 0; index < owners.Length; index++)
+            {
+                await profile.ApplySnapshotAsync(new ScoreProfileSnapshot(owners[index], "USD", "synthetic-scan-v1", 1,
+                    FinancialScoreProfileSettings.Unconfigured, At));
+                await service.ApplyAsync(Source(owners[index], "synthetic-native-scan-" + index, 1m), null, default);
+            }
+        }
+        else
+        {
+            Check(await database.ExecuteAsync([], async (records, _) =>
+                await records.GetAsync("score_outbox_scan", "financial-score", "pending") is not null));
+        }
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        for (var pass = 0; pass < 8 && seen.Count < owners.Length; pass++)
+        {
+            var batch = await publisher.ReadPendingBatchAsync();
+            Check(batch.Count <= 25 && batch.Select(message => message.Event.EventId).Distinct(StringComparer.Ordinal).Count() == batch.Count);
+            if (mode == "initial" && pass == 0) { Check(batch.Count == 25); }
+            foreach (var message in batch.Where(message => owners.Contains(message.Event.UserIdHash, StringComparer.Ordinal)))
+            {
+                Check(message.SourceSequence == 1);
+                seen.Add(message.Event.UserIdHash!);
+                if (mode == "restart")
+                {
+                    await Conflict(() => publisher.MarkPublishedAsync(message with { SourceSequence = 99 }, At.AddHours(4)));
+                    Check(await publisher.MarkPublishedAsync(message, At.AddHours(4)));
+                }
+            }
+        }
+        Check(seen.Count == owners.Length);
+        foreach (var owner in owners)
+        { Check((await publisher.ReadPendingAsync(owner)).Count == (mode == "initial" ? 1 : 0)); }
+        if (mode == "restart")
+        {
+            var remaining = await publisher.ReadPendingBatchAsync();
+            Check(remaining.Count == 4 && remaining.All(message => message.Event.UserIdHash == new string('a', 64)));
+        }
     }
 
     private static IntegrationEventEnvelope<FinancialRecordChangedV1> Source(string owner, string id, decimal amount,

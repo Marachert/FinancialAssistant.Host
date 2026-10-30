@@ -1,4 +1,5 @@
 using FinancialAssistant.Profile.Api.Endpoints;
+using FinancialAssistant.Profile.Api.Security;
 using FinancialAssistant.Profile.Application;
 using FinancialAssistant.Profile.Infrastructure;
 using FinancialAssistant.Shared.Hosting;
@@ -24,11 +25,14 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddProfileApplication();
 var windowsNative = builder.Environment.IsEnvironment(FinancialAssistantHost.NativeEnvironment);
 builder.Services.AddProfileInfrastructure(builder.Configuration, windowsNative);
+if (windowsNative) { builder.Services.AddSingleton<ProfileFinancialReaderAuthenticator>(); }
 builder.Services.AddFinancialAssistantHealthChecks();
 
 var app = builder.Build();
 
-app.UseWindowsNativeRequestBoundary();
+Func<HttpContext, bool>? internalAuthorization = null;
+if (windowsNative) { internalAuthorization = app.Services.GetRequiredService<ProfileFinancialReaderAuthenticator>().IsAuthenticated; }
+app.UseWindowsNativeRequestBoundary(internalAuthorization);
 if (windowsNative) { app.UseOwnedStorageFailureBoundary(); }
 
 app.UseFinancialAssistantCorrelation();
@@ -51,6 +55,7 @@ app.MapGet("/profile/info", (IHostEnvironment environment) => Results.Ok(new
 }));
 
 app.MapProfileEndpoints();
+if (windowsNative) { app.MapNativeProfileFinancialSettings(); }
 
 app.Run();
 

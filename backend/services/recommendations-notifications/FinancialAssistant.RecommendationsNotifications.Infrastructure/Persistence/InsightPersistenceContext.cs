@@ -9,17 +9,32 @@ namespace FinancialAssistant.RecommendationsNotifications.Infrastructure.Persist
 public sealed record InsightOwnerPage(IReadOnlyList<string> Owners, string? NextCursor);
 
 internal sealed record InsightSource(string Pipeline, string Id, string Owner, string Currency,
-    string Correlation, DateTimeOffset AtUtc, string Fingerprint, object Value);
+    string Correlation, DateTimeOffset AtUtc, string Fingerprint, object Value, NativeInsightOrder? Order = null);
 
 public sealed class InsightPersistenceContext : IInsightProcessingTransaction
 {
     private readonly OwnedPostgresStore database;
     private readonly AsyncLocal<Scope?> current = new();
+    private readonly AsyncLocal<NativeInsightOrder?> nativeOrder = new();
+    private readonly bool requireNativeOrder;
 
-    public InsightPersistenceContext(OwnedPostgresStore database)
+    public InsightPersistenceContext(OwnedPostgresStore database, bool requireNativeOrder = false)
     {
         if (database.ServiceId != "recommendations-notifications") { throw new ArgumentException("Insights require their independent storage role."); }
         this.database = database;
+        this.requireNativeOrder = requireNativeOrder;
+    }
+
+    // Privileged native adapter boundary, never an HTTP setter or inferred timestamp order.
+    public async Task<T> ExecuteNativeOrderedAsync<T>(string stream, long sequence,
+        Func<CancellationToken, Task<T>> operation, CancellationToken token = default)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        if (current.Value is not null || nativeOrder.Value is not null || stream is not ("analytics" or "score") || sequence is <= 0 or long.MaxValue)
+        { throw new ArgumentException("Invalid native insight order context."); }
+        nativeOrder.Value = new NativeInsightOrder(stream, sequence);
+        try { token.ThrowIfCancellationRequested(); return await operation(token); }
+        finally { nativeOrder.Value = null; }
     }
 
     public Task<IReadOnlyList<FinancialRecommendation>> AnalyticsAsync(IntegrationEventEnvelope<AnalyticsUpdatedV1> source,
@@ -102,6 +117,14 @@ public sealed class InsightPersistenceContext : IInsightProcessingTransaction
         Func<CancellationToken, Task<IReadOnlyList<T>>> operation, Func<T, string> identify,
         Func<InsightState, string[], IReadOnlyList<T>> replay, CancellationToken token)
     {
+        if (nativeOrder.Value is { } order)
+        {
+            if (source.Pipeline != "trigger" && source.Pipeline != order.Stream)
+            { throw new ArgumentException("Native insight order does not match its source pipeline."); }
+            source = source with { Order = order, Fingerprint = InsightPersistenceValidation.Fingerprint(new { source.Fingerprint, order.Stream, order.Sequence }) };
+        }
+        else if (requireNativeOrder && source.Pipeline is "analytics" or "score" or "trigger")
+        { throw new StorageUnavailableException(); }
         return RunOwnerAsync(source.Owner, source, async deadline =>
         {
             var scope = RequireScope();
@@ -110,6 +133,16 @@ public sealed class InsightPersistenceContext : IInsightProcessingTransaction
             {
                 if (existing.Fingerprint != source.Fingerprint) { throw new StorageConflictException(); }
                 return replay(scope.State, existing.Results);
+            }
+            if (source.Order is not null && !await NativeInsightOrderAdmission.AdmitAsync(scope.Records, source))
+            {
+                scope.State.Receipts.Add(new InsightReceiptState(source.Pipeline, source.Id, source.Fingerprint, []));
+                return Array.Empty<T>();
+            }
+            if (requireNativeOrder && source.Pipeline == "prepare" && !CanPrepareNative(scope.State, source))
+            {
+                scope.State.Receipts.Add(new InsightReceiptState(source.Pipeline, source.Id, source.Fingerprint, []));
+                return Array.Empty<T>();
             }
             var result = await operation(deadline);
             var ids = result.Select(identify).ToArray();
@@ -177,6 +210,32 @@ public sealed class InsightPersistenceContext : IInsightProcessingTransaction
             return operation(scope.Records, token);
         }
         return database.ExecuteAsync(new[] { "owner:" + owner }, operation, token);
+    }
+
+    internal Task<T> WithMaintenanceRecordsAsync<T>(Func<OwnedRecordTransaction, CancellationToken, Task<T>> operation, CancellationToken token)
+    {
+        if (current.Value is not null || nativeOrder.Value is not null) { throw new InvalidOperationException("Insight maintenance cannot nest."); }
+        return database.ExecuteAsync(new[] { "insight:maintenance" }, operation, token);
+    }
+
+    internal static string DecodeOwnerMarker(DurableRecord record)
+    {
+        var owner = OwnedRecordCodec.Decode<OwnerMarker>(1, record).Owner;
+        InsightPersistenceValidation.Owner(owner);
+        if (record.Revision != 0) { throw new StorageUnavailableException(); }
+        return owner;
+    }
+
+    private static bool CanPrepareNative(InsightState state, InsightSource source)
+    {
+        if (source.Value is not IntegrationEventEnvelope<RecommendationGeneratedV1> envelope) { throw new StorageConflictException(); }
+        var recommendation = state.Recommendations.SingleOrDefault(r => r.Id == envelope.Payload.RecommendationId) ?? throw new StorageUnavailableException();
+        var publication = state.Publications.SingleOrDefault(p => p.Kind == "recommendation" && p.ItemId == recommendation.Id)
+            ?? throw new StorageUnavailableException();
+        var expected = PostgresInsightEventPublisher.MapRecommendation(state.Owner, recommendation, publication);
+        var canonical = Copy(expected, expected.Payload with { Facts = expected.Payload.Facts.Select(f => f with { Value = Decimal(f.Value) }).ToArray() });
+        if (InsightPersistenceValidation.Fingerprint(canonical) != source.Fingerprint) { throw new StorageConflictException(); }
+        return !RecommendationStatuses.IsTerminal(recommendation.Status);
     }
 
     internal InsightState State(string? owner = null)

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using FinancialAssistant.RecommendationsNotifications.Application;
 using FinancialAssistant.Shared.Contracts.Events;
 using FinancialAssistant.Shared.Persistence;
@@ -41,6 +42,34 @@ public sealed class PostgresInsightEventPublisher(InsightPersistenceContext cont
     public Task<IReadOnlyList<RecommendationOutboxMessage>> ReadRecommendationsAsync(string owner, CancellationToken token = default) =>
         context.ReadAsync<IReadOnlyList<RecommendationOutboxMessage>>(owner, s => s.Publications.Where(p => p.Kind == "recommendation" && p.PublishedAtUtc is null)
             .Take(25).Select(p => new RecommendationOutboxMessage(MapRecommendation(owner, s.Recommendations.Single(r => r.Id == p.ItemId), p), null)).ToArray(), token);
+    public Task<IReadOnlyList<RecommendationOutboxMessage>> ReadRecommendationsBatchAsync(CancellationToken token = default) =>
+        context.WithMaintenanceRecordsAsync<IReadOnlyList<RecommendationOutboxMessage>>(async (records, _) =>
+        {
+            var cursor = await records.GetAsync("insight_outbox_scan", "recommendations-notifications", "recommendations");
+            var after = cursor is null ? null : OwnedRecordCodec.Decode<ScanCursor>(1, cursor).After;
+            var result = new List<RecommendationOutboxMessage>(); var seen = new HashSet<string>(StringComparer.Ordinal); var wrapped = false;
+            for (var page = 0; page < 10 && result.Count < 25; page++)
+            {
+                var owners = await records.ReadPageAsync("insight_owners", "recommendations-notifications", after, 25);
+                if (owners.Count == 0) { after = null; if (wrapped) { break; } wrapped = true; continue; }
+                foreach (var item in owners)
+                {
+                    after = item.Cursor;
+                    var owner = InsightPersistenceContext.DecodeOwnerMarker(new DurableRecord(item.Revision, item.Payload));
+                    if (!seen.Add(owner)) { continue; }
+                    var durable = await records.GetAsync("insight_state", owner, "v1");
+                    if (durable is null) { continue; }
+                    var state = InsightPersistenceValidation.Decode(durable, owner);
+                    result.AddRange(state.Publications.Where(p => p.Kind == "recommendation" && p.PublishedAtUtc is null).Take(25 - result.Count)
+                        .Select(p => new RecommendationOutboxMessage(MapRecommendation(owner, state.Recommendations.Single(r => r.Id == p.ItemId), p), null)));
+                    if (result.Count == 25) { break; }
+                }
+            }
+            var encoded = OwnedRecordCodec.Encode(1, new ScanCursor(after));
+            if (cursor is null) { await records.InsertAsync("insight_outbox_scan", "recommendations-notifications", "recommendations", encoded); }
+            else { await records.ReplaceAsync("insight_outbox_scan", "recommendations-notifications", "recommendations", cursor.Revision, encoded); }
+            return result;
+        }, token);
     public Task<IReadOnlyList<NotificationOutboxMessage>> ReadNotificationsAsync(string owner, CancellationToken token = default) =>
         context.ReadAsync<IReadOnlyList<NotificationOutboxMessage>>(owner, s => s.Publications.Where(p => p.Kind == "notification" && p.PublishedAtUtc is null)
             .Take(25).Select(p => new NotificationOutboxMessage(MapNotification(owner, s.Notifications.Single(n => n.Id == p.ItemId), p), null)).ToArray(), token);
@@ -79,4 +108,5 @@ public sealed class PostgresInsightEventPublisher(InsightPersistenceContext cont
         new("notification-" + n.Id, p.OccurrenceId, NotificationEventTypes.NotificationPrepared, n.PreparedAtUtc,
             "financial-assistant-notification-service", 1, p.CorrelationId, p.CausationId, owner,
             new NotificationPreparedV1(n.Id, n.RecommendationId, n.Currency, n.Channel, n.Template, "prepared", n.PreparedAtUtc));
+    private sealed record ScanCursor([property: JsonRequired] string? After);
 }

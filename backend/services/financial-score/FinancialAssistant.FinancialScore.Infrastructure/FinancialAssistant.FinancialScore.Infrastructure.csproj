@@ -18,5 +18,7 @@
     <ProjectReference Include="../FinancialAssistant.FinancialScore.Domain/FinancialAssistant.FinancialScore.Domain.csproj" />
     <ProjectReference Include="../../../shared/contracts/FinancialAssistant.Shared.Contracts/FinancialAssistant.Shared.Contracts.csproj" />
     <ProjectReference Include="../../../shared/persistence/FinancialAssistant.Shared.Persistence/FinancialAssistant.Shared.Persistence.csproj" />
+    <ProjectReference Include="../../../shared/messaging/FinancialAssistant.Shared.Messaging/FinancialAssistant.Shared.Messaging.csproj" />
+    <ProjectReference Include="../../profile/FinancialAssistant.Profile.Client/FinancialAssistant.Profile.Client.csproj" />
   </ItemGroup>
 </Project>
