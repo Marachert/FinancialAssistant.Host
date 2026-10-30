@@ -1,9 +1,28 @@
 param([Parameter(Mandatory)][string] $ArchivePath,
-    [ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit')][string] $Scenario = 'Foundation')
+    [ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle')][string] $Scenario = 'Foundation',
+    [string] $BrokerFixtureRoot)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+function Write-NewJson([string] $Path, [object] $Value) {
+    $stream = [IO.File]::Open($Path, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
+    try { $bytes = [Text.UTF8Encoding]::new($false).GetBytes(($Value | ConvertTo-Json -Depth 8)); $stream.Write($bytes) }
+    finally { $stream.Dispose() }
+}
 if (-not $IsWindows) { throw 'This fixture uses the Windows PostgreSQL archive, not Docker/WSL.' }
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
+$brokerRoot = $null
+if ($Scenario -eq 'NativeLifecycle') {
+    if (-not $BrokerFixtureRoot) { throw 'Native lifecycle requires an owned broker fixture.' }
+    $broker = Get-Item -LiteralPath ([IO.Path]::GetFullPath($BrokerFixtureRoot)) -ErrorAction Stop
+    $nonce = [guid]::Empty
+    if (-not $broker.PSIsContainer -or -not [guid]::TryParseExact($broker.Name, 'N', [ref]$nonce) -or
+        $broker.Parent.Name -ne 'broker-proof' -or $broker.Parent.Parent.Name -ne '.codex-runtime' -or
+        -not (Test-Path -LiteralPath (Join-Path $broker.FullName 'credentials.json') -PathType Leaf)) { throw 'Invalid owned broker fixture.' }
+    for ($cursor = $broker; $cursor; $cursor = $cursor.Parent) {
+        if ($cursor.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Linked broker fixture is forbidden.' }
+    }
+    $brokerRoot = $broker.FullName
+} elseif ($BrokerFixtureRoot) { throw 'Broker fixture applies only to the native lifecycle scenario.' }
 $archive = [IO.Path]::GetFullPath($ArchivePath)
 if ($archive.Contains('"') -or -not (Test-Path -LiteralPath $archive -PathType Leaf)) { throw 'Invalid archive path.' }
 $manifest = Get-Content -LiteralPath (Join-Path $repo 'infra/windows-native/component-manifest.json') -Raw | ConvertFrom-Json
@@ -21,21 +40,31 @@ $data = Join-Path $run 'data'
 $binaries = Join-Path $run 'pgsql/bin'
 $passwordFile = Join-Path $run 'fixture-password.txt'
 $null = New-Item -ItemType Directory -Path $run
+if ($brokerRoot) {
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent().User
+    $acl = [Security.AccessControl.DirectorySecurity]::new()
+    $acl.SetAccessRuleProtection($true, $false); $acl.SetOwner($identity)
+    $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($identity, 'FullControl', 'ContainerInherit,ObjectInherit', 'None', 'Allow'))
+    Set-Acl -LiteralPath $run -AclObject $acl
+    Write-NewJson (Join-Path $brokerRoot 'financial-postgres-location.json') @{run=$run;startedAt=[datetime]::UtcNow.ToString('o')}
+}
 $started = $false
 $runStarted = [datetime]::UtcNow
 $passed = $false
 $cleanupSucceeded = $false
 $saved = @{}
-foreach ($name in @('FA_PERSISTENCE_TEST_PASSWORD','FA_PERSISTENCE_TEST_PORT','FA_PERSISTENCE_TEST_DIRECTORY','FA_PERSISTENCE_TEST_MODE')) {
+foreach ($name in @('FA_PERSISTENCE_TEST_PASSWORD','FA_PERSISTENCE_TEST_PORT','FA_PERSISTENCE_TEST_DIRECTORY','FA_PERSISTENCE_TEST_MODE','FA_NATIVE_BROKER_FIXTURE_ROOT','FA_NATIVE_LIFECYCLE_REPOSITORY')) {
     $saved[$name] = [Environment]::GetEnvironmentVariable($name)
 }
 function Run-Local([string] $Executable, [string[]] $Arguments, [string] $Label) {
     foreach ($argument in $Arguments) { if ($argument.Contains('"') -or $argument.Contains("`n") -or $argument.Contains("`r")) { throw 'Unsafe process argument.' } }
     $quoted = @($Arguments | ForEach-Object { '"' + $_ + '"' })
     $process = Start-Process -FilePath $Executable -ArgumentList $quoted -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $run "$Label.stdout.log") -RedirectStandardError (Join-Path $run "$Label.stderr.log")
+    $startedAt = $process.StartTime.ToUniversalTime()
     if (-not $process.WaitForExit(120000)) {
-        $process.Kill()
-        $process.WaitForExit()
+        if ($process.StartTime.ToUniversalTime() -ne $startedAt -or $process.Path -ne [IO.Path]::GetFullPath($Executable)) { throw 'Owned fixture process identity changed; refusing termination.' }
+        $process.Kill($true)
+        if (-not $process.WaitForExit(15000)) { throw 'Owned fixture process did not exit after timeout.' }
         throw "Owned fixture process timeout: $Label"
     }
     if ($process.ExitCode -ne 0) { throw "Owned fixture process failed: $Label (exit $($process.ExitCode)). Details retained locally, not printed." }
@@ -70,6 +99,7 @@ try {
     $env:FA_PERSISTENCE_TEST_PORT = [string]$port
     $env:FA_PERSISTENCE_TEST_DIRECTORY = $data
     $env:FA_PERSISTENCE_TEST_MODE = 'initial'
+    if ($brokerRoot) { $env:FA_NATIVE_BROKER_FIXTURE_ROOT = $brokerRoot; $env:FA_NATIVE_LIFECYCLE_REPOSITORY = $repo }
     $project = Join-Path $repo $(if ($Scenario -eq 'Identity') {
         'backend/services/identity/FinancialAssistant.Identity.Persistence.Integration/FinancialAssistant.Identity.Persistence.Integration.csproj'
     } elseif ($Scenario -eq 'ProfileCategory') {
@@ -86,20 +116,24 @@ try {
         'backend/services/financial-score/FinancialAssistant.Insights.Persistence.Integration/FinancialAssistant.Insights.Persistence.Integration.csproj'
     } elseif ($Scenario -eq 'Audit') {
         'backend/services/audit/FinancialAssistant.Audit.Persistence.Integration/FinancialAssistant.Audit.Persistence.Integration.csproj'
+    } elseif ($Scenario -eq 'NativeLifecycle') {
+        'backend/shared/messaging/FinancialAssistant.NativeLifecycle.Integration/FinancialAssistant.NativeLifecycle.Integration.csproj'
     } else {
         'backend/shared/persistence/FinancialAssistant.Shared.Persistence.Integration/FinancialAssistant.Shared.Persistence.Integration.csproj'
     })
     Push-Location $repo
     try {
-        & dotnet run --project $project --no-build --configuration Release
-        if ($LASTEXITCODE -ne 0) { throw 'Initial PostgreSQL integration failed.' }
+        if ($brokerRoot) { Run-Local ((Get-Command dotnet -CommandType Application | Select-Object -First 1).Source) @('run','--project',$project,'--no-build','--configuration','Release') 'financial-initial' }
+        else { & dotnet run --project $project --no-build --configuration Release }
+        if (-not $brokerRoot -and $LASTEXITCODE -ne 0) { throw 'Initial PostgreSQL integration failed.' }
         Run-Local $pgctl @('-D',$data,'-m','immediate','-w','stop') 'crash-stop'
         $started = $false
         Run-Local $pgctl @('-D',$data,'-l',(Join-Path $run 'postgres-restart.log'),'-w','start') 'restart'
         $started = $true
         $env:FA_PERSISTENCE_TEST_MODE = 'restart'
-        & dotnet run --project $project --no-build --configuration Release
-        if ($LASTEXITCODE -ne 0) { throw 'Restart PostgreSQL integration failed.' }
+        if ($brokerRoot) { Run-Local ((Get-Command dotnet -CommandType Application | Select-Object -First 1).Source) @('run','--project',$project,'--no-build','--configuration','Release') 'financial-restart' }
+        else { & dotnet run --project $project --no-build --configuration Release }
+        if (-not $brokerRoot -and $LASTEXITCODE -ne 0) { throw 'Restart PostgreSQL integration failed.' }
         $passed = $true
     } finally { Pop-Location }
 } finally {
@@ -118,7 +152,9 @@ try {
     } finally {
         foreach ($name in $saved.Keys) { [Environment]::SetEnvironmentVariable($name, $saved[$name], 'Process') }
         if (Test-Path -LiteralPath $passwordFile) { Remove-Item -LiteralPath $passwordFile -Force }
-        @{passed=$passed;cleanupSucceeded=$cleanupSucceeded;scenario=$Scenario;installed=$false;releaseReady=$false;fixture=[IO.Path]::GetRelativePath($repo,$run);archiveDigest=$package[0].hash;verifiedAt=[datetime]::UtcNow.ToString('o')} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $run 'result.json') -Encoding utf8NoBOM
+        $result = @{passed=$passed;cleanupSucceeded=$cleanupSucceeded;scenario=$Scenario;installed=$false;releaseReady=$false;fixture=[IO.Path]::GetRelativePath($repo,$run);archiveDigest=$package[0].hash;verifiedAt=[datetime]::UtcNow.ToString('o')}
+        $result | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $run 'result.json') -Encoding utf8NoBOM
+        if ($brokerRoot) { Write-NewJson (Join-Path $brokerRoot 'financial-postgres.json') $result }
     }
 }
 Write-Output 'Owned local PostgreSQL fixture passed and stopped; installed/runtime qualification remains pending.'

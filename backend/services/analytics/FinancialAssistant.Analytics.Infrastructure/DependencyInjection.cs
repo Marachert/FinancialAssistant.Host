@@ -36,6 +36,7 @@ public static class DependencyInjection
             services.AddSingleton<IAnalyticsDailyLimitProvider>(provider => provider.GetRequiredService<PostgresAnalyticsLimitProvider>());
             services.AddSingleton<IAnalyticsLimitProvider>(provider => provider.GetRequiredService<PostgresAnalyticsLimitProvider>());
             services.AddSingleton<AnalyticsFinancialEventMessageHandler>();
+            NativeAnalyticsMessaging.Add(services, configuration);
             services.AddSingleton<OwnedStorageHealthCheck>();
             services.AddHealthChecks().AddCheck<OwnedStorageHealthCheck>("analytics-owned-storage", tags: new[] { "ready" });
             return services;

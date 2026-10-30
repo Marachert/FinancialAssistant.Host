@@ -80,6 +80,15 @@ public sealed class PostgresRecommendationProfileSettingsProvider(InsightPersist
 
 public sealed class PostgresNotificationPreferenceProvider(InsightPersistenceContext context) : INotificationPreferenceProvider
 {
+    // Durable default-deny bootstrap after authorized Profile discovery, never a read fallback.
+    public Task EnsureDisabledIfMissingAsync(string owner, CancellationToken token = default) =>
+        context.MutateAsync(owner, _ =>
+        {
+            if (context.State(owner).Preferences is null)
+            { context.SetPreferences(InsightPreferenceState.From(new NotificationPreferences(false, false))); }
+            return Task.FromResult(true);
+        }, token);
+
     public Task<NotificationPreferences> GetAsync(string userIdHash, CancellationToken cancellationToken) =>
         context.ReadAsync(userIdHash, state => state.Preferences?.ToDomain() ?? throw new StorageUnavailableException(), cancellationToken);
 

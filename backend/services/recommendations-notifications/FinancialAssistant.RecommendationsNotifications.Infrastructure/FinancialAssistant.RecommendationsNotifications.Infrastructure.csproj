@@ -10,6 +10,8 @@
   <ItemGroup>
     <InternalsVisibleTo Include="FinancialAssistant.RecommendationsNotifications.Tests" />
     <ProjectReference Include="../../../shared/persistence/FinancialAssistant.Shared.Persistence/FinancialAssistant.Shared.Persistence.csproj" />
+    <ProjectReference Include="../../../shared/messaging/FinancialAssistant.Shared.Messaging/FinancialAssistant.Shared.Messaging.csproj" />
+    <ProjectReference Include="../../profile/FinancialAssistant.Profile.Client/FinancialAssistant.Profile.Client.csproj" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="RabbitMQ.Client" Version="7.2.1" />
   </ItemGroup>

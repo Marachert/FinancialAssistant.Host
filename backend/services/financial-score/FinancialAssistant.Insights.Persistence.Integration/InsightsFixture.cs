@@ -71,6 +71,10 @@ try
     await ScoreFixture.VerifyAsync(scoreSettings, admin, mode);
     stage = "atomic Recommendation Notification preference and publication recovery";
     await RecommendationFixture.VerifyAsync(insightSettings, admin, mode);
+    stage = "native causal insight and trigger admission";
+    await NativeInsightOrderFixture.VerifyAsync(insightSettings, mode);
+    stage = "native bounded recommendation outbox discovery";
+    await NativeInsightOutboxFixture.VerifyAsync(insightSettings, mode);
     stage = "separate Score and Recommendation runtime role isolation";
     foreach (var pair in new[] { (identities[0], identities[1]), (identities[1], identities[0]) })
     {
@@ -90,8 +94,10 @@ try
     Console.WriteLine("PASS Insights PostgreSQL mode=" + mode + ": separate Score and Recommendation/Notification roles, atomic owned state/settings/preferences/outbox and recovery. Actual transport, provider delivery and installed acceptance remain unqualified.");
     return 0;
 }
-catch
+catch (Exception exception)
 {
+    if (stage == "native causal insight and trigger admission")
+    { Console.Error.WriteLine("Native insight fixture gate=" + NativeInsightOrderFixture.Gate + "; type=" + exception.GetType().Name); }
     Console.Error.WriteLine("FAIL Insights PostgreSQL at " + stage + ". Sensitive details suppressed.");
     return 1;
 }

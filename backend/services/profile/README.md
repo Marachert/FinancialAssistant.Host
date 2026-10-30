@@ -37,6 +37,17 @@ GET  /health/ready
 
 The public profile routes expect the API Gateway to forward a trusted `X-Gateway-User-Id` header after authentication. The internal registration event creates the default profile after `user.registered.v1`.
 
+### Native Financial Readers
+
+The opt-in Windows-native profile additionally exposes
+`POST /internal/profile/financial-settings` to explicitly configured Analytics,
+Financial Score and Recommendations/Notifications readers. It accepts an owner
+hash and returns only authoritative financial/privacy/onboarding preferences with
+the durable Profile revision and observation time. Distinct scoped reader secrets
+do not authorize public Profile routes or another reader. The endpoint is disabled
+unless all required reader configuration is present; it has no budget fallback.
+See [native lifecycle configuration and qualification](../../../docs/engineering/native-lifecycle-delivery.md).
+
 ## Defaults
 
 New profiles start with:

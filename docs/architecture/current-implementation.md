@@ -7,6 +7,15 @@ this page describes capability boundaries, not deployed-environment acceptance.
 
 ## Capability Map
 
+FIN-276 working implementation adds opt-in native RabbitMQ producer/outbox and
+consumer/inbox workers for confirmed financial changes through Analytics, Score,
+Recommendation preparation and minimized Audit, plus scoped Profile HTTP input.
+Actual synthetic financial convergence/crash/restart/replay passed locally,
+including the repository-owned runner, without manual projector or provider calls.
+This work is not yet merged or credited; the merged baseline and installed/
+first-user gates below remain distinct. See the
+[native lifecycle evidence and limitations](../engineering/native-lifecycle-delivery.md).
+
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
 supersedes the Compose POC target. FIN-270 is implementation work: no WPF
 installer or accepted native Windows runtime is claimed by this document.

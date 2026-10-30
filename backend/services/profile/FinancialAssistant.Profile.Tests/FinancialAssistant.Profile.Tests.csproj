@@ -22,6 +22,7 @@
     <ProjectReference Include="../FinancialAssistant.Profile.Api/FinancialAssistant.Profile.Api.csproj" />
     <ProjectReference Include="../FinancialAssistant.Profile.Application/FinancialAssistant.Profile.Application.csproj" />
     <ProjectReference Include="../FinancialAssistant.Profile.Contracts/FinancialAssistant.Profile.Contracts.csproj" />
+    <ProjectReference Include="../FinancialAssistant.Profile.Client/FinancialAssistant.Profile.Client.csproj" />
     <ProjectReference Include="../FinancialAssistant.Profile.Domain/FinancialAssistant.Profile.Domain.csproj" />
     <ProjectReference Include="../FinancialAssistant.Profile.Infrastructure/FinancialAssistant.Profile.Infrastructure.csproj" />
   </ItemGroup>
