@@ -21,6 +21,14 @@ It does not own identity/profile persistence, transaction or receipt business lo
 
 ## Technical endpoints
 
+In `WindowsNative`, FIN-207's [opt-in direct HTTPS
+perimeter](../../../../docs/engineering/windows-native-https.md) keeps these
+diagnostics on the canonical loopback listener only; HTTPS returns 404 for root,
+health, gateway diagnostics and metrics. It rejects spoofed forwarding headers,
+requires the configured Host/SNI and an approved machine certificate, and retains
+normal JWT/admin authorization. No public listener opens by default. Installer
+integration and approved-host acceptance are still pending, not granted by tests.
+
 ```text
 GET /
 GET /health
@@ -90,6 +98,7 @@ The gateway forwards payloads without adding domain transformations.
 | destination missing or disabled | 503 | `destination_unavailable` |
 | downstream transport failure | 503 | `destination_unavailable` |
 | downstream timeout | 504 | `destination_timeout` |
+| request body exceeds its limit, including streamed/proxied input | 413 | `request_body_too_large` |
 
 Public errors do not include internal destination keys, internal hosts, service implementation metadata, request bodies, credentials, transaction input, receipt text, OCR content, or LLM content.
 

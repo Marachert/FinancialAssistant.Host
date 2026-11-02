@@ -60,6 +60,7 @@ public static class WindowsNativeGatewayProfile
         }
 
         Apply(builder.Configuration);
+        builder.AddNativeHttpsPerimeter();
         builder.Services.AddHttpClient(NativeGatewayReadinessHealthCheck.ClientName, client =>
             client.Timeout = TimeSpan.FromSeconds(2))
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });

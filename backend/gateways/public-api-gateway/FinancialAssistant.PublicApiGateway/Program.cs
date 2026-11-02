@@ -38,6 +38,8 @@ var app = builder.Build();
 
 _ = app.Services.GetRequiredService<GatewayAccessTokenValidator>();
 
+app.UseNativeHttpsPerimeter();
+
 app.UseMiddleware<CorrelationMiddleware>();
 app.UseMiddleware<GatewayExceptionMiddleware>();
 app.UseMiddleware<GatewayRateLimitMiddleware>();

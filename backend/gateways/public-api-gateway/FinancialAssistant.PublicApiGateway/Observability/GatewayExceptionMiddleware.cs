@@ -23,6 +23,10 @@ public sealed class GatewayExceptionMiddleware
         {
             await next(context);
         }
+        catch (Exception exception) when (GatewayRequestBodyErrors.IsTooLarge(exception))
+        {
+            await GatewayRequestBodyErrors.RejectTooLargeAsync(context);
+        }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
         {
             GatewayOperationalLog.ClientRequestCancelled(logger);

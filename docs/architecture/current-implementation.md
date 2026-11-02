@@ -31,6 +31,7 @@ installer or accepted native Windows runtime is claimed by this document.
 | Area | Implemented repository baseline | Separate target or runtime gate |
 | --- | --- | --- |
 | Gateway | REST routing, JWT/role checks, exact public allowlist, trusted context, rate limits and safe errors | Route activation and destinations are environment-controlled; not every handler is enabled by repository defaults |
+| Native HTTPS perimeter | FIN-207 [opt-in direct Kestrel TLS contract](../engineering/windows-native-https.md), pinned machine-certificate/private-key policy, header/Host/private-endpoint boundaries and free loopback TLS tests | FIN-207 remains open: FIN-278 integration, actual service certificate/firewall and approved-host acceptance are pending; no completion credit or public exposure |
 | Identity/Profile/Category | Deterministic authentication/session/provider-validation handlers, profile preferences and taxonomy | Stable secrets, durable stores and real provider configuration; phone delivery adapter is disabled by default |
 | Intake/Receipt/AI | Editable drafts, review/reject/confirm, receipt/OCR processing and controlled provider abstractions | Approved provider budgets, privacy configuration and end-to-end hosted operation |
 | Income/Expense | Separate native PostgreSQL authoritative records, atomic minimized outbox, immutable confirmation replay and lifecycle contracts | Financial delivery FIN-276 and scoped database recovery FIN-286 verified; installed and full backup/restore acceptance remain |

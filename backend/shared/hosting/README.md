@@ -19,8 +19,11 @@ SCM content roots are the published executable directory, never System32.
 The native profile owns the canonical IPv4 loopback ports in
 [`NativeServiceCatalog`](FinancialAssistant.Shared.Hosting/NativeServiceCatalog.cs).
 Explicit conflicting URLs and arbitrary Kestrel endpoint sections fail before
-startup. FIN-207 adds the reviewed HTTPS perimeter; this profile exposes nothing
-to remote clients. Native startup requires explicit stable secrets, named in the
+startup. FIN-207's [opt-in HTTPS perimeter](../../../docs/engineering/windows-native-https.md)
+adds a separately approved direct-Kestrel listener; the default profile exposes
+nothing to remote clients. This code is not FIN-278 integration or approved-host
+acceptance; missing native HTTPS remains an unhealthy readiness condition.
+Native startup requires explicit stable secrets, named in the
 catalog: 32-256 printable, non-whitespace ASCII characters. Missing/invalid values
 fail with configuration key names only. No secrets are generated or logged.
 FIN-208 supplies protected configuration/secret references and per-service ACLs;
