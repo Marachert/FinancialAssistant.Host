@@ -12,6 +12,12 @@ Actual synthetic financial crash/restart/replay passed locally without manual
 projector/provider calls. PR295 actually merged as `d142b075dced5847da8f12f9d237763e50d06e2c`.
 This does not make the inventory, service installation or first-user POC release-ready.
 
+FIN-286 is in progress with a [repeatable native persistence matrix and owner
+crosswalk](../../docs/engineering/native-persistence-qualification.md). It builds
+the current checkout and requires structured initial/crash/restart/cleanup evidence
+for all nine PostgreSQL scenarios. No installed qualification or completion credit
+is inferred from its implementation.
+
 FIN-273's [hosting contract](../../backend/shared/hosting/README.md) documents the
 native process profile, canonical service ports, required trust and non-executing
 SCM plan. Its publish script creates explicitly unqualified win-x64 candidates,

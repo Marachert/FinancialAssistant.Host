@@ -1,6 +1,7 @@
 param([Parameter(Mandatory)][string] $ArchivePath,
     [ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle')][string] $Scenario = 'Foundation',
-    [string] $BrokerFixtureRoot)
+    [string] $BrokerFixtureRoot,
+    [string] $ResultFile)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 function Write-NewJson([string] $Path, [object] $Value) {
@@ -10,6 +11,18 @@ function Write-NewJson([string] $Path, [object] $Value) {
 }
 if (-not $IsWindows) { throw 'This fixture uses the Windows PostgreSQL archive, not Docker/WSL.' }
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
+if ($ResultFile) {
+    $ResultFile = [IO.Path]::GetFullPath($ResultFile)
+    $parent = Get-Item -LiteralPath ([IO.Path]::GetDirectoryName($ResultFile)) -ErrorAction Stop
+    $nonce = [guid]::Empty
+    if (-not $parent.PSIsContainer -or -not [guid]::TryParseExact($parent.Name,'N',[ref]$nonce) -or
+        $parent.Parent.FullName -ne (Join-Path $repo '.codex-runtime/persistence-qualification') -or
+        [IO.Path]::GetFileName($ResultFile) -ne ($Scenario.ToLowerInvariant() + '.json') -or
+        (Test-Path -LiteralPath $ResultFile)) { throw 'Invalid owned qualification result target.' }
+    for ($cursor = $parent; $cursor; $cursor = $cursor.Parent) {
+        if ($cursor.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Linked qualification target is forbidden.' }
+    }
+}
 $brokerRoot = $null
 if ($Scenario -eq 'NativeLifecycle') {
     if (-not $BrokerFixtureRoot) { throw 'Native lifecycle requires an owned broker fixture.' }
@@ -40,18 +53,19 @@ $data = Join-Path $run 'data'
 $binaries = Join-Path $run 'pgsql/bin'
 $passwordFile = Join-Path $run 'fixture-password.txt'
 $null = New-Item -ItemType Directory -Path $run
-if ($brokerRoot) {
-    $identity = [Security.Principal.WindowsIdentity]::GetCurrent().User
-    $acl = [Security.AccessControl.DirectorySecurity]::new()
-    $acl.SetAccessRuleProtection($true, $false); $acl.SetOwner($identity)
-    $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($identity, 'FullControl', 'ContainerInherit,ObjectInherit', 'None', 'Allow'))
-    Set-Acl -LiteralPath $run -AclObject $acl
-    Write-NewJson (Join-Path $brokerRoot 'financial-postgres-location.json') @{run=$run;startedAt=[datetime]::UtcNow.ToString('o')}
-}
+$identity = [Security.Principal.WindowsIdentity]::GetCurrent().User
+$acl = [Security.AccessControl.DirectorySecurity]::new()
+$acl.SetAccessRuleProtection($true, $false); $acl.SetOwner($identity)
+$acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($identity, 'FullControl', 'ContainerInherit,ObjectInherit', 'None', 'Allow'))
+Set-Acl -LiteralPath $run -AclObject $acl
+if ($brokerRoot) { Write-NewJson (Join-Path $brokerRoot 'financial-postgres-location.json') @{run=$run;startedAt=[datetime]::UtcNow.ToString('o')} }
 $started = $false
 $runStarted = [datetime]::UtcNow
 $passed = $false
 $cleanupSucceeded = $false
+$interrupted = $null
+$interruptedStarted = $null
+$interruptedTransactionRecovered = $false
 $saved = @{}
 foreach ($name in @('FA_PERSISTENCE_TEST_PASSWORD','FA_PERSISTENCE_TEST_PORT','FA_PERSISTENCE_TEST_DIRECTORY','FA_PERSISTENCE_TEST_MODE','FA_NATIVE_BROKER_FIXTURE_ROOT','FA_NATIVE_LIFECYCLE_REPOSITORY')) {
     $saved[$name] = [Environment]::GetEnvironmentVariable($name)
@@ -123,28 +137,58 @@ try {
     })
     Push-Location $repo
     try {
-        if ($brokerRoot) { Run-Local ((Get-Command dotnet -CommandType Application | Select-Object -First 1).Source) @('run','--project',$project,'--no-build','--configuration','Release') 'financial-initial' }
-        else { & dotnet run --project $project --no-build --configuration Release }
-        if (-not $brokerRoot -and $LASTEXITCODE -ne 0) { throw 'Initial PostgreSQL integration failed.' }
+        $dotnet = (Get-Command dotnet -CommandType Application | Select-Object -First 1).Source
+        Run-Local $dotnet @('run','--project',$project,'--no-build','--configuration','Release') 'financial-initial'
+        if ($Scenario -eq 'Foundation') {
+            $env:FA_PERSISTENCE_TEST_MODE = 'interrupt'
+            if ($project.Contains('"')) { throw 'Unsafe integration project path.' }
+            $interrupted = Start-Process -FilePath $dotnet -ArgumentList @('run','--project',('"' + $project + '"'),'--no-build','--configuration','Release') -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $run 'interrupted.stdout.log') -RedirectStandardError (Join-Path $run 'interrupted.stderr.log')
+            $interruptedStarted = $interrupted.StartTime.ToUniversalTime()
+            $deadline = [datetime]::UtcNow.AddSeconds(8)
+            while (-not (Test-Path -LiteralPath (Join-Path $run 'interrupted-ready'))) {
+                if ($interrupted.HasExited -or [datetime]::UtcNow -ge $deadline) { throw 'Live interrupted transaction did not become ready before its deadline.' }
+                Start-Sleep -Milliseconds 50
+            }
+        }
         Run-Local $pgctl @('-D',$data,'-m','immediate','-w','stop') 'crash-stop'
         $started = $false
+        if ($interrupted) {
+            if (-not $interrupted.WaitForExit(15000) -or $interrupted.ExitCode -ne 0) { throw 'Live interrupted transaction did not observe the database crash.' }
+        }
         Run-Local $pgctl @('-D',$data,'-l',(Join-Path $run 'postgres-restart.log'),'-w','start') 'restart'
         $started = $true
         $env:FA_PERSISTENCE_TEST_MODE = 'restart'
-        if ($brokerRoot) { Run-Local ((Get-Command dotnet -CommandType Application | Select-Object -First 1).Source) @('run','--project',$project,'--no-build','--configuration','Release') 'financial-restart' }
-        else { & dotnet run --project $project --no-build --configuration Release }
-        if (-not $brokerRoot -and $LASTEXITCODE -ne 0) { throw 'Restart PostgreSQL integration failed.' }
+        Run-Local $dotnet @('run','--project',$project,'--no-build','--configuration','Release') 'financial-restart'
+        $interruptedTransactionRecovered = $Scenario -eq 'Foundation'
         $passed = $true
     } finally { Pop-Location }
 } finally {
     try {
+        $probeCleanupSucceeded = $true
+        try {
+            if ($interrupted -and -not $interrupted.HasExited) {
+                if ($interrupted.Path -ne $dotnet -or $interrupted.StartTime.ToUniversalTime() -ne $interruptedStarted) { throw 'Interrupted probe ownership changed; refusing termination.' }
+                $interrupted.Kill($true)
+                if (-not $interrupted.WaitForExit(15000)) { throw 'Interrupted probe did not stop.' }
+            }
+        } catch { $probeCleanupSucceeded = $false }
         $pidFile = Join-Path $data 'postmaster.pid'
         if ($started -or (Test-Path -LiteralPath $pidFile)) {
             if (-not (Test-Path -LiteralPath $pidFile)) { throw 'Owned PostgreSQL PID file missing; no foreign process will be stopped.' }
-            $serverProcess = Get-Process -Id ([int](Get-Content -LiteralPath $pidFile -TotalCount 1)) -ErrorAction Stop
-            if ($serverProcess.Path -ne (Join-Path $binaries 'postgres.exe') -or $serverProcess.StartTime.ToUniversalTime() -lt $runStarted) { throw 'PostgreSQL process ownership mismatch; refusing cleanup.' }
-            Run-Local (Join-Path $binaries 'pg_ctl.exe') @('-D',$data,'-m','fast','-w','stop') 'cleanup-stop'
+            $serverPid = [int](Get-Content -LiteralPath $pidFile -TotalCount 1)
+            if ($serverPid -le 0) {
+                # initdb's single-user bootstrap marker is not a server PID.
+                if ($started) { throw 'Started PostgreSQL has an invalid server PID.' }
+                foreach ($candidate in @(Get-Process -Name postgres -ErrorAction SilentlyContinue)) {
+                    if (-not $candidate.Path -or $candidate.Path -eq (Join-Path $binaries 'postgres.exe')) { throw 'Cannot confirm failed bootstrap process cleanup.' }
+                }
+            } else {
+                $serverProcess = Get-Process -Id $serverPid -ErrorAction Stop
+                if ($serverProcess.Path -ne (Join-Path $binaries 'postgres.exe') -or $serverProcess.StartTime.ToUniversalTime() -lt $runStarted) { throw 'PostgreSQL process ownership mismatch; refusing cleanup.' }
+                Run-Local (Join-Path $binaries 'pg_ctl.exe') @('-D',$data,'-m','fast','-w','stop') 'cleanup-stop'
+            }
         }
+        if (-not $probeCleanupSucceeded) { throw 'Interrupted probe cleanup failed; PostgreSQL cleanup was still attempted.' }
         $cleanupSucceeded = $true
     } catch {
         $passed = $false
@@ -153,7 +197,9 @@ try {
         foreach ($name in $saved.Keys) { [Environment]::SetEnvironmentVariable($name, $saved[$name], 'Process') }
         if (Test-Path -LiteralPath $passwordFile) { Remove-Item -LiteralPath $passwordFile -Force }
         $result = @{passed=$passed;cleanupSucceeded=$cleanupSucceeded;scenario=$Scenario;installed=$false;releaseReady=$false;fixture=[IO.Path]::GetRelativePath($repo,$run);archiveDigest=$package[0].hash;verifiedAt=[datetime]::UtcNow.ToString('o')}
+        $result.interruptedTransactionRecovered = $interruptedTransactionRecovered
         $result | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $run 'result.json') -Encoding utf8NoBOM
+        if ($ResultFile) { Write-NewJson $ResultFile $result }
         if ($brokerRoot) { Write-NewJson (Join-Path $brokerRoot 'financial-postgres.json') $result }
     }
 }

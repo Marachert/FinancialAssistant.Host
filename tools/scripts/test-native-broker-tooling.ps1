@@ -1,7 +1,7 @@
 param()
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-$names = @('prepare-native-broker-fixture.ps1','test-native-erlang.ps1','test-native-broker.ps1','test-owned-postgres.ps1')
+$names = @('prepare-native-broker-fixture.ps1','test-native-erlang.ps1','test-native-broker.ps1','test-owned-postgres.ps1','test-native-persistence.ps1')
 $sources = @{}
 foreach ($name in $names) {
     $path = Join-Path $PSScriptRoot $name
@@ -38,4 +38,9 @@ Require 'test-owned-postgres.ps1' '[IO.FileMode]::CreateNew'
 Require 'test-owned-postgres.ps1' '$serverProcess.Path -ne'
 Require 'test-owned-postgres.ps1' "'-m','immediate'"
 Require 'test-owned-postgres.ps1' 'cleanupSucceeded=$cleanupSucceeded'
+Require 'test-owned-postgres.ps1' 'Invalid owned qualification result target.'
+Require 'test-owned-postgres.ps1' 'SetAccessRuleProtection($true, $false)'
+Require 'test-native-persistence.ps1' 'Scenario evidence missing; console success is insufficient.'
+Require 'test-native-persistence.ps1' 'Incomplete persistence matrix is not a pass.'
+Require 'test-native-persistence.ps1' '[IO.FileMode]::CreateNew'
 Write-Output 'Native broker tooling structural guards passed. Runtime recovery is qualified only by actual isolated fixture results.'

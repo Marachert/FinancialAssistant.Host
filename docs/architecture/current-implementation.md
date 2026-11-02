@@ -17,6 +17,11 @@ completion is 196/215 (91.2%), P9 20/39 (51.3%), FIN-270 14/19 open.
 Installed and first-user gates below remain distinct. See the
 [native lifecycle evidence and limitations](../engineering/native-lifecycle-delivery.md).
 
+FIN-286 is currently implementing the [full native persistence qualification
+matrix](../engineering/native-persistence-qualification.md), including a live
+uncommitted domain/outbox interruption probe. Its completion is not yet credited;
+local synthetic database evidence cannot grant installed or first-user acceptance.
+
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
 supersedes the Compose POC target. FIN-270 is implementation work: no WPF
 installer or accepted native Windows runtime is claimed by this document.

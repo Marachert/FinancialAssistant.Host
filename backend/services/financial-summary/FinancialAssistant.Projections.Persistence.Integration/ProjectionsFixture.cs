@@ -102,6 +102,8 @@ try
 catch
 {
     Console.Error.WriteLine("FAIL Projections PostgreSQL at " + stage + ". Sensitive details suppressed.");
+    if (stage == "bounded maximum projection generation capacity")
+    { Console.Error.WriteLine("Capacity fixture phase: " + ProjectionCapacityFixture.Stage); }
     return 1;
 }
 
