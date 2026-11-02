@@ -3,6 +3,8 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using FinancialAssistant.PublicApiGateway.Observability;
+using FinancialAssistant.PublicApiGateway.Routing;
 using FinancialAssistant.PublicApiGateway.Security;
 using FinancialAssistant.Shared.Hosting;
 using Microsoft.AspNetCore.Builder;
@@ -10,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FinancialAssistant.PublicApiGateway.Tests;
 
@@ -87,14 +90,60 @@ public sealed class NativeHttpsTransportTests
         }
     }
 
-    private static WebApplication Build(NativeHttpsTestCertificates certs, int port)
+    [Fact]
+    public async Task ActualTlsProxiedChunkedUploadReturns413WithoutCommittingDownstream()
+    {
+        var downstreamPort = Port();
+        var downstreamBuilder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Testing" });
+        downstreamBuilder.Logging.ClearProviders();
+        downstreamBuilder.WebHost.ConfigureKestrel(options => options.Listen(IPAddress.Loopback, downstreamPort));
+        await using var downstream = downstreamBuilder.Build();
+        var completedUploads = 0;
+        downstream.MapPost("/proxied", async (HttpContext context) =>
+        {
+            await context.Request.Body.CopyToAsync(Stream.Null, context.RequestAborted);
+            Interlocked.Increment(ref completedUploads);
+            return "synthetic-complete";
+        });
+        await downstream.StartAsync();
+        using var certs = new NativeHttpsTestCertificates();
+        var port = Port();
+        await using var app = Build(certs, port, $"http://127.0.0.1:{downstreamPort}");
+        await app.StartAsync();
+        using var client = Client(certs.Root, port);
+        using var oversized = await client.PostAsync("/proxied", new UnknownLengthContent());
+        Assert.Equal(HttpStatusCode.RequestEntityTooLarge, oversized.StatusCode);
+        Assert.True(oversized.Headers.ConnectionClose);
+        var problem = await oversized.Content.ReadAsStringAsync();
+        Assert.Contains("request_body_too_large", problem);
+        Assert.DoesNotContain("127.0.0.1", problem);
+        Assert.Equal(0, Volatile.Read(ref completedUploads));
+        using var accepted = await client.PostAsync("/proxied", new ByteArrayContent(new byte[65536]));
+        Assert.Equal(HttpStatusCode.OK, accepted.StatusCode);
+        Assert.Equal("synthetic-complete", await accepted.Content.ReadAsStringAsync());
+        Assert.Equal(1, Volatile.Read(ref completedUploads));
+        await app.StopAsync();
+        await downstream.StopAsync();
+    }
+
+    private static WebApplication Build(NativeHttpsTestCertificates certs, int port, string? downstreamAddress = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Testing" });
         builder.Logging.ClearProviders();
         builder.Services.AddSingleton<INativeHttpsCertificateSource>(new SyntheticHttpsCertificateSource(certs.Leaf));
         NativeHttpsPerimeter.Configure(builder, certs.Plan(port, 65536));
+        if (downstreamAddress is not null)
+        {
+            builder.Services.AddSingleton(new GatewayDestinationCatalog(Options.Create(new GatewayDestinationMapOptions
+            {
+                Destinations = [new() { DestinationKey = "synthetic-service", BaseAddress = downstreamAddress, Enabled = true }]
+            })));
+            builder.Services.AddHttpClient<GatewayRequestDispatcher>()
+                .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { UseProxy = false, AllowAutoRedirect = false });
+        }
         var app = builder.Build();
         app.UseNativeHttpsPerimeter();
+        app.UseMiddleware<GatewayExceptionMiddleware>();
         app.MapGet("/visible", () => "synthetic-ok");
         app.MapPost("/visible", async (HttpContext context) =>
         {
@@ -103,6 +152,20 @@ public sealed class NativeHttpsTransportTests
         });
         app.MapGet("/health/ready", () => "synthetic-private");
         app.MapGet("/gateway/status", () => "synthetic-private");
+        if (downstreamAddress is not null)
+        {
+            app.MapPost("/proxied", (HttpContext context, GatewayRequestDispatcher dispatcher) => dispatcher.DispatchAsync(context,
+                new GatewayRouteDefinition
+                {
+                    RouteKey = "synthetic-proxy",
+                    PublicPattern = "/proxied",
+                    ServiceOwner = "Synthetic Service",
+                    InternalDestination = "synthetic-service",
+                    AccessPolicy = "public",
+                    Status = GatewayRouteStatuses.Active,
+                    Methods = ["POST"]
+                }));
+        }
         return app;
     }
 

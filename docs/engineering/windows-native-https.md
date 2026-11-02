@@ -72,6 +72,10 @@ requests carry seven-day HSTS, without preload or includeSubDomains.
 Known-oversized HTTP/1 uploads return 413 with `Connection: close`, so clients do
 not reuse a connection whose unread body cannot be drained. Body limits also
 apply while reading chunked requests; valid uploads at the limit remain accepted.
+The dispatcher and exception boundary preserve direct or wrapped local body-limit
+exceptions as a sanitized `413 request_body_too_large`, not destination503 or
+internal500. HTTP/2 never receives the HTTP/1-only Connection header. If a response
+has already started, the connection is aborted rather than appending an error body.
 
 ## Certificate And Private Key
 
@@ -152,7 +156,10 @@ synthetic issued certificates and process-local custom-root trust. They verify
 TLS requests, HSTS, forged forwarding metadata, independent HTTP Host rejection,
 private diagnostics, body limits, untrusted root/unknown SNI failures and restart
 renewal to a different valid leaf. Client trust checks are not bypassed. Synthetic
-client revocation is disabled only in this fixture; production uses offline
+proxy coverage uses the production dispatcher and exception middleware against an
+owned loopback receiver: an oversized chunked upload must return413 without a
+completed downstream write, then an exact-limit valid upload must succeed.
+Synthetic client revocation is disabled only in this fixture; production uses offline
 revocation. Schannel needs a temporary persisted fixture key: an in-memory PFX
 default import removes that key when disposed, never changes a certificate/trust
 store, and clears exported bytes. No fixture is a release certificate.

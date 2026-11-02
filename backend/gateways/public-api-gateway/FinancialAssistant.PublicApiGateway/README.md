@@ -98,6 +98,7 @@ The gateway forwards payloads without adding domain transformations.
 | destination missing or disabled | 503 | `destination_unavailable` |
 | downstream transport failure | 503 | `destination_unavailable` |
 | downstream timeout | 504 | `destination_timeout` |
+| request body exceeds its limit, including streamed/proxied input | 413 | `request_body_too_large` |
 
 Public errors do not include internal destination keys, internal hosts, service implementation metadata, request bodies, credentials, transaction input, receipt text, OCR content, or LLM content.
 

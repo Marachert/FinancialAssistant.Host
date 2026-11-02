@@ -108,6 +108,10 @@ public sealed class GatewayRequestDispatcher
                 timeout.Token);
             await CopyResponseAsync(context, responseMessage, timeout.Token);
         }
+        catch (Exception exception) when (GatewayRequestBodyErrors.IsTooLarge(exception))
+        {
+            await GatewayRequestBodyErrors.RejectTooLargeAsync(context);
+        }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
         {
             GatewayOperationalLog.DispatchCancelled(logger, route.RouteKey);

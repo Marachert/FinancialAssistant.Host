@@ -2,6 +2,7 @@ using System.Net;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using FinancialAssistant.PublicApiGateway.Observability;
 using FinancialAssistant.Shared.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -126,9 +127,7 @@ public static class NativeHttpsPerimeter
             { context.Response.StatusCode = StatusCodes.Status404NotFound; return; }
             if (context.Request.ContentLength > plan.MaximumRequestBodyBytes)
             {
-                // Kestrel cannot drain an oversized body; prevent reuse of that HTTP/1 connection.
-                if (context.Request.Protocol is "HTTP/1.0" or "HTTP/1.1") { context.Response.Headers.Connection = "close"; }
-                context.Response.StatusCode = StatusCodes.Status413PayloadTooLarge;
+                await GatewayRequestBodyErrors.RejectTooLargeAsync(context);
                 return;
             }
             var limit = context.Features.Get<IHttpMaxRequestBodySizeFeature>();

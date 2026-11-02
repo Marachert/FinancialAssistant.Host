@@ -10,6 +10,32 @@ namespace FinancialAssistant.PublicApiGateway.Tests;
 
 public sealed class GatewayExceptionMiddlewareTests
 {
+    [Theory]
+    [InlineData(false, "HTTP/1.1")]
+    [InlineData(true, "HTTP/1.1")]
+    [InlineData(true, "HTTP/2")]
+    public async Task BodyLimitError_DirectOrWrapped_RemainsSafe413(bool wrapped, string protocol)
+    {
+        const string sensitive = "synthetic-private-body-and-token";
+        var limit = new BadHttpRequestException(sensitive, StatusCodes.Status413PayloadTooLarge);
+        Exception failure = wrapped ? new HttpRequestException(sensitive, new IOException(sensitive, limit)) : limit;
+        var middleware = new GatewayExceptionMiddleware(_ => throw failure, NullLogger<GatewayExceptionMiddleware>.Instance);
+        var context = new DefaultHttpContext();
+        context.Request.Protocol = protocol;
+        context.Response.Body = new MemoryStream();
+        context.Items[CorrelationHeaders.ContextItemKey] = "synthetic-correlation-id";
+        await middleware.InvokeAsync(context);
+        var body = await ReadBodyAsync(context);
+        Assert.Equal(StatusCodes.Status413PayloadTooLarge, context.Response.StatusCode);
+        Assert.Equal("application/problem+json", context.Response.ContentType);
+        Assert.Equal("no-store", context.Response.Headers.CacheControl);
+        if (protocol == "HTTP/1.1") { Assert.Equal("close", context.Response.Headers.Connection); }
+        else { Assert.False(context.Response.Headers.ContainsKey("Connection")); }
+        Assert.Contains("request_body_too_large", body);
+        Assert.Contains("synthetic-correlation-id", body);
+        Assert.DoesNotContain(sensitive, body);
+    }
+
     [Fact]
     public async Task UnhandledException_ReturnsSafeProblemWithoutSensitiveValues()
     {
@@ -36,8 +62,10 @@ public sealed class GatewayExceptionMiddlewareTests
         Assert.DoesNotContain("999.99", body, StringComparison.Ordinal);
     }
 
-    [Fact]
-    public async Task UnhandledException_AfterResponseStarted_AbortsWithoutRethrowingSensitiveException()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UnhandledException_AfterResponseStarted_AbortsWithoutRethrowingSensitiveException(bool bodyLimit)
     {
         const string sensitiveMessage = "provider-token=synthetic-secret raw-note=private-text";
         var responseFeature = new StartedResponseFeature();
@@ -47,7 +75,7 @@ public sealed class GatewayExceptionMiddlewareTests
         features.Set<IHttpRequestLifetimeFeature>(lifetimeFeature);
         var context = new DefaultHttpContext(features);
         var middleware = new GatewayExceptionMiddleware(
-            _ => throw new InvalidOperationException(sensitiveMessage),
+            _ => throw (bodyLimit ? new BadHttpRequestException(sensitiveMessage, StatusCodes.Status413PayloadTooLarge) : new InvalidOperationException(sensitiveMessage)),
             NullLogger<GatewayExceptionMiddleware>.Instance);
 
         var exception = await Record.ExceptionAsync(() => middleware.InvokeAsync(context));
