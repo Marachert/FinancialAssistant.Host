@@ -9,6 +9,8 @@ using FinancialAssistant.Shared.Persistence;
 
 internal static class ProjectionCapacityFixture
 {
+    public static string Stage { get; private set; } = "not started";
+
     public static async Task VerifyAsync(NativePostgresSettings summarySettings, NativePostgresSettings analyticsSettings, string mode)
     {
         using var summaryProtection = summarySettings.CreateProtection();
@@ -23,16 +25,23 @@ internal static class ProjectionCapacityFixture
         {
             var request = new SummaryRebuildRequest(owner, day, day, "synthetic-capacity-v1", time, 1000,
                 PostgresFinancialSummaryReadModelStore.CalculateSourceDigest(summarySource));
+            Stage = "Summary begin";
             var job = await summary.BeginRebuildAsync(request);
+            Stage = "Summary stage ten pages";
             for (var page = 0; page < 10; page++) { await summary.StageRebuildPageAsync(owner, job.JobKey, page, summarySource.Skip(page * 100).Take(100).ToArray()); }
+            Stage = "Summary atomic commit";
             await summary.CommitRebuildAsync(owner, job.JobKey);
+            Stage = "Summary cleanup";
             Check(!(await summary.CleanupRebuildAsync(owner, job.JobKey)).CleanupPending);
         }
+        Stage = "Summary exact read";
         var values = await summary.ListAsync(owner, "USD", default);
         Check(values.Count == 1000 && values.Sum(value => value.Amount) == 0.1m);
+        Stage = "Summary capacity refusal";
         await CapacityDenied(() => summary.UpsertIfNewerAsync(summarySource[0] with { RecordId = "synthetic-summary-overflow", EventId = "synthetic-summary-overflow-event" }, default));
         if (mode == "restart")
         {
+            Stage = "Summary currency correction";
             await summary.UpsertIfNewerAsync(summarySource[0] with
             {
                 Revision = 1,
@@ -54,16 +63,24 @@ internal static class ProjectionCapacityFixture
         if (mode == "initial")
         {
             var request = new AnalyticsRebuildRequest(analyticsOwner, day, day, "synthetic-capacity-v1", time);
+            Stage = "Analytics begin";
             var job = await analytics.BeginRebuildAsync(request, 1000, PostgresAnalyticsReadModelStore.CalculateSourceDigest(analyticsSource));
+            Stage = "Analytics stage ten pages";
             for (var page = 0; page < 10; page++) { await analytics.StageRebuildPageAsync(analyticsOwner, job.GenerationId, page, analyticsSource.Skip(page * 100).Take(100).ToArray()); }
+            Stage = "Analytics atomic commit";
             await analytics.CommitRebuildAsync(analyticsOwner, job.GenerationId);
+            Stage = "Analytics refresh acknowledgement";
             await analytics.MarkRebuildRefreshCompletedAsync(await analytics.ReadPendingRebuildRefreshAsync(analyticsOwner) ?? throw new VerificationFailure());
+            Stage = "Analytics cleanup";
             Check(!(await analytics.CleanupRebuildAsync(analyticsOwner, job.GenerationId)).CleanupPending);
         }
+        Stage = "Analytics exact read";
         Check((await analytics.GetAsync(analyticsOwner, "USD", default)).DailyTotals[day].Expense == 0.1m);
+        Stage = "Analytics capacity refusal";
         await CapacityDenied(() => analytics.UpsertIfNewerAsync(analyticsSource[0] with { RecordId = "synthetic-analytics-overflow", EventId = "synthetic-analytics-overflow-event" }, default));
         if (mode == "restart")
         {
+            Stage = "Analytics currency correction";
             var limits = new PostgresAnalyticsLimitProvider(context, new FixtureClock());
             foreach (var currency in new[] { "USD", "EUR" })
             { await limits.ApplySnapshotAsync(new AnalyticsLimitSnapshot(analyticsOwner, currency, "synthetic-capacity-settings", 0, AnalyticsExpenseLimits.Unconfigured, time)); }

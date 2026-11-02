@@ -144,6 +144,12 @@ Each scenario uses the same verified, fresh, owned fixture and cleanup guards.
 Unsigned-package execution blocked by Windows policy must remain Blocked; do not
 bypass it. Passing a local database test is not package redistribution qualification.
 
+FIN-286 adds an in-progress [full owner qualification matrix](../../../docs/engineering/native-persistence-qualification.md)
+and structured evidence runner. Foundation additionally tests a live uncommitted
+domain/outbox transaction interrupted by the owned database crash. Migration
+compatibility is schema-v1 rerun plus explicit key addition, not arbitrary version
+upgrades or installed backup/restore acceptance.
+
 References: [Npgsql usage](https://www.npgsql.org/doc/basic-usage.html),
 [Npgsql 8.0.9](https://www.nuget.org/packages/Npgsql/8.0.9),
 [PostgreSQL locks](https://www.postgresql.org/docs/18/explicit-locking.html),

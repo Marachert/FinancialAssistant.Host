@@ -10,7 +10,7 @@ try
     var mode = Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_MODE") ?? "initial";
     if (password.Length != 64 || !password.All(char.IsAsciiHexDigit) || !Path.IsPathFullyQualified(directory) ||
         !Directory.Exists(directory) || !int.TryParse(Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_PORT"), out var port) ||
-        port is < 49152 or > 65535 || mode is not ("initial" or "restart"))
+        port is < 49152 or > 65535 || mode is not ("initial" or "interrupt" or "restart"))
     {
         throw new InvalidOperationException();
     }
@@ -104,6 +104,33 @@ try
     await using var otherStore = new OwnedPostgresStore(profileOptions, protection);
     stage = "readiness";
     Check(await store.IsReadyAsync() && await otherStore.IsReadyAsync());
+    if (mode == "interrupt")
+    {
+        stage = "live transaction interrupted by database crash";
+        try
+        {
+            await store.ExecuteAsync<bool>(["interrupted"], async (tx, token) =>
+            {
+                Check(await tx.InsertAsync("account", "synthetic_owner", "interrupted", [4]));
+                Check(await tx.InsertAsync("outbox", "synthetic_owner", "interrupted", [5]));
+                await using (var signal = new FileStream(Path.Combine(fixtureData.Parent!.FullName, "interrupted-ready"), FileMode.CreateNew))
+                {
+                    await signal.WriteAsync(new byte[] { 1 }, token);
+                }
+                while (true)
+                {
+                    await Task.Delay(100, token);
+                    _ = await tx.GetAsync("account", "synthetic_owner", "interrupted");
+                }
+            });
+            throw new FixtureFailure();
+        }
+        catch (StorageUnavailableException)
+        {
+            Console.WriteLine("PASS live uncommitted account/outbox transaction observed database interruption.");
+            return 0;
+        }
+    }
     if (mode == "restart")
     {
         stage = "actual database restart persistence";
@@ -111,7 +138,9 @@ try
         Check(persisted is { Revision: 0 } && Encoding.UTF8.GetString(persisted.Payload) == "retained synthetic state");
         var rolledBack = await store.ExecuteAsync([], async (tx, _) => await tx.GetAsync("account", "synthetic_owner", "rollback"));
         Check(rolledBack is null);
-        Console.WriteLine("PASS actual database restart: encrypted state retained; uncommitted state absent.");
+        Check(await store.ExecuteAsync([], async (tx, _) => await tx.GetAsync("account", "synthetic_owner", "interrupted")) is null);
+        Check(await store.ExecuteAsync([], async (tx, _) => await tx.GetAsync("outbox", "synthetic_owner", "interrupted")) is null);
+        Console.WriteLine("PASS actual database restart: encrypted state retained; live interrupted account/outbox transaction absent.");
         return 0;
     }
 

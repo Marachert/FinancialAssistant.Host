@@ -22,6 +22,7 @@ Developer, architecture, security, API, event, and delivery documentation worksp
 - [Native Score and Recommendation/Notification persistence](engineering/native-insights-persistence.md)
 - [Native append-only Audit persistence](engineering/native-audit-persistence.md)
 - [Native lifecycle delivery work and qualification](engineering/native-lifecycle-delivery.md)
+- [Native persistence qualification matrix and owner crosswalk](engineering/native-persistence-qualification.md)
 - [Native Intake draft and confirmation-intent persistence](engineering/intake-native-persistence.md)
 - [Native protected receipt files, health cache and local diagnostics](engineering/windows-native-adapters.md)
 - [Native Receipt, OCR and AI workflow persistence](engineering/receipt-ai-native-persistence.md)
