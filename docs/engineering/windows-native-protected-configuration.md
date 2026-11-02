@@ -5,6 +5,16 @@ implementation contract, not evidence that the owner machine has been installed
 or that FIN-208 is Done. The Windows installer, first-admin bootstrap, coordinated
 credential rotation and approved-host qualification remain pending.
 
+The runtime component is actually merged through
+[PR301](https://github.com/Marachert/FinancialAssistant.Host/pull/301), protected
+squash `63fe6b12e8ba2e9cd6f7e24a16b52c91cf74cfb6` at `2026-11-02T20:45:37Z`.
+Final reviewed head `b2072ab474616f6eb854619555d66da28814e7ea` passed all five
+checks (Backend41519403037/Mobile41519402763/Admin41519402719), configured
+re-review at `2026-11-02T20:30:12.075428Z` without findings, and final full local
+verification below. The valid startup finding was reproduced, fixed, regressed,
+evidenced and resolved only after green. Nine final Confluence bodies and central
+actual-merge snapshots were verified. This adds no FIN-208 completion credit.
+
 ## Runtime Boundary
 
 All fifteen executable hosts use `FinancialAssistantHost.CreateBuilder`. Under
@@ -152,17 +162,22 @@ or certificate private keys. A local-only origin is not proof of phone reachabil
 
 ## Recovery And Verification
 
-Local component verification on 2026-11-02: full backend 1,445/1,445 tests across
-25 projects, zero failures/skips; hosting/configuration 203/203 at the original head. Full Release build
-passed with existing cache warnings; final scoped build had zero warnings/errors.
+Final local component verification on 2026-11-02: full backend 1,451/1,451 tests
+across25 projects, zero failures/skips; hosting/configuration209/209 and Gateway80/80.
+The actual final-head TRX window is `2026-11-02T20:30:37.7492488Z` through
+`2026-11-02T20:34:07.5815741Z`. Full Release build passed with five pre-existing
+warnings; scoped build had zero warnings/errors. Full format verification changed
+zero of1,276files; final changed-source verification, privacy1,320tracked files,
+Markdown159files/592links and the unqualified native component inventory passed.
 The owned native adapter runner also passed actual receipt/diagnostic crash/restart,
 encrypted restore and junction rejection, with new root/ancestor rename assertions.
-These are free local results, not exact-head GitHub CI or installed qualification.
+These are free local results, separate from exact-head GitHub CI and not installed qualification.
 PR301 review identified that six executable projects ship no `appsettings.json`.
 Six new missing-baseline regressions reproduced the startup failure before the fix;
-the baseline is now optional without making the protected store optional. The final
-scoped hosting/configuration rerun passed 209/209, zero failures/skips; this is not
-an inferred second full-suite result.
+the baseline is now optional without making the protected store optional. The earlier
+full1,445/1,445 initial-head run, six-failure reproduction and scoped209/209 fix run
+remain historical evidence; the1,451 result above is an actual separate final full
+rerun, not an inferred total or relabeled failed run.
 
 Machine DPAPI is machine-bound and **not a portable backup**. FIN-209 must provide
 operator-controlled encrypted recovery of required data/HMAC keys alongside a

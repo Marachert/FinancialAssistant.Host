@@ -14,6 +14,23 @@ numerator to 197. No denominator or duplicate rule changed. See
 [local tracking](LOCAL_BACKLOG.md) and [actual merge evidence](LOCAL_DELIVERY_EVIDENCE.json).
 Jira Done and parent transitions remain pending reconciliation, never fabricated.
 
+FIN-208's [protected configuration runtime component](../engineering/windows-native-protected-configuration.md)
+is actually merged through [PR301](https://github.com/Marachert/FinancialAssistant.Host/pull/301):
+protected squash `63fe6b12e8ba2e9cd6f7e24a16b52c91cf74cfb6` at
+`2026-11-02T20:45:37Z`, final reviewed head
+`b2072ab474616f6eb854619555d66da28814e7ea`. All five exact-head checks succeeded
+(Backend41519403037/Mobile41519402763/Admin41519402719); configured re-review
+completed `2026-11-02T20:30:12.075428Z` with no findings. The valid missing-baseline
+startup finding was reproduced by six regressions, fixed, evidenced and resolved
+only after green. Final full1451/1451 tests across25 projects passed, zero failures/
+skips; Hosting209/209 and Gateway80/80. Nine pre-merge Confluence full bodies and
+central actual-merge evidence were verified. **FIN-208 is not Done**: privileged
+atomic provisioning, first-admin bootstrap, coordinated rotation, FIN-278/279
+integration, FIN-209 portable recovery and approved-host qualification remain.
+This implementation merge adds **0.0 percentage points**, no completion-ledger
+entry and no first-user readiness. The canonical numerator/denominator and parent
+status are unchanged; machine DPAPI is not a portable backup.
+
 FIN-207's [native HTTPS implementation](../engineering/windows-native-https.md)
 is actually merged through [PR299](https://github.com/Marachert/FinancialAssistant.Host/pull/299):
 protected squash `f3e117ce127d4f204bb2a88d568badaf6ad3e358` at
@@ -52,7 +69,8 @@ First-user testing is Not Ready. Database/file qualification does not grant
 installed Windows, SCM, full backup/restore or first-user acceptance. Protected
 HTTPS provisioning/acceptance, protected secrets, first-user bootstrap, Profile-only
 refresh and installer/WPF packaging remain launch gates. FIN-207 implementation
-is merged, not its qualification. Restore FIN-208/209 prerequisite scopes before
+is merged, not its qualification. FIN-208's runtime component is also merged, not
+its integrated qualification; FIN-209 is the next independent prerequisite before
 installer FIN-278/279/280 and owner-run FIN-281/206. The FIN-286 closure ledger is
 published through actual PR298 merge `7a92d54201894abe41a471aeabf858a2d788e226`;
 the HTTPS checkpoint is separate documentation maintenance and adds no credit.
