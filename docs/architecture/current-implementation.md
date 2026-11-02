@@ -7,13 +7,14 @@ this page describes capability boundaries, not deployed-environment acceptance.
 
 ## Capability Map
 
-FIN-276 working implementation adds opt-in native RabbitMQ producer/outbox and
+FIN-276 merged implementation adds opt-in native RabbitMQ producer/outbox and
 consumer/inbox workers for confirmed financial changes through Analytics, Score,
 Recommendation preparation and minimized Audit, plus scoped Profile HTTP input.
 Actual synthetic financial convergence/crash/restart/replay passed locally,
 including the repository-owned runner, without manual projector or provider calls.
-This work is not yet merged or credited; the merged baseline and installed/
-first-user gates below remain distinct. See the
+PR295 is actually merged as `d142b075dced5847da8f12f9d237763e50d06e2c`; local verified
+completion is 196/215 (91.2%), P9 20/39 (51.3%), FIN-270 14/19 open.
+Installed and first-user gates below remain distinct. See the
 [native lifecycle evidence and limitations](../engineering/native-lifecycle-delivery.md).
 
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
@@ -25,9 +26,9 @@ installer or accepted native Windows runtime is claimed by this document.
 | Gateway | REST routing, JWT/role checks, exact public allowlist, trusted context, rate limits and safe errors | Route activation and destinations are environment-controlled; not every handler is enabled by repository defaults |
 | Identity/Profile/Category | Deterministic authentication/session/provider-validation handlers, profile preferences and taxonomy | Stable secrets, durable stores and real provider configuration; phone delivery adapter is disabled by default |
 | Intake/Receipt/AI | Editable drafts, review/reject/confirm, receipt/OCR processing and controlled provider abstractions | Approved provider budgets, privacy configuration and end-to-end hosted operation |
-| Income/Expense | Separate native PostgreSQL authoritative records, atomic minimized outbox, immutable confirmation replay and lifecycle contracts | Live delivery/inbox FIN-276, integrated recovery FIN-286 and installed acceptance |
-| Summary/Analytics | Separate owned PostgreSQL projections, strict replay and scoped generation recovery; deterministic dashboard composition | Authorized source ingestion, reliable transport and cross-owner refresh FIN-276; integrated/installed acceptance |
-| Financial Score | Owned PostgreSQL projections, deterministic score factors/history, neutral first reads and atomic immutable outbox | Authorized settings/source ingestion and reliable delivery FIN-276; integrated/installed acceptance |
+| Income/Expense | Separate native PostgreSQL authoritative records, atomic minimized outbox, immutable confirmation replay and lifecycle contracts | Financial native delivery verified in FIN-276; integrated recovery FIN-286 and installed acceptance remain |
+| Summary/Analytics | Separate owned PostgreSQL projections, strict replay and scoped generation recovery; deterministic dashboard composition | Financial Analytics delivery verified in FIN-276; Summary/remaining integration, settings-only refresh and installed acceptance remain |
+| Financial Score | Owned PostgreSQL projections, deterministic score factors/history, neutral first reads and atomic immutable outbox | Financial source/settings delivery verified in FIN-276; settings-only refresh and integrated/installed acceptance remain |
 | Recommendations/Notifications | Owned PostgreSQL facts/lifecycle, explicit preferences, trigger deduplication, prepared/read state and atomic immutable outbox | Push/web adapters are non-sending placeholders; no real delivery or deferred quiet-hours scheduler claimed |
 | Mobile | Home/Add/Insights/Settings, authentication/onboarding, text/receipt draft review, dashboard, inbox and resilience states | Native audio, complete wallet/debt/reserve flows, signed stores and tester acceptance are not all delivered |
 | Monitoring/Audit/MCP | Safe operational aggregates, append-only audit contracts and six allowlisted read-only MCP tools | Durable history, complete producer wiring and approved operational acceptance |
@@ -40,7 +41,7 @@ Android, iOS and Web, but repository directories alone do not establish delivery
 FIN-282 adds [native Identity PostgreSQL adapters](../engineering/identity-native-persistence.md)
 for accounts, sessions, challenges/rate state and transactional outbox intents.
 Development adapters remain process-local. Native broker delivery/readiness is
-explicitly pending FIN-276. FIN-283 adds [separate Profile/Category PostgreSQL
+not implied by the financial-only FIN-276 proof. FIN-283 adds [separate Profile/Category PostgreSQL
 adapters](../engineering/profile-category-native-persistence.md), exact preferences/
 catalog rehydration, owner-isolated updates and atomic Category/outbox intents.
 Other domain adapters remain their own follow-on tickets. This is not installed-host
@@ -74,7 +75,7 @@ module-owned Summary credentials without another host/port, exact durable read m
 immutable replay/latest-revision guards, atomic Analytics publication intents and
 scoped staged rebuilds. The native settings provider distinguishes explicitly known
 unconfigured values from unavailable/expired input; native delivery readiness stays
-unhealthy until FIN-276. An Analytics-stage refresh handoff is not completed Score
+separate from installed acceptance after FIN-276. An Analytics-stage refresh handoff alone is not completed Score
 or Recommendation execution. Synthetic database evidence does not certify installed
 Windows, live broker/settings ingestion or first-user readiness.
 FIN-287 is Done after independently verified actual PR289 merge
@@ -103,7 +104,7 @@ initial/crash/restart and native HTTP failure/access tests passed. PR293 is
 independently verified merged as `f870733b35bc1d74a4248f882d4426faeef1e92e` at
 `2026-10-29T13:53:43Z`, final77adda4/all5CIgreen, both valid findings fixed/tested/
 evidenced/resolved after green and completed re-review no findings. Nine post-merge
-Confluence full bodies were verified. Local progress is195/215(90.7%),P919/39(48.7%),
+Confluence full bodies were verified. At FIN-289 closure, local progress was195/215(90.7%),P919/39(48.7%),
 FIN27013/19open; last live Jira baseline remains193/215, pending reconciliation.
 First-user Not Ready. Audit remains minimized technical metadata, never
 financial authority or raw financial/provider content. Live producer/transport
@@ -125,7 +126,7 @@ FIN-277 adds [protected native adapters](../engineering/windows-native-adapters.
 restart-safe encrypted receipt objects with ACL/path/key/retention controls,
 disposable bounded service-health observations and a private technical diagnostic
 sink. FIN-285 native Receipt metadata fails closed when owned storage is invalid; native reliable
-delivery remains FIN-276. The local sink does not qualify retained native collectors,
+delivery outside the confirmed financial path remains an integration gate. The local sink does not qualify retained native collectors,
 Elasticsearch, Audit authority or installed-host acceptance. No live provider is enabled.
 
 The implemented contracts support this flow when the required routes, adapters

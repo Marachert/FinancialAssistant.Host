@@ -6,11 +6,11 @@ final qualification remains a release gate.** The approved target is the
 [Windows-native POC](../../docs/architecture/windows-native-poc.md), without
 Docker, WSL or a Linux VM. No machine configuration is changed here.
 
-FIN-276 working native lifecycle code and its reusable isolated broker/financial
+FIN-276 merged native lifecycle code and its reusable isolated broker/financial
 fixtures are described in the [lifecycle guide](../../docs/engineering/native-lifecycle-delivery.md).
 Actual synthetic financial crash/restart/replay passed locally without manual
-projector/provider calls. This local work is not yet merged or credited and does
-not make this inventory, service installation or first-user POC release-ready.
+projector/provider calls. PR295 actually merged as `d142b075dced5847da8f12f9d237763e50d06e2c`.
+This does not make the inventory, service installation or first-user POC release-ready.
 
 FIN-273's [hosting contract](../../backend/shared/hosting/README.md) documents the
 native process profile, canonical service ports, required trust and non-executing
@@ -21,7 +21,7 @@ FIN-277 implements [native receipt/cache/diagnostic adapters](../../docs/enginee
 Owned NTFS object files, ACL/path/key/retention controls, typed disposable health
 cache and a protected technical sink have free synthetic test/owned-crash fixtures.
 FIN-285 adds [owned Receipt/OCR and AI workflow metadata](../../docs/engineering/receipt-ai-native-persistence.md);
-delivery readiness remains blocked pending FIN-276. No native
+delivery outside the confirmed financial path remains an integration gate. No native
 collector, Elasticsearch, WPF/SCM, backup-system or three-Windows acceptance is
 granted; package/target qualification and the release-ready flag remain unchanged.
 
@@ -31,7 +31,8 @@ Analytics transactional publication/settings snapshots. Summary remains a module
 with its own role/keys and typed migration factory, not another host or port.
 Analytics requires `Analytics:Storage:Postgres`; unknown/expired limit input fails
 closed. Reliable transport, authorized source ingestion and downstream refresh
-remain FIN-276; these adapters do not grant installed or first-user readiness.
+are verified for the financial path in FIN-276; remaining integration and
+settings-only refresh do not gain installed or first-user readiness.
 FIN-287 is Done after actual PR289 merge
 `e6b8f6abc8dac24911eafda65f6515a7feed384a` at `2026-10-20T21:12:28Z`,
 finalf697631/all5CIgreen/completedreview no findings. Fresh census21:14:13 UTC:
@@ -45,7 +46,8 @@ and legacy consumers are not registered. Combined isolated PostgreSQL crash/rest
 verification passed on 2026-10-29, not installed Windows or live delivery acceptance.
 PR291 is verified merged as `c4e6a9e15ab2602aa1d68fc45b48bf4899634e60` at
 `2026-10-29T10:11:34Z`, final5b9a5c0/all5CIgreen/completedreview no findings.
-Jira reconciliation is pending; FIN-276/286 and installer qualification remain required.
+Jira reconciliation is pending; FIN-276 is verified merged locally, while
+FIN-286 and installer qualification remain required.
 FIN-289's merged [Audit persistence](../../docs/engineering/native-audit-persistence.md)
 adds an independent PostgreSQL Audit identity, atomic immutable metadata/index/
 replay receipts and bounded lifecycle cleanup. Native composition requires owned
@@ -80,7 +82,7 @@ Final head `e12c388f842942fa8951c53c0e2ca2370e0df559` passed all five checks
 were fixed, evidenced and resolved only after green. Actual synthetic PostgreSQL
 initial/crash/restart, atomic state/outbox, owner isolation, provider-lock separation,
 hard-retention bounds and owned cleanup passed; no registered service or installed
-matrix is claimed. Native broker readiness remains pending FIN-276. Profile/Category
+matrix is claimed. Identity bootstrap is not qualified by the financial-only FIN-276 proof. Profile/Category
 FIN-283 [native Profile/Category storage](../../docs/engineering/profile-category-native-persistence.md)
 is merged through [PR278](https://github.com/Marachert/FinancialAssistant.Host/pull/278)
 as `dba7624e84bcfac7991fc41610e8ad829716e0e6` at `2026-10-11T18:01:35Z` and Jira Done.
@@ -116,7 +118,7 @@ finding was fixed/regressed/replied/resolved only green. Latest per-project
 966/966 tests across24projects, zero failures/skips; real isolated PostgreSQL
 initial/crash/restart, atomic rollback, corrected/conflicting/post-retention replay
 and pending-safe bounded retention passed with owned cleanup. Native readiness
-still waits for FIN-276, not fake delivery or installed qualification.
+is separate from the now-verified FIN-276 financial delivery and installed qualification.
 
 At the FIN-275 checkpoint, FIN-284 was next by local rank with FIN-274/275 Done
 prerequisites. Historical census
@@ -445,9 +447,9 @@ qualification; the exact archive digest has been verified locally.
    inventory merge/closure is not that release approval.
 
 No additional spending, package/tool installation or machine changes are authorized
-by this document. Current locally verified POC completion is 195/215 (90.7%) after
-FIN-289 closure, +0.5 percentage points before rounding; FIN-270 is13/19 locally
-verified complete and FIN-38 P9 is19/39(48.7%). This is not a new live Jira census;
+by this document. Current locally verified POC completion is 196/215 (91.2%) after
+FIN-276 closure, +0.5 percentage points before rounding; FIN-270 is14/19 locally
+verified complete and FIN-38 P9 is20/39(51.3%). This is not a new live Jira census;
 last live baseline remains193/215(89.8%), with Jira reconciliation pending.
 Historical FIN-287 closure is193/21589.8%. Historical FIN-285 closure is192/21589.3%.
 Historical FIN-277 closure is191/21588.8%.
