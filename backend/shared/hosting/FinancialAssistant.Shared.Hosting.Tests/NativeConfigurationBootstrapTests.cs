@@ -7,6 +7,39 @@ namespace FinancialAssistant.Shared.Hosting.Tests;
 
 public sealed class NativeConfigurationBootstrapTests
 {
+    [Theory]
+    [InlineData("receipt-processing")]
+    [InlineData("income")]
+    [InlineData("expense")]
+    [InlineData("analytics")]
+    [InlineData("financial-score")]
+    [InlineData("recommendations-notifications")]
+    public void HostsWithoutPackagedJsonCanLoadRequiredProtectedConfiguration(string serviceId)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "fin208-baseline-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var plan = NativeServiceConfigurationPlan.Create(NativeServiceConfigurationTests.Document(serviceId));
+        var inputs = NativeConfigurationSourceTests.Inputs(plan);
+        try
+        {
+            Assert.False(File.Exists(Path.Combine(root, "appsettings.json")));
+            var baseline = NativeConfigurationBootstrap.ReadPackagedBaseline(root);
+            using var lifetime = (IDisposable)baseline;
+            Assert.Empty(baseline.AsEnumerable());
+            var protector = new NativeConfigurationSourceTests.SyntheticProtector();
+            using var package = NativeConfigurationPackage.Create(plan, inputs, protector);
+            using var configuration = new ConfigurationManager();
+            NativeConfigurationBootstrap.Replace(configuration, baseline, new NativeConfigurationSource(serviceId, () => package, protector));
+            FinancialAssistantHost.ValidateConfiguration(configuration, NativeServiceCatalog.Get(serviceId));
+            Assert.Equal("PostgreSQL", configuration[NativeConfigurationSettings.Prefix(serviceId) + ":Storage:Provider"]);
+        }
+        finally
+        {
+            foreach (var input in inputs.Values) { CryptographicOperations.ZeroMemory(input); }
+            Directory.Delete(root);
+        }
+    }
+
     [Fact]
     public void InstalledConfigurationDiscardsAllPreviousSourcesAndUsesOnlyProtectedSecrets()
     {

@@ -15,8 +15,11 @@ fallback for installed runtime secrets. Missing, foreign, malformed or undecrypt
 artifacts stop startup with sanitized errors. Paid AI, OCR and phone providers
 are always disabled in this installed POC profile.
 
-The packaged `appsettings.json` supplies non-secret code-owned defaults such as
-the gateway route catalog. It is read once, not watched. Non-empty cataloged runtime
+An optional packaged `appsettings.json` supplies non-secret code-owned defaults such as
+the gateway route catalog. Hosts without that file use their code defaults; required
+protected artifacts and secret validation remain mandatory. A present malformed
+baseline still fails, and Gateway still requires its complete known route catalog.
+The file is read once, not watched. Non-empty cataloged runtime
 secrets in that file are rejected. Previous configuration providers are discarded;
 only this baseline and the validated protected snapshot remain. Baseline defaults
 are not operator secret storage. Do not place secrets in any JSON release artifact.
@@ -150,11 +153,16 @@ or certificate private keys. A local-only origin is not proof of phone reachabil
 ## Recovery And Verification
 
 Local component verification on 2026-11-02: full backend 1,445/1,445 tests across
-25 projects, zero failures/skips; hosting/configuration 203/203. Full Release build
+25 projects, zero failures/skips; hosting/configuration 203/203 at the original head. Full Release build
 passed with existing cache warnings; final scoped build had zero warnings/errors.
 The owned native adapter runner also passed actual receipt/diagnostic crash/restart,
 encrypted restore and junction rejection, with new root/ancestor rename assertions.
 These are free local results, not exact-head GitHub CI or installed qualification.
+PR301 review identified that six executable projects ship no `appsettings.json`.
+Six new missing-baseline regressions reproduced the startup failure before the fix;
+the baseline is now optional without making the protected store optional. The final
+scoped hosting/configuration rerun passed 209/209, zero failures/skips; this is not
+an inferred second full-suite result.
 
 Machine DPAPI is machine-bound and **not a portable backup**. FIN-209 must provide
 operator-controlled encrypted recovery of required data/HMAC keys alongside a

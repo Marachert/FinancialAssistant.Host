@@ -10,8 +10,7 @@ internal static class NativeConfigurationBootstrap
         try
         {
             // Only the packaged, non-secret baseline survives; process environment and CLI cannot supply runtime secrets.
-            var baseline = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false).Build();
+            var baseline = ReadPackagedBaseline(AppContext.BaseDirectory);
             using var lifetime = (IDisposable)baseline;
             Replace(configuration, baseline, new NativeConfigurationSource(serviceId,
                 () => WindowsNativeConfigurationArtifacts.Open(serviceId), new WindowsDpapiSecretProtector()));
@@ -20,6 +19,9 @@ internal static class NativeConfigurationBootstrap
             UnauthorizedAccessException or FormatException or System.Security.SecurityException)
         { throw new InvalidOperationException("Installed native service configuration cannot be loaded safely."); }
     }
+
+    internal static IConfigurationRoot ReadPackagedBaseline(string directory) => new ConfigurationBuilder().SetBasePath(directory)
+        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false).Build();
 
     internal static void Replace(ConfigurationManager configuration, IConfiguration baseline, IConfigurationSource protectedSource)
     {
