@@ -49,6 +49,7 @@ public static class DependencyInjection
             services.AddSingleton<OcrCompletedDraftConsumer>();
             services.AddSingleton<IOcrCompletedConsumer, TransactionalOcrDraftConsumer>();
             services.AddHostedService<IntakeRetentionWorker>();
+            NativeIntakeMessaging.Add(services, configuration);
             services.AddSingleton<OwnedStorageHealthCheck>();
             services.AddHealthChecks().AddCheck<OwnedStorageHealthCheck>("intake-owned-storage", tags: new[] { "ready" });
             return services;

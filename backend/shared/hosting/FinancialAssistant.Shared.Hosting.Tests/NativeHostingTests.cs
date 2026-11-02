@@ -209,6 +209,43 @@ public sealed class NativeHostingTests
     private static Dictionary<string, string?> Secrets(NativeServiceDefinition service) =>
         service.RequiredSecretKeys.ToDictionary(key => key, _ => (string?)SyntheticSecret);
 
+    [Theory]
+    [InlineData("profile", HttpStatusCode.OK, 3)]
+    [InlineData("ai-orchestration", HttpStatusCode.Unauthorized, 0)]
+    public async Task NativeBoundary_InternalAuthorizationIsProfileOnly_AndDoesNotOpenPublicRoutes(string id, HttpStatusCode expected, int expectedCalls)
+    {
+        var service = NativeServiceCatalog.Get(id);
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "WindowsNative" });
+        builder.Configuration.AddInMemoryCollection(Secrets(service));
+        FinancialAssistantHost.ConfigureNative(builder, service);
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+        var calls = 0;
+        app.UseWindowsNativeRequestBoundary(context =>
+        {
+            calls++;
+            return context.Request.Method == "POST" && context.Request.Path == "/internal/profile/financial-settings"
+                && context.Request.Headers["X-Synthetic-Reader"] == "synthetic-scoped-reader";
+        });
+        app.MapPost("/internal/profile/financial-settings", () => "synthetic-minimized-settings");
+        app.MapGet("/users/me", () => "synthetic-private-profile");
+        app.MapGet("/health/ready", () => "healthy");
+        await app.StartAsync();
+        using var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Synthetic-Reader", "synthetic-scoped-reader");
+        using var valid = await client.PostAsync("/internal/profile/financial-settings", null);
+        Assert.Equal(expected, valid.StatusCode);
+        using var publicRoute = await client.GetAsync("/users/me");
+        Assert.Equal(HttpStatusCode.Unauthorized, publicRoute.StatusCode);
+        client.DefaultRequestHeaders.Remove("X-Synthetic-Reader");
+        using var missing = await client.PostAsync("/internal/profile/financial-settings", null);
+        Assert.Equal(HttpStatusCode.Unauthorized, missing.StatusCode);
+        using var health = await client.GetAsync("/health/ready");
+        Assert.Equal(HttpStatusCode.OK, health.StatusCode);
+        Assert.Equal(expectedCalls, calls);
+        await app.StopAsync();
+    }
+
     [Fact]
     public void NativeMonitoring_ReplacesLegacyTargets_WithEveryOtherCanonicalHost()
     {

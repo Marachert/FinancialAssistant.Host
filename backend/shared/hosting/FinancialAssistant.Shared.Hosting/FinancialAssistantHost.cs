@@ -137,7 +137,7 @@ public static class FinancialAssistantHost
         return value;
     }
 
-    public static WebApplication UseWindowsNativeRequestBoundary(this WebApplication app)
+    public static WebApplication UseWindowsNativeRequestBoundary(this WebApplication app, Func<HttpContext, bool>? authorizeInternalProfileRequest = null)
     {
         if (!app.Environment.IsEnvironment(NativeEnvironment))
         {
@@ -154,6 +154,12 @@ public static class FinancialAssistantHost
         app.Use(async (context, next) =>
         {
             if (context.Request.Path == "/health" || context.Request.Path == "/health/live" || context.Request.Path == "/health/ready")
+            {
+                await next(context);
+                return;
+            }
+
+            if (service.Id == "profile" && authorizeInternalProfileRequest?.Invoke(context) == true)
             {
                 await next(context);
                 return;

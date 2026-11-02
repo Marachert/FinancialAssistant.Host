@@ -7,7 +7,7 @@ using FinancialAssistant.Shared.Persistence;
 
 namespace FinancialAssistant.Analytics.Infrastructure.Persistence;
 
-public sealed record AnalyticsOutboxMessage(IntegrationEventEnvelope<AnalyticsUpdatedV1> Event, DateTimeOffset? PublishedAtUtc);
+public sealed record AnalyticsOutboxMessage(IntegrationEventEnvelope<AnalyticsUpdatedV1> Event, DateTimeOffset? PublishedAtUtc, long? SourceSequence = null);
 
 public sealed class PostgresAnalyticsEventPublisher(AnalyticsPersistenceContext context) : IAnalyticsEventPublisher
 {
@@ -34,12 +34,16 @@ public sealed class PostgresAnalyticsEventPublisher(AnalyticsPersistenceContext 
                 { throw new StorageConflictException(); }
                 return true;
             }
+            await OwnedPublicationOrder.AllocateAsync(records, "analytics", envelope.UserIdHash!, envelope.EventId);
             await records.InsertAsync("analytics_outbox", "analytics", envelope.EventId, Encode(new AnalyticsOutboxMessage(envelope, null)));
             return true;
         }, cancellationToken);
     }
 
-    public Task<IReadOnlyList<AnalyticsOutboxMessage>> ReadPendingAsync(CancellationToken token = default) =>
+    public Task<IReadOnlyList<AnalyticsOutboxMessage>> ReadPendingAsync(CancellationToken token = default) => ReadPendingCoreAsync(false, token);
+    public Task<IReadOnlyList<AnalyticsOutboxMessage>> ReadPendingOrderedAsync(CancellationToken token = default) => ReadPendingCoreAsync(true, token);
+
+    private Task<IReadOnlyList<AnalyticsOutboxMessage>> ReadPendingCoreAsync(bool requireOrder, CancellationToken token) =>
         context.WithMaintenanceRecordsAsync<IReadOnlyList<AnalyticsOutboxMessage>>(async (records, _) =>
         {
             var durable = await records.GetAsync("outbox_scan", "analytics", "pending");
@@ -61,7 +65,11 @@ public sealed class PostgresAnalyticsEventPublisher(AnalyticsPersistenceContext 
                 {
                     var message = Decode(new DurableRecord(item.Revision, item.Payload));
                     after = item.Cursor;
-                    if (message.PublishedAtUtc is null && seen.Add(message.Event.EventId)) { pending.Add(message); }
+                    if (message.PublishedAtUtc is null && seen.Add(message.Event.EventId))
+                    {
+                        var sequence = requireOrder ? await OwnedPublicationOrder.ReadRequiredAsync(records, "analytics", message.Event.UserIdHash!, message.Event.EventId) : (long?)null;
+                        pending.Add(message with { SourceSequence = sequence });
+                    }
                     if (pending.Count == 25) { break; }
                 }
             }
@@ -80,6 +88,8 @@ public sealed class PostgresAnalyticsEventPublisher(AnalyticsPersistenceContext 
             var durable = await records.GetAsync("analytics_outbox", "analytics", expected.Event.EventId) ?? throw new StorageUnavailableException();
             var message = Decode(durable);
             if (message.Event != expected.Event) { throw new StorageConflictException(); }
+            if (expected.SourceSequence is { } sequence && sequence != await OwnedPublicationOrder.ReadRequiredAsync(records,
+                "analytics", message.Event.UserIdHash!, message.Event.EventId)) { throw new StorageConflictException(); }
             await PostgresAnalyticsReadModelStore.CompletePublicationAsync(records, message.Event.UserIdHash!,
                 message.Event.CausationId, message.Event.Payload.Currency);
             if (message.PublishedAtUtc is null)

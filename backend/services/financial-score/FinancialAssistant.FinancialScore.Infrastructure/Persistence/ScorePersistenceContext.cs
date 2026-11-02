@@ -124,6 +124,20 @@ public sealed class ScorePersistenceContext : IFinancialScoreTransaction
         }, token);
     }
 
+    internal Task<T> WithMaintenanceRecordsAsync<T>(Func<OwnedRecordTransaction, CancellationToken, Task<T>> operation, CancellationToken token)
+    {
+        if (current.Value is not null) { throw new InvalidOperationException("Score maintenance cannot nest in a business transaction."); }
+        return database.ExecuteAsync(new[] { "maintenance:score-outbox" }, operation, token);
+    }
+
+    internal static string DecodeOwnerMarker(DurableRecord record)
+    {
+        var owner = OwnedRecordCodec.Decode<OwnerMarker>(1, record).Owner;
+        ScorePersistenceValidation.Owner(owner);
+        if (record.Revision != 0) { throw new StorageUnavailableException(); }
+        return owner;
+    }
+
     internal Task<T> WithRecordsAsync<T>(string owner, Func<OwnedRecordTransaction, CancellationToken, Task<T>> operation, CancellationToken token)
     {
         ScorePersistenceValidation.Owner(owner);

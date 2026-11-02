@@ -36,6 +36,7 @@ public static class DependencyInjection
             services.AddSingleton<IAuditEventConsumer>(provider => provider.GetRequiredService<AuditEventService>());
             services.AddSingleton<AuditEventMessageHandler>();
             services.AddHostedService<AuditRetentionWorker>();
+            NativeAuditMessaging.Add(services, configuration, options);
             services.AddSingleton<OwnedStorageHealthCheck>();
             services.AddHealthChecks().AddCheck<OwnedStorageHealthCheck>("audit-owned-storage", tags: new[] { "ready" });
             return services;

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../FinancialAssistant.Shared.Messaging/FinancialAssistant.Shared.Messaging.csproj" />
+    <ProjectReference Include="../../../services/profile/FinancialAssistant.Profile.Api/FinancialAssistant.Profile.Api.csproj" />
+    <ProjectReference Include="../../../services/transaction-intake/FinancialAssistant.TransactionIntake.Infrastructure/FinancialAssistant.TransactionIntake.Infrastructure.csproj" />
+    <ProjectReference Include="../../../services/income/FinancialAssistant.Income.Infrastructure/FinancialAssistant.Income.Infrastructure.csproj" />
+    <ProjectReference Include="../../../services/expense/FinancialAssistant.Expense.Infrastructure/FinancialAssistant.Expense.Infrastructure.csproj" />
+    <ProjectReference Include="../../../services/analytics/FinancialAssistant.Analytics.Infrastructure/FinancialAssistant.Analytics.Infrastructure.csproj" />
+    <ProjectReference Include="../../../services/financial-score/FinancialAssistant.FinancialScore.Infrastructure/FinancialAssistant.FinancialScore.Infrastructure.csproj" />
+    <ProjectReference Include="../../../services/recommendations-notifications/FinancialAssistant.RecommendationsNotifications.Infrastructure/FinancialAssistant.RecommendationsNotifications.Infrastructure.csproj" />
+    <ProjectReference Include="../../../services/audit/FinancialAssistant.Audit.Infrastructure/FinancialAssistant.Audit.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

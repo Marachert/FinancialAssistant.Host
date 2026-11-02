@@ -51,6 +51,7 @@ internal static class AnalyticsFixture
                 AnalyticsExpenseLimits.Unconfigured, expense.OccurredAtUtc)));
             await Task.WhenAll(projector.ApplyAsync(expense, default), second.ApplyAsync(expense, default));
             var firstPublication = (await Pending(publisher, owner, other)).Single();
+            Check(firstPublication.SourceSequence == 1);
             Check(firstPublication.Event.Payload.MonthlyIncomeTotal == 0 && firstPublication.Event.Payload.MonthlyExpenseTotal == 12.3401m &&
                 firstPublication.Event.Payload.DailyExpenseLimit == 50m);
             await projector.ApplyAsync(income, default);
@@ -61,8 +62,13 @@ internal static class AnalyticsFixture
             await projector.ApplyAsync(moved, default);
             var pending = await Pending(publisher, owner, other);
             Check(pending.Count == 6 && !publisher.ConfirmsDelivery);
+            Check(pending.Where(message => message.Event.UserIdHash == owner).Select(message => message.SourceSequence).Order()
+                .SequenceEqual(new long?[] { 1, 2, 3, 4, 5 }));
+            Check(pending.Single(message => message.Event.UserIdHash == other).SourceSequence == 1);
             Check(pending.Single(message => message.Event.EventId == firstPublication.Event.EventId) == firstPublication);
             var movedEur = pending.Single(message => message.Event.CausationId == moved.EventId && message.Event.Payload.Currency == "EUR");
+            Check(movedEur.SourceSequence == 3);
+            Check(pending.Single(message => message.Event.CausationId == moved.EventId && message.Event.Payload.Currency == "USD").SourceSequence == 4);
             Check(movedEur.Event.Payload.MonthlyExpenseTotal == 12.3401m && movedEur.Event.Payload.DailyExpenseLimit == 60m);
             Check(pending.Single(message => message.Event.CausationId == sibling.EventId).Event.Payload.DailyExpenseLimit is null);
             var fakePayload = firstPublication.Event.Payload with { MonthlyExpenseTotal = 13.3401m };
@@ -71,6 +77,7 @@ internal static class AnalyticsFixture
                 firstPublication.Event.SchemaVersion, firstPublication.Event.CorrelationId, firstPublication.Event.CausationId,
                 firstPublication.Event.UserIdHash, fakePayload);
             await Conflict(() => publisher.MarkPublishedAsync(new AnalyticsOutboxMessage(fakeEvent, null), expense.OccurredAtUtc.AddHours(1)));
+            await Conflict(() => publisher.MarkPublishedAsync(firstPublication with { SourceSequence = 99 }, expense.OccurredAtUtc.AddHours(1)));
             await publisher.MarkPublishedAsync(firstPublication, expense.OccurredAtUtc.AddHours(1));
             await publisher.MarkPublishedAsync(firstPublication, expense.OccurredAtUtc.AddHours(2));
             Check(await publisher.CleanupPublishedBatchAsync(expense.OccurredAtUtc.AddDays(32)) == 1);
@@ -138,6 +145,8 @@ internal static class AnalyticsFixture
         Check(!outcome.Accepted && outcome.PendingPublicationCurrencies.SequenceEqual(new[] { "EUR" }));
         var stillPending = await Pending(publisher, owner, other);
         Check(stillPending.Count == 4 && stillPending.All(message => message.Event.CausationId != expense.EventId));
+        Check(stillPending.Where(message => message.Event.UserIdHash == owner).Select(message => message.SourceSequence).Order()
+            .SequenceEqual(new long?[] { 2, 3, 5 }));
         Check(stillPending.Single(message => message.Event.CausationId == moved.EventId).Event.Payload.MonthlyExpenseTotal == 12.3401m);
         if (mode == "restart")
         {
@@ -147,6 +156,7 @@ internal static class AnalyticsFixture
             await projector.ApplyAsync(moved, default);
             Check((await Pending(publisher, owner, other)).Count == 3);
             await projector.ApplyAsync(failed, default);
+            Check((await Pending(publisher, owner, other)).Single(message => message.Event.CausationId == failed.EventId).SourceSequence == 6);
             Check((await store.GetAsync(owner, "USD", default)).DailyTotals[day].Expense == 2.11m);
             Check(await publisher.CleanupPublishedBatchAsync(expense.OccurredAtUtc.AddDays(32)) == 2);
             Check((await Pending(publisher, owner, other)).Count == 4);
@@ -165,7 +175,7 @@ internal static class AnalyticsFixture
     private static async Task Conflict(Func<Task> operation)
     { try { await operation(); throw new VerificationFailure(); } catch (StorageConflictException) { } }
     private static async Task<IReadOnlyList<AnalyticsOutboxMessage>> Pending(PostgresAnalyticsEventPublisher publisher, string firstOwner, string secondOwner) =>
-        (await publisher.ReadPendingAsync()).Where(message => message.Event.UserIdHash == firstOwner || message.Event.UserIdHash == secondOwner).ToArray();
+        (await publisher.ReadPendingOrderedAsync()).Where(message => message.Event.UserIdHash == firstOwner || message.Event.UserIdHash == secondOwner).ToArray();
     private static void Check(bool value) { if (!value) { throw new VerificationFailure(); } }
     private sealed class FixtureClock : TimeProvider
     {

@@ -3,6 +3,7 @@ using FinancialAssistant.FinancialScore.Api.Security;
 using FinancialAssistant.FinancialScore.Application;
 using FinancialAssistant.FinancialScore.Contracts;
 using FinancialAssistant.FinancialScore.Domain;
+using FinancialAssistant.FinancialScore.Infrastructure;
 
 namespace FinancialAssistant.FinancialScore.Api.Endpoints;
 
@@ -49,9 +50,13 @@ public static class FinancialScoreEndpointExtensions
 
         try
         {
+            var ownerHash = FinancialScoreOwnerHasher.Hash(userId!);
+            var currency = ReadRequiredQuery(context, "currency");
+            if (context.RequestServices.GetService<NativeScoreProfileSettingsLoader>() is { } profiles)
+            { await profiles.RefreshAsync(ownerHash, new[] { currency }, cancellationToken); }
             var score = await service.GetCurrentOrCreateDefaultAsync(
-                FinancialScoreOwnerHasher.Hash(userId!),
-                ReadRequiredQuery(context, "currency"),
+                ownerHash,
+                currency,
                 cancellationToken);
             return Results.Ok(Map(score));
         }

@@ -266,6 +266,20 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Insights
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Audit.Persistence.Integration", "backend\services\audit\FinancialAssistant.Audit.Persistence.Integration\FinancialAssistant.Audit.Persistence.Integration.csproj", "{3C8AB4FA-5B13-45B2-AEB0-6D2D4B75D835}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "messaging", "messaging", "{B3F5315D-CC06-41C2-A54D-CFAF81F05984}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Messaging", "backend\shared\messaging\FinancialAssistant.Shared.Messaging\FinancialAssistant.Shared.Messaging.csproj", "{326F55DA-5811-4EA8-AB7A-2BA1439449CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Messaging.Tests", "backend\shared\messaging\FinancialAssistant.Shared.Messaging.Tests\FinancialAssistant.Shared.Messaging.Tests.csproj", "{511CB060-641D-40AC-AE83-4001EA205412}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Messaging.Integration", "backend\shared\messaging\FinancialAssistant.Shared.Messaging.Integration\FinancialAssistant.Shared.Messaging.Integration.csproj", "{A890D14B-65DB-4B5B-80C0-666E2EDA40AE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "profile", "profile", "{E7CEBDB4-360C-4959-85D4-E5207CEECE67}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Profile.Client", "backend\services\profile\FinancialAssistant.Profile.Client\FinancialAssistant.Profile.Client.csproj", "{14745E39-BDCA-4190-8E73-857AB55212D8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.NativeLifecycle.Integration", "backend\shared\messaging\FinancialAssistant.NativeLifecycle.Integration\FinancialAssistant.NativeLifecycle.Integration.csproj", "{FC01F089-5E97-44F8-97D4-AC5C43C12BB6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -744,6 +758,26 @@ Global
 		{3C8AB4FA-5B13-45B2-AEB0-6D2D4B75D835}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C8AB4FA-5B13-45B2-AEB0-6D2D4B75D835}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C8AB4FA-5B13-45B2-AEB0-6D2D4B75D835}.Release|Any CPU.Build.0 = Release|Any CPU
+		{326F55DA-5811-4EA8-AB7A-2BA1439449CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{326F55DA-5811-4EA8-AB7A-2BA1439449CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{326F55DA-5811-4EA8-AB7A-2BA1439449CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{326F55DA-5811-4EA8-AB7A-2BA1439449CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{511CB060-641D-40AC-AE83-4001EA205412}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{511CB060-641D-40AC-AE83-4001EA205412}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{511CB060-641D-40AC-AE83-4001EA205412}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{511CB060-641D-40AC-AE83-4001EA205412}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A890D14B-65DB-4B5B-80C0-666E2EDA40AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A890D14B-65DB-4B5B-80C0-666E2EDA40AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A890D14B-65DB-4B5B-80C0-666E2EDA40AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A890D14B-65DB-4B5B-80C0-666E2EDA40AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14745E39-BDCA-4190-8E73-857AB55212D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14745E39-BDCA-4190-8E73-857AB55212D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14745E39-BDCA-4190-8E73-857AB55212D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14745E39-BDCA-4190-8E73-857AB55212D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC01F089-5E97-44F8-97D4-AC5C43C12BB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC01F089-5E97-44F8-97D4-AC5C43C12BB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC01F089-5E97-44F8-97D4-AC5C43C12BB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC01F089-5E97-44F8-97D4-AC5C43C12BB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7AC3F48D-624D-4E99-8B8A-4D491602CEE2} = {FB7E6B6E-BA1A-4D09-96DE-E4179EB6DA47}
@@ -802,5 +836,12 @@ Global
 		{3DF0101F-2FBA-4E3A-BAFD-67907487BDD1} = {A3E2DA42-A68F-4A34-A64C-3BFD681EC48D}
 		{8F8289F0-8E30-44DC-BC50-3093D77F0485} = {F2000001-0000-4A00-A200-000000000000}
 		{3C8AB4FA-5B13-45B2-AEB0-6D2D4B75D835} = {EB8C1011-4FC9-4232-9781-56B8BC5E35CE}
+		{B3F5315D-CC06-41C2-A54D-CFAF81F05984} = {91488650-2D7C-4415-AE87-33D6FB3D159D}
+		{326F55DA-5811-4EA8-AB7A-2BA1439449CF} = {B3F5315D-CC06-41C2-A54D-CFAF81F05984}
+		{511CB060-641D-40AC-AE83-4001EA205412} = {B3F5315D-CC06-41C2-A54D-CFAF81F05984}
+		{A890D14B-65DB-4B5B-80C0-666E2EDA40AE} = {B3F5315D-CC06-41C2-A54D-CFAF81F05984}
+		{E7CEBDB4-360C-4959-85D4-E5207CEECE67} = {7AC3F48D-624D-4E99-8B8A-4D491602CEE2}
+		{14745E39-BDCA-4190-8E73-857AB55212D8} = {E7CEBDB4-360C-4959-85D4-E5207CEECE67}
+		{FC01F089-5E97-44F8-97D4-AC5C43C12BB6} = {B3F5315D-CC06-41C2-A54D-CFAF81F05984}
 	EndGlobalSection
 EndGlobal

@@ -191,3 +191,7 @@ jobs:
       - name: Verify tracked files and secret markers
         shell: pwsh
         run: pwsh -NoProfile -NonInteractive -File tools/scripts/verify-privacy-baseline.ps1
+
+      - name: Verify native fixture tooling guards
+        shell: pwsh
+        run: pwsh -NoProfile -NonInteractive -File tools/scripts/test-native-broker-tooling.ps1

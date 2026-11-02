@@ -31,6 +31,7 @@ public static class DependencyInjection
             services.AddSingleton<IncomeTransactionConfirmedConsumer>();
             services.AddSingleton<ITransactionConfirmedConsumer, TransactionalIncomeConfirmedConsumer>();
             services.AddHostedService<IncomeOutboxRetentionWorker>();
+            NativeIncomeMessaging.Add(services, configuration);
             services.AddSingleton<OwnedStorageHealthCheck>();
             services.AddHealthChecks().AddCheck<OwnedStorageHealthCheck>("income-owned-storage", tags: new[] { "ready" });
             return services;

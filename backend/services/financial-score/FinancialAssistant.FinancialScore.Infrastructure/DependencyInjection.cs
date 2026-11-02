@@ -37,6 +37,7 @@ public static class DependencyInjection
             services.AddSingleton<PostgresFinancialScoreProfileSettingsProvider>();
             services.AddSingleton<IFinancialScoreProfileSettingsProvider>(provider => provider.GetRequiredService<PostgresFinancialScoreProfileSettingsProvider>());
             services.AddSingleton<FinancialScoreFinancialEventMessageHandler>();
+            NativeFinancialScoreMessaging.Add(services, configuration);
             services.AddSingleton<OwnedStorageHealthCheck>();
             services.AddHealthChecks().AddCheck<OwnedStorageHealthCheck>("score-owned-storage", tags: new[] { "ready" });
             return services;

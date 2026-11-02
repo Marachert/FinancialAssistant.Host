@@ -146,7 +146,7 @@ internal static class RecommendationFixture
         Check(await store.UpdateRecommendationStatusAsync(other, completed.RecommendationId, "read", At.AddHours(1), default) is null);
         var owners = await context.ReadOwnerPageAsync(pageSize: 1);
         Check(owners.Owners.Count == 1 && owners.NextCursor is not null);
-        Check((await context.ReadOwnerPageAsync(owners.NextCursor)).Owners.Count == 1);
+        Check((await context.ReadOwnerPageAsync(owners.NextCursor, pageSize: 1)).Owners.Count == 1);
         if (mode == "restart")
         {
             var expired = Analytics(owner, "synthetic-insight-expired", At.AddMinutes(20));
