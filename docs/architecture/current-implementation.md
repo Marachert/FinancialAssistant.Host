@@ -34,6 +34,17 @@ fixed and regressed through real dispatcher/exception components before resoluti
 after green. FIN-207 remains open for FIN-278/approved-host qualification; this
 implementation merge adds no POC completion credit or first-user readiness.
 
+FIN-208's [protected configuration runtime component](../engineering/windows-native-protected-configuration.md)
+is actually merged through [PR301](https://github.com/Marachert/FinancialAssistant.Host/pull/301),
+protected squash `63fe6b12e8ba2e9cd6f7e24a16b52c91cf74cfb6` at
+`2026-11-02T20:45:37Z`. Final reviewed head
+`b2072ab474616f6eb854619555d66da28814e7ea` passed all five checks, configured
+re-review and final full1451/1451 local tests. Six new regressions reproduced and
+fixed the valid missing-packaged-baseline startup finding before evidence-based
+resolution after green. Actual privileged provisioning, admin bootstrap,
+coordinated rotation, WPF/recovery integration and approved-host qualification
+remain pending. FIN-208 stays open and adds no completion credit or readiness.
+
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
 supersedes the Compose POC target. FIN-270 is implementation work: no WPF
 installer or accepted native Windows runtime is claimed by this document.
