@@ -1,6 +1,8 @@
 # Native Persistence Qualification
 
-FIN-286, work in progress, 2026-11-02. This is the no-cost database qualification
+FIN-286 is locally Verified Merged through PR297, actual protected merge
+`d1704ab108892d8ee7007633066d5d9a21d751d5` at `2026-11-02T04:57:18Z`.
+Jira reconciliation is pending. This is the no-cost database qualification
 crosswalk, not installed Windows acceptance or a first-user readiness claim.
 Follow the [storage policy](../architecture/storage-policy.md),
 [ownership inventory](native-financial-persistence-scope.md) and
@@ -116,8 +118,12 @@ is inferred. Full local regressions passed **1286/1286 across 25 projects**, zer
 failed/skipped, from `2026-11-02T04:38:19.8076295Z` through
 `2026-11-02T04:42:30.2566621Z`. Changed-source format, native tooling AST guards,
 privacy baseline (1293 tracked files), Markdown links (157 files/553 links) and
-`git diff --check` passed. Remote exact-head review/CI/merge are still required;
-no FIN-286 completion credit or Jira transition is claimed here.
+`git diff --check` passed. All five checks succeeded on final head
+`bf9326a7b2eba1c403c3a7c2af2f2cebb1ed5f7c` (Backend41390314211,
+Mobile41390314157, Admin41390314113); review completed04:47:58.580086UTC without
+findings and final channels were clear. PR297 is independently merged=true/CLOSED.
+Nineteen post-merge Confluence full bodies/titles/versions were verified. This
+records one local completion, not Jira Done or installed/first-user acceptance.
 
 ### Earlier Attempts
 

@@ -307,7 +307,8 @@ The structural tooling test is not a substitute for either runtime scenario.
 Do not commit extracted packages, credentials, database directories or logs.
 
 FIN-276 delivery has verified exact-head CI/review, actual protected merge and
-post-merge evidence. FIN-286 and the security/installer tickets retain protected machine
+post-merge evidence. FIN-286's [full database/file qualification matrix](native-persistence-qualification.md)
+is also verified merged. The security/installer tickets retain protected machine
 credential deployment, settings-only refresh, first-user bootstrap and complete
 installed recovery gates. No unfinished integration/installer capability is
 credited to this scoped financial event-delivery proof.

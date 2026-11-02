@@ -87,7 +87,8 @@ signature of all owned constraints, including
 definitions and validation state, is recorded only at initial creation and checked
 on readiness/migration; dropped, weakened, extra or NOT VALID checks cannot be
 silently re-baselined by rerunning migration. PostgreSQL-major upgrades require
-explicit compatible schema-signature verification under FIN-286/280.
+explicit compatible schema-signature verification under FIN-280; FIN-286 verifies
+the currently pinned PostgreSQL/schema-v1 combination, not arbitrary major upgrades.
 Mismatched/newer versions fail closed, and no down/destructive migration is provided. Future migrations must be
 additive, ordered, reviewed and covered by compatible-upgrade tests. Rollback
 means retain data and run the compatible previous version, not drop tables.
@@ -107,7 +108,8 @@ FIN-287 owns separate Summary/Analytics adapters, FIN-288 Score/Recommendations/
 Notifications/preferences and FIN-289 append-only Audit storage. This explicit
 [original-scope decomposition](../../../docs/engineering/native-financial-persistence-scope.md)
 adds unfinished leaf units only; these adapters are not claimed implemented by
-the inventory, and FIN-286 must qualify all four siblings.
+the inventory. FIN-286 now records the actual scoped qualification of all four
+siblings alongside the earlier domain owners; installed acceptance stays separate.
 
 ## Verification
 
@@ -144,8 +146,9 @@ Each scenario uses the same verified, fresh, owned fixture and cleanup guards.
 Unsigned-package execution blocked by Windows policy must remain Blocked; do not
 bypass it. Passing a local database test is not package redistribution qualification.
 
-FIN-286 adds an in-progress [full owner qualification matrix](../../../docs/engineering/native-persistence-qualification.md)
-and structured evidence runner. Foundation additionally tests a live uncommitted
+FIN-286's merged [full owner qualification matrix](../../../docs/engineering/native-persistence-qualification.md)
+and structured evidence runner passed all nine actual database scenarios.
+Foundation additionally tests a live uncommitted
 domain/outbox transaction interrupted by the owned database crash. Migration
 compatibility is schema-v1 rerun plus explicit key addition, not arbitrary version
 upgrades or installed backup/restore acceptance.

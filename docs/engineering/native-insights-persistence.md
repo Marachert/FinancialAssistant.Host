@@ -4,8 +4,10 @@ FIN-288 is locally Verified Merged through PR291; Jira reconciliation is pending
 Actual merge `c4e6a9e15ab2602aa1d68fc45b48bf4899634e60` at `2026-10-29T10:11:34Z`.
 None of this implementation qualifies installed
 Windows, live RabbitMQ/Profile ingestion, real notification delivery or first-user
-acceptance. FIN-276 owns reliable transport/source integration, FIN-286 integrated
-recovery and FIN-278/281/206 installed qualification. No additional spending.
+acceptance by itself. FIN-276 separately verifies the supported financial
+transport/source path, and FIN-286's [full owner matrix](native-persistence-qualification.md)
+verifies scoped database recovery. Settings-only refresh, real notification sends
+and FIN-278/281/206 installed qualification remain separate. No additional spending.
 
 ## Owned Boundaries
 
