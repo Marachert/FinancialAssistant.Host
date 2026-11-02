@@ -14,6 +14,21 @@ numerator to 197. No denominator or duplicate rule changed. See
 [local tracking](LOCAL_BACKLOG.md) and [actual merge evidence](LOCAL_DELIVERY_EVIDENCE.json).
 Jira Done and parent transitions remain pending reconciliation, never fabricated.
 
+FIN-207's [native HTTPS implementation](../engineering/windows-native-https.md)
+is actually merged through [PR299](https://github.com/Marachert/FinancialAssistant.Host/pull/299):
+protected squash `f3e117ce127d4f204bb2a88d568badaf6ad3e358` at
+`2026-11-02T14:30:58Z`, final reviewed head
+`d057950852f78b163bef5ca913384c38fa1431d0`. All five exact-head checks succeeded
+(Backend41460084729/Mobile41460084524/Admin41460084647); re-review completed
+`2026-11-02T14:18:08.465944Z` with no findings after the valid streaming-body error
+finding was reproduced, fixed, regressed, evidenced and resolved only after green.
+Full1344/1344 tests across25 projects passed, zero failures/skips. Ten Confluence
+full bodies and central actual-merge evidence were verified. This is implementation
+delivery, **not FIN-207 Done**: FIN-278 integration and approved-host acceptance
+remain required. It adds **0.0 percentage points** and no entry to the verified
+completion ledger; the numerator/denominator, P9/parent progress and first-user
+readiness are unchanged.
+
 FIN-286 [PR297](https://github.com/Marachert/FinancialAssistant.Host/pull/297)
 was independently verified merged=true/CLOSED: actual protected squash
 `d1704ab108892d8ee7007633066d5d9a21d751d5` at `2026-11-02T04:57:18Z`, final head
@@ -35,10 +50,12 @@ before rounding.
 Local FIN-270 remains In Progress15/19; P9 21/39 (53.8%).
 First-user testing is Not Ready. Database/file qualification does not grant
 installed Windows, SCM, full backup/restore or first-user acceptance. Protected
-HTTPS/secrets, first-user bootstrap, Profile-only refresh and installer/WPF
-packaging remain launch gates. Restore FIN-207/208/209 prerequisite scopes before
-installer FIN-278/279/280 and owner-run FIN-281/206; do not start new product work
-until this guarded closure ledger is actually merged. Maintenance adds no credit.
+HTTPS provisioning/acceptance, protected secrets, first-user bootstrap, Profile-only
+refresh and installer/WPF packaging remain launch gates. FIN-207 implementation
+is merged, not its qualification. Restore FIN-208/209 prerequisite scopes before
+installer FIN-278/279/280 and owner-run FIN-281/206. The FIN-286 closure ledger is
+published through actual PR298 merge `7a92d54201894abe41a471aeabf858a2d788e226`;
+the HTTPS checkpoint is separate documentation maintenance and adds no credit.
 
 ## Historical FIN-276 Closure Snapshot
 

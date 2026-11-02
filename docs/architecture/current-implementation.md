@@ -24,6 +24,16 @@ reconciliation pending. All nine actual database scenarios and separate native-f
 recovery passed, including live uncommitted domain/outbox interruption. This does
 not grant installed or first-user acceptance.
 
+FIN-207's [native HTTPS increment](../engineering/windows-native-https.md) is
+actually merged through [PR299](https://github.com/Marachert/FinancialAssistant.Host/pull/299),
+protected squash `f3e117ce127d4f204bb2a88d568badaf6ad3e358` at
+`2026-11-02T14:30:58Z`. Final reviewed head
+`d057950852f78b163bef5ca913384c38fa1431d0` passed all five checks, configured
+re-review and full1344/1344 local tests. The valid proxied-body413 finding was
+fixed and regressed through real dispatcher/exception components before resolution
+after green. FIN-207 remains open for FIN-278/approved-host qualification; this
+implementation merge adds no POC completion credit or first-user readiness.
+
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
 supersedes the Compose POC target. FIN-270 is implementation work: no WPF
 installer or accepted native Windows runtime is claimed by this document.
