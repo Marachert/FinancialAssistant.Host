@@ -26,8 +26,14 @@ acceptance; missing native HTTPS remains an unhealthy readiness condition.
 Native startup requires explicit stable secrets, named in the
 catalog: 32-256 printable, non-whitespace ASCII characters. Missing/invalid values
 fail with configuration key names only. No secrets are generated or logged.
-FIN-208 supplies protected configuration/secret references and per-service ACLs;
-environment input here is a bootstrap contract, not that protection mechanism.
+FIN-208's [protected configuration contract](../../../docs/engineering/windows-native-protected-configuration.md)
+requires the read-only ProgramData store under SCM before native validation.
+Only the packaged non-secret baseline and validated protected snapshot survive;
+there is no installed environment/CLI secret fallback. Console environment input
+remains developer/owned-fixture bootstrap only. The runtime never creates missing
+artifacts, changes ACLs or generates credentials. Privileged activation, first-admin
+bootstrap, coordinated rotation, WPF integration and approved-host acceptance are
+still pending; this component is not FIN-208 closure or portable recovery.
 
 The catalog also requires each activated Income/Expense PostgreSQL Password and
 IndexKey alongside its gateway secret. These are separate owner storage inputs,

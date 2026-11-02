@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace FinancialAssistant.Shared.Hosting;
 
 public sealed record NativeServiceDefinition(
@@ -72,6 +74,15 @@ public static class NativeServiceCatalog
     public static NativeServiceDefinition Get(string id) =>
         Services.SingleOrDefault(service => string.Equals(service.Id, id, StringComparison.Ordinal))
         ?? throw new ArgumentException("Unknown native service identity.", nameof(id));
+
+    internal static bool IsVirtualServiceSid(string? value)
+    {
+        if (value is null) { return false; }
+        var parts = value.Split('-');
+        return parts.Length == 9 && parts[0] == "S" && parts[1] == "1" && parts[2] == "5" && parts[3] == "80" &&
+            parts.Skip(4).All(part => uint.TryParse(part, NumberStyles.None, CultureInfo.InvariantCulture, out var component) &&
+                component.ToString(CultureInfo.InvariantCulture) == part);
+    }
 
     private static NativeServiceDefinition Define(string id, int port, params string[] secrets) =>
         new(id, port, Array.AsReadOnly(secrets));

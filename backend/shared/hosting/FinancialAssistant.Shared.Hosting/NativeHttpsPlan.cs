@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Configuration;
@@ -73,7 +72,7 @@ public sealed class NativeHttpsPlan
             address.Equals(IPAddress.Broadcast) || address.GetAddressBytes()[0] is >= 224 and <= 239 ||
             !IPAddress.IsLoopback(address) && (!options.PublicExposureApproved || origin.IsLoopback) ||
             options.CertificateSha256.Length != 64 || !options.CertificateSha256.All(char.IsAsciiHexDigit) ||
-            !ValidServiceSid(options.ServiceSid) ||
+            !NativeServiceCatalog.IsVirtualServiceSid(options.ServiceSid) ||
             options.MaximumRequestBodyBytes is < 65536 or > 12 * 1024 * 1024 ||
             options.MaximumRequestHeadersBytes is < 8192 or > 32768 ||
             options.RequestHeadersTimeoutSeconds is < 5 or > 30 || options.MinimumCertificateDays is < 1 or > 90)
@@ -83,11 +82,4 @@ public sealed class NativeHttpsPlan
 
     private static InvalidOperationException Invalid() => new("Gateway:NativeHttps configuration is invalid or lacks explicit perimeter approval.");
 
-    private static bool ValidServiceSid(string value)
-    {
-        var parts = value.Split('-');
-        return parts.Length == 9 && parts[0] == "S" && parts[1] == "1" && parts[2] == "5" && parts[3] == "80" &&
-            parts.Skip(4).All(part => uint.TryParse(part, NumberStyles.None, CultureInfo.InvariantCulture, out var component) &&
-                component.ToString(CultureInfo.InvariantCulture) == part);
-    }
 }

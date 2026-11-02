@@ -35,7 +35,11 @@ internal static class Fixture
             CreateDirectory(root); owned = true; File.WriteAllText(Path.Combine(root, "run.id"), run);
             CreateDirectory(Path.Combine(root, "receipts")); CreateDirectory(Path.Combine(root, "diagnostics")); CreateDirectory(Path.Combine(root, "restore"));
             using (var store = new NativeReceiptObjectStore(ReceiptOptions(Path.Combine(root, "receipts")), TimeProvider.System))
-            { await store.StoreAsync("receipt_seed", "synthetic-seed-image"u8.ToArray(), default); }
+            {
+                AssertPinnedDirectory(Path.Combine(root, "receipts"));
+                AssertPinnedDirectory(root);
+                await store.StoreAsync("receipt_seed", "synthetic-seed-image"u8.ToArray(), default);
+            }
             var executable = Environment.ProcessPath ?? throw new IOException("Fixture executable identity is unavailable.");
             var start = new ProcessStartInfo(executable) { UseShellExecute = false, CreateNoWindow = true };
             if (string.Equals(Path.GetFileNameWithoutExtension(executable), "dotnet", StringComparison.OrdinalIgnoreCase))
@@ -141,6 +145,14 @@ internal static class Fixture
     }
     private static void DurableWrite(string path, byte[] bytes)
     { using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None); stream.Write(bytes); stream.Flush(true); }
+    private static void AssertPinnedDirectory(string path)
+    {
+        var moved = path + "-unexpected-move";
+        try { Directory.Move(path, moved); }
+        catch (IOException) { return; }
+        Directory.Move(moved, path);
+        throw new IOException("Owned native storage directory was not pinned against rename.");
+    }
     private static void ValidateRoot(string root, string run)
     {
         if (!Guid.TryParseExact(run, "N", out _) || Path.GetFullPath(root) != Path.Combine(Path.GetFullPath(Path.GetTempPath()), "fa-native-fixture-" + run))
