@@ -12,11 +12,12 @@ Actual synthetic financial crash/restart/replay passed locally without manual
 projector/provider calls. PR295 actually merged as `d142b075dced5847da8f12f9d237763e50d06e2c`.
 This does not make the inventory, service installation or first-user POC release-ready.
 
-FIN-286 is in progress with a [repeatable native persistence matrix and owner
-crosswalk](../../docs/engineering/native-persistence-qualification.md). It builds
-the current checkout and requires structured initial/crash/restart/cleanup evidence
-for all nine PostgreSQL scenarios. No installed qualification or completion credit
-is inferred from its implementation.
+FIN-286 is locally Verified Merged through PR297, actual
+`d1704ab108892d8ee7007633066d5d9a21d751d5`; Jira reconciliation is pending.
+Its [repeatable native persistence matrix and owner
+crosswalk](../../docs/engineering/native-persistence-qualification.md) passed all
+nine actual PostgreSQL initial/crash/restart/cleanup scenarios and separate native
+file recovery. This does not qualify installation or first-user readiness.
 
 FIN-273's [hosting contract](../../backend/shared/hosting/README.md) documents the
 native process profile, canonical service ports, required trust and non-executing
@@ -53,7 +54,7 @@ verification passed on 2026-10-29, not installed Windows or live delivery accept
 PR291 is verified merged as `c4e6a9e15ab2602aa1d68fc45b48bf4899634e60` at
 `2026-10-29T10:11:34Z`, final5b9a5c0/all5CIgreen/completedreview no findings.
 Jira reconciliation is pending; FIN-276 is verified merged locally, while
-FIN-286 and installer qualification remain required.
+FIN-286 database qualification is verified; installer qualification remains required.
 FIN-289's merged [Audit persistence](../../docs/engineering/native-audit-persistence.md)
 adds an independent PostgreSQL Audit identity, atomic immutable metadata/index/
 replay receipts and bounded lifecycle cleanup. Native composition requires owned

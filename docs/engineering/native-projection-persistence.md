@@ -178,8 +178,10 @@ execution or live delivery.
 
 The existing rebuild plan does not execute Score or Recommendation stages;
 those owners retain their own state under FIN-288. Reliable source/transport/inbox
-qualification remains FIN-276, integrated retention/recovery FIN-286 and backup
-acceptance FIN-209. Ticket closure requires its full scoped evidence, reviews,
+qualification of the supported financial path is recorded in FIN-276. FIN-286's
+[full owner matrix](native-persistence-qualification.md) verifies scoped database
+retention/recovery; remaining refresh paths and full backup acceptance FIN-209
+stay separate. Ticket closure requires its full scoped evidence, reviews,
 exact-head CI, actual merge and documentation gates; consult the live ledger.
 
 No real identities/financial data, paid provider/API/runner/credit/reset/fallback,

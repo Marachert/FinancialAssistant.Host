@@ -13,14 +13,16 @@ Recommendation preparation and minimized Audit, plus scoped Profile HTTP input.
 Actual synthetic financial convergence/crash/restart/replay passed locally,
 including the repository-owned runner, without manual projector or provider calls.
 PR295 is actually merged as `d142b075dced5847da8f12f9d237763e50d06e2c`; local verified
-completion is 196/215 (91.2%), P9 20/39 (51.3%), FIN-270 14/19 open.
+completion after FIN-286 is 197/215 (91.6%), P9 21/39 (53.8%), FIN-270 15/19 open.
 Installed and first-user gates below remain distinct. See the
 [native lifecycle evidence and limitations](../engineering/native-lifecycle-delivery.md).
 
-FIN-286 is currently implementing the [full native persistence qualification
-matrix](../engineering/native-persistence-qualification.md), including a live
-uncommitted domain/outbox interruption probe. Its completion is not yet credited;
-local synthetic database evidence cannot grant installed or first-user acceptance.
+FIN-286's [full native persistence qualification
+matrix](../engineering/native-persistence-qualification.md) is locally Verified Merged
+through PR297, actual `d1704ab108892d8ee7007633066d5d9a21d751d5`, with Jira
+reconciliation pending. All nine actual database scenarios and separate native-file
+recovery passed, including live uncommitted domain/outbox interruption. This does
+not grant installed or first-user acceptance.
 
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
 supersedes the Compose POC target. FIN-270 is implementation work: no WPF
@@ -31,7 +33,7 @@ installer or accepted native Windows runtime is claimed by this document.
 | Gateway | REST routing, JWT/role checks, exact public allowlist, trusted context, rate limits and safe errors | Route activation and destinations are environment-controlled; not every handler is enabled by repository defaults |
 | Identity/Profile/Category | Deterministic authentication/session/provider-validation handlers, profile preferences and taxonomy | Stable secrets, durable stores and real provider configuration; phone delivery adapter is disabled by default |
 | Intake/Receipt/AI | Editable drafts, review/reject/confirm, receipt/OCR processing and controlled provider abstractions | Approved provider budgets, privacy configuration and end-to-end hosted operation |
-| Income/Expense | Separate native PostgreSQL authoritative records, atomic minimized outbox, immutable confirmation replay and lifecycle contracts | Financial native delivery verified in FIN-276; integrated recovery FIN-286 and installed acceptance remain |
+| Income/Expense | Separate native PostgreSQL authoritative records, atomic minimized outbox, immutable confirmation replay and lifecycle contracts | Financial delivery FIN-276 and scoped database recovery FIN-286 verified; installed and full backup/restore acceptance remain |
 | Summary/Analytics | Separate owned PostgreSQL projections, strict replay and scoped generation recovery; deterministic dashboard composition | Financial Analytics delivery verified in FIN-276; Summary/remaining integration, settings-only refresh and installed acceptance remain |
 | Financial Score | Owned PostgreSQL projections, deterministic score factors/history, neutral first reads and atomic immutable outbox | Financial source/settings delivery verified in FIN-276; settings-only refresh and integrated/installed acceptance remain |
 | Recommendations/Notifications | Owned PostgreSQL facts/lifecycle, explicit preferences, trigger deduplication, prepared/read state and atomic immutable outbox | Push/web adapters are non-sending placeholders; no real delivery or deferred quiet-hours scheduler claimed |
@@ -123,7 +125,8 @@ FIN-284 follows its verified financial-owner prerequisite rather than writing th
 tables or using native in-process financial repositories. Confirmation remains
 Intake outbox -> FIN-276 -> matching owner inbox/store/outbox; owner APIs only
 reconcile status for Intake and never introduce another write path. All siblings remain
-required for FIN-270 and integrated FIN-286 acceptance.
+required for FIN-270; their scoped database verification is recorded by FIN-286,
+without waiving installed, backup or first-user gates.
 
 ## End-To-End User Scenario
 

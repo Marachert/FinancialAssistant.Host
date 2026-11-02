@@ -12,9 +12,10 @@ scoped generation-rebuild implementation are described in the
 [native projection contract](../../../docs/engineering/native-projection-persistence.md).
 FIN-287 is Done after the reviewed actual implementation merge. Owned Summary/
 Analytics storage and native composition are implemented; the in-memory adapter
-remains for developer/tests. Reliable source/transport integration remains FIN-276,
-integrated lifecycle/recovery FIN-286 and backup acceptance FIN-209. No installed-host
-acceptance is inferred from the synthetic database fixture.
+remains for developer/tests. FIN-276 separately verifies the supported financial
+source/transport path; FIN-286's [nine-scenario matrix](../../../docs/engineering/native-persistence-qualification.md)
+verifies scoped database/rebuild crash recovery. Other cross-owner refresh paths,
+full backup/restore FIN-209 and installed-host acceptance remain separate gates.
 
 ## Responsibility
 

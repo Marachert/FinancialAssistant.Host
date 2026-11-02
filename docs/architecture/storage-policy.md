@@ -18,7 +18,8 @@ bounded disposable health observations and private technical diagnostic files, n
 financial/session/idempotency/quota authority. FIN-285 adds separate
 [Receipt/OCR and AI owned PostgreSQL workflow adapters](../engineering/receipt-ai-native-persistence.md),
 atomic publication intents, object verification and durable conservative usage/request
-reservations. Native delivery remains FIN-276; backup/deletion consistency and installed acceptance remain gated.
+reservations. FIN-276 verifies the supported confirmed-financial delivery path;
+other Receipt/OCR delivery, full backup/deletion consistency and installed acceptance remain gated.
 
 FIN-274's original multi-owner scope is explicitly decomposed: FIN-274 owns the
 PostgreSQL foundation; FIN-282 Identity, FIN-283 Profile/Category, FIN-284 Intake,
@@ -38,8 +39,11 @@ The subsequent [native financial implementation](../engineering/financial-record
 adds separate Income/Expense owned records, immutable confirmation originals/
 fingerprints and atomic minimized outboxes. FIN-287 Summary/Analytics, FIN-288
 Score/Recommendations/Notifications and FIN-289 Audit adapters are also merged;
-the latter two are locally verified with Jira reconciliation pending. Live delivery
-and integrated recovery remain unqualified, not implied by owned-store completion.
+the latter two are locally verified with Jira reconciliation pending. FIN-276
+separately verifies financial-path delivery; FIN-286's
+[full owner matrix](../engineering/native-persistence-qualification.md) verifies
+the scoped database/file migration, retention and crash-recovery boundaries.
+Neither qualifies installed deployment, full backup/restore or first-user readiness.
 FIN-284 commits only its durable confirmation outbox; FIN-276 delivers to the
 matching FIN-275 financial owner asynchronously. Owner APIs are read-only status/
 reconciliation for Intake, not a second confirmation write or direct SQL path;
