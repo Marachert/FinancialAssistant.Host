@@ -47,7 +47,7 @@ improvements must not delay independent free POC implementation.
 | --- | --- | --- |
 | FIN-288 | Verified Merged; Jira reconciliation pending | PR291 actual `c4e6a9e15ab2602aa1d68fc45b48bf4899634e60`, merged `2026-10-29T10:11:34Z`; final `5b9a5c04571011cbb86b2fc9b4145d7e9a89d09a`, all five CI green, completed review no findings, post-merge Confluence verified. Closure PR292 also verified merged as `c46b2ed5d313469d83e8b6c2e4da2c968318f94f` before FIN-289 began. |
 | FIN-289 | Verified Merged; Jira reconciliation pending | [PR293](https://github.com/Marachert/FinancialAssistant.Host/pull/293) actual `f870733b35bc1d74a4248f882d4426faeef1e92e`, merged `2026-10-29T13:53:43Z`; final `77adda433b0e8f3d58c6495a50bc34617615326d`, all five CI green, both valid findings fixed/tested/evidenced/resolved after green, re-review no findings and nine post-merge Confluence bodies verified. Native minimized Audit metadata/replay/retention, not live transport or installed acceptance. |
-| FIN-276 | In Progress, local ownership | Real durable local RabbitMQ/inbox/outbox/consumer convergence and authorized settings ingestion; synthetic direct calls are not delivery proof. Branch `codex/fin-276-native-lifecycle` from actual closure main `bd1560d40befa91f14d9469032c26c43dbe70e3d`. Cached leaf/parent/all19 children and prerequisites were restored; FIN-288/289 are verified locally. Implementation is being published through its single guarded PR; no merge or new completion credit is inferred. |
+| FIN-276 | Verified Merged; Jira reconciliation pending | [PR295](https://github.com/Marachert/FinancialAssistant.Host/pull/295) actual `d142b075dced5847da8f12f9d237763e50d06e2c` at `2026-11-02T00:29:46Z`, final `2a78ae2c35c6a83218892073a65fff8226a770e8`, all five exact-head checks green, configured re-review clear and sixteen post-merge Confluence full bodies verified. Native financial event delivery and actual crash/replay, not installed or first-user acceptance. |
 | FIN-286 | Pending, depends on FIN-276 | Full native persistence/migration/retention/crash recovery integration, including all previously merged owners. |
 | FIN-207/208/209 | Required dependency work | Local HTTPS, protected secrets and verified backup/restore. Restore cached descriptions/source before starting; no purchased certificate required to develop free test paths. |
 | FIN-278 | Pending | Restart-safe privileged installation engine; prerequisite ordering must preserve security/configuration/recovery requirements. No SCM installation on this working PC. |
@@ -55,44 +55,27 @@ improvements must not delay independent free POC implementation.
 | FIN-280 | Pending | Qualified versioned packaging, repair/update/safe uninstall, integrity/notices/support checks. Do not replace package trust checks with paid purchases or silent bypasses. |
 | FIN-281/206 | Pending owner-run qualification | Reproducible Windows lifecycle harness and actual installed-host acceptance. Mark unavailable environments/tests pending, not passed. |
 
-FIN-270 remains open locally with13/19 verified complete; last verified Jira snapshot had11/19 Done.
+FIN-270 remains open locally with14/19 verified complete; last verified Jira snapshot had11/19 Done.
 FIN-271/272/273/274/282/283/275/284/277/285/287 were verified Done. A parent cannot
 close merely because child code exists; its integrated acceptance still applies.
 
-FIN-276 working evidence: focused Messaging73/Audit45/Income20/Expense20/
-Profile39/Analytics52/Score33/Hosting60/Recommendations53 tests passed. Actual
-Profile, projection-order, recommendation preparation/preferences and bounded
-31-owner outbox PostgreSQL restart proofs passed. Three actual broker transport
-runs qualified retries/durable recovery/hosted reconnect with cleanup. Combined
-automatic financial convergence, PostgreSQL immediate-crash/restart, pending
-broker/outbox recovery and actual acknowledged duplicate replay passed in
-`201b6d1fcec144048034d392687a467c` at `2026-10-29T22:28:07Z`. The promoted
-repository runner independently passed `facb5713df134d088c03bbd2b8626537` at
-`2026-10-30T03:48:01Z`; both verified cleanup and zero manual projector/provider
-calls. An initial promoted-run listener timeout also cleaned up; the approved
-outside-sandbox retry passed. No current-head CI, review, merge, installed or
-first-user acceptance is inferred. Full verification and deployment/settings-only
-coverage remain pending; no extra feature credit. Confluence Delivery138/
-Bootstrap527 snapshots predate the combined pass. Delivery139/Bootstrap528 and
-nine affected mapped pages were subsequently verified in full with actual flow
-evidence. Final local full1282/1282 and format0/1250 passed; promoted transport
-retry/restart/reconnect also passed, cleanup verified at2026-10-30T04:21:18Z. See the
-[local lifecycle guide](../engineering/native-lifecycle-delivery.md).
-
-The later full1252/1252 result passed across25 projects (four existing build cache
-warnings, zero errors/failures/skips), before the new native Audit adapter. That
-adapter separately passed45/45 focused tests and a clean scoped build. It maps
-broker producer identity to the unchanged Audit admission/transaction boundary;
-no combined transport/storage acceptance or completion credit is inferred.
+FIN-276 is verified merged through PR295. Its reviewed scope includes durable
+native broker/outbox/inbox delivery through Analytics, Score, Recommendation
+preparation and minimized Audit, with authorized Profile input and private order.
+Full1282/1282 tests and actual message-specific replay/restart passed; all owned
+fixture processes stopped. See the [lifecycle guide](../engineering/native-lifecycle-delivery.md).
+Next prerequisite FIN-286 verifies the remaining migration/retention/recovery
+crosswalk. Native first-user bootstrap, Profile-only refresh and protected
+machine deployment remain explicit launch gaps, not inferred acceptance.
 
 ## Progress And Evidence
 
-Current local verified completion is **195/215, 90.7%**, P9 **19/39, 48.7%**;
-first-user **Not Ready**. Increase from FIN-289 is100/215=0.4651percentagepoints,
+Current local verified completion is **196/215, 91.2%**, P9 **20/39, 51.3%**;
+first-user **Not Ready**. Increase from FIN-276 is100/215=0.4651percentagepoints,
 reported+0.5pp before rounding. This is **not a new live Jira census**. See
 [structured actual-merge evidence](LOCAL_DELIVERY_EVIDENCE.json) and
 [the progress snapshot/history](POC_PROGRESS.md). No scope denominator or duplicate
-rule changed; FIN-288 and FIN-289 each receive one unique local completion credit.
+rule changed; FIN-288, FIN-289 and FIN-276 each receive one unique local completion credit.
 This maintenance adds none.
 
 Last verified published census: **193/215, 89.8%**, P9 **17/39, 43.6%**;
@@ -158,6 +141,7 @@ further findings. All 27 affected Confluence post-merge readbacks were verified.
   it was last verified In Progress. No Jira Done transition is claimed.
 - FIN-289: verify live scope/ownership and reconcile actual PR293 and its reviewed
   tests/CI/Confluence evidence. No Jira transition is claimed during suspension.
-- FIN-288 and FIN-289 are newly locally verified complete during the outage. Preserve
+- FIN-276: reconcile actual PR295 scope/merge/verification evidence when Jira returns.
+- FIN-288, FIN-289 and FIN-276 are locally verified complete during the outage. Preserve
   the separate stale Jira baseline and do not double-count it after reconciliation.
 - Preserve prior actual merge/closure history and canonical duplicate rules.

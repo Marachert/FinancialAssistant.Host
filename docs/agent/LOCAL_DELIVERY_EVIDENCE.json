@@ -79,6 +79,45 @@
         "589905": 139,
         "4259842": 518
       }
+    },
+    {
+      "key": "FIN-276",
+      "state": "Verified Merged",
+      "jiraReconciliation": "Pending",
+      "epic": "FIN-38",
+      "parent": "FIN-270",
+      "pullRequest": "https://github.com/Marachert/FinancialAssistant.Host/pull/295",
+      "merged": true,
+      "actualMergeCommit": "d142b075dced5847da8f12f9d237763e50d06e2c",
+      "mergedAt": "2026-11-02T00:29:46Z",
+      "finalHead": "2a78ae2c35c6a83218892073a65fff8226a770e8",
+      "successfulChecksOnFinalHead": 5,
+      "workflowRuns": [
+        41005096005,
+        41005095799,
+        41005095793
+      ],
+      "reviewCompletedAt": "2026-10-30T04:53:04.202447Z",
+      "unresolvedFindings": 0,
+      "postMergeConfluenceVerified": true,
+      "confluenceVersions": {
+        "131075": 49,
+        "131095": 45,
+        "131336": 117,
+        "262339": 138,
+        "262398": 152,
+        "262498": 34,
+        "262618": 97,
+        "425993": 116,
+        "426194": 4,
+        "458753": 128,
+        "458773": 143,
+        "458833": 27,
+        "557178": 143,
+        "589905": 142,
+        "622674": 25,
+        "4259842": 532
+      }
     }
   ],
   "firstUserTesting": "Not Ready",

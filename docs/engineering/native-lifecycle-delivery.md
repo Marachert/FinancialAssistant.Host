@@ -2,13 +2,15 @@
 
 ## Current status
 
-FIN-276 is in progress under the owner-approved local tracking exception while
-Jira is suspended. The implementation is on its guarded delivery branch and has
-no completion credit before reviewed exact-head CI and actual merge. Messaging 73 and
-Recommendations 53 focused tests passed separately. Actual combined automatic
-financial delivery and PostgreSQL crash/restart/replay passed twice, including
-the repository-owned runner described below. Installed recovery and first-user
-readiness remain unqualified.
+FIN-276 is locally Verified Merged under the owner-approved tracking exception
+while Jira is suspended. [PR295](https://github.com/Marachert/FinancialAssistant.Host/pull/295)
+actually merged as `d142b075dced5847da8f12f9d237763e50d06e2c` at
+`2026-11-02T00:29:46Z`, final `2a78ae2c35c6a83218892073a65fff8226a770e8`.
+All five exact-head checks passed and configured re-review completed without
+findings. Sixteen post-merge Confluence full bodies were read-back verified.
+Full1282/1282 tests and actual financial/broker recovery proofs passed; no provider
+or manual projector was used. Installed recovery and first-user readiness remain
+unqualified. No Jira Done transition is claimed.
 
 Income and Expense have opt-in native registrations and focused adapter tests
 (20 tests passed for each service). `Income:Messaging:Enabled` and
@@ -304,8 +306,8 @@ cleanup, service-flow verification, and still-unqualified installed acceptance.
 The structural tooling test is not a substitute for either runtime scenario.
 Do not commit extracted packages, credentials, database directories or logs.
 
-FIN-276 delivery still requires exact-head CI/review, protected merge and post-merge
-evidence. FIN-286 and the security/installer tickets retain protected machine
+FIN-276 delivery has verified exact-head CI/review, actual protected merge and
+post-merge evidence. FIN-286 and the security/installer tickets retain protected machine
 credential deployment, settings-only refresh, first-user bootstrap and complete
 installed recovery gates. No unfinished integration/installer capability is
 credited to this scoped financial event-delivery proof.
