@@ -25,6 +25,7 @@ Developer, architecture, security, API, event, and delivery documentation worksp
 - [Native persistence qualification matrix and owner crosswalk](engineering/native-persistence-qualification.md)
 - [Native Intake draft and confirmation-intent persistence](engineering/intake-native-persistence.md)
 - [Native protected receipt files, health cache and local diagnostics](engineering/windows-native-adapters.md)
+- [Native protected configuration and service-bound secret references](engineering/windows-native-protected-configuration.md)
 - [Native Receipt, OCR and AI workflow persistence](engineering/receipt-ai-native-persistence.md)
 - [Confluence/GitHub maintenance map](agent/DOCUMENTATION_MAINTENANCE.md)
 - [September 2026 documentation audit](reviews/documentation-audit-20260910.md)

@@ -40,6 +40,7 @@ public static class FinancialAssistantHost
 
         if (builder.Environment.IsEnvironment(NativeEnvironment))
         {
+            NativeConfigurationBootstrap.Apply(builder.Configuration, serviceId, underScm);
             ConfigureNative(builder, service);
         }
 
