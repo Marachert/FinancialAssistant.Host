@@ -411,7 +411,10 @@ Native metrics, traces, persistent audit, dashboards and alert delivery also nee
 explicit packages/adapters. Local log files alone do not satisfy these contracts.
 Until this is resolved, `SEARCH-OBSERVABILITY` blocks package qualification.
 
-FIN-207 owns the proposed Kestrel HTTPS endpoint and trusted certificates;
+FIN-207's [direct Kestrel HTTPS implementation](../../docs/engineering/windows-native-https.md)
+provides opt-in listener/certificate/access contracts and free loopback TLS tests.
+It remains open for FIN-278 integration and approved-host certificate/firewall
+acceptance; no certificate import, public exposure or machine mutation is implied.
 FIN-208 owns secret protection and key recovery; FIN-209 owns consistent restore.
 LLM/OCR/push/SMS/OAuth integration remains separately authorized and disabled when
 unconfigured. A disabled provider is unavailable, never a successful test result.
@@ -454,9 +457,10 @@ qualification; the exact archive digest has been verified locally.
    inventory merge/closure is not that release approval.
 
 No additional spending, package/tool installation or machine changes are authorized
-by this document. Current locally verified POC completion is 196/215 (91.2%) after
-FIN-276 closure, +0.5 percentage points before rounding; FIN-270 is14/19 locally
-verified complete and FIN-38 P9 is20/39(51.3%). This is not a new live Jira census;
+by this document. Current locally verified POC completion is 197/215 (91.6%) after
+FIN-286 closure, +0.5 percentage points before rounding; FIN-270 is15/19 locally
+verified complete and FIN-38 P9 is21/39(53.8%). FIN-207's partial implementation
+receives no completion credit. This is not a new live Jira census;
 last live baseline remains193/215(89.8%), with Jira reconciliation pending.
 Historical FIN-287 closure is193/21589.8%. Historical FIN-285 closure is192/21589.3%.
 Historical FIN-277 closure is191/21588.8%.

@@ -792,8 +792,8 @@
     {
       "id": "https",
       "owner": "FIN-207",
-      "decision": "Kestrel gateway HTTPS candidate at port443; certificate trust/ACL/rotation and static admin hosting must be implemented and verified",
-      "qualification": "not-implemented"
+      "decision": "FIN-207 opt-in direct Kestrel TLS, strict certificate/provider/key policy and free loopback TLS/access/renewal tests implemented; public port is explicitly selected (443 candidate). FIN-278 integration, actual service-store trust/revocation/key ACL/firewall/renewal qualification and static admin hosting remain pending; FIN-207 stays open, no installed or release acceptance",
+      "qualification": "not-tested"
     },
     {
       "id": "secret-recovery",

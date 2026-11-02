@@ -81,6 +81,12 @@ acceptance or a complete WPF deployment. Durable adapters, protected configurati
 HTTPS, installer orchestration, package qualification and the actual three-Windows
 matrix remain separate delivery gates. Existing developer/test profiles remain.
 
+FIN-207's [direct Kestrel HTTPS implementation](../engineering/windows-native-https.md)
+adds an opt-in public listener, strict certificate/provider/key policy and real
+synthetic loopback TLS tests. FIN-207 remains open for FIN-278 integration and
+approved-host certificate/firewall/access acceptance; the default profile opens
+no public listener and no installed qualification or completion credit is implied.
+
 | Component | Native target | Owner and release gate |
 | --- | --- | --- |
 | WPF wizard and engine | Separate UI and privileged deployment engine | FIN-278/279; resumable steps and UI validation |

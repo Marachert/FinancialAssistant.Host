@@ -21,6 +21,14 @@ It does not own identity/profile persistence, transaction or receipt business lo
 
 ## Technical endpoints
 
+In `WindowsNative`, FIN-207's [opt-in direct HTTPS
+perimeter](../../../../docs/engineering/windows-native-https.md) keeps these
+diagnostics on the canonical loopback listener only; HTTPS returns 404 for root,
+health, gateway diagnostics and metrics. It rejects spoofed forwarding headers,
+requires the configured Host/SNI and an approved machine certificate, and retains
+normal JWT/admin authorization. No public listener opens by default. Installer
+integration and approved-host acceptance are still pending, not granted by tests.
+
 ```text
 GET /
 GET /health
