@@ -14,6 +14,15 @@ verified merged=true/CLOSED: actual protected squash
 were clear; nine pre-merge Confluence full-body readbacks were verified. This is
 an implementation merge, not FIN-209 Done or complete backup qualification.
 
+The package follow-on [PR306](https://github.com/Marachert/FinancialAssistant.Host/pull/306)
+is independently verified merged=true/CLOSED: actual protected squash
+`ce26f8344982b884e2f5ba0cb4c01fc1b6fd5ce6` at `2026-11-03T09:35:20Z`, final
+`ab4297866f02158bd4ee8d1573e68bdab7e74723`. All five exact-head checks passed
+(Backend41610686585/Mobile41610686653/Admin41610686645); configured review completed
+`2026-11-03T09:25:17.152848Z` without findings. Final channels/labels were clear;
+seven affected pre-merge Confluence bodies and central actual-merge bodies were
+verified. Package IO is not FIN-209 closure or complete business recovery.
+
 The manifest follow-on [PR305](https://github.com/Marachert/FinancialAssistant.Host/pull/305)
 is also independently verified merged=true/CLOSED: actual protected squash
 `edc4a76155d68ebed032bbca06845de7b810c000` at `2026-11-03T08:57:26Z`, final
@@ -150,6 +159,52 @@ failures/skips, from `2026-11-03T09:15:29.9330208Z` to
 Full Release build passed with zero errors and five existing warnings. These
 are component tests with synthetic captures, not complete POC capture/restore,
 installed-host acceptance or a claim of exact-head CI.
+
+## Protected Windows Destination
+
+`WindowsNativeRecoveryStore` reuses the existing Windows protected-directory
+policy: local fixed NTFS, pinned non-reparse ancestors, same-handle file type/link
+and ACL checks, matching current operator SID, protected private root DACL and an
+exclusive writer lease. The root must already exist with approved ownership;
+the store never provisions, broadens or repairs permissions. It is a library,
+not another Windows service. The installer must validate that the dedicated
+destination is separate from application/source data and is operator-approved.
+
+Save independently authenticates the complete package before writing, derives an
+opaque filename from source-installation/backup IDs, uses the existing flushed
+temporary-file/atomic-no-overwrite write, and verifies persisted length/digest
+against the independently authenticated bytes before reporting storage success.
+Identical retries are accepted without rewriting. Conflicting or corrupt existing
+bytes are preserved and rejected, never silently replaced. Open requires the
+expected source/backup identities and authenticates the whole stored package.
+Wrong unlock material, unexpected identities, corruption and unsafe directory
+policies cannot return a usable package.
+
+The helper's original three-argument constructor and 12 MiB default file limit
+remain unchanged. Only an explicit bounded four-argument overload permits up to
+128 MiB for this backup consumer; receipt-object limits and ACL/identity checks
+are not weakened. Operations are serialized inside the existing cross-process
+lease. Await active work before synchronous disposal, or use `DisposeAsync`;
+busy synchronous disposal refuses to block a UI thread. Mutable serialized
+ciphertext/readback buffers are cleared after use.
+
+No archive deletion, automatic retention, scheduler, root provisioning or semantic
+capture/restore actuator is added. Destination capacity exhaustion fails closed;
+the last verified recovery point is never deleted to make room. Full capture,
+migration/key/object reconciliation, installer lifecycle and approved-host business
+acceptance remain mandatory. Windows tests use only new private GUID fixture
+folders, including a real package above the legacy 12 MiB limit, duplicate/conflict,
+corruption, wrong unlock, broad ACL/second-writer denial, cancellation and cleanup.
+Non-Windows tests assert platform refusal rather than claiming those positives.
+
+Local verification passed **1,557/1,557** tests across26 projects, zero failures/
+skips, from `2026-11-03T09:53:06.7183991Z` to `2026-11-03T09:57:01.8115216Z`;
+recovery104/104 includes six actual Windows protected-store scenarios. Full Release
+build passed with zero errors and five existing warnings. The existing native
+adapter owned-process crash/restart, exact ciphertext/10 MiB receipt, portable
+restore/deletion, diagnostic recovery and junction rejection also passed against
+the rebuilt helper. This is local synthetic component evidence, not installed
+SCM, power-loss durability, complete business backup or exact-head CI.
 
 ## Repeatable Owned Drill
 

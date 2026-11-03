@@ -87,11 +87,20 @@ receipt-object bundle. Metadata coverage is not actual quiescence/capture or
 whole-application restore. No Done or extra completion credit.
 Local follow-on full1528/1528 across26 projects, recovery75/75, zero failures/skips;
 this is manifest metadata/artifact validation, not another actual business drill.
-The same FIN-209 continues on `codex/fin-209-portable-package` from actual main
-`edc4a76155d68ebed032bbca06845de7b810c000`: complete encrypted package construction,
+The package component is actually merged through [PR306](https://github.com/Marachert/FinancialAssistant.Host/pull/306),
+actual `ce26f8344982b884e2f5ba0cb4c01fc1b6fd5ce6` at `2026-11-03T09:35:20Z`, final
+`ab4297866f02158bd4ee8d1573e68bdab7e74723`, all five exact-head checks green
+(Backend41610686585/Mobile41610686653/Admin41610686645), configured review clear
+at `2026-11-03T09:25:17.152848Z` and final channels clear. It supplies encrypted package construction,
 caller-owned stream writing and independent all-artifact authentication, including
 owned file/failure tests. Actual quiescence/capture, destination provisioning,
 atomic publication, scheduling and installer/business acceptance remain open.
+The same FIN-209 continues on `codex/fin-209-protected-store` from that actual main:
+existing protected-directory reuse for atomic no-overwrite package storage,
+idempotent identical retries, persisted-byte verification and authenticated opens.
+The original 12 MiB helper default/constructor remain unchanged; the backup consumer
+explicitly opts into a bounded larger limit. Root provisioning, capture, scheduling
+and integrated/installed acceptance remain open; no Done or completion credit.
 No pending installed qualification is silently waived to advance. Native first-user
 bootstrap, Profile-only refresh and protected machine deployment remain explicit
 launch gaps, not inferred acceptance.

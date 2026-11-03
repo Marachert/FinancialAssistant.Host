@@ -15,12 +15,17 @@ public sealed partial class ProtectedDirectory : IDisposable
     private readonly List<SafeFileHandle> directories = new();
     private readonly FileStream lease;
     private readonly int maximumFiles;
+    private readonly int maximumFileBytes;
     private bool disposed;
 
     public ProtectedDirectory(string rootPath, string serviceSid, int maximumFiles = 10000)
+        : this(rootPath, serviceSid, maximumFiles, 12 * 1024 * 1024) { }
+
+    public ProtectedDirectory(string rootPath, string serviceSid, int maximumFiles, int maximumFileBytes)
     {
         if (!OperatingSystem.IsWindows()) { throw new PlatformNotSupportedException("Protected native files require Windows."); }
         if (maximumFiles is < 10 or > 10000) { throw new ArgumentOutOfRangeException(nameof(maximumFiles)); }
+        if (maximumFileBytes is < 1 or > 128 * 1024 * 1024) { throw new ArgumentOutOfRangeException(nameof(maximumFileBytes)); }
         if (string.IsNullOrWhiteSpace(rootPath) || !Path.IsPathFullyQualified(rootPath) || rootPath.StartsWith(@"\\", StringComparison.Ordinal)
             || rootPath.IndexOf(':', 2) >= 0 || rootPath.Any(char.IsControl)
             || rootPath.Split(['\\', '/']).Any(part => part.EndsWith(' ') || part.EndsWith('.')))
@@ -36,6 +41,7 @@ public sealed partial class ProtectedDirectory : IDisposable
         allowedSids = new HashSet<string>(StringComparer.Ordinal) { serviceSid, "S-1-5-18", "S-1-5-32-544" };
         this.serviceSid = serviceSid;
         this.maximumFiles = maximumFiles;
+        this.maximumFileBytes = maximumFileBytes;
         FileStream? acquired = null;
         try
         {
@@ -99,7 +105,7 @@ public sealed partial class ProtectedDirectory : IDisposable
         if (!OperatingSystem.IsWindows()) { throw new PlatformNotSupportedException(); }
         ObjectDisposedException.ThrowIf(disposed, this);
         ValidateName(name);
-        if (maximumBytes is < 1 or > 12 * 1024 * 1024) { throw new ArgumentOutOfRangeException(nameof(maximumBytes)); }
+        if (maximumBytes < 1 || maximumBytes > maximumFileBytes) { throw new ArgumentOutOfRangeException(nameof(maximumBytes)); }
         SafeFileHandle handle;
         try { handle = Open(Path.Combine(root, name), directory: false); }
         catch (FileNotFoundException) { return null; }
@@ -120,7 +126,7 @@ public sealed partial class ProtectedDirectory : IDisposable
         if (!OperatingSystem.IsWindows()) { throw new PlatformNotSupportedException(); }
         ObjectDisposedException.ThrowIf(disposed, this);
         ValidateName(name);
-        if (bytes.Length is < 1 or > 12 * 1024 * 1024) { throw new ArgumentException("Invalid native storage payload size."); }
+        if (bytes.Length < 1 || bytes.Length > maximumFileBytes) { throw new ArgumentException("Invalid native storage payload size."); }
         var entries = ListFiles();
         if (!entries.Contains(name) && entries.Count >= maximumFiles - 1) { throw new IOException("Native storage capacity exceeded."); }
         if (entries.Contains(name))
