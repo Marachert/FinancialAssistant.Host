@@ -5,6 +5,15 @@ encryption and an actual isolated Income/Expense restore drill. It is not a
 complete POC backup utility, installed-host qualification or permission to restore
 an existing database. No completion credit or first-user readiness is claimed.
 
+[PR303](https://github.com/Marachert/FinancialAssistant.Host/pull/303) is independently
+verified merged=true/CLOSED: actual protected squash
+`379e6fc630b62aa0f1f269188db89c3e45ac66bd` at `2026-11-03T08:21:44Z`, final head
+`4515a8229b89a43a0e94866d2972369b84df8237`. All five exact-head checks passed
+(Backend41600143931/Mobile41600143848/Admin41600143814); configured review completed
+`2026-11-03T08:03:10.597513Z` with no findings. All final review channels and labels
+were clear; nine pre-merge Confluence full-body readbacks were verified. This is
+an implementation merge, not FIN-209 Done or complete backup qualification.
+
 Follow the [native deployment decision](../architecture/windows-native-poc.md),
 [protected configuration contract](windows-native-protected-configuration.md),
 [persistence qualification](native-persistence-qualification.md) and
