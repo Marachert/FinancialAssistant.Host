@@ -14,6 +14,15 @@ verified merged=true/CLOSED: actual protected squash
 were clear; nine pre-merge Confluence full-body readbacks were verified. This is
 an implementation merge, not FIN-209 Done or complete backup qualification.
 
+The manifest follow-on [PR305](https://github.com/Marachert/FinancialAssistant.Host/pull/305)
+is also independently verified merged=true/CLOSED: actual protected squash
+`edc4a76155d68ebed032bbca06845de7b810c000` at `2026-11-03T08:57:26Z`, final
+`5dc07721b8dcef2bccd8a7228ed0810e414481d7`. All five exact-head checks passed
+(Backend41606135388/Mobile41606135402/Admin41606135375); configured review completed
+`2026-11-03T08:50:30.176799Z` without findings. Final channels/labels were clear;
+seven affected pre-merge Confluence bodies and central actual-merge bodies were
+verified. FIN-209 remains In Progress without completion credit.
+
 Follow the [native deployment decision](../architecture/windows-native-poc.md),
 [protected configuration contract](windows-native-protected-configuration.md),
 [persistence qualification](native-persistence-qualification.md) and
@@ -89,6 +98,58 @@ zero failures/skips, from `2026-11-03T08:42:09.2828873Z` to
 `2026-11-03T08:45:55.7765747Z`; recovery75/75 includes44 manifest regressions.
 Full restore/Release build passed with zero errors and five existing warnings.
 These results do not assert a new physical recovery drill or exact-head CI.
+
+## Portable Package Streams
+
+`NativeRecoveryPackage` constructs and independently reads a portable encrypted
+package using the full inventory contract. The caller supplies all 30 plaintext
+captures with migration metadata and a metadata prototype with no prebuilt
+artifact entries. The factory validates complete coverage before encryption,
+generates independent artifact IDs and a random recovery key, encrypts each
+artifact, authenticates the complete manifest, wraps the recovery key separately
+and clears its local plaintext key. Inputs remain caller-owned and must be cleared
+by that caller; capture strings and mutable buffers must never be logged.
+
+The binary version1 format contains an opaque identity/key-wrap/length header,
+the encrypted bounded manifest, ciphertext artifacts in canonical manifest order
+and a final completion marker. Import requires the exact declared total length,
+valid IDs/versions/unlock material, authenticated manifest and every authenticated
+artifact before returning any package. Truncation, trailing bytes, tampering,
+wrong unlock material and cancellation cannot produce a usable partial result.
+The completion marker alone is not proof of integrity or business recovery.
+
+One package is bounded to 128 MiB, with the existing 64 MiB per-artifact limit.
+Creation conservatively reserves the maximum manifest size before allocating
+ciphertext. Oversize input is refused; no truncation or streaming/chunking claim
+is made. Stored package objects retain only ciphertext and immutable metadata,
+not the recovery key. Each explicit artifact-open unwraps a temporary key and
+clears it in `finally`; the caller owns and must clear returned plaintext.
+
+`WriteTo` accepts only an empty seekable destination at position0; it never
+truncates, resumes into or overwrites existing bytes. It writes the completion
+marker last, flushes the stream and uses `FileStream.Flush(true)` for actual files.
+`ReadFrom` requires a bounded seekable source at position0. Caller streams remain
+caller-owned. These APIs do not choose paths or create/repair ACLs. The installer
+must open a new exclusively owned local temporary file through validated handles,
+validate destination/ancestor ownership and capacity, and publish it atomically
+only after a successful durable write and independent verification. On failure,
+preserve/clean only journal-proven owned temporary output; never overwrite an
+existing backup, report a partial file as success or delete the last verified
+recovery point. Secure destination provisioning/publication remains FIN-278/280.
+
+Free tests use one new owned GUID directory and `FileMode.CreateNew`/exclusive
+file handles with synthetic payloads. They verify actual encrypted-file roundtrip,
+no plaintext payload/unlock in file bytes, wrong-key/tamper/truncation/trailing
+data denial, existing-destination preservation, mid-write failure, cancellation
+and disposal. They do not claim actual all-owner SQL/object/configuration capture,
+receipt/migration/key-content reconciliation or complete business restore.
+
+Local package verification passed **1,551/1,551** tests across26 projects, zero
+failures/skips, from `2026-11-03T09:15:29.9330208Z` to
+`2026-11-03T09:19:42.0296714Z`; recovery98/98 includes23 package/file/fault tests.
+Full Release build passed with zero errors and five existing warnings. These
+are component tests with synthetic captures, not complete POC capture/restore,
+installed-host acceptance or a claim of exact-head CI.
 
 ## Repeatable Owned Drill
 
