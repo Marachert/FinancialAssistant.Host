@@ -50,6 +50,11 @@ separate evidence, not a tenth database scenario or cross-resource backup proof.
 See the [adapter guide](windows-native-adapters.md) for the protected file, expiry,
 bounded cleanup and anti-resurrection contracts and Windows-only test boundaries.
 
+FIN-209's separate [portable recovery drill](windows-native-recovery.md) captures
+and restores encrypted Income/Expense schema/key artifacts into a fresh target,
+including actual crash/restart reconciliation and wrong-key denial. It does not
+replace this nine-scenario matrix or establish complete cross-resource backup.
+
 ## Owner Crosswalk
 
 Each project below is under `backend/`; all initial scenarios rerun their owned

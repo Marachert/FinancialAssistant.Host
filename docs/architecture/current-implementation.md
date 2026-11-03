@@ -45,6 +45,15 @@ resolution after green. Actual privileged provisioning, admin bootstrap,
 coordinated rotation, WPF/recovery integration and approved-host qualification
 remain pending. FIN-208 stays open and adds no completion credit or readiness.
 
+FIN-209 adds [portable authenticated recovery primitives and an owned
+Income/Expense recovery drill](../engineering/windows-native-recovery.md).
+The drill restores separately encrypted schemas and key bundles into a new empty
+target, proves wrong-key denial, exact financial reconciliation and immutable
+replay, then repeats after an actual database crash/restart. This is a bounded
+two-owner component, not complete POC backup, installed acceptance or completion
+credit. All-owner consistency, objects, protected configuration, scheduling and
+FIN-278/280 integration remain open.
+
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
 supersedes the Compose POC target. FIN-270 is implementation work: no WPF
 installer or accepted native Windows runtime is claimed by this document.
@@ -54,6 +63,7 @@ installer or accepted native Windows runtime is claimed by this document.
 | Gateway | REST routing, JWT/role checks, exact public allowlist, trusted context, rate limits and safe errors | Route activation and destinations are environment-controlled; not every handler is enabled by repository defaults |
 | Native HTTPS perimeter | FIN-207 [opt-in direct Kestrel TLS contract](../engineering/windows-native-https.md), pinned machine-certificate/private-key policy, header/Host/private-endpoint boundaries and free loopback TLS tests | FIN-207 remains open: FIN-278 integration, actual service certificate/firewall and approved-host acceptance are pending; no completion credit or public exposure |
 | Native protected configuration | FIN-208 [typed immutable plans, machine-DPAPI packages, read-only service-bound artifact reader and mandatory SCM loading](../engineering/windows-native-protected-configuration.md), with conservative rotation preflight | FIN-208 remains open: privileged atomic activation, coordinated rotation, first-admin bootstrap, WPF integration, portable recovery and approved-host qualification are pending; no completion credit |
+| Native portable recovery | FIN-209 [authenticated portable artifacts/key wrapping and actual Income/Expense restore drill](../engineering/windows-native-recovery.md), with wrong-key denial and crash/restart business verification | FIN-209 remains open: complete cross-owner backup, receipt objects/configuration, scheduling, installer integration and approved-host qualification are pending; no completion credit |
 | Identity/Profile/Category | Deterministic authentication/session/provider-validation handlers, profile preferences and taxonomy | Stable secrets, durable stores and real provider configuration; phone delivery adapter is disabled by default |
 | Intake/Receipt/AI | Editable drafts, review/reject/confirm, receipt/OCR processing and controlled provider abstractions | Approved provider budgets, privacy configuration and end-to-end hosted operation |
 | Income/Expense | Separate native PostgreSQL authoritative records, atomic minimized outbox, immutable confirmation replay and lifecycle contracts | Financial delivery FIN-276 and scoped database recovery FIN-286 verified; installed and full backup/restore acceptance remain |

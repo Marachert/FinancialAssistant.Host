@@ -1,6 +1,6 @@
 # POC Readiness Progress
 
-Last updated: 2026-11-02
+Last updated: 2026-11-03
 
 ## Current Snapshot
 
@@ -13,6 +13,15 @@ subsequent local completions, FIN-288, FIN-289, FIN-276 and FIN-286, raise the f
 numerator to 197. No denominator or duplicate rule changed. See
 [local tracking](LOCAL_BACKLOG.md) and [actual merge evidence](LOCAL_DELIVERY_EVIDENCE.json).
 Jira Done and parent transitions remain pending reconciliation, never fabricated.
+
+FIN-209's [portable recovery increment](../engineering/windows-native-recovery.md)
+is In Progress: local full1484/1484 tests and an actual isolated Income/Expense
+restore drill passed, including recovered-key denial, exact financial snapshots,
+currency/user isolation, immutable replay and crash/restart verification. This is
+not a complete POC backup or installed acceptance. All-owner consistency, object/
+configuration capture, scheduling and installer qualification remain required.
+It adds **0.0 percentage points** and no completion-ledger entry; first-user
+testing remains **Not Ready**.
 
 FIN-208's [protected configuration runtime component](../engineering/windows-native-protected-configuration.md)
 is actually merged through [PR301](https://github.com/Marachert/FinancialAssistant.Host/pull/301):
