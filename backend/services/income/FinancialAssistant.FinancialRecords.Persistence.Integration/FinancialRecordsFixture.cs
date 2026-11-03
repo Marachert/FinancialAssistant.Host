@@ -26,7 +26,7 @@ try
     var directory = Setting("FA_PERSISTENCE_TEST_DIRECTORY");
     var mode = Setting("FA_PERSISTENCE_TEST_MODE");
     Check(password.Length == 64 && password.All(char.IsAsciiHexDigit) && Path.IsPathFullyQualified(directory)
-        && Directory.Exists(directory) && mode is "initial" or "restart");
+        && Directory.Exists(directory) && mode is "initial" or "restart" or "restore");
     Check(int.TryParse(Setting("FA_PERSISTENCE_TEST_PORT"), out var port) && port is >= 49152 and <= 65535);
     var repository = new DirectoryInfo(AppContext.BaseDirectory);
     while (!File.Exists(Path.Combine(repository.FullName, "FinancialAssistant.Backend.sln")))
@@ -37,6 +37,11 @@ try
         && string.Equals(data.Parent.Parent?.FullName, Path.Combine(repository.FullName, ".codex-runtime", "persistence-test"), comparison));
     for (DirectoryInfo? ancestor = data; ancestor is not null && ancestor.FullName.Length >= repository.FullName.Length; ancestor = ancestor.Parent)
     { Check((ancestor.Attributes & FileAttributes.ReparsePoint) == 0); }
+    var recoveryMarker = Path.Combine(data.Parent!.FullName, "recovery.run");
+    var recovery = File.Exists(recoveryMarker);
+    Check(!recovery || new FileInfo(recoveryMarker).Length == 32 && (File.GetAttributes(recoveryMarker) & FileAttributes.ReparsePoint) == 0
+        && File.ReadAllText(recoveryMarker) == data.Parent.Name);
+    Check(mode != "restore" || recovery);
     var connection = new NpgsqlConnectionStringBuilder
     {
         Host = "127.0.0.1",
@@ -53,8 +58,11 @@ try
     await bootstrap.OpenAsync();
     await using (var location = new NpgsqlCommand("SHOW data_directory", bootstrap))
     { Check(string.Equals(Path.GetFullPath((string)(await location.ExecuteScalarAsync())!), data.FullName, comparison)); }
-    const string database = "fa_test_fin275";
-    await using (var fresh = new NpgsqlCommand("SELECT count(*) FROM pg_database WHERE datname NOT IN('postgres','template0','template1','fa_test_fin275') OR (datname='fa_test_fin275' AND $1='initial')", bootstrap))
+    var database = mode == "restore" ? "fa_test_fin209_restore" : "fa_test_fin275";
+    var catalogQuery = recovery
+        ? "SELECT count(*) FROM pg_database WHERE datname NOT IN('postgres','template0','template1','fa_test_fin275','fa_test_fin209_restore') OR (datname IN('fa_test_fin275','fa_test_fin209_restore') AND $1='initial')"
+        : "SELECT count(*) FROM pg_database WHERE datname NOT IN('postgres','template0','template1','fa_test_fin275') OR (datname='fa_test_fin275' AND $1='initial')";
+    await using (var fresh = new NpgsqlCommand(catalogQuery, bootstrap))
     { fresh.Parameters.AddWithValue(mode); Check((long)(await fresh.ExecuteScalarAsync())! == 0); }
     var owners = new[] { new StorageIdentity("income"), new StorageIdentity("expense") };
     if (mode == "initial")
@@ -68,8 +76,8 @@ try
     connection.Database = database;
     await using var admin = new NpgsqlConnection(connection.ConnectionString);
     await admin.OpenAsync();
-    var incomeSettings = Settings(database, port, password, 1);
-    var expenseSettings = Settings(database, port, password, 3);
+    var incomeSettings = Settings(database, port, password, 1, mode == "restore" ? data.Parent.FullName : null);
+    var expenseSettings = Settings(database, port, password, 3, mode == "restore" ? data.Parent.FullName : null);
     if (mode == "initial")
     {
         stage = "separate repeated migrations";
@@ -85,9 +93,9 @@ try
         }
     }
     stage = "Income exact persistence, replay, currency, concurrency, rollback and retention";
-    await VerifyIncome(incomeSettings, mode);
+    await VerifyIncome(incomeSettings, mode == "restore" ? "restart" : mode);
     stage = "Expense exact persistence, replay, currency, concurrency, rollback and retention";
-    await VerifyExpense(expenseSettings, mode);
+    await VerifyExpense(expenseSettings, mode == "restore" ? "restart" : mode);
     stage = "cross-service role denial and encryption";
     foreach (var pair in new[] { ("income", "expense"), ("expense", "income") })
     {
@@ -117,15 +125,30 @@ static string Hash<T>(T value) => Convert.ToHexString(SHA256.HashData(JsonSerial
 static void Check(bool value) { if (!value) { throw new FixtureFailure(); } }
 static async Task Sql(NpgsqlConnection connection, string sql)
 { await using var command = new NpgsqlCommand(sql, connection); await command.ExecuteNonQueryAsync(); }
-static NativePostgresSettings Settings(string database, int port, string password, byte index) => new()
+static NativePostgresSettings Settings(string database, int port, string password, byte index, string? recoveryRoot)
 {
-    Database = database,
-    Port = port,
-    Password = password,
-    IndexKey = Convert.ToBase64String(Enumerable.Repeat(index, 32).ToArray()),
-    ActiveEncryptionKeyId = "v1",
-    EncryptionKeys = new() { ["v1"] = Convert.ToBase64String(Enumerable.Repeat((byte)(index + 1), 32).ToArray()) }
-};
+    var keys = new byte[64];
+    try
+    {
+        if (recoveryRoot is not null)
+        {
+            var path = Path.Combine(recoveryRoot, index == 1 ? "recovered-income.keys" : "recovered-expense.keys");
+            Check(new FileInfo(path).Length == 64 && (File.GetAttributes(path) & FileAttributes.ReparsePoint) == 0);
+            keys = File.ReadAllBytes(path);
+        }
+        else { keys.AsSpan(0, 32).Fill(index); keys.AsSpan(32, 32).Fill((byte)(index + 1)); }
+        return new NativePostgresSettings
+        {
+            Database = database,
+            Port = port,
+            Password = password,
+            IndexKey = Convert.ToBase64String(keys.AsSpan(0, 32)),
+            ActiveEncryptionKeyId = "v1",
+            EncryptionKeys = new() { ["v1"] = Convert.ToBase64String(keys.AsSpan(32, 32)) }
+        };
+    }
+    finally { CryptographicOperations.ZeroMemory(keys); }
+}
 static IConfiguration Configuration(string prefix, NativePostgresSettings settings) => new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
 {
     [$"{prefix}:Storage:Postgres:Database"] = settings.Database,
@@ -165,6 +188,11 @@ static async Task VerifyIncome(NativePostgresSettings settings, string mode)
         var saved = await store.GetAsync(first, confirmation.TransactionId, default) ?? throw new FixtureFailure();
         Check(saved.Amount == 130.25m && saved.Revision == 10 && saved.Status == IncomeRecordStatuses.Active
             && saved.Currency == "EUR" && saved.SourceDraftId == "synthetic-draft" && saved.ConfirmedAtUtc == now);
+        Check(await store.GetAsync(second, confirmation.TransactionId, default) is null);
+        var restartTotals = await service.ListAsync(first, date, date, false, default);
+        Check(restartTotals.ActiveTotals.Count == 2 && restartTotals.ActiveTotals.Single(value => value.Currency == "EUR").Amount == 130.25m
+            && restartTotals.ActiveTotals.Single(value => value.Currency == "USD").Amount == 10.12m);
+        Check((await service.ListAsync(second, date, date, false, default)).ActiveTotals.Single().Amount == 88m);
         await database.ExecuteAsync(new[] { first }, async (records, _) =>
         {
             var proof = OwnedRecordCodec.Decode<SnapshotProof>(1, await records.GetAsync("fixture_proof", first, "snapshot") ?? throw new FixtureFailure());
@@ -310,6 +338,11 @@ static async Task VerifyExpense(NativePostgresSettings settings, string mode)
         var saved = await store.GetAsync(first, confirmation.TransactionId, default) ?? throw new FixtureFailure();
         Check(saved.Amount == 130.25m && saved.Revision == 10 && saved.Status == ExpenseRecordStatuses.Active
             && saved.Currency == "EUR" && saved.SourceDraftId == "synthetic-draft" && saved.ConfirmedAtUtc == now);
+        Check(await store.GetAsync(second, confirmation.TransactionId, default) is null);
+        var restartTotals = await service.ListAsync(first, date, date, false, default);
+        Check(restartTotals.ActiveTotals.Count == 2 && restartTotals.ActiveTotals.Single(value => value.Currency == "EUR").Amount == 130.25m
+            && restartTotals.ActiveTotals.Single(value => value.Currency == "USD").Amount == 10.12m);
+        Check((await service.ListAsync(second, date, date, false, default)).ActiveTotals.Single().Amount == 88m);
         await database.ExecuteAsync(new[] { first }, async (records, _) =>
         {
             var proof = OwnedRecordCodec.Decode<SnapshotProof>(1, await records.GetAsync("fixture_proof", first, "snapshot") ?? throw new FixtureFailure());

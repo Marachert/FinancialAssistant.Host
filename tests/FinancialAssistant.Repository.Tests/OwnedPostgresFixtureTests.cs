@@ -15,6 +15,7 @@ public sealed class OwnedPostgresFixtureTests
     [InlineData("backend/services/financial-summary/FinancialAssistant.Projections.Persistence.Integration/bin/Release/net8.0/FinancialAssistant.Projections.Persistence.Integration.dll", "FAIL Projections PostgreSQL at isolated fixture validation")]
     [InlineData("backend/services/financial-score/FinancialAssistant.Insights.Persistence.Integration/bin/Release/net8.0/FinancialAssistant.Insights.Persistence.Integration.dll", "FAIL Insights PostgreSQL at isolated fixture validation")]
     [InlineData("backend/services/audit/FinancialAssistant.Audit.Persistence.Integration/bin/Release/net8.0/FinancialAssistant.Audit.Persistence.Integration.dll", "FAIL Audit PostgreSQL at isolated fixture validation")]
+    [InlineData("backend/shared/recovery/FinancialAssistant.NativeRecovery.Integration/bin/Release/net8.0/FinancialAssistant.NativeRecovery.Integration.dll", "FAIL Native Recovery PostgreSQL at owned fixture validation")]
     public async Task MissingFixtureConfigurationFailsWithoutDatabaseMutation(string executable, string expectedFailure)
     {
         var start = new ProcessStartInfo("dotnet")
@@ -97,7 +98,9 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("$saved[$name]", script);
         Assert.Contains("releaseReady=$false", script);
         Assert.Contains("--auth-host=scram-sha-256", script);
-        Assert.Contains("[ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle')]", script);
+        Assert.Contains("[ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle','Recovery')]", script);
+        Assert.Contains("FinancialAssistant.NativeRecovery.Integration.csproj", script);
+        Assert.Contains("Scoped owned business recovery evidence is incomplete.", script);
         Assert.Contains("FinancialAssistant.NativeLifecycle.Integration.csproj", script);
         Assert.Contains("[IO.FileMode]::CreateNew", script);
         Assert.Contains("FinancialAssistant.Audit.Persistence.Integration.csproj", script);
@@ -110,6 +113,31 @@ public sealed class OwnedPostgresFixtureTests
         Assert.DoesNotContain("sc.exe", script);
         Assert.DoesNotContain("Unblock-File", script);
         Assert.DoesNotContain("Remove-Item -Recurse", script);
+    }
+
+    [Fact]
+    public void RecoveryFixtureRequiresOwnedClusterAndNewTargetAndNeverOverwritesAStore()
+    {
+        var source = File.ReadAllText(Path.Combine(Root(), "backend/shared/recovery/FinancialAssistant.NativeRecovery.Integration/Program.cs"));
+        Assert.Contains("SHOW data_directory", source);
+        Assert.Contains("CREATE DATABASE fa_test_fin209_restore TEMPLATE template0", source);
+        Assert.Contains("SELECT count(*) FROM pg_database WHERE datname='fa_test_fin209_restore'", source);
+        Assert.Contains("NativeRecoveryKeyWrapping.Unwrap", source);
+        Assert.Contains("NativeRecoveryArtifactEncryption.Open", source);
+        Assert.Contains("await Child(\"restore\")", source);
+        Assert.Contains("REVOKE ALL ON SCHEMA public FROM PUBLIC", source);
+        Assert.Contains("\"restore\", null, \"Income exact persistence\"", source);
+        Assert.Contains("wrongKeyRejected = true", source);
+        Assert.Contains("\"--exit-on-error\", \"--single-transaction\"", source);
+        Assert.Contains("FileMode.CreateNew", source);
+        Assert.DoesNotContain("--clean", source);
+        Assert.DoesNotContain("DROP DATABASE", source);
+        Assert.DoesNotContain("DROP SCHEMA", source);
+        var records = File.ReadAllText(Path.Combine(Root(), "backend/services/income/FinancialAssistant.FinancialRecords.Persistence.Integration/FinancialRecordsFixture.cs"));
+        Assert.Contains("mode != \"restore\" || recovery", records);
+        Assert.Contains("recovery.run", records);
+        Assert.Contains("recovered-income.keys", records);
+        Assert.Contains("recovered-expense.keys", records);
     }
 
     private static string Root()

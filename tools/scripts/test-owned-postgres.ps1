@@ -1,5 +1,5 @@
 param([Parameter(Mandatory)][string] $ArchivePath,
-    [ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle')][string] $Scenario = 'Foundation',
+    [ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle','Recovery')][string] $Scenario = 'Foundation',
     [string] $BrokerFixtureRoot,
     [string] $ResultFile)
 $ErrorActionPreference = 'Stop'
@@ -66,8 +66,9 @@ $cleanupSucceeded = $false
 $interrupted = $null
 $interruptedStarted = $null
 $interruptedTransactionRecovered = $false
+$businessRecoveryVerified = $false
 $saved = @{}
-foreach ($name in @('FA_PERSISTENCE_TEST_PASSWORD','FA_PERSISTENCE_TEST_PORT','FA_PERSISTENCE_TEST_DIRECTORY','FA_PERSISTENCE_TEST_MODE','FA_NATIVE_BROKER_FIXTURE_ROOT','FA_NATIVE_LIFECYCLE_REPOSITORY')) {
+foreach ($name in @('FA_PERSISTENCE_TEST_PASSWORD','FA_PERSISTENCE_TEST_PORT','FA_PERSISTENCE_TEST_DIRECTORY','FA_PERSISTENCE_TEST_MODE','FA_NATIVE_BROKER_FIXTURE_ROOT','FA_NATIVE_LIFECYCLE_REPOSITORY','FA_RECOVERY_TEST_PASSPHRASE')) {
     $saved[$name] = [Environment]::GetEnvironmentVariable($name)
 }
 function Run-Local([string] $Executable, [string[]] $Arguments, [string] $Label) {
@@ -113,6 +114,7 @@ try {
     $env:FA_PERSISTENCE_TEST_PORT = [string]$port
     $env:FA_PERSISTENCE_TEST_DIRECTORY = $data
     $env:FA_PERSISTENCE_TEST_MODE = 'initial'
+    if ($Scenario -eq 'Recovery') { $env:FA_RECOVERY_TEST_PASSPHRASE = [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32)) }
     if ($brokerRoot) { $env:FA_NATIVE_BROKER_FIXTURE_ROOT = $brokerRoot; $env:FA_NATIVE_LIFECYCLE_REPOSITORY = $repo }
     $project = Join-Path $repo $(if ($Scenario -eq 'Identity') {
         'backend/services/identity/FinancialAssistant.Identity.Persistence.Integration/FinancialAssistant.Identity.Persistence.Integration.csproj'
@@ -130,6 +132,8 @@ try {
         'backend/services/financial-score/FinancialAssistant.Insights.Persistence.Integration/FinancialAssistant.Insights.Persistence.Integration.csproj'
     } elseif ($Scenario -eq 'Audit') {
         'backend/services/audit/FinancialAssistant.Audit.Persistence.Integration/FinancialAssistant.Audit.Persistence.Integration.csproj'
+    } elseif ($Scenario -eq 'Recovery') {
+        'backend/shared/recovery/FinancialAssistant.NativeRecovery.Integration/FinancialAssistant.NativeRecovery.Integration.csproj'
     } elseif ($Scenario -eq 'NativeLifecycle') {
         'backend/shared/messaging/FinancialAssistant.NativeLifecycle.Integration/FinancialAssistant.NativeLifecycle.Integration.csproj'
     } else {
@@ -159,6 +163,16 @@ try {
         $started = $true
         $env:FA_PERSISTENCE_TEST_MODE = 'restart'
         Run-Local $dotnet @('run','--project',$project,'--no-build','--configuration','Release') 'financial-restart'
+        if ($Scenario -eq 'Recovery') {
+            foreach ($name in @('recovery-initial.json','recovery-restart.json')) {
+                $proof = Get-Content -LiteralPath (Join-Path $run $name) -Raw | ConvertFrom-Json
+                if ($proof.passed -cne $true -or $proof.scope -cne 'income-expense' -or $proof.portableKeys -cne $true -or
+                    $proof.wrongKeyRejected -cne $true -or $proof.businessReconciled -cne $true -or $proof.immutableReplay -cne $true -or $proof.installed -cne $false -or $proof.releaseReady -cne $false) {
+                    throw 'Scoped owned business recovery evidence is incomplete.'
+                }
+            }
+            $businessRecoveryVerified = $true
+        }
         $interruptedTransactionRecovered = $Scenario -eq 'Foundation'
         $passed = $true
     } finally { Pop-Location }
@@ -198,6 +212,7 @@ try {
         if (Test-Path -LiteralPath $passwordFile) { Remove-Item -LiteralPath $passwordFile -Force }
         $result = @{passed=$passed;cleanupSucceeded=$cleanupSucceeded;scenario=$Scenario;installed=$false;releaseReady=$false;fixture=[IO.Path]::GetRelativePath($repo,$run);archiveDigest=$package[0].hash;verifiedAt=[datetime]::UtcNow.ToString('o')}
         $result.interruptedTransactionRecovered = $interruptedTransactionRecovered
+        $result.businessRecoveryVerified = $businessRecoveryVerified
         $result | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $run 'result.json') -Encoding utf8NoBOM
         if ($ResultFile) { Write-NewJson $ResultFile $result }
         if ($brokerRoot) { Write-NewJson (Join-Path $brokerRoot 'financial-postgres.json') $result }

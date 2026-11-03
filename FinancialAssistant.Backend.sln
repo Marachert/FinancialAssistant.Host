@@ -280,6 +280,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Profile.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.NativeLifecycle.Integration", "backend\shared\messaging\FinancialAssistant.NativeLifecycle.Integration\FinancialAssistant.NativeLifecycle.Integration.csproj", "{FC01F089-5E97-44F8-97D4-AC5C43C12BB6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "recovery", "recovery", "{C196AE59-86A3-41EC-B47E-9440FEEE4FC8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Recovery", "backend\shared\recovery\FinancialAssistant.Shared.Recovery\FinancialAssistant.Shared.Recovery.csproj", "{BF9DF877-BC3A-4FF0-91DA-9EBD98DF37CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.Shared.Recovery.Tests", "backend\shared\recovery\FinancialAssistant.Shared.Recovery.Tests\FinancialAssistant.Shared.Recovery.Tests.csproj", "{3B9F08EA-76F6-4451-B901-C17739DDFDB7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialAssistant.NativeRecovery.Integration", "backend\shared\recovery\FinancialAssistant.NativeRecovery.Integration\FinancialAssistant.NativeRecovery.Integration.csproj", "{BD5831EA-D72B-4981-AA50-5C8E2B81DC6A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -778,6 +786,18 @@ Global
 		{FC01F089-5E97-44F8-97D4-AC5C43C12BB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FC01F089-5E97-44F8-97D4-AC5C43C12BB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FC01F089-5E97-44F8-97D4-AC5C43C12BB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF9DF877-BC3A-4FF0-91DA-9EBD98DF37CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF9DF877-BC3A-4FF0-91DA-9EBD98DF37CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF9DF877-BC3A-4FF0-91DA-9EBD98DF37CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF9DF877-BC3A-4FF0-91DA-9EBD98DF37CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B9F08EA-76F6-4451-B901-C17739DDFDB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B9F08EA-76F6-4451-B901-C17739DDFDB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B9F08EA-76F6-4451-B901-C17739DDFDB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B9F08EA-76F6-4451-B901-C17739DDFDB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD5831EA-D72B-4981-AA50-5C8E2B81DC6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD5831EA-D72B-4981-AA50-5C8E2B81DC6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD5831EA-D72B-4981-AA50-5C8E2B81DC6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD5831EA-D72B-4981-AA50-5C8E2B81DC6A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7AC3F48D-624D-4E99-8B8A-4D491602CEE2} = {FB7E6B6E-BA1A-4D09-96DE-E4179EB6DA47}
@@ -843,5 +863,9 @@ Global
 		{E7CEBDB4-360C-4959-85D4-E5207CEECE67} = {7AC3F48D-624D-4E99-8B8A-4D491602CEE2}
 		{14745E39-BDCA-4190-8E73-857AB55212D8} = {E7CEBDB4-360C-4959-85D4-E5207CEECE67}
 		{FC01F089-5E97-44F8-97D4-AC5C43C12BB6} = {B3F5315D-CC06-41C2-A54D-CFAF81F05984}
+		{C196AE59-86A3-41EC-B47E-9440FEEE4FC8} = {91488650-2D7C-4415-AE87-33D6FB3D159D}
+		{BF9DF877-BC3A-4FF0-91DA-9EBD98DF37CD} = {C196AE59-86A3-41EC-B47E-9440FEEE4FC8}
+		{3B9F08EA-76F6-4451-B901-C17739DDFDB7} = {C196AE59-86A3-41EC-B47E-9440FEEE4FC8}
+		{BD5831EA-D72B-4981-AA50-5C8E2B81DC6A} = {C196AE59-86A3-41EC-B47E-9440FEEE4FC8}
 	EndGlobalSection
 EndGlobal
