@@ -58,12 +58,22 @@ two-owner component, not complete POC backup, installed acceptance or completion
 credit. All-owner consistency, objects, protected configuration, scheduling and
 FIN-278/280 integration remain open.
 
-The follow-on FIN-209 manifest validator binds a complete 30-resource inventory to
+The follow-on FIN-209 manifest validator is actually merged through
+[PR305](https://github.com/Marachert/FinancialAssistant.Host/pull/305), actual
+`edc4a76155d68ebed032bbca06845de7b810c000` at `2026-11-03T08:57:26Z`, final
+`5dc07721b8dcef2bccd8a7228ed0810e414481d7`, all five checks/review clear and
+full1528/1528 local tests. It binds a complete 30-resource inventory to
 authenticated artifact identities, lengths, digests, schema/migration metadata
 and conservative broker/search policies. It deliberately rejects the four-
 artifact drill as complete POC backup. Metadata validation does not perform
 quiescence, capture, bundle-content reconciliation or target activation; see
 the [recovery boundaries](../engineering/windows-native-recovery.md).
+
+The portable package layer constructs and writes the complete encrypted inventory
+to caller-owned empty streams, and returns an imported package only after its
+manifest and every artifact authenticate. This is not actual cross-resource
+capture, secure destination provisioning/publication, scheduling or full business
+restore; the installer must enforce those boundaries before first-user acceptance.
 
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
 supersedes the Compose POC target. FIN-270 is implementation work: no WPF

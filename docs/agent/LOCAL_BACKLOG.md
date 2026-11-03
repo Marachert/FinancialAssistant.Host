@@ -76,13 +76,22 @@ restore drill](../engineering/windows-native-recovery.md): local full1484/1484,
 wrong-key denial, exact financial reconciliation/replay and real crash/restart
 passed. This is not whole-POC backup or FIN-209 closure; integrated coverage and
 qualification remain open, without additional completion credit.
-The same FIN-209 continues on `codex/fin-209-backup-manifest` from actual PR304
-publication main `082d721bd64bc6ba815aa5895ba8d0ea4d7c01f2`: bounded authenticated
+The manifest component is actually merged through [PR305](https://github.com/Marachert/FinancialAssistant.Host/pull/305):
+protected squash `edc4a76155d68ebed032bbca06845de7b810c000` at
+`2026-11-03T08:57:26Z`, final `5dc07721b8dcef2bccd8a7228ed0810e414481d7`, all five
+exact-head checks green (Backend41606135388/Mobile41606135402/Admin41606135375),
+configured review completed `2026-11-03T08:50:30.176799Z` without findings and
+final channels clear. It supplies bounded authenticated
 inventory validation for 13 databases, 16 configurations including Summary and one
 receipt-object bundle. Metadata coverage is not actual quiescence/capture or
 whole-application restore. No Done or extra completion credit.
 Local follow-on full1528/1528 across26 projects, recovery75/75, zero failures/skips;
 this is manifest metadata/artifact validation, not another actual business drill.
+The same FIN-209 continues on `codex/fin-209-portable-package` from actual main
+`edc4a76155d68ebed032bbca06845de7b810c000`: complete encrypted package construction,
+caller-owned stream writing and independent all-artifact authentication, including
+owned file/failure tests. Actual quiescence/capture, destination provisioning,
+atomic publication, scheduling and installer/business acceptance remain open.
 No pending installed qualification is silently waived to advance. Native first-user
 bootstrap, Profile-only refresh and protected machine deployment remain explicit
 launch gaps, not inferred acceptance.
