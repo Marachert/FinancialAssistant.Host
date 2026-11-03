@@ -45,8 +45,12 @@ resolution after green. Actual privileged provisioning, admin bootstrap,
 coordinated rotation, WPF/recovery integration and approved-host qualification
 remain pending. FIN-208 stays open and adds no completion credit or readiness.
 
-FIN-209 adds [portable authenticated recovery primitives and an owned
-Income/Expense recovery drill](../engineering/windows-native-recovery.md).
+FIN-209's [portable authenticated recovery primitives and owned
+Income/Expense recovery drill](../engineering/windows-native-recovery.md) are
+actually merged through [PR303](https://github.com/Marachert/FinancialAssistant.Host/pull/303),
+protected squash `379e6fc630b62aa0f1f269188db89c3e45ac66bd` at `2026-11-03T08:21:44Z`,
+final `4515a8229b89a43a0e94866d2972369b84df8237`. All five exact-head checks and
+configured review passed with no findings; local full1484/1484 passed.
 The drill restores separately encrypted schemas and key bundles into a new empty
 target, proves wrong-key denial, exact financial reconciliation and immutable
 replay, then repeats after an actual database crash/restart. This is a bounded

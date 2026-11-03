@@ -15,7 +15,14 @@ numerator to 197. No denominator or duplicate rule changed. See
 Jira Done and parent transitions remain pending reconciliation, never fabricated.
 
 FIN-209's [portable recovery increment](../engineering/windows-native-recovery.md)
-is In Progress: local full1484/1484 tests and an actual isolated Income/Expense
+is actually merged through [PR303](https://github.com/Marachert/FinancialAssistant.Host/pull/303):
+protected squash `379e6fc630b62aa0f1f269188db89c3e45ac66bd` at
+`2026-11-03T08:21:44Z`, final `4515a8229b89a43a0e94866d2972369b84df8237`.
+All five exact-head checks passed (Backend41600143931/Mobile41600143848/
+Admin41600143814); configured review completed `2026-11-03T08:03:10.597513Z`
+without findings. Final review channels/labels were clear and nine pre-merge
+Confluence full bodies were verified. FIN-209 remains In Progress: local
+full1484/1484 tests and an actual isolated Income/Expense
 restore drill passed, including recovered-key denial, exact financial snapshots,
 currency/user isolation, immutable replay and crash/restart verification. This is
 not a complete POC backup or installed acceptance. All-owner consistency, object/
