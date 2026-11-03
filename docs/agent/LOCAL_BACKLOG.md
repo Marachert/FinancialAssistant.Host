@@ -76,6 +76,13 @@ restore drill](../engineering/windows-native-recovery.md): local full1484/1484,
 wrong-key denial, exact financial reconciliation/replay and real crash/restart
 passed. This is not whole-POC backup or FIN-209 closure; integrated coverage and
 qualification remain open, without additional completion credit.
+The same FIN-209 continues on `codex/fin-209-backup-manifest` from actual PR304
+publication main `082d721bd64bc6ba815aa5895ba8d0ea4d7c01f2`: bounded authenticated
+inventory validation for 13 databases, 16 configurations including Summary and one
+receipt-object bundle. Metadata coverage is not actual quiescence/capture or
+whole-application restore. No Done or extra completion credit.
+Local follow-on full1528/1528 across26 projects, recovery75/75, zero failures/skips;
+this is manifest metadata/artifact validation, not another actual business drill.
 No pending installed qualification is silently waived to advance. Native first-user
 bootstrap, Profile-only refresh and protected machine deployment remain explicit
 launch gaps, not inferred acceptance.

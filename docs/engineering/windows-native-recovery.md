@@ -50,6 +50,46 @@ authorized source secrets and independently protect their portable form; target
 activation must re-protect them for its own installation/service/SID. Never copy
 source machine ownership or bypass destination artifact validation.
 
+## Authenticated Inventory
+
+The follow-on manifest component is not wired to an installer capture engine.
+`NativeRecoveryManifest` requires exactly 30 owned artifact descriptors:
+13 databases, 16 configuration bundles (15 native hosts plus
+the separate Summary module) and one encrypted receipt-object bundle. Empty
+receipt collections still require an explicit bundle; omission is not evidence
+that no receipts exist. Each artifact is bounded to 64 MiB of plaintext; a larger
+database or receipt collection is unsupported until a tested chunking format exists.
+
+The encrypted manifest binds its own source installation/backup/manifest IDs to
+the authenticated outer context. It records an opaque consistency-boundary ID,
+UTC capture timestamp, application version, installer-manifest digest, PostgreSQL
+major version 18, drained-then-recreate broker policy and rebuild-from-owned-state
+search policy. Each resource has a unique nonempty ID, canonical owner/kind,
+version 1 format, exact ciphertext length and SHA256; database descriptors also
+require the captured migration checksum. Unsupported schema/policy versions,
+duplicate or case-ambiguous JSON keys, unknown properties, incomplete/extra
+coverage and malformed metadata fail closed. The metadata document is bounded
+to 64 KiB; returned descriptors and exported bytes cannot mutate the validated plan.
+
+Consumers of untrusted input must use authenticated `Open`, not treat a locally
+created document as independently verified evidence. `OpenArtifact` checks the
+manifest-bound ID/length/digest and then authenticates ciphertext under its exact
+owner/kind/context before returning plaintext. Hashes do not replace AEAD.
+
+This validates authenticated inventory metadata and artifact identity, not the
+truth of a producer's claims. A boundary GUID does not stop writers or drain a
+broker; a descriptor/checksum does not inspect SQL migration content, retained
+keys or receipt metadata. The trusted capture/restore engine must verify those
+facts and exact bundle coverage against actual owned state. The existing four-
+artifact Income/Expense drill is deliberately rejected as a complete inventory.
+Unit-test synthetic 30-artifact roundtrips are not whole-application restore proof.
+
+Follow-on local verification: all **1,528/1,528** tests across26 projects passed,
+zero failures/skips, from `2026-11-03T08:42:09.2828873Z` to
+`2026-11-03T08:45:55.7765747Z`; recovery75/75 includes44 manifest regressions.
+Full restore/Release build passed with zero errors and five existing warnings.
+These results do not assert a new physical recovery drill or exact-head CI.
+
 ## Repeatable Owned Drill
 
 On Windows, using PowerShell 7, .NET 8 and the locally available PostgreSQL archive
@@ -109,7 +149,7 @@ scenarios in the full persistence matrix; it does not inflate that matrix.
 
 ## Complete POC Recovery Gate
 
-Local verification on 2026-11-03: full Release build passed with zero errors and
+PR303 component verification on 2026-11-03: full Release build passed with zero errors and
 five existing warnings; all **1,484/1,484** tests across26 projects passed, with
 zero failures/skips. The actual Recovery drill passed at
 `2026-11-03T07:45:57.9320335Z`, including both wrong-key checks and verified cleanup.
