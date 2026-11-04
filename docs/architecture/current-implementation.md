@@ -112,6 +112,17 @@ deletion-state hashes, independent roles and crash/restart with verified cleanup
 It is separate from the Income/Expense drill, not one atomic four-owner backup
 or full13-owner capture. FIN-209 and installed/first-user acceptance remain open.
 
+The Profile/Category increment is actually merged through
+[PR309](https://github.com/Marachert/FinancialAssistant.Host/pull/309), actual
+`53c0a3f41ce20c871a1a8231a596ac3c00eff9f4` at `2026-11-04T21:28:32Z`, final
+`4f08be7332c4050c59e35f68d1440e19512e1540`, all five exact-head checks/review clear;
+decoded CI1617/1617 across26 projects, no failures/skips. The next separate Identity
+owned restore scope now captures compatible synthetic configuration/data keys,
+checks restored account/session/challenge/outbox state and replay denial, and proves
+rollback-contained native sign-in with actual JWT validation after crash/restart.
+This is not real DPAPI export, a common five-owner snapshot, complete backup or
+installed/first-user acceptance. No completion credit is added.
+
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
 supersedes the Compose POC target. FIN-270 is implementation work: no WPF
 installer or accepted native Windows runtime is claimed by this document.

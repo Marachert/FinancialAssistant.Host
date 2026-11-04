@@ -50,10 +50,13 @@ separate evidence, not a tenth database scenario or cross-resource backup proof.
 See the [adapter guide](windows-native-adapters.md) for the protected file, expiry,
 bounded cleanup and anti-resurrection contracts and Windows-only test boundaries.
 
-FIN-209's separate [portable recovery drill](windows-native-recovery.md) captures
-and restores encrypted Income/Expense schema/key artifacts into a fresh target,
-including actual crash/restart reconciliation and wrong-key denial. It does not
-replace this nine-scenario matrix or establish complete cross-resource backup.
+FIN-209's separate [portable recovery drills](windows-native-recovery.md) capture
+and restore encrypted schema/configuration artifacts into fresh targets for
+separately selected Income/Expense, Profile/Category and Identity scopes, including
+actual crash/restart reconciliation and wrong-key denial. Identity also verifies
+native sign-in/JWT validation inside an explicit rollback. These do not replace
+this nine-scenario matrix, combine into one five-owner boundary or establish
+complete cross-resource backup or replacement-host provisioning.
 
 ## Owner Crosswalk
 

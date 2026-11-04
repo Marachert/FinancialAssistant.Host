@@ -1,7 +1,7 @@
 # Native Portable Recovery
 
 FIN-209 is In Progress. This increment provides authenticated portable artifact
-encryption and separately isolated Income/Expense and Profile/Category restore
+encryption and separately isolated Income/Expense, Profile/Category and Identity restore
 drills. It is not a
 complete POC backup utility, installed-host qualification or permission to restore
 an existing database. No completion credit or first-user readiness is claimed.
@@ -51,6 +51,17 @@ full local1557/1557 and final scoped Windows105/105 are separate results. No lea
 closure, completion credit or installed recovery acceptance is claimed.
 
 ## Portable Protection
+
+The separately scoped Profile/Category follow-on
+[PR309](https://github.com/Marachert/FinancialAssistant.Host/pull/309) is independently
+verified merged=true/CLOSED: actual protected squash
+`53c0a3f41ce20c871a1a8231a596ac3c00eff9f4` at `2026-11-04T21:28:32Z`, final
+`4f08be7332c4050c59e35f68d1440e19512e1540`. All five exact-head checks passed
+(Backend41914728090/Mobile41914728014/Admin41914728194), decoded CI1617/1617
+across26 projects, no failures/skips. Configured review completed
+`2026-11-04T21:18:59.878229Z` without findings and final channels/labels were clear.
+Post-merge Delivery188/Bootstrap576 were fully read-back verified. FIN-209 is
+still open; this implementation merge adds no completion credit.
 
 The coordinated capture follow-on [PR308](https://github.com/Marachert/FinancialAssistant.Host/pull/308)
 is independently verified merged=true/CLOSED: actual protected squash
@@ -123,8 +134,8 @@ This validates authenticated inventory metadata and artifact identity, not the
 truth of a producer's claims. A boundary GUID does not stop writers or drain a
 broker; a descriptor/checksum does not inspect SQL migration content, retained
 keys or receipt metadata. The trusted capture/restore engine must verify those
-facts and exact bundle coverage against actual owned state. The existing four-
-artifact Income/Expense drill is deliberately rejected as a complete inventory.
+facts and exact bundle coverage against actual owned state. The existing scoped
+two/four-artifact drills are deliberately rejected as a complete inventory.
 Unit-test synthetic 30-artifact roundtrips are not whole-application restore proof.
 
 Follow-on local verification: all **1,528/1,528** tests across26 projects passed,
@@ -318,6 +329,7 @@ dotnet restore FinancialAssistant.Backend.sln
 dotnet build FinancialAssistant.Backend.sln --no-restore --configuration Release
 pwsh -NoProfile -NonInteractive -File tools/scripts/test-owned-postgres.ps1 -Scenario Recovery -ArchivePath <local-pinned-postgresql-archive.zip>
 pwsh -NoProfile -NonInteractive -File tools/scripts/test-owned-postgres.ps1 -Scenario Recovery -RecoveryScope ProfileCategory -ArchivePath <local-pinned-postgresql-archive.zip>
+pwsh -NoProfile -NonInteractive -File tools/scripts/test-owned-postgres.ps1 -Scenario Recovery -RecoveryScope Identity -ArchivePath <local-pinned-postgresql-archive.zip>
 ```
 
 The runner verifies the archive digest before use. It creates a user-only owned
@@ -327,7 +339,8 @@ It installs no Windows service, vendor installer, certificate or firewall rule.
 Do not run the integration executable directly against a shared cluster.
 
 `RecoveryScope` is explicitly allowlisted: `IncomeExpense` is the default;
-`ProfileCategory` selects a separate two-owner fixture. Supplying this option to
+`ProfileCategory` selects a separate two-owner fixture; `Identity` selects one
+separate owned database and its bounded fixture configuration. Supplying this option to
 any other scenario is rejected before fixture creation or archive use. The runner
 canonicalizes/saves/restores its process environment and checks both phase proofs
 against the selected scope before setting `businessRecoveryVerified=true`.
@@ -335,15 +348,16 @@ The parent result records that scope. A scope tag is not complete-POC acceptance
 
 The explicit Recovery scenario:
 
-1. Initializes separate Income/Expense or Profile/Category schemas, migration/runtime
+1. Initializes the selected Identity, Income/Expense or Profile/Category schemas, migration/runtime
    roles and keys, using that scope's existing actual persistence assertions.
 2. Waits for the source business process to exit and rejects active source client
    sessions. It dumps each owned schema separately from this trusted synthetic
    source, preserving its migration/version metadata and ownership grants.
-3. Encrypts the two dumps and the two index/encryption-key bundles, wraps the
+3. Encrypts each owned dump and its configuration/key bundle, wraps the
    random recovery key with independently generated operator material, then
    clears the original key and deletes plaintext dumps.
-4. Independently reads and verifies the bounded four-artifact catalog, unwraps
+4. Independently reads and verifies the exact scope-bound catalog (two artifacts
+   for Identity, four for either two-owner scope), unwraps
    the key, authenticates each artifact and creates a new empty restore database.
    Existing targets are rejected. The fresh target revokes default PUBLIC schema
    access; native ownership checks are not weakened to accept a restore.
@@ -357,14 +371,16 @@ The explicit Recovery scenario:
    pending event count and independent SQL role denial without changing those values.
    Profile/Category also republishes the identical recovered event, rejects a
    conflicting replay and proves the full pending-event and business snapshot
-   hashes remain unchanged.
+   hashes remain unchanged. Identity rejects both duplicate and conflicting
+   re-enqueue attempts, preserving the original outbox row revision/payload.
 7. Performs an actual immediate PostgreSQL crash and restart, then repeats source
    and restored-business checks in new processes, including wrong-key denial.
 
 Both phase proofs must explicitly pass before `businessRecoveryVerified=true`.
 The new database is in the same owned temporary cluster and reuses its synthetic
 roles. This does not qualify replacement-host role provisioning, real DPAPI secret
-export or installer activation. The source bundles contain only fixture keys.
+export or installer activation. The source bundles contain only synthetic fixture
+configuration and key material.
 The parent stops only its own PID/image/start-time-matched process, removes its
 temporary credential file and verifies cleanup. Decrypted key/dump files are
 removed in `finally`; retained private fixture evidence must never be committed.
@@ -377,6 +393,57 @@ The catalog contains synthetic owner/ID/digest metadata and a wrapped key, not a
 installer-ready authenticated manifest. `installed=false` and
 `releaseReady=false` remain mandatory. This drill is separate from the nine
 scenarios in the full persistence matrix; these recovery scopes do not inflate it.
+
+### Identity Configuration And Authentication
+
+The Identity source exports the actual tested compatible fixture options at the end
+of initialization into a new private temporary file, bounded to64KiB. This includes
+database index/encryption keys and the five stable lookup, refresh-hash, access-signing,
+provider-identifier and event-subject keys. The captured configuration is the tested
+90-day refresh/120-day hard-ceiling variant, not the intentionally incompatible
+cleanup probe. The parent encrypts this source file as the Identity configuration
+artifact and removes plaintext; source/target buffers are cleared where mutable.
+Managed strings and filesystem caches cannot be guaranteed erased.
+
+The restore fixture strictly deserializes the bounded configuration, validates the
+owned source/port/credentials, native storage mode and retained ceiling, then rebinds
+only the known empty target database/credentials. Google/Apple/phone stay disabled
+and events remain durable pending transport; no real provider call occurs. Negative
+key testing changes only data keys in otherwise valid JSON so a parse failure cannot
+stand in for data-key rejection. This is synthetic fixture configuration, not real
+DPAPI export, production secrets or replacement-host account provisioning.
+
+Restored known accounts/roles/credentials, revoked session family, locked challenge,
+foreign-owner denial and pending outbox state are checked before/after actual crash.
+Duplicate and conflicting outbox inserts must fail without changing the original
+row revision/payload. The runtime role cannot read PostgreSQL credential metadata.
+A real native email sign-in uses the recovered configuration; the existing JWT
+library verifies issuer, audience, lifetime, HS256 signature and subject/session
+claims. This check runs inside an outer transaction deliberately rolled back after
+validation; the newly issued session must be absent afterward. No token is printed
+or retained in evidence, and authentication must not silently mutate the recovery
+fixture to make later replay checks pass.
+
+Local Identity-increment full verification passed **1,618/1,618** tests across26
+projects, zero failures/skips, from `2026-11-04T21:59:15.9709683Z` to
+`2026-11-04T22:04:26.4849056Z`. Repository342/342 includes the additional Identity
+wrong-scenario guard. Full restore and Release build passed with zero errors and
+five existing warnings; the integration-only build passed with zero warnings/errors.
+This is local verification, not exact-head CI or installed-host acceptance.
+
+The actual Identity restore and immediate-crash/restart phases passed with cleanup
+at `2026-11-04T21:42:54.5522512Z`. This remains a separate one-owner cluster, not
+one atomic five-owner backup with the earlier scopes, complete13-owner capture,
+complete30-resource packaging or installed acceptance.
+
+Current Identity-increment regressions also passed: normal Identity persistence
+with crash/restart and cleanup at `2026-11-04T21:44:49.4349655Z`, Profile/Category
+recovery with both phase proofs and cleanup at `2026-11-04T21:47:26.3472511Z`,
+and default Income/Expense recovery with both phase proofs and cleanup at
+`2026-11-04T21:51:48.6652308Z`. Normal Identity correctly records
+`businessRecoveryVerified=false`; only the explicit recovery scenarios claim
+business restore verification. No plaintext captured/recovered key or dump file
+remained in the Identity recovery root after cleanup.
 
 The Profile/Category scope passed both actual restore and immediate-crash/restart
 phases on `2026-11-04T21:02:14.3977960Z`; parent cleanup was verified. Its evidence
@@ -393,7 +460,7 @@ its result correctly keeps `businessRecoveryVerified=false`, rather than claimin
 that ordinary persistence verification performed a restore. These are local
 synthetic fixture results, not exact-head CI or installed lifecycle qualification.
 
-Local full verification for this follow-on passed **1,617/1,617** tests across26
+Historical Profile/Category-increment full verification passed **1,617/1,617** tests across26
 projects, with zero failures/skips, from `2026-11-04T21:07:47.6821233Z` to
 `2026-11-04T21:12:33.8319768Z`. Repository341/341 includes three new negative
 tests proving `RecoveryScope` cannot be silently ignored by other scenarios.
@@ -418,7 +485,7 @@ integrated backup/repair support:
 | Resource or boundary | Required integrated behavior |
 | --- | --- |
 | Consistency | Freeze ingress, stop publishers, drain known broker queues including unacknowledged deliveries, then stop consumers and other writers before cross-owner capture. A per-database dump is not a cross-resource snapshot. |
-| All owned databases | Capture all thirteen business owners, including the Summary module, their schema/migration versions, encrypted state, durable outboxes/inboxes, deletion markers and retained decryption/index keys. Separate scoped drills cover Income/Expense and Profile/Category, not a common four-owner boundary or all thirteen owners. |
+| All owned databases | Capture all thirteen business owners, including the Summary module, their schema/migration versions, encrypted state, durable outboxes/inboxes, deletion markers and retained decryption/index keys. Separate scoped drills cover Identity, Income/Expense and Profile/Category, not a common five-owner boundary or all thirteen owners. |
 | Receipt objects | Capture encrypted object bytes and matching receipt metadata under the same quiescence boundary; preserve retention/deletion semantics and reject missing or foreign objects. |
 | Protected configuration | Capture required runtime and Summary module secrets, stable key sets and nonsecret deployment identity through authorized privileged reads. Authenticate a complete bounded manifest and exact artifact coverage. Never put unlock material beside the archive. |
 | Broker and external work | A fresh broker is safe only after an actual empty/drained-queue proof and preserved durable pending work. Published-but-unconsumed messages must not be discarded. Preserve Identity pending transport, receipt jobs and uncertain provider state; do not resend paid work. |
