@@ -37,6 +37,18 @@ Follow the [native deployment decision](../architecture/windows-native-poc.md),
 [persistence qualification](native-persistence-qualification.md) and
 [owner inventory](native-financial-persistence-scope.md).
 
+The protected destination follow-on [PR307](https://github.com/Marachert/FinancialAssistant.Host/pull/307)
+is independently verified merged=true/CLOSED: actual protected squash
+`938ba7d3af08a015ab22178e497fe9da79cfec61` at `2026-11-04T10:10:10Z`, final
+`02f0a83d0bfb63a76c0b2f55bb872dfe2a29b951`. All five exact-head checks passed
+(Backend41810861267/Mobile41810861173/Admin41810861214); configured review completed
+`2026-11-04T09:58:20.226277Z` without further findings. The valid abandoned-file
+finding was fixed, regressed and answered with commit/test/CI evidence before its
+thread was resolved after green. Final channels/labels were clear; five affected
+Confluence bodies and two central actual-merge bodies were verified. The earlier
+full local1557/1557 and final scoped Windows105/105 are separate results. No leaf
+closure, completion credit or installed recovery acceptance is claimed.
+
 ## Portable Protection
 
 `FinancialAssistant.Shared.Recovery` uses .NET 8 cryptographic APIs, without a new
@@ -212,6 +224,76 @@ adapter owned-process crash/restart, exact ciphertext/10 MiB receipt, portable
 restore/deletion, diagnostic recovery and junction rejection also passed against
 the rebuilt helper. This is local synthetic component evidence, not installed
 SCM, power-loss durability, complete business backup or exact-head CI.
+
+## Coordinated Capture Boundary
+
+`NativeRecoveryCaptureCoordinator` orders the trusted privileged source adapter:
+
+1. Validate/snapshot complete deployment metadata and unlock bounds before mutation;
+   acquire the source-installation/boundary-bound exclusive installation lease.
+2. Freeze new ingress and scheduled/external work, drain the broker, then stop
+   all writers. Draining precedes stopping the consumers needed to finish delivery.
+3. Inspect source ownership, exact stopped-writer coverage for all15 hosts plus
+   Summary, verified owned broker topology, zero ready/unacknowledged deliveries,
+   zero database clients and zero receipt writers.
+4. Capture each of the30 required resources in canonical order, checking identity,
+   schema/migration metadata and individual/aggregate bounds. Re-inspect quiescence
+   after every resource and after package construction. Foreign/missing/duplicate
+   writers, foreign boundaries, stale/future/non-UTC observations, partial captures,
+   resumed writers or pending broker work reject the entire result.
+5. Return the complete encrypted package only after successful lease disposal.
+   Clear every transferred plaintext buffer on success, failure or cancellation.
+
+Inspection observations must be taken after both the stopped-writer boundary and
+the current inspection request, not more than five seconds before validation,
+and bound to the exact source/boundary IDs. A recent cached observation is refused.
+Capture time comes from the coordinator clock, not a caller-provided timestamp.
+The existing package limit reserves its maximum manifest and framing overhead
+before retaining additional capture bytes. Adapter diagnostics are sanitized;
+caller cancellation does not expose their messages or inner exceptions.
+
+The adapter must acquire and journal ownership before mutation; inspect actual
+SCM/process ownership, database sessions, object writers and the complete private
+broker topology rather than merely assert booleans. It owns its intermediate
+buffers until it transfers them through `NativeRecoveryCapturedResource`; after
+transfer it must not mutate/reuse them. Failed calls clean their own untransferred
+buffers. Every adapter operation needs a bounded timeout and must honor caller
+cancellation; failed acquisition must clean its own untransferred lease. Lease
+disposal must release only the owned lock, never restart services
+or reopen ingress. A durable installer journal must retain the paused state and
+perform separately verified controlled resume after success/failure. Process death
+requires journal recovery, not this in-memory coordinator alone.
+
+This library does not implement those Windows/broker/database adapters, scheduling,
+destination provisioning, retention, restore activation or journal recovery. It
+does not publish a backup or certify actual all-owner capture. Tests use synthetic
+adapters to verify sequencing, drift/fault/cancellation refusal, disposal and buffer
+clearing; they are not installed-service or full-business recovery evidence.
+
+Local verification: full baseline **1,613/1,613** across26 projects, zero failures/
+skips, from `2026-11-04T10:26:36.7773083Z` to `2026-11-04T10:31:22.9198064Z`.
+The final cached-observation guard and its regression then passed the complete
+scoped recovery suite **161/161**, zero failures/skips. These are separate runs,
+not a newly claimed full1,614-test result. The baseline Release build passed with
+zero errors/five existing warnings; final scoped build passed zero warnings/errors.
+The56 new orchestration cases cover sequencing, complete encrypted roundtrip,
+faults, cancellation, stale/foreign/drifting evidence, malformed resources,
+individual/aggregate buffer limits, metadata snapshots and plaintext cleanup.
+
+Initial PR308 CI correctly blocked merge because an existing HTTPS test raced the
+server's early413/connection-close response with a known-length body upload on
+Linux. Its test-only companion repair uses `Expect: 100-continue`, asserts that
+the oversized body is never serialized, and retains strict413/connection-close,
+real boundary-sized upload and real chunked/proxied overflow checks. The fixture's
+continue wait exceeds its bounded request timeout, preventing fallback body writes.
+This follows the [.NET8 handler's final-error behavior](https://github.com/dotnet/runtime/blob/v8.0.0/src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/HttpConnection.cs#L619-L660).
+No production TLS behavior, body limit, security assertion or test is removed.
+The original failed CI result remains failed; only a fresh fixing-head run can
+satisfy the merge gate.
+The companion repair passed the actual Windows loopback gateway suite80/80,
+scoped build with zero warnings/errors, changed-source format, privacy1337,
+Markdown160/630 and diff checks. Recovery161/161 is unchanged; no new full local
+suite or Linux success is inferred from these scoped Windows results.
 
 ## Repeatable Owned Drill
 
