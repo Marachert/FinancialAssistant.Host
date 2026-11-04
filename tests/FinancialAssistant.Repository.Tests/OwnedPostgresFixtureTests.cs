@@ -101,7 +101,7 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("[ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle','Recovery')]", script);
         Assert.Contains("FinancialAssistant.NativeRecovery.Integration.csproj", script);
         Assert.Contains("Scoped owned business recovery evidence is incomplete.", script);
-        Assert.Contains("[ValidateSet('IncomeExpense','ProfileCategory')]", script);
+        Assert.Contains("[ValidateSet('IncomeExpense','ProfileCategory','Identity')]", script);
         Assert.Contains("$proof.scope -cne $expectedRecoveryScope", script);
         Assert.Contains("FA_RECOVERY_TEST_SCOPE", script);
         Assert.Contains("$result.recoveryScope", script);
@@ -153,12 +153,19 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("CryptographicOperations.ZeroMemory(keys)", profiles);
         Assert.Contains("synthetic-restored-conflict", profiles);
         Assert.Contains("Hash(replayed) == eventHash", profiles);
+        var identity = File.ReadAllText(Path.Combine(Root(), "backend/services/identity/FinancialAssistant.Identity.Persistence.Integration/IdentityPersistenceFixture.cs"));
+        Assert.Contains("mode != \"restore\" || recovery", identity);
+        Assert.Contains("captured-identity.keys", identity);
+        Assert.Contains("recovered-identity.keys", identity);
+        Assert.Contains("AuthenticationRollback", identity);
+        Assert.Contains("ValidateToken(response.AccessToken", identity);
     }
 
     [Theory]
     [InlineData("Foundation", "ProfileCategory")]
     [InlineData("ProfileCategory", "ProfileCategory")]
     [InlineData("FinancialRecords", "IncomeExpense")]
+    [InlineData("Identity", "Identity")]
     public async Task RecoveryScopeCannotBeSilentlyIgnoredByAnotherScenario(string scenario, string scope)
     {
         var start = new ProcessStartInfo("pwsh")

@@ -123,14 +123,33 @@ ordered orchestration with a trusted privileged adapter contract, not implemente
 SCM/broker/SQL capture actions or actual all-owner business restore. Root provisioning,
 actual capture, scheduling and integrated/installed acceptance remain open;
 no Done or completion credit.
-The same FIN-209 continues on `codex/fin-209-profile-category-restore` from that
-actual main. A separately selected Profile/Category owned restore drill passed
+That FIN-209 increment used `codex/fin-209-profile-category-restore` from the
+then-current main. A separately selected Profile/Category owned restore drill passed
 initial and actual immediate-crash/restart phases with cleanup verified at
 `2026-11-04T21:02:14.3977960Z`. It proves recovered key access/wrong-key denial,
 new-empty-target restore, exact preferences/category/outbox/deletion snapshots
 and independent role denial, identical recovered-event replay and conflicting
 replay rejection without changing pending-event/business hashes. This is not one atomic four-owner boundary with the
 Income/Expense drill, complete13-owner recovery, installed acceptance or a closure.
+The Profile/Category increment is actually merged through
+[PR309](https://github.com/Marachert/FinancialAssistant.Host/pull/309), actual
+`53c0a3f41ce20c871a1a8231a596ac3c00eff9f4` at `2026-11-04T21:28:32Z`, final
+`4f08be7332c4050c59e35f68d1440e19512e1540`; all five checks green
+(Backend41914728090/Mobile41914728014/Admin41914728194), decoded CI1617/1617 across26,
+review clear at `2026-11-04T21:18:59.878229Z`, final channels/labels clear and
+post-merge Confluence Delivery188/Bootstrap576 verified. No closure credit.
+The same FIN-209 continues on `codex/fin-209-identity-restore` from that actual main.
+The Identity-only owned recovery scope passed initial and actual immediate-crash/
+restart phases with cleanup at `2026-11-04T21:42:54.5522512Z`. It captures compatible
+synthetic source configuration/data keys, checks account/session/challenge/outbox
+state and duplicate/conflicting replay denial, and validates a real native sign-in
+and JWT inside an explicitly rolled-back transaction. Google/Apple/phone remain
+disabled and events pending transport. This is not real DPAPI export, replacement-
+host provisioning, one atomic five-owner boundary, complete backup or installed
+acceptance. Remaining all-owner consistency/integration gates stay open.
+Local full1618/1618 across26 projects, zero failures/skips, passed through
+`2026-11-04T22:04:26.4849056Z`; normal Identity and both earlier recovery scopes
+also passed with cleanup. This is not a new closure or exact-head CI claim.
 No pending installed qualification is silently waived to advance. Native first-user
 bootstrap, Profile-only refresh and protected machine deployment remain explicit
 launch gaps, not inferred acceptance.

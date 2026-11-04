@@ -1,5 +1,8 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using FinancialAssistant.Identity.Application;
 using FinancialAssistant.Identity.Application.Abstractions;
 using FinancialAssistant.Identity.Application.Authentication;
@@ -12,12 +15,14 @@ using FinancialAssistant.Identity.Application.Sessions;
 using FinancialAssistant.Identity.Contracts.Auth;
 using FinancialAssistant.Identity.Domain.Accounts;
 using FinancialAssistant.Identity.Infrastructure;
+using FinancialAssistant.Identity.Infrastructure.Authentication;
 using FinancialAssistant.Identity.Infrastructure.Configuration;
 using FinancialAssistant.Identity.Infrastructure.Persistence;
 using FinancialAssistant.Shared.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 
 // A console-only synthetic database fixture, not an API host.
@@ -28,7 +33,7 @@ try
     var directory = Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_DIRECTORY") ?? "";
     var mode = Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_MODE");
     if (password.Length != 64 || !password.All(char.IsAsciiHexDigit) || !Path.IsPathFullyQualified(directory)
-        || !Directory.Exists(directory) || mode is not ("initial" or "restart")
+        || !Directory.Exists(directory) || mode is not ("initial" or "restart" or "restore")
         || !int.TryParse(Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_PORT"), out var port) || port is < 49152 or > 65535)
     { throw new FixtureFailure(); }
     var repository = new DirectoryInfo(AppContext.BaseDirectory);
@@ -40,6 +45,11 @@ try
         && string.Equals(data.Parent.Parent?.FullName, Path.Combine(repository.FullName, ".codex-runtime", "persistence-test"), comparison));
     for (DirectoryInfo? ancestor = data; ancestor is not null && ancestor.FullName.Length >= repository.FullName.Length; ancestor = ancestor.Parent)
     { Check((ancestor.Attributes & FileAttributes.ReparsePoint) == 0); }
+    var recoveryMarker = Path.Combine(data.Parent!.FullName, "recovery.run");
+    var recovery = File.Exists(recoveryMarker);
+    Check(!recovery || new FileInfo(recoveryMarker).Length == 32 && (File.GetAttributes(recoveryMarker) & FileAttributes.ReparsePoint) == 0
+        && File.ReadAllText(recoveryMarker) == data.Parent.Name && Setting("FA_RECOVERY_TEST_SCOPE") == "Identity");
+    Check(mode != "restore" || recovery);
     var connection = new NpgsqlConnectionStringBuilder
     {
         Host = "127.0.0.1",
@@ -56,8 +66,11 @@ try
     await bootstrap.OpenAsync();
     await using (var location = new NpgsqlCommand("SHOW data_directory", bootstrap))
     { Check(string.Equals(Path.GetFullPath((string)(await location.ExecuteScalarAsync())!), data.FullName, comparison)); }
-    const string database = "fa_test_fin282";
-    await using (var fresh = new NpgsqlCommand("SELECT count(*) FROM pg_database WHERE datname NOT IN('postgres','template0','template1','fa_test_fin282') OR (datname='fa_test_fin282' AND $1='initial')", bootstrap))
+    var database = mode == "restore" ? "fa_test_fin209_restore" : "fa_test_fin282";
+    var catalogQuery = recovery
+        ? "SELECT count(*) FROM pg_database WHERE datname NOT IN('postgres','template0','template1','fa_test_fin282','fa_test_fin209_restore') OR (datname IN('fa_test_fin282','fa_test_fin209_restore') AND $1='initial')"
+        : "SELECT count(*) FROM pg_database WHERE datname NOT IN('postgres','template0','template1','fa_test_fin282') OR (datname='fa_test_fin282' AND $1='initial')";
+    await using (var fresh = new NpgsqlCommand(catalogQuery, bootstrap))
     { fresh.Parameters.AddWithValue(mode); Check((long)(await fresh.ExecuteScalarAsync())! == 0); }
     var storage = new StorageIdentity("identity");
     if (mode == "initial")
@@ -69,10 +82,14 @@ try
     connection.Database = database;
     await using var admin = new NpgsqlConnection(connection.ConnectionString);
     await admin.OpenAsync();
-    var options = Options(database, port, password);
-    options.Storage.Cleanup.RemovedCredentialRetentionDays = 1;
-    options.Storage.Cleanup.RemovedProviderLinkRetentionDays = 1;
-    options.Storage.Cleanup.DeletedAccountRetentionDays = 1;
+    stage = "Identity exact persistence";
+    var options = Options(database, port, password, mode == "restore" ? data.Parent.FullName : null);
+    if (mode != "restore")
+    {
+        options.Storage.Cleanup.RemovedCredentialRetentionDays = 1;
+        options.Storage.Cleanup.RemovedProviderLinkRetentionDays = 1;
+        options.Storage.Cleanup.DeletedAccountRetentionDays = 1;
+    }
     using var protection = NativeIdentityPersistence.CreateProtection(options.Storage.Postgres);
     if (mode == "initial")
     {
@@ -92,9 +109,9 @@ try
     const string phoneId = "22222222222222222222222222222222";
     const string sessionId = "33333333333333333333333333333333";
     Check(await provider.GetRequiredService<OwnedPostgresStore>().IsReadyAsync());
-    if (mode == "restart")
+    if (mode is "restart" or "restore")
     {
-        stage = "actual crash restart preserves identity state";
+        stage = mode == "restore" ? "restored identity state" : "actual crash restart preserves identity state";
         var account = await accounts.FindAccountByIdAsync(retainedId);
         Check(account is not null && account.Id == retainedId && account.CreatedAtUtc == now
             && account.Status == IdentityAccountStatus.Disabled && account.Roles.SequenceEqual(new[] { "user", "auditor" }));
@@ -103,7 +120,54 @@ try
         Check((await phone.FindAsync(phoneId))?.Status == PhoneVerificationChallengeStatus.Locked);
         Check((await accounts.FindCredentialByLookupHashAsync(Hash('a')))?.SecretHash == "synthetic_hash");
         Check((await outbox.ReadPendingAsync(100, now.AddYears(1))).Count > 0);
-        Console.WriteLine("PASS identity actual crash restart: accounts/roles/credential/session family/challenge/outbox survive; rolled-back state absent.");
+        Check(await context.WithRecordsAsync(async (records, _) => (await records.ReadPageAsync("accounts", "foreign_owner")).Count == 0));
+        const string pendingId = "77777777-7777-7777-7777-777777777777";
+        var beforeReplay = await context.WithRecordsAsync(async (records, _) => await records.GetAsync("outbox", "identity", pendingId) ?? throw new FixtureFailure());
+        foreach (var replay in new[] { Envelope(pendingId, now.AddDays(-100)), Envelope(pendingId, now.AddDays(-100)) with { CorrelationId = "synthetic-restored-conflict" } })
+        {
+            try { await outbox.EnqueueAsync(replay); throw new FixtureFailure(); }
+            catch (StorageConflictException) { }
+        }
+        var afterReplay = await context.WithRecordsAsync(async (records, _) => await records.GetAsync("outbox", "identity", pendingId) ?? throw new FixtureFailure());
+        Check(beforeReplay.Revision == afterReplay.Revision && beforeReplay.Payload.AsSpan().SequenceEqual(afterReplay.Payload));
+        var runtimeConnection = new NpgsqlConnectionStringBuilder(connection.ConnectionString) { Username = storage.RuntimeRole };
+        await using (var runtime = new NpgsqlConnection(runtimeConnection.ConnectionString))
+        {
+            await runtime.OpenAsync();
+            try { await Sql(runtime, "SELECT * FROM pg_authid"); throw new FixtureFailure(); }
+            catch (PostgresException exception) when (exception.SqlState == "42501") { }
+        }
+        if (mode == "restore")
+        {
+            stage = "restored identity authentication rollback";
+            string? rolledBackSession = null;
+            try
+            {
+                await context.RunAsync<bool>(async token =>
+                {
+                    using var scope = provider.CreateScope();
+                    var result = await scope.ServiceProvider.GetRequiredService<IIdentityAuthenticationService>().SignInAsync(
+                        new SignInRequest("native-fixture@example.invalid", "Synthetic-Only-Password-123!", new IdentityClientContext("synthetic-restored", "web", "0.0-test")), "synthetic-restored-signin", token);
+                    Check(result.IsSuccess && result.Value is not null);
+                    var response = result.Value!;
+                    rolledBackSession = response.User.SessionId;
+                    var material = new IdentityJwtKeyMaterial(options.Authentication);
+                    try
+                    {
+                        var validation = material.CreateValidationParameters(); validation.ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 };
+                        var principal = new JwtSecurityTokenHandler { MapInboundClaims = false }.ValidateToken(response.AccessToken, validation, out _);
+                        Check(response.TokenType == "Bearer" && response.RefreshToken.Length >= 32
+                            && principal.FindFirst("sub")?.Value == response.User.UserId && principal.FindFirst("sid")?.Value == response.User.SessionId);
+                    }
+                    finally { CryptographicOperations.ZeroMemory(material.SigningKey.Key); }
+                    throw new AuthenticationRollback();
+                });
+                throw new FixtureFailure();
+            }
+            catch (AuthenticationRollback) { }
+            Check(rolledBackSession is not null && await sessions.FindByIdAsync(rolledBackSession) is null);
+        }
+        Console.WriteLine("PASS identity " + (mode == "restore" ? "restored target/sign-in rollback" : "actual crash restart") + ": accounts/roles/credential/session family/challenge/outbox survive; duplicate/conflicting outbox writes denied and least privilege retained.");
         return 0;
     }
 
@@ -298,6 +362,18 @@ try
             Check(!bytes.Contains("synthetic", StringComparison.Ordinal) && !bytes.Contains("example.invalid", StringComparison.Ordinal));
         }
     }
+    if (recovery)
+    {
+        // Preserve the tested compatible retention ceiling, not the deliberately incompatible cleanup probe.
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(longOptions);
+        try
+        {
+            Check(bytes.Length is > 0 and <= 65536);
+            using var output = new FileStream(Path.Combine(data.Parent.FullName, "captured-identity.keys"), FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            output.Write(bytes); output.Flush(true);
+        }
+        finally { CryptographicOperations.ZeroMemory(bytes); }
+    }
     Console.WriteLine("PASS identity PostgreSQL: native composition, registration/federation uniqueness, service outbox failure rollback, rotation/reuse/owner isolation, phone cooldown/attempt replay, bounded retention/deletion, owner-scoped keyset pages and encrypted storage.");
     return 0;
 }
@@ -307,25 +383,47 @@ catch
     return 1;
 }
 
-static IdentityServiceOptions Options(string database, int port, string password) => new()
+static IdentityServiceOptions Options(string database, int port, string password, string? recoveryRoot = null)
 {
-    Storage = new()
+    if (recoveryRoot is not null)
     {
-        Provider = "PostgreSQL",
-        Postgres = new()
+        var path = Path.Combine(recoveryRoot, "recovered-identity.keys");
+        Check(new FileInfo(path).Length is > 0 and <= 65536 && (File.GetAttributes(path) & FileAttributes.ReparsePoint) == 0);
+        var bytes = File.ReadAllBytes(path);
+        try
         {
-            Database = database,
-            Port = port,
-            Password = password,
-            IndexKey = Convert.ToBase64String(Enumerable.Repeat((byte)1, 32).ToArray()),
-            ActiveEncryptionKeyId = "v1",
-            EncryptionKeys = new() { ["v1"] = Convert.ToBase64String(Enumerable.Repeat((byte)2, 32).ToArray()) }
+            var restored = JsonSerializer.Deserialize<IdentityServiceOptions>(bytes, new JsonSerializerOptions
+            { UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow, MaxDepth = 16 }) ?? throw new FixtureFailure();
+            Check(restored.Storage.Provider == "PostgreSQL" && restored.Authentication.RuntimeAdapter == "NativePostgres"
+                && restored.Storage.Postgres.Database == "fa_test_fin282" && restored.Storage.Postgres.Port == port
+                && restored.Storage.Postgres.Password == password && !restored.Providers.Google.Enabled && !restored.Providers.Apple.Enabled
+                && !restored.Providers.Phone.Enabled && restored.Providers.Phone.Adapter == "Disabled"
+                && restored.Events.Mode == "DurableOutboxPendingTransport" && restored.Storage.Cleanup.HardMaximumSessionDocumentDays == 120);
+            restored.Storage.Postgres.Database = database; restored.Storage.Postgres.Password = password;
+            return restored;
         }
-    },
-    Authentication = new() { RuntimeAdapter = "NativePostgres", LookupHmacKey = new string('l', 64), RefreshTokenHashKey = new string('r', 64), AccessTokenSigningKey = new string('s', 64) },
-    Providers = new() { IdentifierHmacKey = new string('i', 64) },
-    Events = new() { Mode = "DurableOutboxPendingTransport", UserIdHmacKey = new string('e', 64) }
-};
+        finally { CryptographicOperations.ZeroMemory(bytes); }
+    }
+    return new()
+    {
+        Storage = new()
+        {
+            Provider = "PostgreSQL",
+            Postgres = new()
+            {
+                Database = database,
+                Port = port,
+                Password = password,
+                IndexKey = Convert.ToBase64String(Enumerable.Repeat((byte)1, 32).ToArray()),
+                ActiveEncryptionKeyId = "v1",
+                EncryptionKeys = new() { ["v1"] = Convert.ToBase64String(Enumerable.Repeat((byte)2, 32).ToArray()) }
+            }
+        },
+        Authentication = new() { RuntimeAdapter = "NativePostgres", LookupHmacKey = new string('l', 64), RefreshTokenHashKey = new string('r', 64), AccessTokenSigningKey = new string('s', 64) },
+        Providers = new() { IdentifierHmacKey = new string('i', 64) },
+        Events = new() { Mode = "DurableOutboxPendingTransport", UserIdHmacKey = new string('e', 64) }
+    };
+}
 static ServiceProvider Provider(IdentityServiceOptions options, bool failOutbox = false,
     IGoogleIdentityTokenValidator? google = null, IAppleIdentityTokenValidator? apple = null)
 {
@@ -350,6 +448,7 @@ static void Check(bool value) { if (!value) { throw new FixtureFailure(); } }
 static async Task Sql(NpgsqlConnection connection, string sql)
 { await using var command = new NpgsqlCommand(sql, connection); await command.ExecuteNonQueryAsync(); }
 sealed class FixtureFailure : Exception;
+sealed class AuthenticationRollback : Exception;
 sealed class DeferredGoogleValidator : IGoogleIdentityTokenValidator
 {
     internal TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);

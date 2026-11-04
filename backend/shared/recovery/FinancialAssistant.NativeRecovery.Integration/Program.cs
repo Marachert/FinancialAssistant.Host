@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using FinancialAssistant.Shared.Recovery;
 using Npgsql;
@@ -16,13 +17,15 @@ try
     var mode = Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_MODE") ?? "";
     var directory = Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_DIRECTORY") ?? "";
     var scope = Environment.GetEnvironmentVariable("FA_RECOVERY_TEST_SCOPE") ?? "";
-    Check(scope is "IncomeExpense" or "ProfileCategory");
+    Check(scope is "IncomeExpense" or "ProfileCategory" or "Identity");
+    var identity = scope == "Identity";
     var profileCategory = scope == "ProfileCategory";
-    var scopeName = profileCategory ? "profile-category" : "income-expense";
-    var owners = profileCategory ? new[] { (Owner: "profile", Seed: (byte)1), (Owner: "category", Seed: (byte)3) }
+    var scopeName = identity ? "identity" : profileCategory ? "profile-category" : "income-expense";
+    var owners = identity ? new[] { (Owner: "identity", Seed: (byte)1) }
+        : profileCategory ? new[] { (Owner: "profile", Seed: (byte)1), (Owner: "category", Seed: (byte)3) }
         : new[] { (Owner: "income", Seed: (byte)1), (Owner: "expense", Seed: (byte)3) };
-    var sourceDatabase = profileCategory ? "fa_test_fin283" : "fa_test_fin275";
-    var expectedKeyFailure = profileCategory ? "Profile/Category exact persistence" : "Income exact persistence";
+    var sourceDatabase = identity ? "fa_test_fin282" : profileCategory ? "fa_test_fin283" : "fa_test_fin275";
+    var expectedKeyFailure = identity ? "Identity exact persistence" : profileCategory ? "Profile/Category exact persistence" : "Income exact persistence";
     Check(credential.Length == 64 && credential.All(char.IsAsciiHexDigit) && operatorSecret.Length == 64 && operatorSecret.All(char.IsAsciiHexDigit)
         && mode is "initial" or "restart" && Path.IsPathFullyQualified(directory) && Directory.Exists(directory));
     Check(int.TryParse(Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_PORT"), out var port) && port is >= 49152 and <= 65535);
@@ -52,8 +55,8 @@ try
     var runtime = new DirectoryInfo(RuntimeEnvironment.GetRuntimeDirectory());
     var dotnet = Path.Combine(runtime.Parent!.Parent!.Parent!.FullName, "dotnet.exe");
     Check(File.Exists(dotnet));
-    var project = profileCategory ? "FinancialAssistant.ProfileCategory.Persistence.Integration" : "FinancialAssistant.FinancialRecords.Persistence.Integration";
-    var child = Path.Combine(repository.FullName, "backend", "services", profileCategory ? "profile" : "income", project, "bin", "Release", "net8.0", project + ".dll");
+    var project = identity ? "FinancialAssistant.Identity.Persistence.Integration" : profileCategory ? "FinancialAssistant.ProfileCategory.Persistence.Integration" : "FinancialAssistant.FinancialRecords.Persistence.Integration";
+    var child = Path.Combine(repository.FullName, "backend", "services", identity ? "identity" : profileCategory ? "profile" : "income", project, "bin", "Release", "net8.0", project + ".dll");
     Check(File.Exists(child));
     var marker = Path.Combine(root, "recovery.run"); var catalog = Path.Combine(root, "recovery.json");
     var passphrase = Encoding.ASCII.GetBytes(operatorSecret); var temporary = new List<string>();
@@ -64,6 +67,7 @@ try
         if (mode == "initial")
         {
             WriteNew(marker, Encoding.ASCII.GetBytes(run.Name));
+            if (identity) { temporary.Add(Path.Combine(root, "captured-identity.keys")); }
             stage = "source business initialization";
             await Child("initial");
             await using (var sessions = new NpgsqlCommand("SELECT count(*) FROM pg_stat_activity WHERE datname=$1 AND backend_type='client backend'", admin))
@@ -84,9 +88,16 @@ try
                     var payload = File.ReadAllBytes(raw);
                     try { Capture(owner, NativeRecoveryArtifactKind.Database, payload, originalKey, document); }
                     finally { CryptographicOperations.ZeroMemory(payload); File.Delete(raw); }
-                    var keys = new byte[64]; keys.AsSpan(0, 32).Fill(seed); keys.AsSpan(32, 32).Fill((byte)(seed + 1));
+                    var keys = new byte[64];
+                    if (identity)
+                    {
+                        var sourceKeys = Path.Combine(root, "captured-identity.keys");
+                        Check(new FileInfo(sourceKeys).Length is > 0 and <= 65536 && (File.GetAttributes(sourceKeys) & FileAttributes.ReparsePoint) == 0);
+                        keys = File.ReadAllBytes(sourceKeys);
+                    }
+                    else { keys.AsSpan(0, 32).Fill(seed); keys.AsSpan(32, 32).Fill((byte)(seed + 1)); }
                     try { Capture(owner, NativeRecoveryArtifactKind.Configuration, keys, originalKey, document); }
-                    finally { CryptographicOperations.ZeroMemory(keys); }
+                    finally { CryptographicOperations.ZeroMemory(keys); if (identity) { File.Delete(Path.Combine(root, "captured-identity.keys")); } }
                 }
                 WriteNew(catalog, JsonSerializer.SerializeToUtf8Bytes(document));
             }
@@ -101,9 +112,10 @@ try
         Check(new FileInfo(catalog).Length is > 0 and <= 16384 && (File.GetAttributes(catalog) & FileAttributes.ReparsePoint) == 0);
         document = JsonSerializer.Deserialize<RecoveryDocument>(File.ReadAllBytes(catalog), new JsonSerializerOptions
         { UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow, MaxDepth = 8 }) ?? throw new InvalidOperationException();
-        Check(document.InstallationId != Guid.Empty && document.BackupId != Guid.Empty && document.Scope == scopeName && document.Artifacts.Count == 4
-            && document.Artifacts.Select(artifact => artifact.Id).Distinct().Count() == 4
-            && document.Artifacts.Select(artifact => (artifact.Owner, artifact.Kind)).Distinct().Count() == 4
+        var expectedArtifacts = owners.Length * 2;
+        Check(document.InstallationId != Guid.Empty && document.BackupId != Guid.Empty && document.Scope == scopeName && document.Artifacts.Count == expectedArtifacts
+            && document.Artifacts.Select(artifact => artifact.Id).Distinct().Count() == expectedArtifacts
+            && document.Artifacts.Select(artifact => (artifact.Owner, artifact.Kind)).Distinct().Count() == expectedArtifacts
             && document.Artifacts.All(artifact => owners.Any(owner => owner.Owner == artifact.Owner) && artifact.Kind is NativeRecoveryArtifactKind.Database or NativeRecoveryArtifactKind.Configuration));
         recoveredKey = NativeRecoveryKeyWrapping.Unwrap(document.InstallationId, document.BackupId, document.WrappedKey, passphrase);
         var restores = new List<string>();
@@ -118,7 +130,8 @@ try
             {
                 if (artifact.Kind == NativeRecoveryArtifactKind.Configuration)
                 {
-                    Check(plaintext.Length == 64); var keys = Path.Combine(root, "recovered-" + artifact.Owner + ".keys");
+                    Check(identity ? plaintext.Length is > 0 and <= 65536 : plaintext.Length == 64);
+                    var keys = Path.Combine(root, "recovered-" + artifact.Owner + ".keys");
                     WriteNew(keys, plaintext, temporary);
                 }
                 else if (mode == "initial")
@@ -152,7 +165,21 @@ try
         var correctKeys = File.ReadAllBytes(recoveredFirst);
         try
         {
-            var wrongKeys = RandomNumberGenerator.GetBytes(64);
+            byte[] wrongKeys;
+            if (identity)
+            {
+                var options = JsonNode.Parse(correctKeys) ?? throw new InvalidOperationException();
+                var postgres = options["Storage"]?["Postgres"] ?? throw new InvalidOperationException();
+                var wrongIndex = RandomNumberGenerator.GetBytes(32); var wrongEncryption = RandomNumberGenerator.GetBytes(32);
+                try
+                {
+                    postgres["IndexKey"] = Convert.ToBase64String(wrongIndex);
+                    postgres["EncryptionKeys"]!["v1"] = Convert.ToBase64String(wrongEncryption);
+                    wrongKeys = JsonSerializer.SerializeToUtf8Bytes(options);
+                }
+                finally { CryptographicOperations.ZeroMemory(wrongIndex); CryptographicOperations.ZeroMemory(wrongEncryption); }
+            }
+            else { wrongKeys = RandomNumberGenerator.GetBytes(64); }
             try { File.WriteAllBytes(recoveredFirst, wrongKeys); }
             finally { CryptographicOperations.ZeroMemory(wrongKeys); }
             await Run(dotnet, [child], "restore", null, expectedKeyFailure);
@@ -220,7 +247,7 @@ static async Task Run(string executable, string[] arguments, string? mode, strin
     }
     if (mode is not null && process.ExitCode != 0)
     {
-        foreach (var name in new[] { "owned fixture validation", "Income exact persistence", "Expense exact persistence", "Profile/Category exact persistence", "restored exact profile and category state", "cross-service role denial" })
+        foreach (var name in new[] { "owned fixture validation", "Income exact persistence", "Expense exact persistence", "Profile/Category exact persistence", "Identity exact persistence", "restored identity state", "restored identity authentication rollback", "restored exact profile and category state", "cross-service role denial" })
         { if (diagnostics.Contains("at " + name, StringComparison.Ordinal)) { Console.Error.WriteLine("Owned financial child failed at " + name + "."); } }
     }
     if (process.ExitCode != 0 || credential is not null && !string.IsNullOrWhiteSpace(diagnostics)) { throw new InvalidOperationException(); }

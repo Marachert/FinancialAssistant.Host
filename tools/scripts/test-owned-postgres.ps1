@@ -1,6 +1,6 @@
 param([Parameter(Mandatory)][string] $ArchivePath,
     [ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle','Recovery')][string] $Scenario = 'Foundation',
-    [ValidateSet('IncomeExpense','ProfileCategory')][string] $RecoveryScope = 'IncomeExpense',
+    [ValidateSet('IncomeExpense','ProfileCategory','Identity')][string] $RecoveryScope = 'IncomeExpense',
     [string] $BrokerFixtureRoot,
     [string] $ResultFile)
 $ErrorActionPreference = 'Stop'
@@ -119,7 +119,7 @@ try {
     $env:FA_RECOVERY_TEST_SCOPE = ''
     if ($Scenario -eq 'Recovery') {
         $env:FA_RECOVERY_TEST_PASSPHRASE = [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
-        $env:FA_RECOVERY_TEST_SCOPE = if ($RecoveryScope -eq 'ProfileCategory') { 'ProfileCategory' } else { 'IncomeExpense' }
+        $env:FA_RECOVERY_TEST_SCOPE = switch ($RecoveryScope) { 'ProfileCategory' { 'ProfileCategory' } 'Identity' { 'Identity' } default { 'IncomeExpense' } }
     }
     if ($brokerRoot) { $env:FA_NATIVE_BROKER_FIXTURE_ROOT = $brokerRoot; $env:FA_NATIVE_LIFECYCLE_REPOSITORY = $repo }
     $project = Join-Path $repo $(if ($Scenario -eq 'Identity') {
@@ -170,7 +170,7 @@ try {
         $env:FA_PERSISTENCE_TEST_MODE = 'restart'
         Run-Local $dotnet @('run','--project',$project,'--no-build','--configuration','Release') 'financial-restart'
         if ($Scenario -eq 'Recovery') {
-            $expectedRecoveryScope = if ($RecoveryScope -eq 'ProfileCategory') { 'profile-category' } else { 'income-expense' }
+            $expectedRecoveryScope = switch ($RecoveryScope) { 'ProfileCategory' { 'profile-category' } 'Identity' { 'identity' } default { 'income-expense' } }
             foreach ($name in @('recovery-initial.json','recovery-restart.json')) {
                 $proof = Get-Content -LiteralPath (Join-Path $run $name) -Raw | ConvertFrom-Json
                 if ($proof.passed -cne $true -or $proof.scope -cne $expectedRecoveryScope -or $proof.portableKeys -cne $true -or
@@ -220,7 +220,7 @@ try {
         $result = @{passed=$passed;cleanupSucceeded=$cleanupSucceeded;scenario=$Scenario;installed=$false;releaseReady=$false;fixture=[IO.Path]::GetRelativePath($repo,$run);archiveDigest=$package[0].hash;verifiedAt=[datetime]::UtcNow.ToString('o')}
         $result.interruptedTransactionRecovered = $interruptedTransactionRecovered
         $result.businessRecoveryVerified = $businessRecoveryVerified
-        if ($Scenario -eq 'Recovery') { $result.recoveryScope = if ($RecoveryScope -eq 'ProfileCategory') { 'profile-category' } else { 'income-expense' } }
+        if ($Scenario -eq 'Recovery') { $result.recoveryScope = switch ($RecoveryScope) { 'ProfileCategory' { 'profile-category' } 'Identity' { 'identity' } default { 'income-expense' } } }
         $result | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $run 'result.json') -Encoding utf8NoBOM
         if ($ResultFile) { Write-NewJson $ResultFile $result }
         if ($brokerRoot) { Write-NewJson (Join-Path $brokerRoot 'financial-postgres.json') $result }

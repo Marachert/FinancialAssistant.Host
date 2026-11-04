@@ -136,3 +136,12 @@ uses synthetic keys/identities, executes both initial and crash/restart stages,
 and stops only owned PostgreSQL processes in `finally`. `Foundation` remains the
 default separate foundation scenario. Neither scenario installs SCM services,
 downloads packages, calls paid providers or certifies the three-OS install matrix.
+
+The separate FIN-209 [owned recovery scope](windows-native-recovery.md) runs with
+`-Scenario Recovery -RecoveryScope Identity`. It captures the compatible synthetic
+source configuration and data keys into encrypted artifacts, restores a new empty
+target, verifies exact account/session/challenge/outbox state, wrong-key/replay
+denial and actual sign-in/JWT validation inside a forced rollback, then repeats
+after PostgreSQL crash/restart. Google/Apple/phone remain disabled. This is not
+real DPAPI export, replacement-host provisioning, complete POC backup or another
+scenario in the nine-scenario persistence qualification matrix.
