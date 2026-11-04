@@ -24,6 +24,13 @@ no-follow writer lease prevents a second process from sharing the same data root
 The adapter validates existing permissions; it does not elevate, repair ACLs,
 create service accounts or change machine policy. FIN-208/278 own provisioning.
 
+The shared helper retains its original constructor and 12 MiB default file bound.
+An explicit four-argument overload allows a trusted consumer to select a bound up
+to 128 MiB; the [protected recovery destination](windows-native-recovery.md) uses
+that overload for complete encrypted packages. Existing receipt adapters still
+use the original default and their separate 10 MiB object limit. ACL, identity,
+link and lease checks are unchanged; this is not permission to broaden a root.
+
 Receipt writes use encrypted temporary content, file flush-to-disk and same-volume
 moves; technical diagnostic batches use the same protected atomic file boundary.
 Cancellation before publication leaves no accepted partial object; recovery removes

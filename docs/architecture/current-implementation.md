@@ -69,11 +69,21 @@ artifact drill as complete POC backup. Metadata validation does not perform
 quiescence, capture, bundle-content reconciliation or target activation; see
 the [recovery boundaries](../engineering/windows-native-recovery.md).
 
-The portable package layer constructs and writes the complete encrypted inventory
+The portable package layer is actually merged through
+[PR306](https://github.com/Marachert/FinancialAssistant.Host/pull/306), actual
+`ce26f8344982b884e2f5ba0cb4c01fc1b6fd5ce6` at `2026-11-03T09:35:20Z`, final
+`ab4297866f02158bd4ee8d1573e68bdab7e74723`, all five checks/review clear and
+full1551/1551 local tests. It constructs and writes the complete encrypted inventory
 to caller-owned empty streams, and returns an imported package only after its
 manifest and every artifact authenticate. This is not actual cross-resource
 capture, secure destination provisioning/publication, scheduling or full business
 restore; the installer must enforce those boundaries before first-user acceptance.
+
+The protected Windows package destination reuses native file ACL/link/lease checks,
+flushed atomic no-overwrite writes and readback verification. Identical retries
+are idempotent; conflicts/corruption are preserved and rejected. This does not
+provision roots, capture source state, schedule retention or qualify installed
+restore. Existing native-file constructor/default limits remain unchanged.
 
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
 supersedes the Compose POC target. FIN-270 is implementation work: no WPF

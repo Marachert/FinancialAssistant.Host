@@ -6,5 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../hosting/FinancialAssistant.Shared.Hosting/FinancialAssistant.Shared.Hosting.csproj" />
+    <ProjectReference Include="../../native-files/FinancialAssistant.Shared.NativeFiles/FinancialAssistant.Shared.NativeFiles.csproj" />
   </ItemGroup>
 </Project>
