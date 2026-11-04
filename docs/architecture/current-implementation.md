@@ -79,11 +79,26 @@ manifest and every artifact authenticate. This is not actual cross-resource
 capture, secure destination provisioning/publication, scheduling or full business
 restore; the installer must enforce those boundaries before first-user acceptance.
 
-The protected Windows package destination reuses native file ACL/link/lease checks,
+The protected Windows package destination is actually merged through
+[PR307](https://github.com/Marachert/FinancialAssistant.Host/pull/307), actual
+`938ba7d3af08a015ab22178e497fe9da79cfec61` at `2026-11-04T10:10:10Z`, final
+`02f0a83d0bfb63a76c0b2f55bb872dfe2a29b951`, all five exact-head checks/re-review
+clear. The valid abandoned-temporary-file finding was fixed, tested and resolved
+with evidence after green. Full local1557/1557 and final scoped105/105 remain
+separate verification results. The destination reuses native file ACL/link/lease checks,
 flushed atomic no-overwrite writes and readback verification. Identical retries
 are idempotent; conflicts/corruption are preserved and rejected. This does not
 provision roots, capture source state, schedule retention or qualify installed
 restore. Existing native-file constructor/default limits remain unchanged.
+
+The coordinated capture component orders a trusted exclusive source boundary,
+ingress/scheduled-work freeze, broker drain, writer stop and repeated complete
+quiescence checks around every required resource and package construction. It
+clears transferred plaintext and rejects incomplete, stale, foreign or drifting
+evidence. Concrete SCM/broker/SQL/object capture adapters and durable journal
+recovery are still FIN-278/280 integration, not implemented by the orchestration
+interface or certified by synthetic tests. No automatic writer resume or first-user
+readiness is inferred. See the [capture contract](../engineering/windows-native-recovery.md#coordinated-capture-boundary).
 
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
 supersedes the Compose POC target. FIN-270 is implementation work: no WPF

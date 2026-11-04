@@ -95,12 +95,27 @@ at `2026-11-03T09:25:17.152848Z` and final channels clear. It supplies encrypted
 caller-owned stream writing and independent all-artifact authentication, including
 owned file/failure tests. Actual quiescence/capture, destination provisioning,
 atomic publication, scheduling and installer/business acceptance remain open.
-The same FIN-209 continues on `codex/fin-209-protected-store` from that actual main:
-existing protected-directory reuse for atomic no-overwrite package storage,
-idempotent identical retries, persisted-byte verification and authenticated opens.
-The original 12 MiB helper default/constructor remain unchanged; the backup consumer
-explicitly opts into a bounded larger limit. Root provisioning, capture, scheduling
-and integrated/installed acceptance remain open; no Done or completion credit.
+The protected destination component is actually merged through
+[PR307](https://github.com/Marachert/FinancialAssistant.Host/pull/307), actual
+`938ba7d3af08a015ab22178e497fe9da79cfec61` at `2026-11-04T10:10:10Z`, final
+`02f0a83d0bfb63a76c0b2f55bb872dfe2a29b951`. All five exact-head checks passed
+(Backend41810861267/Mobile41810861173/Admin41810861214), configured review clear
+at `2026-11-04T09:58:20.226277Z`. The valid abandoned-temporary-file finding was
+fixed, regressed, answered with commit/test/CI evidence and resolved after green.
+Final channels/labels were clear; five affected Confluence bodies and central
+post-merge Delivery182/Bootstrap570 were verified. Full local baseline1557/1557
+and fresh review-fix scoped105/105 are separate results, not a new combined count.
+The original12MiB helper default/constructor remain unchanged; this consumer
+explicitly opts into128MiB. Private existing NTFS roots, atomic no-overwrite saves,
+identical retries, persisted-byte checks and authenticated opens preserve existing
+archives; startup removes only validated abandoned temporary files under the lease.
+The same FIN-209 continues on `codex/fin-209-capture-boundary` from that actual main:
+ordered source-bound acquisition, ingress/scheduled-work freeze, broker drain,
+writer stop and repeated complete quiescence validation around all30 captures.
+This is orchestration with a trusted privileged adapter contract, not implemented
+SCM/broker/SQL capture actions or actual all-owner business restore. Root provisioning,
+actual capture, scheduling and integrated/installed acceptance remain open;
+no Done or completion credit.
 No pending installed qualification is silently waived to advance. Native first-user
 bootstrap, Profile-only refresh and protected machine deployment remain explicit
 launch gaps, not inferred acceptance.

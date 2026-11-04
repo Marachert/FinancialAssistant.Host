@@ -17,6 +17,8 @@ public sealed class NativeRecoveryPackage : IDisposable
 {
     public const int MaximumPackageBytes = 128 * 1024 * 1024;
     private const int HeaderBytes = 164;
+    internal static long MaximumCaptureBytes => MaximumPackageBytes - HeaderBytes - NativeRecoveryManifest.MaximumDocumentBytes -
+        NativeRecoveryArtifactEncryption.EnvelopeOverheadBytes - 8 - (long)NativeRecoveryManifest.RequiredResources.Count * NativeRecoveryArtifactEncryption.EnvelopeOverheadBytes;
     private static ReadOnlySpan<byte> Magic => "FAPACK01"u8;
     private static ReadOnlySpan<byte> Complete => "FADONE01"u8;
     private readonly byte[] header;
