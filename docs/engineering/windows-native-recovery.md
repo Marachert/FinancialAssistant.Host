@@ -188,6 +188,13 @@ lease. Await active work before synchronous disposal, or use `DisposeAsync`;
 busy synchronous disposal refuses to block a UI thread. Mutable serialized
 ciphertext/readback buffers are cleared after use.
 
+After acquiring the exclusive lease, startup removes only validated abandoned
+opaque `.tmp` files through the existing no-follow temporary-file API. It never
+removes or replaces published `.object` archives. A restart regression verifies
+temporary-file recovery while preserving the stored archive digest and its
+authenticated reopen. The review-fix recovery suite passed105/105 on Windows;
+that scoped result is separate from the earlier full1,557-test baseline below.
+
 No archive deletion, automatic retention, scheduler, root provisioning or semantic
 capture/restore actuator is added. Destination capacity exhaustion fails closed;
 the last verified recovery point is never deleted to make room. Full capture,

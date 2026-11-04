@@ -105,6 +105,26 @@ public sealed class WindowsNativeRecoveryStoreTests
 
     private static void PlatformGuard() => Assert.Throws<PlatformNotSupportedException>(() => new WindowsNativeRecoveryStore("unused", "unused"));
 
+    [Fact]
+    public async Task ReopeningRecoversAbandonedTemporaryFilesWithoutChangingPublishedArchives()
+    {
+        if (!OperatingSystem.IsWindows()) { PlatformGuard(); return; }
+        using var fixture = new Fixture(); using var package = fixture.Package();
+        NativeRecoveryStoredPackage saved;
+        using (var first = new WindowsNativeRecoveryStore(fixture.Directory, fixture.Sid)) { saved = await first.SaveAsync(package, fixture.Passphrase); }
+        var temporary = Path.Combine(fixture.Directory, Guid.NewGuid().ToString("N") + ".tmp");
+        File.WriteAllBytes(temporary, "synthetic-interrupted-encrypted-write"u8.ToArray());
+        try
+        {
+            using var reopened = new WindowsNativeRecoveryStore(fixture.Directory, fixture.Sid);
+            Assert.False(File.Exists(temporary));
+            Assert.Equal(saved.Sha256, Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(fixture.Directory, saved.FileName)))));
+            using var restored = await reopened.OpenAsync(fixture.Metadata.SourceInstallationId, fixture.Metadata.BackupId, fixture.Passphrase);
+            Assert.Equal(package.Manifest.BackupId, restored.Manifest.BackupId);
+        }
+        finally { File.Delete(temporary); }
+    }
+
     private sealed class Fixture : IDisposable
     {
         public string Directory { get; }

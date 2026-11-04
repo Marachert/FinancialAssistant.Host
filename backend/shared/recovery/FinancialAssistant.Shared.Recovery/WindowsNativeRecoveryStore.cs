@@ -12,8 +12,15 @@ public sealed class WindowsNativeRecoveryStore : IDisposable, IAsyncDisposable
     private readonly SemaphoreSlim gate = new(1, 1);
     private bool disposed;
 
-    public WindowsNativeRecoveryStore(string existingProtectedDirectory, string operatorSid) =>
+    public WindowsNativeRecoveryStore(string existingProtectedDirectory, string operatorSid)
+    {
         files = new ProtectedDirectory(existingProtectedDirectory, operatorSid, maximumFiles: 64, maximumFileBytes: NativeRecoveryPackage.MaximumPackageBytes);
+        try
+        {
+            foreach (var name in files.ListFiles().Where(name => name.EndsWith(".tmp", StringComparison.Ordinal))) { files.DeleteTemporary(name); }
+        }
+        catch { files.Dispose(); throw Invalid(); }
+    }
 
     public async Task<NativeRecoveryStoredPackage> SaveAsync(NativeRecoveryPackage package, ReadOnlyMemory<byte> operatorPassphrase, CancellationToken token = default)
     {
