@@ -101,6 +101,10 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("[ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle','Recovery')]", script);
         Assert.Contains("FinancialAssistant.NativeRecovery.Integration.csproj", script);
         Assert.Contains("Scoped owned business recovery evidence is incomplete.", script);
+        Assert.Contains("[ValidateSet('IncomeExpense','ProfileCategory')]", script);
+        Assert.Contains("$proof.scope -cne $expectedRecoveryScope", script);
+        Assert.Contains("FA_RECOVERY_TEST_SCOPE", script);
+        Assert.Contains("$result.recoveryScope", script);
         Assert.Contains("FinancialAssistant.NativeLifecycle.Integration.csproj", script);
         Assert.Contains("[IO.FileMode]::CreateNew", script);
         Assert.Contains("FinancialAssistant.Audit.Persistence.Integration.csproj", script);
@@ -126,7 +130,10 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("NativeRecoveryArtifactEncryption.Open", source);
         Assert.Contains("await Child(\"restore\")", source);
         Assert.Contains("REVOKE ALL ON SCHEMA public FROM PUBLIC", source);
-        Assert.Contains("\"restore\", null, \"Income exact persistence\"", source);
+        Assert.Contains("\"restore\", null, expectedKeyFailure", source);
+        Assert.Contains("\"Profile/Category exact persistence\" : \"Income exact persistence\"", source);
+        Assert.Contains("document.Scope == scopeName", source);
+        Assert.Contains("scope = scopeName", source);
         Assert.Contains("wrongKeyRejected = true", source);
         Assert.Contains("\"--exit-on-error\", \"--single-transaction\"", source);
         Assert.Contains("FileMode.CreateNew", source);
@@ -138,6 +145,42 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("recovery.run", records);
         Assert.Contains("recovered-income.keys", records);
         Assert.Contains("recovered-expense.keys", records);
+        var profiles = File.ReadAllText(Path.Combine(Root(), "backend/services/profile/FinancialAssistant.ProfileCategory.Persistence.Integration/ProfileCategoryFixture.cs"));
+        Assert.Contains("mode != \"restore\" || recovery", profiles);
+        Assert.Contains("Setting(\"FA_RECOVERY_TEST_SCOPE\") == \"ProfileCategory\"", profiles);
+        Assert.Contains("recovered-profile.keys", profiles);
+        Assert.Contains("recovered-category.keys", profiles);
+        Assert.Contains("CryptographicOperations.ZeroMemory(keys)", profiles);
+        Assert.Contains("synthetic-restored-conflict", profiles);
+        Assert.Contains("Hash(replayed) == eventHash", profiles);
+    }
+
+    [Theory]
+    [InlineData("Foundation", "ProfileCategory")]
+    [InlineData("ProfileCategory", "ProfileCategory")]
+    [InlineData("FinancialRecords", "IncomeExpense")]
+    public async Task RecoveryScopeCannotBeSilentlyIgnoredByAnotherScenario(string scenario, string scope)
+    {
+        var start = new ProcessStartInfo("pwsh")
+        {
+            WorkingDirectory = Root(),
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+        foreach (var argument in new[] { "-NoProfile", "-NonInteractive", "-File", "tools/scripts/test-owned-postgres.ps1",
+            "-ArchivePath", "synthetic-nonexistent-untrusted.zip", "-Scenario", scenario, "-RecoveryScope", scope })
+        { start.ArgumentList.Add(argument); }
+        using var process = Process.Start(start) ?? throw new InvalidOperationException("PowerShell unavailable.");
+        var output = process.StandardOutput.ReadToEndAsync(); var error = process.StandardError.ReadToEndAsync();
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        try { await process.WaitForExitAsync(deadline.Token); }
+        catch (OperationCanceledException) { process.Kill(entireProcessTree: true); await process.WaitForExitAsync(); throw; }
+        var diagnostics = await output + await error;
+        Assert.NotEqual(0, process.ExitCode);
+        Assert.Contains("RecoveryScope applies only to the Recovery scenario.", diagnostics);
+        Assert.DoesNotContain("Owned local PostgreSQL fixture passed", diagnostics);
     }
 
     private static string Root()

@@ -1,7 +1,8 @@
 # Native Portable Recovery
 
 FIN-209 is In Progress. This increment provides authenticated portable artifact
-encryption and an actual isolated Income/Expense restore drill. It is not a
+encryption and separately isolated Income/Expense and Profile/Category restore
+drills. It is not a
 complete POC backup utility, installed-host qualification or permission to restore
 an existing database. No completion credit or first-user readiness is claimed.
 
@@ -50,6 +51,18 @@ full local1557/1557 and final scoped Windows105/105 are separate results. No lea
 closure, completion credit or installed recovery acceptance is claimed.
 
 ## Portable Protection
+
+The coordinated capture follow-on [PR308](https://github.com/Marachert/FinancialAssistant.Host/pull/308)
+is independently verified merged=true/CLOSED: actual protected squash
+`e469e2b1bd7c27046078a4656af0802cfd850ead` at `2026-11-04T20:39:29Z`, final
+`5b1ac33fa8189f7f5f05b6d2ae6dabac70ff01d9`. All five exact-head checks passed
+(Backend41816672625/Mobile41816672779/Admin41816672565); decoded backend logs
+verified 1,614/1,614 tests across26 projects without failures/skips. Configured
+re-review completed `2026-11-04T10:51:01.849646Z` without findings; final reviews,
+threads, comments and labels were clear. The initial TLS fixture failure remains
+failed; the minimal test-only repair passed fresh fixing-head CI without changing
+production limits. Central post-merge Confluence bodies were verified at
+Delivery185/Bootstrap573. FIN-209 remains open without completion credit.
 
 `FinancialAssistant.Shared.Recovery` uses .NET 8 cryptographic APIs, without a new
 external cryptography package or paid secret service:
@@ -304,6 +317,7 @@ pinned by [the component manifest](../../infra/windows-native/component-manifest
 dotnet restore FinancialAssistant.Backend.sln
 dotnet build FinancialAssistant.Backend.sln --no-restore --configuration Release
 pwsh -NoProfile -NonInteractive -File tools/scripts/test-owned-postgres.ps1 -Scenario Recovery -ArchivePath <local-pinned-postgresql-archive.zip>
+pwsh -NoProfile -NonInteractive -File tools/scripts/test-owned-postgres.ps1 -Scenario Recovery -RecoveryScope ProfileCategory -ArchivePath <local-pinned-postgresql-archive.zip>
 ```
 
 The runner verifies the archive digest before use. It creates a user-only owned
@@ -312,10 +326,17 @@ port, verifies `SHOW data_directory`, and uses synthetic credentials and data.
 It installs no Windows service, vendor installer, certificate or firewall rule.
 Do not run the integration executable directly against a shared cluster.
 
+`RecoveryScope` is explicitly allowlisted: `IncomeExpense` is the default;
+`ProfileCategory` selects a separate two-owner fixture. Supplying this option to
+any other scenario is rejected before fixture creation or archive use. The runner
+canonicalizes/saves/restores its process environment and checks both phase proofs
+against the selected scope before setting `businessRecoveryVerified=true`.
+The parent result records that scope. A scope tag is not complete-POC acceptance.
+
 The explicit Recovery scenario:
 
-1. Initializes separate Income/Expense schemas, migration/runtime roles and keys,
-   using the existing actual financial persistence assertions.
+1. Initializes separate Income/Expense or Profile/Category schemas, migration/runtime
+   roles and keys, using that scope's existing actual persistence assertions.
 2. Waits for the source business process to exit and rejects active source client
    sessions. It dumps each owned schema separately from this trusted synthetic
    source, preserving its migration/version metadata and ownership grants.
@@ -328,10 +349,15 @@ The explicit Recovery scenario:
    access; native ownership checks are not weakened to accept a restore.
 5. Runs trusted `pg_restore` with `--exit-on-error --single-transaction`, retaining
    schema ownership and grants. It does not clean, drop or overwrite a store.
-6. Proves incorrect recovered keys fail at financial reads; reinstates the actual
-   recovered keys and verifies exact original snapshot hashes, EUR/USD totals,
-   user isolation, independent SQL role denial and immutable confirmation replay
-   without additional outbox records.
+6. Proves incorrect recovered keys fail at owned reads, then reinstates the actual
+   recovered keys. Income/Expense verifies exact snapshot hashes, EUR/USD totals,
+   owner/role isolation and immutable confirmation replay without extra outbox
+   records. Profile/Category verifies exact decimal preferences, financial-settings
+   revision, taxonomy/aliases/version/time, deleted-owner markers, snapshot hashes,
+   pending event count and independent SQL role denial without changing those values.
+   Profile/Category also republishes the identical recovered event, rejects a
+   conflicting replay and proves the full pending-event and business snapshot
+   hashes remain unchanged.
 7. Performs an actual immediate PostgreSQL crash and restart, then repeats source
    and restored-business checks in new processes, including wrong-key denial.
 
@@ -350,7 +376,30 @@ Evidence is under ignored `.codex-runtime/persistence-test/<guid>/`: parent
 The catalog contains synthetic owner/ID/digest metadata and a wrapped key, not an
 installer-ready authenticated manifest. `installed=false` and
 `releaseReady=false` remain mandatory. This drill is separate from the nine
-scenarios in the full persistence matrix; it does not inflate that matrix.
+scenarios in the full persistence matrix; these recovery scopes do not inflate it.
+
+The Profile/Category scope passed both actual restore and immediate-crash/restart
+phases on `2026-11-04T21:02:14.3977960Z`; parent cleanup was verified. Its evidence
+explicitly records `scope=profile-category`, portable keys, wrong-key rejection,
+business reconciliation and immutable replay, with `installed=false` and
+`releaseReady=false`. This is a separate owned cluster from Income/Expense, not
+one atomic four-owner backup, complete13-owner capture or installed acceptance.
+The existing Income/Expense recovery scope was rerun successfully at
+`2026-11-04T20:52:47.3928887Z`, including both wrong-key/business/restart phase
+proofs and cleanup. The original non-recovery Profile/Category persistence scenario
+also passed with actual crash/restart, event replay/conflict assertions and cleanup
+at `2026-11-04T21:03:49.6809678Z`;
+its result correctly keeps `businessRecoveryVerified=false`, rather than claiming
+that ordinary persistence verification performed a restore. These are local
+synthetic fixture results, not exact-head CI or installed lifecycle qualification.
+
+Local full verification for this follow-on passed **1,617/1,617** tests across26
+projects, with zero failures/skips, from `2026-11-04T21:07:47.6821233Z` to
+`2026-11-04T21:12:33.8319768Z`. Repository341/341 includes three new negative
+tests proving `RecoveryScope` cannot be silently ignored by other scenarios.
+Full restore and Release build passed with zero errors/five existing warnings;
+the final scoped integration build passed with zero warnings/errors. These are
+local results, not a claim that CI or installed acceptance has already passed.
 
 ## Complete POC Recovery Gate
 
@@ -369,7 +418,7 @@ integrated backup/repair support:
 | Resource or boundary | Required integrated behavior |
 | --- | --- |
 | Consistency | Freeze ingress, stop publishers, drain known broker queues including unacknowledged deliveries, then stop consumers and other writers before cross-owner capture. A per-database dump is not a cross-resource snapshot. |
-| All owned databases | Capture all thirteen business owners, including the Summary module, their schema/migration versions, encrypted state, durable outboxes/inboxes, deletion markers and retained decryption/index keys. This drill covers only Income and Expense. |
+| All owned databases | Capture all thirteen business owners, including the Summary module, their schema/migration versions, encrypted state, durable outboxes/inboxes, deletion markers and retained decryption/index keys. Separate scoped drills cover Income/Expense and Profile/Category, not a common four-owner boundary or all thirteen owners. |
 | Receipt objects | Capture encrypted object bytes and matching receipt metadata under the same quiescence boundary; preserve retention/deletion semantics and reject missing or foreign objects. |
 | Protected configuration | Capture required runtime and Summary module secrets, stable key sets and nonsecret deployment identity through authorized privileged reads. Authenticate a complete bounded manifest and exact artifact coverage. Never put unlock material beside the archive. |
 | Broker and external work | A fresh broker is safe only after an actual empty/drained-queue proof and preserved durable pending work. Published-but-unconsumed messages must not be discarded. Preserve Identity pending transport, receipt jobs and uncertain provider state; do not resend paid work. |

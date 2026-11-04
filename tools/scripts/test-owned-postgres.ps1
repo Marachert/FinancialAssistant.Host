@@ -1,9 +1,11 @@
 param([Parameter(Mandatory)][string] $ArchivePath,
     [ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle','Recovery')][string] $Scenario = 'Foundation',
+    [ValidateSet('IncomeExpense','ProfileCategory')][string] $RecoveryScope = 'IncomeExpense',
     [string] $BrokerFixtureRoot,
     [string] $ResultFile)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+if ($Scenario -ne 'Recovery' -and $PSBoundParameters.ContainsKey('RecoveryScope')) { throw 'RecoveryScope applies only to the Recovery scenario.' }
 function Write-NewJson([string] $Path, [object] $Value) {
     $stream = [IO.File]::Open($Path, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
     try { $bytes = [Text.UTF8Encoding]::new($false).GetBytes(($Value | ConvertTo-Json -Depth 8)); $stream.Write($bytes) }
@@ -68,7 +70,7 @@ $interruptedStarted = $null
 $interruptedTransactionRecovered = $false
 $businessRecoveryVerified = $false
 $saved = @{}
-foreach ($name in @('FA_PERSISTENCE_TEST_PASSWORD','FA_PERSISTENCE_TEST_PORT','FA_PERSISTENCE_TEST_DIRECTORY','FA_PERSISTENCE_TEST_MODE','FA_NATIVE_BROKER_FIXTURE_ROOT','FA_NATIVE_LIFECYCLE_REPOSITORY','FA_RECOVERY_TEST_PASSPHRASE')) {
+foreach ($name in @('FA_PERSISTENCE_TEST_PASSWORD','FA_PERSISTENCE_TEST_PORT','FA_PERSISTENCE_TEST_DIRECTORY','FA_PERSISTENCE_TEST_MODE','FA_NATIVE_BROKER_FIXTURE_ROOT','FA_NATIVE_LIFECYCLE_REPOSITORY','FA_RECOVERY_TEST_PASSPHRASE','FA_RECOVERY_TEST_SCOPE')) {
     $saved[$name] = [Environment]::GetEnvironmentVariable($name)
 }
 function Run-Local([string] $Executable, [string[]] $Arguments, [string] $Label) {
@@ -114,7 +116,11 @@ try {
     $env:FA_PERSISTENCE_TEST_PORT = [string]$port
     $env:FA_PERSISTENCE_TEST_DIRECTORY = $data
     $env:FA_PERSISTENCE_TEST_MODE = 'initial'
-    if ($Scenario -eq 'Recovery') { $env:FA_RECOVERY_TEST_PASSPHRASE = [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32)) }
+    $env:FA_RECOVERY_TEST_SCOPE = ''
+    if ($Scenario -eq 'Recovery') {
+        $env:FA_RECOVERY_TEST_PASSPHRASE = [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+        $env:FA_RECOVERY_TEST_SCOPE = if ($RecoveryScope -eq 'ProfileCategory') { 'ProfileCategory' } else { 'IncomeExpense' }
+    }
     if ($brokerRoot) { $env:FA_NATIVE_BROKER_FIXTURE_ROOT = $brokerRoot; $env:FA_NATIVE_LIFECYCLE_REPOSITORY = $repo }
     $project = Join-Path $repo $(if ($Scenario -eq 'Identity') {
         'backend/services/identity/FinancialAssistant.Identity.Persistence.Integration/FinancialAssistant.Identity.Persistence.Integration.csproj'
@@ -164,9 +170,10 @@ try {
         $env:FA_PERSISTENCE_TEST_MODE = 'restart'
         Run-Local $dotnet @('run','--project',$project,'--no-build','--configuration','Release') 'financial-restart'
         if ($Scenario -eq 'Recovery') {
+            $expectedRecoveryScope = if ($RecoveryScope -eq 'ProfileCategory') { 'profile-category' } else { 'income-expense' }
             foreach ($name in @('recovery-initial.json','recovery-restart.json')) {
                 $proof = Get-Content -LiteralPath (Join-Path $run $name) -Raw | ConvertFrom-Json
-                if ($proof.passed -cne $true -or $proof.scope -cne 'income-expense' -or $proof.portableKeys -cne $true -or
+                if ($proof.passed -cne $true -or $proof.scope -cne $expectedRecoveryScope -or $proof.portableKeys -cne $true -or
                     $proof.wrongKeyRejected -cne $true -or $proof.businessReconciled -cne $true -or $proof.immutableReplay -cne $true -or $proof.installed -cne $false -or $proof.releaseReady -cne $false) {
                     throw 'Scoped owned business recovery evidence is incomplete.'
                 }
@@ -213,6 +220,7 @@ try {
         $result = @{passed=$passed;cleanupSucceeded=$cleanupSucceeded;scenario=$Scenario;installed=$false;releaseReady=$false;fixture=[IO.Path]::GetRelativePath($repo,$run);archiveDigest=$package[0].hash;verifiedAt=[datetime]::UtcNow.ToString('o')}
         $result.interruptedTransactionRecovered = $interruptedTransactionRecovered
         $result.businessRecoveryVerified = $businessRecoveryVerified
+        if ($Scenario -eq 'Recovery') { $result.recoveryScope = if ($RecoveryScope -eq 'ProfileCategory') { 'profile-category' } else { 'income-expense' } }
         $result | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $run 'result.json') -Encoding utf8NoBOM
         if ($ResultFile) { Write-NewJson $ResultFile $result }
         if ($brokerRoot) { Write-NewJson (Join-Path $brokerRoot 'financial-postgres.json') $result }

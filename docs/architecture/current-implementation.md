@@ -91,7 +91,13 @@ are idempotent; conflicts/corruption are preserved and rejected. This does not
 provision roots, capture source state, schedule retention or qualify installed
 restore. Existing native-file constructor/default limits remain unchanged.
 
-The coordinated capture component orders a trusted exclusive source boundary,
+The coordinated capture component is actually merged through
+[PR308](https://github.com/Marachert/FinancialAssistant.Host/pull/308), actual
+`e469e2b1bd7c27046078a4656af0802cfd850ead` at `2026-11-04T20:39:29Z`, final
+`5b1ac33fa8189f7f5f05b6d2ae6dabac70ff01d9`. All five exact-head checks and configured
+re-review passed; final decoded CI verified1,614 tests across26 projects, no failures
+or skips. A test-only TLS fixture repair resolved an initial CI failure without
+changing production limits. This component orders a trusted exclusive source boundary,
 ingress/scheduled-work freeze, broker drain, writer stop and repeated complete
 quiescence checks around every required resource and package construction. It
 clears transferred plaintext and rejects incomplete, stale, foreign or drifting
@@ -99,6 +105,12 @@ evidence. Concrete SCM/broker/SQL/object capture adapters and durable journal
 recovery are still FIN-278/280 integration, not implemented by the orchestration
 interface or certified by synthetic tests. No automatic writer resume or first-user
 readiness is inferred. See the [capture contract](../engineering/windows-native-recovery.md#coordinated-capture-boundary).
+
+An additional actual isolated Profile/Category restore scope now verifies portable
+key access/wrong-key denial, a new empty target, exact preferences/taxonomy/events/
+deletion-state hashes, independent roles and crash/restart with verified cleanup.
+It is separate from the Income/Expense drill, not one atomic four-owner backup
+or full13-owner capture. FIN-209 and installed/first-user acceptance remain open.
 
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
 supersedes the Compose POC target. FIN-270 is implementation work: no WPF
