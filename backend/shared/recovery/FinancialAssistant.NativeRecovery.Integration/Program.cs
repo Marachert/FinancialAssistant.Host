@@ -15,6 +15,14 @@ try
     var operatorSecret = Environment.GetEnvironmentVariable("FA_RECOVERY_TEST_PASSPHRASE") ?? "";
     var mode = Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_MODE") ?? "";
     var directory = Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_DIRECTORY") ?? "";
+    var scope = Environment.GetEnvironmentVariable("FA_RECOVERY_TEST_SCOPE") ?? "";
+    Check(scope is "IncomeExpense" or "ProfileCategory");
+    var profileCategory = scope == "ProfileCategory";
+    var scopeName = profileCategory ? "profile-category" : "income-expense";
+    var owners = profileCategory ? new[] { (Owner: "profile", Seed: (byte)1), (Owner: "category", Seed: (byte)3) }
+        : new[] { (Owner: "income", Seed: (byte)1), (Owner: "expense", Seed: (byte)3) };
+    var sourceDatabase = profileCategory ? "fa_test_fin283" : "fa_test_fin275";
+    var expectedKeyFailure = profileCategory ? "Profile/Category exact persistence" : "Income exact persistence";
     Check(credential.Length == 64 && credential.All(char.IsAsciiHexDigit) && operatorSecret.Length == 64 && operatorSecret.All(char.IsAsciiHexDigit)
         && mode is "initial" or "restart" && Path.IsPathFullyQualified(directory) && Directory.Exists(directory));
     Check(int.TryParse(Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_PORT"), out var port) && port is >= 49152 and <= 65535);
@@ -44,7 +52,8 @@ try
     var runtime = new DirectoryInfo(RuntimeEnvironment.GetRuntimeDirectory());
     var dotnet = Path.Combine(runtime.Parent!.Parent!.Parent!.FullName, "dotnet.exe");
     Check(File.Exists(dotnet));
-    var child = Path.Combine(repository.FullName, "backend", "services", "income", "FinancialAssistant.FinancialRecords.Persistence.Integration", "bin", "Release", "net8.0", "FinancialAssistant.FinancialRecords.Persistence.Integration.dll");
+    var project = profileCategory ? "FinancialAssistant.ProfileCategory.Persistence.Integration" : "FinancialAssistant.FinancialRecords.Persistence.Integration";
+    var child = Path.Combine(repository.FullName, "backend", "services", profileCategory ? "profile" : "income", project, "bin", "Release", "net8.0", project + ".dll");
     Check(File.Exists(child));
     var marker = Path.Combine(root, "recovery.run"); var catalog = Path.Combine(root, "recovery.json");
     var passphrase = Encoding.ASCII.GetBytes(operatorSecret); var temporary = new List<string>();
@@ -57,20 +66,20 @@ try
             WriteNew(marker, Encoding.ASCII.GetBytes(run.Name));
             stage = "source business initialization";
             await Child("initial");
-            await using (var sessions = new NpgsqlCommand("SELECT count(*) FROM pg_stat_activity WHERE datname='fa_test_fin275' AND backend_type='client backend'", admin))
-            { Check((long)(await sessions.ExecuteScalarAsync())! == 0); }
-            document = new RecoveryDocument { InstallationId = Guid.NewGuid(), BackupId = Guid.NewGuid() };
+            await using (var sessions = new NpgsqlCommand("SELECT count(*) FROM pg_stat_activity WHERE datname=$1 AND backend_type='client backend'", admin))
+            { sessions.Parameters.AddWithValue(sourceDatabase); Check((long)(await sessions.ExecuteScalarAsync())! == 0); }
+            document = new RecoveryDocument { InstallationId = Guid.NewGuid(), BackupId = Guid.NewGuid(), Scope = scopeName };
             var originalKey = NativeRecoveryKeyWrapping.CreateRecoveryKey();
             try
             {
                 document.WrappedKey = NativeRecoveryKeyWrapping.Wrap(document.InstallationId, document.BackupId, originalKey, passphrase);
-                foreach (var (owner, seed) in new[] { ("income", (byte)1), ("expense", (byte)3) })
+                foreach (var (owner, seed) in owners)
                 {
                     stage = "trusted quiescent owned schema dump";
                     var raw = Path.Combine(root, Guid.NewGuid().ToString("N") + ".dump");
                     Check(!File.Exists(raw)); temporary.Add(raw);
                     await Run(Path.Combine(binaries, "pg_dump.exe"), ["--host=127.0.0.1", "--port=" + port, "--username=fa_test_admin", "--no-password",
-                        "--dbname=fa_test_fin275", "--format=custom", "--schema=fa_" + owner, "--file=" + raw], null, credential);
+                        "--dbname=" + sourceDatabase, "--format=custom", "--schema=fa_" + owner, "--file=" + raw], null, credential);
                     Check(new FileInfo(raw).Length is > 0 and <= NativeRecoveryArtifactEncryption.MaximumPlaintextBytes && (File.GetAttributes(raw) & FileAttributes.ReparsePoint) == 0);
                     var payload = File.ReadAllBytes(raw);
                     try { Capture(owner, NativeRecoveryArtifactKind.Database, payload, originalKey, document); }
@@ -92,10 +101,10 @@ try
         Check(new FileInfo(catalog).Length is > 0 and <= 16384 && (File.GetAttributes(catalog) & FileAttributes.ReparsePoint) == 0);
         document = JsonSerializer.Deserialize<RecoveryDocument>(File.ReadAllBytes(catalog), new JsonSerializerOptions
         { UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow, MaxDepth = 8 }) ?? throw new InvalidOperationException();
-        Check(document.InstallationId != Guid.Empty && document.BackupId != Guid.Empty && document.Artifacts.Count == 4
+        Check(document.InstallationId != Guid.Empty && document.BackupId != Guid.Empty && document.Scope == scopeName && document.Artifacts.Count == 4
             && document.Artifacts.Select(artifact => artifact.Id).Distinct().Count() == 4
             && document.Artifacts.Select(artifact => (artifact.Owner, artifact.Kind)).Distinct().Count() == 4
-            && document.Artifacts.All(artifact => artifact.Owner is "income" or "expense" && artifact.Kind is NativeRecoveryArtifactKind.Database or NativeRecoveryArtifactKind.Configuration));
+            && document.Artifacts.All(artifact => owners.Any(owner => owner.Owner == artifact.Owner) && artifact.Kind is NativeRecoveryArtifactKind.Database or NativeRecoveryArtifactKind.Configuration));
         recoveredKey = NativeRecoveryKeyWrapping.Unwrap(document.InstallationId, document.BackupId, document.WrappedKey, passphrase);
         var restores = new List<string>();
         foreach (var artifact in document.Artifacts)
@@ -126,7 +135,8 @@ try
             await using (var exists = new NpgsqlCommand("SELECT count(*) FROM pg_database WHERE datname='fa_test_fin209_restore'", admin))
             { Check((long)(await exists.ExecuteScalarAsync())! == 0); }
             await Sql(admin, "CREATE DATABASE fa_test_fin209_restore TEMPLATE template0");
-            await Sql(admin, "REVOKE ALL ON DATABASE fa_test_fin209_restore FROM PUBLIC; GRANT CONNECT ON DATABASE fa_test_fin209_restore TO fa_income,fa_expense,fa_income_migration,fa_expense_migration");
+            var roles = string.Join(",", owners.SelectMany(owner => new[] { "fa_" + owner.Owner, "fa_" + owner.Owner + "_migration" }));
+            await Sql(admin, "REVOKE ALL ON DATABASE fa_test_fin209_restore FROM PUBLIC; GRANT CONNECT ON DATABASE fa_test_fin209_restore TO " + roles);
             // A fresh template still grants public schema access; native stores require that grant removed.
             await using (var target = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(connection.ConnectionString) { Database = "fa_test_fin209_restore" }.ConnectionString))
             { await target.OpenAsync(); await Sql(target, "REVOKE ALL ON SCHEMA public FROM PUBLIC"); }
@@ -138,25 +148,25 @@ try
             }
         }
         stage = "wrong recovered key denial";
-        var recoveredIncome = Path.Combine(root, "recovered-income.keys");
-        var correctKeys = File.ReadAllBytes(recoveredIncome);
+        var recoveredFirst = Path.Combine(root, "recovered-" + owners[0].Owner + ".keys");
+        var correctKeys = File.ReadAllBytes(recoveredFirst);
         try
         {
             var wrongKeys = RandomNumberGenerator.GetBytes(64);
-            try { File.WriteAllBytes(recoveredIncome, wrongKeys); }
+            try { File.WriteAllBytes(recoveredFirst, wrongKeys); }
             finally { CryptographicOperations.ZeroMemory(wrongKeys); }
-            await Run(dotnet, [child], "restore", null, "Income exact persistence");
+            await Run(dotnet, [child], "restore", null, expectedKeyFailure);
         }
         finally
         {
-            try { File.WriteAllBytes(recoveredIncome, correctKeys); }
+            try { File.WriteAllBytes(recoveredFirst, correctKeys); }
             finally { CryptographicOperations.ZeroMemory(correctKeys); }
         }
         stage = "restored key access business reconciliation and immutable replay";
         await Child("restore");
         WriteNew(Path.Combine(root, mode == "initial" ? "recovery-initial.json" : "recovery-restart.json"), JsonSerializer.SerializeToUtf8Bytes(new
-        { schemaVersion = 1, passed = true, scope = "income-expense", portableKeys = true, wrongKeyRejected = true, businessReconciled = true, immutableReplay = true, installed = false, releaseReady = false }));
-        Console.WriteLine("PASS owned recovery: encrypted per-owner schema artifacts, independent portable key recovery, new empty target, exact financial snapshots/currency/owner isolation and idempotent replay. Not complete POC or installed acceptance.");
+        { schemaVersion = 1, passed = true, scope = scopeName, portableKeys = true, wrongKeyRejected = true, businessReconciled = true, immutableReplay = true, installed = false, releaseReady = false }));
+        Console.WriteLine("PASS owned recovery scope=" + scopeName + ": encrypted per-owner schema artifacts, independent portable key recovery, new empty target, exact business snapshots/owner isolation and idempotent replay. Not complete POC or installed acceptance.");
 
         async Task Child(string childMode) => await Run(dotnet, [child], childMode, null);
         void Capture(string owner, NativeRecoveryArtifactKind kind, byte[] plaintext, byte[] key, RecoveryDocument target)
@@ -210,7 +220,7 @@ static async Task Run(string executable, string[] arguments, string? mode, strin
     }
     if (mode is not null && process.ExitCode != 0)
     {
-        foreach (var name in new[] { "owned fixture validation", "Income exact persistence", "Expense exact persistence", "cross-service role denial" })
+        foreach (var name in new[] { "owned fixture validation", "Income exact persistence", "Expense exact persistence", "Profile/Category exact persistence", "restored exact profile and category state", "cross-service role denial" })
         { if (diagnostics.Contains("at " + name, StringComparison.Ordinal)) { Console.Error.WriteLine("Owned financial child failed at " + name + "."); } }
     }
     if (process.ExitCode != 0 || credential is not null && !string.IsNullOrWhiteSpace(diagnostics)) { throw new InvalidOperationException(); }
@@ -218,6 +228,7 @@ static async Task Run(string executable, string[] arguments, string? mode, strin
 
 sealed class RecoveryDocument
 {
+    public string Scope { get; set; } = "";
     public Guid InstallationId { get; set; }
     public Guid BackupId { get; set; }
     public byte[] WrappedKey { get; set; } = Array.Empty<byte>();

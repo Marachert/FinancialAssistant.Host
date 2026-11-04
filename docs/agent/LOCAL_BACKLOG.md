@@ -109,13 +109,28 @@ The original12MiB helper default/constructor remain unchanged; this consumer
 explicitly opts into128MiB. Private existing NTFS roots, atomic no-overwrite saves,
 identical retries, persisted-byte checks and authenticated opens preserve existing
 archives; startup removes only validated abandoned temporary files under the lease.
-The same FIN-209 continues on `codex/fin-209-capture-boundary` from that actual main:
-ordered source-bound acquisition, ingress/scheduled-work freeze, broker drain,
-writer stop and repeated complete quiescence validation around all30 captures.
-This is orchestration with a trusted privileged adapter contract, not implemented
+The coordinator is actually merged through
+[PR308](https://github.com/Marachert/FinancialAssistant.Host/pull/308), actual
+`e469e2b1bd7c27046078a4656af0802cfd850ead` at `2026-11-04T20:39:29Z`, final
+`5b1ac33fa8189f7f5f05b6d2ae6dabac70ff01d9`, all five checks green
+(Backend41816672625/Mobile41816672779/Admin41816672565), configured review clear
+at `2026-11-04T10:51:01.849646Z`, final channels/labels clear and actual-merge
+Confluence Delivery185/Bootstrap573 verified. Final decoded CI1614/1614 across26
+projects is distinct from local baseline1613 and final scoped Recovery161/Gateway80.
+The initial CI failure remains failed; a minimal test-only TLS fixture repair
+passed fresh fixing-head CI without changing production limits. This is
+ordered orchestration with a trusted privileged adapter contract, not implemented
 SCM/broker/SQL capture actions or actual all-owner business restore. Root provisioning,
 actual capture, scheduling and integrated/installed acceptance remain open;
 no Done or completion credit.
+The same FIN-209 continues on `codex/fin-209-profile-category-restore` from that
+actual main. A separately selected Profile/Category owned restore drill passed
+initial and actual immediate-crash/restart phases with cleanup verified at
+`2026-11-04T21:02:14.3977960Z`. It proves recovered key access/wrong-key denial,
+new-empty-target restore, exact preferences/category/outbox/deletion snapshots
+and independent role denial, identical recovered-event replay and conflicting
+replay rejection without changing pending-event/business hashes. This is not one atomic four-owner boundary with the
+Income/Expense drill, complete13-owner recovery, installed acceptance or a closure.
 No pending installed qualification is silently waived to advance. Native first-user
 bootstrap, Profile-only refresh and protected machine deployment remain explicit
 launch gaps, not inferred acceptance.

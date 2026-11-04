@@ -28,7 +28,7 @@ try
     var directory = Setting("FA_PERSISTENCE_TEST_DIRECTORY");
     var mode = Setting("FA_PERSISTENCE_TEST_MODE");
     if (password.Length != 64 || !password.All(char.IsAsciiHexDigit) || !Path.IsPathFullyQualified(directory)
-        || !Directory.Exists(directory) || mode is not ("initial" or "restart")
+        || !Directory.Exists(directory) || mode is not ("initial" or "restart" or "restore")
         || !int.TryParse(Setting("FA_PERSISTENCE_TEST_PORT"), out var port) || port is < 49152 or > 65535)
     { throw new FixtureFailure(); }
     var repository = new DirectoryInfo(AppContext.BaseDirectory);
@@ -40,6 +40,11 @@ try
         && string.Equals(data.Parent.Parent?.FullName, Path.Combine(repository.FullName, ".codex-runtime", "persistence-test"), comparison));
     for (DirectoryInfo? ancestor = data; ancestor is not null && ancestor.FullName.Length >= repository.FullName.Length; ancestor = ancestor.Parent)
     { Check((ancestor.Attributes & FileAttributes.ReparsePoint) == 0); }
+    var recoveryMarker = Path.Combine(data.Parent!.FullName, "recovery.run");
+    var recovery = File.Exists(recoveryMarker);
+    Check(!recovery || new FileInfo(recoveryMarker).Length == 32 && (File.GetAttributes(recoveryMarker) & FileAttributes.ReparsePoint) == 0
+        && File.ReadAllText(recoveryMarker) == data.Parent.Name && Setting("FA_RECOVERY_TEST_SCOPE") == "ProfileCategory");
+    Check(mode != "restore" || recovery);
     var connection = new NpgsqlConnectionStringBuilder
     {
         Host = "127.0.0.1",
@@ -56,8 +61,11 @@ try
     await bootstrap.OpenAsync();
     await using (var location = new NpgsqlCommand("SHOW data_directory", bootstrap))
     { Check(string.Equals(Path.GetFullPath((string)(await location.ExecuteScalarAsync())!), data.FullName, comparison)); }
-    const string database = "fa_test_fin283";
-    await using (var fresh = new NpgsqlCommand("SELECT count(*) FROM pg_database WHERE datname NOT IN('postgres','template0','template1','fa_test_fin283') OR (datname='fa_test_fin283' AND $1='initial')", bootstrap))
+    var database = mode == "restore" ? "fa_test_fin209_restore" : "fa_test_fin283";
+    var catalogQuery = recovery
+        ? "SELECT count(*) FROM pg_database WHERE datname NOT IN('postgres','template0','template1','fa_test_fin283','fa_test_fin209_restore') OR (datname IN('fa_test_fin283','fa_test_fin209_restore') AND $1='initial')"
+        : "SELECT count(*) FROM pg_database WHERE datname NOT IN('postgres','template0','template1','fa_test_fin283') OR (datname='fa_test_fin283' AND $1='initial')";
+    await using (var fresh = new NpgsqlCommand(catalogQuery, bootstrap))
     { fresh.Parameters.AddWithValue(mode); Check((long)(await fresh.ExecuteScalarAsync())! == 0); }
     var owners = new[] { new StorageIdentity("profile"), new StorageIdentity("category") };
     if (mode == "initial")
@@ -71,8 +79,8 @@ try
     connection.Database = database;
     await using var admin = new NpgsqlConnection(connection.ConnectionString);
     await admin.OpenAsync();
-    var profileSettings = Settings(database, port, password, 1);
-    var categorySettings = Settings(database, port, password, 3);
+    var profileSettings = Settings(database, port, password, 1, mode == "restore" ? data.Parent.FullName : null);
+    var categorySettings = Settings(database, port, password, 3, mode == "restore" ? data.Parent.FullName : null);
     if (mode == "initial")
     {
         stage = "separate fresh and repeat migrations";
@@ -87,6 +95,7 @@ try
             await Sql(admin, $"GRANT SELECT,INSERT,UPDATE,DELETE ON {owner.Schema}.records TO {owner.RuntimeRole}; GRANT SELECT ON {owner.Schema}.schema_versions,{owner.Schema}.encryption_keys TO {owner.RuntimeRole}");
         }
     }
+    stage = "Profile/Category exact persistence";
     await using var profileProvider = ProfileProvider(profileSettings);
     await using var categoryProvider = CategoryProvider(categorySettings);
     var profiles = profileProvider.GetRequiredService<PostgresProfileStore>();
@@ -101,9 +110,16 @@ try
     Check(await categoryProvider.GetRequiredService<OwnedPostgresStore>().IsReadyAsync());
     Check((await profileProvider.GetRequiredService<OwnedStorageHealthCheck>().CheckHealthAsync(new HealthCheckContext())).Status == HealthStatus.Unhealthy);
     Check((await categoryProvider.GetRequiredService<OwnedStorageHealthCheck>().CheckHealthAsync(new HealthCheckContext())).Status == HealthStatus.Unhealthy);
-    if (mode == "restart")
+    if (mode is "restart" or "restore")
     {
-        stage = "actual crash restart preserves exact profile and category state";
+        stage = mode == "restore" ? "restored exact profile and category state" : "actual crash restart preserves exact profile and category state";
+        foreach (var pair in new[] { (owners[0], owners[1]), (owners[1], owners[0]) })
+        {
+            var isolated = new NpgsqlConnectionStringBuilder(connection.ConnectionString) { Username = pair.Item1.RuntimeRole };
+            await using var runtime = new NpgsqlConnection(isolated.ConnectionString); await runtime.OpenAsync();
+            try { await Sql(runtime, $"SELECT * FROM {pair.Item2.Schema}.records"); throw new FixtureFailure(); }
+            catch (PostgresException exception) when (exception.SqlState == "42501") { }
+        }
         var profile = await profiles.GetAsync(first, default) ?? throw new FixtureFailure();
         Check(profile.Preferences.MonthlyBudgetAmount == 12345678901234567890.12345678m && profile.Preferences.PrivacyMode == "strict"
             && profile.CreatedAtUtc == now && profile.UpdatedAtUtc == now.AddMinutes(2));
@@ -120,8 +136,16 @@ try
         });
         Check(catalog.Find("expense.food") is { Version: 2 } food && food.Aliases.SequenceEqual(new[] { "market", "shop" }));
         Check(await profiles.GetAsync(second, default) is null && await categories.GetAsync(second, default) is null);
-        Check((await outbox.ReadPendingAsync()).Count == 1);
-        Console.WriteLine("PASS Profile/Category actual crash restart: exact decimal/preferences/taxonomy/aliases/version/time/outbox and deletion markers retained.");
+        var restoredPending = await outbox.ReadPendingAsync();
+        Check(restoredPending.Count == 1);
+        var eventHash = Hash(restoredPending);
+        await outbox.PublishAsync(restoredPending[0].Event, default);
+        try { await outbox.PublishAsync(restoredPending[0].Event with { CorrelationId = "synthetic-restored-conflict" }, default); throw new FixtureFailure(); }
+        catch (StorageUnavailableException) { }
+        var replayed = await outbox.ReadPendingAsync();
+        Check(Hash(replayed) == eventHash && Hash(await profiles.GetAsync(first, default)) == Hash(profile)
+            && Hash(await categories.GetAsync(first, default)) == Hash(catalog));
+        Console.WriteLine("PASS Profile/Category " + (mode == "restore" ? "restored target" : "actual crash restart") + ": exact decimal/preferences/taxonomy/aliases/version/time/outbox, role isolation and deletion markers retained.");
         return 0;
     }
 
@@ -296,15 +320,30 @@ static string OwnerHash(string value) => Convert.ToHexString(SHA256.HashData(Enc
 static void Check(bool value) { if (!value) { throw new FixtureFailure(); } }
 static async Task Sql(NpgsqlConnection connection, string sql)
 { await using var command = new NpgsqlCommand(sql, connection); await command.ExecuteNonQueryAsync(); }
-static NativePostgresSettings Settings(string database, int port, string password, byte index) => new()
+static NativePostgresSettings Settings(string database, int port, string password, byte index, string? recoveryRoot)
 {
-    Database = database,
-    Port = port,
-    Password = password,
-    IndexKey = Convert.ToBase64String(Enumerable.Repeat(index, 32).ToArray()),
-    ActiveEncryptionKeyId = "v1",
-    EncryptionKeys = new() { ["v1"] = Convert.ToBase64String(Enumerable.Repeat((byte)(index + 1), 32).ToArray()) }
-};
+    var keys = new byte[64];
+    try
+    {
+        if (recoveryRoot is not null)
+        {
+            var path = Path.Combine(recoveryRoot, index == 1 ? "recovered-profile.keys" : "recovered-category.keys");
+            Check(new FileInfo(path).Length == 64 && (File.GetAttributes(path) & FileAttributes.ReparsePoint) == 0);
+            keys = File.ReadAllBytes(path);
+        }
+        else { keys.AsSpan(0, 32).Fill(index); keys.AsSpan(32, 32).Fill((byte)(index + 1)); }
+        return new NativePostgresSettings
+        {
+            Database = database,
+            Port = port,
+            Password = password,
+            IndexKey = Convert.ToBase64String(keys.AsSpan(0, 32)),
+            ActiveEncryptionKeyId = "v1",
+            EncryptionKeys = new() { ["v1"] = Convert.ToBase64String(keys.AsSpan(32, 32)) }
+        };
+    }
+    finally { CryptographicOperations.ZeroMemory(keys); }
+}
 static IConfiguration Configuration(string prefix, NativePostgresSettings settings) => new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
 {
     [$"{prefix}:Storage:Postgres:Database"] = settings.Database,
