@@ -29,7 +29,7 @@ try
     var directory = Setting("FA_PERSISTENCE_TEST_DIRECTORY");
     var mode = Setting("FA_PERSISTENCE_TEST_MODE");
     Check(password.Length == 64 && password.All(char.IsAsciiHexDigit) && Path.IsPathFullyQualified(directory)
-        && Directory.Exists(directory) && mode is "initial" or "restart");
+        && Directory.Exists(directory) && mode is "initial" or "restart" or "restore");
     Check(int.TryParse(Setting("FA_PERSISTENCE_TEST_PORT"), out var port) && port is >= 49152 and <= 65535);
     var repository = new DirectoryInfo(AppContext.BaseDirectory);
     while (!File.Exists(Path.Combine(repository.FullName, "FinancialAssistant.Backend.sln")))
@@ -40,6 +40,11 @@ try
         && string.Equals(data.Parent.Parent?.FullName, Path.Combine(repository.FullName, ".codex-runtime", "persistence-test"), comparison));
     for (DirectoryInfo? ancestor = data; ancestor is not null && ancestor.FullName.Length >= repository.FullName.Length; ancestor = ancestor.Parent)
     { Check((ancestor.Attributes & FileAttributes.ReparsePoint) == 0); }
+    var recoveryMarker = Path.Combine(data.Parent!.FullName, "recovery.run");
+    var recovery = File.Exists(recoveryMarker);
+    Check(!recovery || new FileInfo(recoveryMarker).Length == 32 && (File.GetAttributes(recoveryMarker) & FileAttributes.ReparsePoint) == 0
+        && File.ReadAllText(recoveryMarker) == data.Parent.Name && Setting("FA_RECOVERY_TEST_SCOPE") == "Intake");
+    Check(mode != "restore" || recovery);
     var connection = new NpgsqlConnectionStringBuilder
     {
         Host = "127.0.0.1",
@@ -56,8 +61,11 @@ try
     await bootstrap.OpenAsync();
     await using (var location = new NpgsqlCommand("SHOW data_directory", bootstrap))
     { Check(string.Equals(Path.GetFullPath((string)(await location.ExecuteScalarAsync())!), data.FullName, comparison)); }
-    const string databaseName = "fa_test_fin284";
-    await using (var fresh = new NpgsqlCommand("SELECT count(*) FROM pg_database WHERE datname NOT IN('postgres','template0','template1','fa_test_fin284') OR (datname='fa_test_fin284' AND $1='initial')", bootstrap))
+    var databaseName = mode == "restore" ? "fa_test_fin209_restore" : "fa_test_fin284";
+    var catalogQuery = recovery
+        ? "SELECT count(*) FROM pg_database WHERE datname NOT IN('postgres','template0','template1','fa_test_fin284','fa_test_fin209_restore') OR (datname IN('fa_test_fin284','fa_test_fin209_restore') AND $1='initial')"
+        : "SELECT count(*) FROM pg_database WHERE datname NOT IN('postgres','template0','template1','fa_test_fin284') OR (datname='fa_test_fin284' AND $1='initial')";
+    await using (var fresh = new NpgsqlCommand(catalogQuery, bootstrap))
     { fresh.Parameters.AddWithValue(mode); Check((long)(await fresh.ExecuteScalarAsync())! == 0); }
     var owners = new[] { new StorageIdentity("transaction-intake"), new StorageIdentity("income"), new StorageIdentity("expense") };
     if (mode == "initial")
@@ -71,9 +79,11 @@ try
     connection.Database = databaseName;
     await using var admin = new NpgsqlConnection(connection.ConnectionString);
     await admin.OpenAsync();
-    var intakeSettings = Settings(databaseName, port, password, 1);
-    var incomeSettings = Settings(databaseName, port, password, 3);
-    var expenseSettings = Settings(databaseName, port, password, 5);
+    stage = "Intake exact persistence";
+    var recoveryRoot = mode == "restore" ? data.Parent.FullName : null;
+    var intakeSettings = Settings(databaseName, port, password, 1, recoveryRoot);
+    var incomeSettings = Settings(databaseName, port, password, 3, recoveryRoot);
+    var expenseSettings = Settings(databaseName, port, password, 5, recoveryRoot);
     if (mode == "initial")
     {
         stage = "separate repeated migration";
@@ -89,7 +99,7 @@ try
         }
     }
     var initial = new DateTimeOffset(2026, 10, 12, 0, 0, 0, TimeSpan.Zero);
-    var clock = new MutableClock(mode == "restart" ? initial.AddHours(2) : initial);
+    var clock = new MutableClock(mode is "restart" or "restore" ? initial.AddHours(2) : initial);
     await using var provider = IntakeProvider(intakeSettings, clock);
     await using var incomeProvider = new ServiceCollection().AddLogging().AddIncomeApplication().AddIncomeInfrastructure(Configuration("Income", incomeSettings), true).BuildServiceProvider();
     await using var expenseProvider = new ServiceCollection().AddLogging().AddExpenseApplication().AddExpenseInfrastructure(Configuration("Expense", expenseSettings), true).BuildServiceProvider();
@@ -108,14 +118,23 @@ try
     Check(!provider.GetServices<ITransactionConfirmedConsumer>().Any());
     Check(await database.IsReadyAsync());
     Check((await provider.GetRequiredService<OwnedStorageHealthCheck>().CheckHealthAsync(new HealthCheckContext())).Status == HealthStatus.Unhealthy);
-    if (mode == "restart")
+    if (mode is "restart" or "restore")
     {
-        stage = "actual restart exact state and immutable replay";
+        stage = mode == "restore" ? "restored Intake exact state" : "actual restart exact state and immutable replay";
         var proof = await database.ExecuteAsync(new[] { first }, async (records, _) =>
             OwnedRecordCodec.Decode<SnapshotProof>(1, await records.GetAsync("fixture_proof", first, "snapshot") ?? throw new FixtureFailure()));
         var draft = await drafts.GetByIdAsync(first, proof.DraftId, default) ?? throw new FixtureFailure();
         var stored = await confirmations.GetAsync(first, proof.DraftId, default) ?? throw new FixtureFailure();
         Check(proof.DraftHash == Hash(draft) && proof.ConfirmationHash == Hash(stored.IntegrationEvent));
+        var date = DateOnly.FromDateTime(initial.UtcDateTime);
+        var restoredIncome = await incomeProvider.GetRequiredService<PostgresIncomeRecordStore>().ListAsync(first, date, date, true, default);
+        var restoredExpense = await expenseProvider.GetRequiredService<PostgresExpenseRecordStore>().ListAsync(second, date, date, true, default);
+        Check(proof.IncomeHash == Hash(restoredIncome) && proof.ExpenseHash == Hash(restoredExpense)
+            && restoredIncome.Count == 1 && restoredIncome[0].Amount == 2500m && restoredIncome[0].Currency == "USD"
+            && restoredExpense.Count == 1 && restoredExpense[0].Amount == 25m && restoredExpense[0].Currency == "EUR"
+            && proof.OutboxHash == await OutboxHash(database));
+        Check(await drafts.GetByIdAsync(second, proof.DraftId, default) is null
+            && await confirmations.GetAsync(second, proof.DraftId, default) is null);
         var count = (await outbox.ReadPendingAsync()).Count;
         var replay = await intake.CreateDraftAsync(first, key, new TransactionIntakeRequest(input), default);
         var replayConfirmation = await confirmation.ConfirmAsync(first, proof.DraftId, "restart-correlation", default) ?? throw new FixtureFailure();
@@ -123,8 +142,24 @@ try
         Check((await outbox.ReadPendingAsync()).Count == count && await sources.GetByReferenceAsync(first, proof.SourceReference, default) is null);
         var eventValue = stored.IntegrationEvent;
         await incomeProvider.GetRequiredService<ITransactionConfirmedConsumer>().ConsumeAsync(eventValue, default);
-        Check((await incomeProvider.GetRequiredService<PostgresIncomeRecordStore>().ListAsync(first, eventValue.Date, eventValue.Date, true, default)).Count == 1);
-        Console.WriteLine("PASS Intake PostgreSQL restart: exact draft/confirmation hashes, stable replay/outbox, no restored source text and no duplicate financial commit.");
+        var pending = (await outbox.ReadPendingAsync()).First(message => message.Confirmation is not null).Confirmation!;
+        await outbox.PublishAsync(pending, default);
+        try { await outbox.PublishAsync(pending with { Amount = pending.Amount + 1m }, default); throw new FixtureFailure(); }
+        catch (StorageConflictException) { }
+        var secondEvent = (await confirmations.GetAsync(second, proof.OtherDraftId, default))?.IntegrationEvent ?? throw new FixtureFailure();
+        await expenseProvider.GetRequiredService<ITransactionConfirmedConsumer>().ConsumeAsync(secondEvent, default);
+        Check(proof.IncomeHash == Hash(await incomeProvider.GetRequiredService<PostgresIncomeRecordStore>().ListAsync(first, date, date, true, default))
+            && proof.ExpenseHash == Hash(await expenseProvider.GetRequiredService<PostgresExpenseRecordStore>().ListAsync(second, date, date, true, default))
+            && proof.OutboxHash == await OutboxHash(database) && await RecordCount(admin, "fa_transaction_intake", "source_payloads") == 0);
+        foreach (var owner in owners)
+        {
+            var runtimeConnection = new NpgsqlConnectionStringBuilder(connection.ConnectionString) { Username = owner.RuntimeRole };
+            await using var runtime = new NpgsqlConnection(runtimeConnection.ConnectionString); await runtime.OpenAsync();
+            var foreign = owner.ServiceId == "transaction-intake" ? owners[1] : owners[0];
+            try { await Sql(runtime, "SELECT * FROM " + foreign.Schema + ".records"); throw new FixtureFailure(); }
+            catch (PostgresException exception) when (exception.SqlState == "42501") { }
+        }
+        Console.WriteLine("PASS Intake PostgreSQL " + (mode == "restore" ? "restored target" : "restart") + ": exact draft/confirmation/financial/outbox hashes, stable replay, conflicting outbox denial, expired source absence and separate roles.");
         return 0;
     }
 
@@ -299,10 +334,14 @@ try
         while (await reader.ReadAsync()) { Check(!Encoding.UTF8.GetString(reader.GetFieldValue<byte[]>(0)).Contains("synthetic", StringComparison.Ordinal)); }
     }
     var finalDraft = await drafts.GetByIdAsync(first, firstDraft.Id, default) ?? throw new FixtureFailure();
+    var proofDate = DateOnly.FromDateTime(initial.UtcDateTime);
+    var incomeHash = Hash(await incomeProvider.GetRequiredService<PostgresIncomeRecordStore>().ListAsync(first, proofDate, proofDate, true, default));
+    var expenseHash = Hash(await expenseProvider.GetRequiredService<PostgresExpenseRecordStore>().ListAsync(second, proofDate, proofDate, true, default));
+    var outboxHash = await OutboxHash(database);
     await database.ExecuteAsync(new[] { first }, async (records, _) =>
     {
         await records.InsertAsync("fixture_proof", first, "snapshot", OwnedRecordCodec.Encode(1,
-            new SnapshotProof(firstDraft.Id, result.Transaction.TransactionId, sourceReference, Hash(finalDraft), Hash(firstEvent))));
+            new SnapshotProof(firstDraft.Id, other.Draft.Id, result.Transaction.TransactionId, sourceReference, Hash(finalDraft), Hash(firstEvent), incomeHash, expenseHash, outboxHash)));
         return true;
     });
     Console.WriteLine("PASS Intake PostgreSQL: exact drafts/indexes/intent, owner and currency isolation, concurrent races, atomic rollback, parser outside SQL, explicit source TTL/no replay resurrection, bounded pending-safe retention and isolated financial consumer deduplication. Live broker remains unqualified.");
@@ -325,15 +364,37 @@ static async Task<long> RecordCount(NpgsqlConnection connection, string schema, 
     if (bucket is not null) { command.Parameters.AddWithValue(bucket); }
     return (long)(await command.ExecuteScalarAsync())!;
 }
-static NativePostgresSettings Settings(string database, int port, string password, byte index) => new()
+static async Task<string> OutboxHash(OwnedPostgresStore database) => await database.ExecuteAsync(new[] { "intake" }, async (records, _) =>
 {
-    Database = database,
-    Port = port,
-    Password = password,
-    IndexKey = Convert.ToBase64String(Enumerable.Repeat(index, 32).ToArray()),
-    ActiveEncryptionKeyId = "v1",
-    EncryptionKeys = new() { ["v1"] = Convert.ToBase64String(Enumerable.Repeat((byte)(index + 1), 32).ToArray()) }
-};
+    var page = await records.ReadPageAsync("intake_outbox", "intake");
+    Check(page.Count < 100);
+    return Hash(page);
+});
+static NativePostgresSettings Settings(string database, int port, string password, byte index, string? recoveryRoot = null)
+{
+    var keys = new byte[64];
+    try
+    {
+        if (recoveryRoot is not null)
+        {
+            var owner = index switch { 1 => "transaction-intake", 3 => "income", 5 => "expense", _ => throw new FixtureFailure() };
+            var path = Path.Combine(recoveryRoot, "recovered-" + owner + ".keys");
+            Check(new FileInfo(path).Length == 64 && (File.GetAttributes(path) & FileAttributes.ReparsePoint) == 0);
+            keys = File.ReadAllBytes(path);
+        }
+        else { keys.AsSpan(0, 32).Fill(index); keys.AsSpan(32, 32).Fill((byte)(index + 1)); }
+        return new NativePostgresSettings
+        {
+            Database = database,
+            Port = port,
+            Password = password,
+            IndexKey = Convert.ToBase64String(keys.AsSpan(0, 32)),
+            ActiveEncryptionKeyId = "v1",
+            EncryptionKeys = new() { ["v1"] = Convert.ToBase64String(keys.AsSpan(32, 32)) }
+        };
+    }
+    finally { CryptographicOperations.ZeroMemory(keys); }
+}
 static IConfiguration Configuration(string prefix, NativePostgresSettings settings, int sourceHours = 1) => new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
 {
     [$"{prefix}:Storage:Postgres:Database"] = settings.Database,
@@ -361,7 +422,7 @@ static async Task ExpectedRace<T>(Func<Task<T>> operation)
     catch (Exception exception) when (exception is DraftNotEditableException or DraftMutationConflictException or DraftNotConfirmableException) { }
 }
 sealed class FixtureFailure : Exception;
-sealed record SnapshotProof(string DraftId, string TransactionId, string SourceReference, string DraftHash, string ConfirmationHash);
+sealed record SnapshotProof(string DraftId, string OtherDraftId, string TransactionId, string SourceReference, string DraftHash, string ConfirmationHash, string IncomeHash, string ExpenseHash, string OutboxHash);
 sealed class MutableClock(DateTimeOffset now) : ITransactionIntakeClock
 { public DateTimeOffset Now { get; set; } = now; public DateTimeOffset UtcNow => Now; }
 sealed class FaultingCreation(PostgresIntakeOutbox inner) : ITransactionDraftCreatedPublisher

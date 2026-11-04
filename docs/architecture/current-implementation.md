@@ -123,6 +123,15 @@ rollback-contained native sign-in with actual JWT validation after crash/restart
 This is not real DPAPI export, a common five-owner snapshot, complete backup or
 installed/first-user acceptance. No completion credit is added.
 
+The Identity increment is actually merged through
+[PR310](https://github.com/Marachert/FinancialAssistant.Host/pull/310), actual
+`4f60aef945c09278fcdb86f63ce99583aea6687d` at `2026-11-04T22:50:26Z`, final
+`2d01458b2243b958f44d4a86b40b3a1670296cb6`, all five checks green and review clear,
+decoded CI1618/1618 across26 projects. The next explicit Intake recovery scope
+groups its fixture's Transaction Intake, Income and Expense schemas/key artifacts;
+it does not combine the separate Identity/Profile/Category drills into one complete
+POC snapshot. No runtime topology/API or complete30-resource manifest change occurs.
+
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
 supersedes the Compose POC target. FIN-270 is implementation work: no WPF
 installer or accepted native Windows runtime is claimed by this document.

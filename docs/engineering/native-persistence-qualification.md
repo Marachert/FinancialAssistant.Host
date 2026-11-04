@@ -52,10 +52,10 @@ bounded cleanup and anti-resurrection contracts and Windows-only test boundaries
 
 FIN-209's separate [portable recovery drills](windows-native-recovery.md) capture
 and restore encrypted schema/configuration artifacts into fresh targets for
-separately selected Income/Expense, Profile/Category and Identity scopes, including
+separately selected Income/Expense, Profile/Category, Identity and Intake scopes, including
 actual crash/restart reconciliation and wrong-key denial. Identity also verifies
 native sign-in/JWT validation inside an explicit rollback. These do not replace
-this nine-scenario matrix, combine into one five-owner boundary or establish
+this nine-scenario matrix, combine into one six-owner boundary or establish
 complete cross-resource backup or replacement-host provisioning.
 
 ## Owner Crosswalk

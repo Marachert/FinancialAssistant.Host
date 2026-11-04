@@ -129,6 +129,16 @@ this is not live RabbitMQ or distributed delivery qualification.
 Missing fixture configuration fails explicitly rather than skipping or connecting
 to a discovered database.
 
+The separate FIN-209 [owned recovery scope](windows-native-recovery.md) uses
+`-Scenario Recovery -RecoveryScope Intake` and captures this fixture's three
+schemas/key sets together: Transaction Intake, Income and Expense. New-target
+restore checks exact drafts, confirmations, financial/outbox hashes, USD/EUR and
+owner/role isolation, replay/conflict denial and physical expired-source absence,
+then repeats after actual PostgreSQL crash/restart. It is not complete POC backup,
+real protected-configuration export, another scenario in the nine-scenario matrix
+or installed-host acceptance. Require actual structured proofs and cleanup, not
+successful compilation alone.
+
 No Docker/WSL, paid provider/API/runner/credit/trial/fallback, real financial data,
 SCM installation or additional spending occurs. Installed Windows 11/Server
 2022/2025, WPF/package/recovery and first-user acceptance remain FIN-278/280/281/206.
