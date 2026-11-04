@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using FinancialAssistant.Shared.Persistence;
 using FinancialAssistant.Shared.Recovery;
 using Npgsql;
 
@@ -17,15 +18,17 @@ try
     var mode = Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_MODE") ?? "";
     var directory = Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_DIRECTORY") ?? "";
     var scope = Environment.GetEnvironmentVariable("FA_RECOVERY_TEST_SCOPE") ?? "";
-    Check(scope is "IncomeExpense" or "ProfileCategory" or "Identity");
+    Check(scope is "IncomeExpense" or "ProfileCategory" or "Identity" or "Intake");
+    var intake = scope == "Intake";
     var identity = scope == "Identity";
     var profileCategory = scope == "ProfileCategory";
-    var scopeName = identity ? "identity" : profileCategory ? "profile-category" : "income-expense";
-    var owners = identity ? new[] { (Owner: "identity", Seed: (byte)1) }
+    var scopeName = intake ? "intake" : identity ? "identity" : profileCategory ? "profile-category" : "income-expense";
+    var owners = intake ? new[] { (Owner: "transaction-intake", Seed: (byte)1), (Owner: "income", Seed: (byte)3), (Owner: "expense", Seed: (byte)5) }
+        : identity ? new[] { (Owner: "identity", Seed: (byte)1) }
         : profileCategory ? new[] { (Owner: "profile", Seed: (byte)1), (Owner: "category", Seed: (byte)3) }
         : new[] { (Owner: "income", Seed: (byte)1), (Owner: "expense", Seed: (byte)3) };
-    var sourceDatabase = identity ? "fa_test_fin282" : profileCategory ? "fa_test_fin283" : "fa_test_fin275";
-    var expectedKeyFailure = identity ? "Identity exact persistence" : profileCategory ? "Profile/Category exact persistence" : "Income exact persistence";
+    var sourceDatabase = intake ? "fa_test_fin284" : identity ? "fa_test_fin282" : profileCategory ? "fa_test_fin283" : "fa_test_fin275";
+    var expectedKeyFailure = intake ? "Intake exact persistence" : identity ? "Identity exact persistence" : profileCategory ? "Profile/Category exact persistence" : "Income exact persistence";
     Check(credential.Length == 64 && credential.All(char.IsAsciiHexDigit) && operatorSecret.Length == 64 && operatorSecret.All(char.IsAsciiHexDigit)
         && mode is "initial" or "restart" && Path.IsPathFullyQualified(directory) && Directory.Exists(directory));
     Check(int.TryParse(Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_PORT"), out var port) && port is >= 49152 and <= 65535);
@@ -55,8 +58,8 @@ try
     var runtime = new DirectoryInfo(RuntimeEnvironment.GetRuntimeDirectory());
     var dotnet = Path.Combine(runtime.Parent!.Parent!.Parent!.FullName, "dotnet.exe");
     Check(File.Exists(dotnet));
-    var project = identity ? "FinancialAssistant.Identity.Persistence.Integration" : profileCategory ? "FinancialAssistant.ProfileCategory.Persistence.Integration" : "FinancialAssistant.FinancialRecords.Persistence.Integration";
-    var child = Path.Combine(repository.FullName, "backend", "services", identity ? "identity" : profileCategory ? "profile" : "income", project, "bin", "Release", "net8.0", project + ".dll");
+    var project = intake ? "FinancialAssistant.Intake.Persistence.Integration" : identity ? "FinancialAssistant.Identity.Persistence.Integration" : profileCategory ? "FinancialAssistant.ProfileCategory.Persistence.Integration" : "FinancialAssistant.FinancialRecords.Persistence.Integration";
+    var child = Path.Combine(repository.FullName, "backend", "services", intake ? "transaction-intake" : identity ? "identity" : profileCategory ? "profile" : "income", project, "bin", "Release", "net8.0", project + ".dll");
     Check(File.Exists(child));
     var marker = Path.Combine(root, "recovery.run"); var catalog = Path.Combine(root, "recovery.json");
     var passphrase = Encoding.ASCII.GetBytes(operatorSecret); var temporary = new List<string>();
@@ -83,7 +86,7 @@ try
                     var raw = Path.Combine(root, Guid.NewGuid().ToString("N") + ".dump");
                     Check(!File.Exists(raw)); temporary.Add(raw);
                     await Run(Path.Combine(binaries, "pg_dump.exe"), ["--host=127.0.0.1", "--port=" + port, "--username=fa_test_admin", "--no-password",
-                        "--dbname=" + sourceDatabase, "--format=custom", "--schema=fa_" + owner, "--file=" + raw], null, credential);
+                        "--dbname=" + sourceDatabase, "--format=custom", "--schema=" + new StorageIdentity(owner).Schema, "--file=" + raw], null, credential);
                     Check(new FileInfo(raw).Length is > 0 and <= NativeRecoveryArtifactEncryption.MaximumPlaintextBytes && (File.GetAttributes(raw) & FileAttributes.ReparsePoint) == 0);
                     var payload = File.ReadAllBytes(raw);
                     try { Capture(owner, NativeRecoveryArtifactKind.Database, payload, originalKey, document); }
@@ -148,7 +151,7 @@ try
             await using (var exists = new NpgsqlCommand("SELECT count(*) FROM pg_database WHERE datname='fa_test_fin209_restore'", admin))
             { Check((long)(await exists.ExecuteScalarAsync())! == 0); }
             await Sql(admin, "CREATE DATABASE fa_test_fin209_restore TEMPLATE template0");
-            var roles = string.Join(",", owners.SelectMany(owner => new[] { "fa_" + owner.Owner, "fa_" + owner.Owner + "_migration" }));
+            var roles = string.Join(",", owners.SelectMany(owner => new[] { new StorageIdentity(owner.Owner).RuntimeRole, new StorageIdentity(owner.Owner).MigrationRole }));
             await Sql(admin, "REVOKE ALL ON DATABASE fa_test_fin209_restore FROM PUBLIC; GRANT CONNECT ON DATABASE fa_test_fin209_restore TO " + roles);
             // A fresh template still grants public schema access; native stores require that grant removed.
             await using (var target = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(connection.ConnectionString) { Database = "fa_test_fin209_restore" }.ConnectionString))
@@ -247,7 +250,7 @@ static async Task Run(string executable, string[] arguments, string? mode, strin
     }
     if (mode is not null && process.ExitCode != 0)
     {
-        foreach (var name in new[] { "owned fixture validation", "Income exact persistence", "Expense exact persistence", "Profile/Category exact persistence", "Identity exact persistence", "restored identity state", "restored identity authentication rollback", "restored exact profile and category state", "cross-service role denial" })
+        foreach (var name in new[] { "owned fixture validation", "Income exact persistence", "Expense exact persistence", "Profile/Category exact persistence", "Identity exact persistence", "Intake exact persistence", "restored Intake exact state", "restored identity state", "restored identity authentication rollback", "restored exact profile and category state", "cross-service role denial" })
         { if (diagnostics.Contains("at " + name, StringComparison.Ordinal)) { Console.Error.WriteLine("Owned financial child failed at " + name + "."); } }
     }
     if (process.ExitCode != 0 || credential is not null && !string.IsNullOrWhiteSpace(diagnostics)) { throw new InvalidOperationException(); }

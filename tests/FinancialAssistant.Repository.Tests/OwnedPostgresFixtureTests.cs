@@ -101,7 +101,7 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("[ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle','Recovery')]", script);
         Assert.Contains("FinancialAssistant.NativeRecovery.Integration.csproj", script);
         Assert.Contains("Scoped owned business recovery evidence is incomplete.", script);
-        Assert.Contains("[ValidateSet('IncomeExpense','ProfileCategory','Identity')]", script);
+        Assert.Contains("[ValidateSet('IncomeExpense','ProfileCategory','Identity','Intake')]", script);
         Assert.Contains("$proof.scope -cne $expectedRecoveryScope", script);
         Assert.Contains("FA_RECOVERY_TEST_SCOPE", script);
         Assert.Contains("$result.recoveryScope", script);
@@ -159,6 +159,11 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("recovered-identity.keys", identity);
         Assert.Contains("AuthenticationRollback", identity);
         Assert.Contains("ValidateToken(response.AccessToken", identity);
+        var intake = File.ReadAllText(Path.Combine(Root(), "backend/services/transaction-intake/FinancialAssistant.Intake.Persistence.Integration/IntakeFixture.cs"));
+        Assert.Contains("mode != \"restore\" || recovery", intake);
+        Assert.Contains("recovered-", intake);
+        Assert.Contains("proof.OutboxHash == await OutboxHash(database)", intake);
+        Assert.Contains("new StorageIdentity(owner).Schema", source);
     }
 
     [Theory]
@@ -166,6 +171,7 @@ public sealed class OwnedPostgresFixtureTests
     [InlineData("ProfileCategory", "ProfileCategory")]
     [InlineData("FinancialRecords", "IncomeExpense")]
     [InlineData("Identity", "Identity")]
+    [InlineData("Intake", "Intake")]
     public async Task RecoveryScopeCannotBeSilentlyIgnoredByAnotherScenario(string scenario, string scope)
     {
         var start = new ProcessStartInfo("pwsh")

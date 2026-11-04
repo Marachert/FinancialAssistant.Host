@@ -138,7 +138,7 @@ The Profile/Category increment is actually merged through
 (Backend41914728090/Mobile41914728014/Admin41914728194), decoded CI1617/1617 across26,
 review clear at `2026-11-04T21:18:59.878229Z`, final channels/labels clear and
 post-merge Confluence Delivery188/Bootstrap576 verified. No closure credit.
-The same FIN-209 continues on `codex/fin-209-identity-restore` from that actual main.
+That Identity increment used `codex/fin-209-identity-restore` from the then-current main.
 The Identity-only owned recovery scope passed initial and actual immediate-crash/
 restart phases with cleanup at `2026-11-04T21:42:54.5522512Z`. It captures compatible
 synthetic source configuration/data keys, checks account/session/challenge/outbox
@@ -150,6 +150,24 @@ acceptance. Remaining all-owner consistency/integration gates stay open.
 Local full1618/1618 across26 projects, zero failures/skips, passed through
 `2026-11-04T22:04:26.4849056Z`; normal Identity and both earlier recovery scopes
 also passed with cleanup. This is not a new closure or exact-head CI claim.
+The Identity increment is actually merged through
+[PR310](https://github.com/Marachert/FinancialAssistant.Host/pull/310), actual
+`4f60aef945c09278fcdb86f63ce99583aea6687d` at `2026-11-04T22:50:26Z`, final
+`2d01458b2243b958f44d4a86b40b3a1670296cb6`, all five exact-head checks green
+(Backend41922585385/Mobile41922585390/Admin41922585560), decoded CI1618/1618 across26,
+review clear at `2026-11-04T22:09:51.055926Z`, final channels/labels clear and
+post-merge Confluence Delivery191/Bootstrap579 verified. No closure credit.
+FIN-209 now continues on `codex/fin-209-intake-restore` from that actual main.
+The explicit Intake scope captures its three owned synthetic schemas and key sets
+together: Transaction Intake, Income and Expense. Exact drafts/confirmations,
+financial and bounded complete outbox-row hashes, owner/currency/role isolation,
+replay/conflict denial and expired-source absence are required before and after
+actual crash/restart. This is not complete13-owner backup or installed acceptance;
+the actual three-owner restore/crash/restart drill passed with cleanup at
+`2026-11-04T22:58:28.8772565Z`. Normal Intake and all three previous recovery scopes
+passed with cleanup. Local full1619/1619 across26 projects, zero failures/skips,
+finished `2026-11-04T23:17:39.3461300Z`; restore/Release build, full format and final
+Ledger21 passed. CI/review/merge remain pending, not inferred from local results.
 No pending installed qualification is silently waived to advance. Native first-user
 bootstrap, Profile-only refresh and protected machine deployment remain explicit
 launch gaps, not inferred acceptance.

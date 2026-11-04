@@ -1,7 +1,7 @@
 # Native Portable Recovery
 
 FIN-209 is In Progress. This increment provides authenticated portable artifact
-encryption and separately isolated Income/Expense, Profile/Category and Identity restore
+encryption and separately isolated Income/Expense, Profile/Category, Identity and Intake restore
 drills. It is not a
 complete POC backup utility, installed-host qualification or permission to restore
 an existing database. No completion credit or first-user readiness is claimed.
@@ -51,6 +51,16 @@ full local1557/1557 and final scoped Windows105/105 are separate results. No lea
 closure, completion credit or installed recovery acceptance is claimed.
 
 ## Portable Protection
+
+The separately scoped Identity follow-on
+[PR310](https://github.com/Marachert/FinancialAssistant.Host/pull/310) is independently
+verified merged=true/CLOSED: actual protected squash
+`4f60aef945c09278fcdb86f63ce99583aea6687d` at `2026-11-04T22:50:26Z`, final
+`2d01458b2243b958f44d4a86b40b3a1670296cb6`. All five exact-head checks passed
+(Backend41922585385/Mobile41922585390/Admin41922585560), decoded CI1618/1618
+across26 projects, no failures/skips. Review completed
+`2026-11-04T22:09:51.055926Z` without findings, final channels clear and post-merge
+Confluence Delivery191/Bootstrap579 fully read-back verified. FIN-209 stays open.
 
 The separately scoped Profile/Category follow-on
 [PR309](https://github.com/Marachert/FinancialAssistant.Host/pull/309) is independently
@@ -135,7 +145,7 @@ truth of a producer's claims. A boundary GUID does not stop writers or drain a
 broker; a descriptor/checksum does not inspect SQL migration content, retained
 keys or receipt metadata. The trusted capture/restore engine must verify those
 facts and exact bundle coverage against actual owned state. The existing scoped
-two/four-artifact drills are deliberately rejected as a complete inventory.
+two/four/six-artifact drills are deliberately rejected as a complete inventory.
 Unit-test synthetic 30-artifact roundtrips are not whole-application restore proof.
 
 Follow-on local verification: all **1,528/1,528** tests across26 projects passed,
@@ -330,6 +340,7 @@ dotnet build FinancialAssistant.Backend.sln --no-restore --configuration Release
 pwsh -NoProfile -NonInteractive -File tools/scripts/test-owned-postgres.ps1 -Scenario Recovery -ArchivePath <local-pinned-postgresql-archive.zip>
 pwsh -NoProfile -NonInteractive -File tools/scripts/test-owned-postgres.ps1 -Scenario Recovery -RecoveryScope ProfileCategory -ArchivePath <local-pinned-postgresql-archive.zip>
 pwsh -NoProfile -NonInteractive -File tools/scripts/test-owned-postgres.ps1 -Scenario Recovery -RecoveryScope Identity -ArchivePath <local-pinned-postgresql-archive.zip>
+pwsh -NoProfile -NonInteractive -File tools/scripts/test-owned-postgres.ps1 -Scenario Recovery -RecoveryScope Intake -ArchivePath <local-pinned-postgresql-archive.zip>
 ```
 
 The runner verifies the archive digest before use. It creates a user-only owned
@@ -340,7 +351,9 @@ Do not run the integration executable directly against a shared cluster.
 
 `RecoveryScope` is explicitly allowlisted: `IncomeExpense` is the default;
 `ProfileCategory` selects a separate two-owner fixture; `Identity` selects one
-separate owned database and its bounded fixture configuration. Supplying this option to
+separate owned database and its bounded fixture configuration.
+`Intake` selects the fixture's Transaction Intake, Income and Expense schemas and
+three separate64-byte data-key artifacts, six artifacts in total. Supplying this option to
 any other scenario is rejected before fixture creation or archive use. The runner
 canonicalizes/saves/restores its process environment and checks both phase proofs
 against the selected scope before setting `businessRecoveryVerified=true`.
@@ -348,7 +361,7 @@ The parent result records that scope. A scope tag is not complete-POC acceptance
 
 The explicit Recovery scenario:
 
-1. Initializes the selected Identity, Income/Expense or Profile/Category schemas, migration/runtime
+1. Initializes the selected Identity, Income/Expense, Profile/Category or Intake schemas, migration/runtime
    roles and keys, using that scope's existing actual persistence assertions.
 2. Waits for the source business process to exit and rejects active source client
    sessions. It dumps each owned schema separately from this trusted synthetic
@@ -357,7 +370,7 @@ The explicit Recovery scenario:
    random recovery key with independently generated operator material, then
    clears the original key and deletes plaintext dumps.
 4. Independently reads and verifies the exact scope-bound catalog (two artifacts
-   for Identity, four for either two-owner scope), unwraps
+   for Identity, four for either two-owner scope, six for Intake), unwraps
    the key, authenticates each artifact and creates a new empty restore database.
    Existing targets are rejected. The fresh target revokes default PUBLIC schema
    access; native ownership checks are not weakened to accept a restore.
@@ -468,6 +481,50 @@ Full restore and Release build passed with zero errors/five existing warnings;
 the final scoped integration build passed with zero warnings/errors. These are
 local results, not a claim that CI or installed acceptance has already passed.
 
+### Intake And Financial Owners
+
+The explicit Intake scope captures its fixture's Transaction Intake, Income and
+Expense schemas only after the source process exits and no source database client
+remains. Existing `StorageIdentity` maps service IDs to validated schema/runtime/
+migration identifiers, including `transaction-intake` to `fa_transaction_intake`;
+do not build SQL identifiers from untrusted archive owner strings.
+
+The target requires all three recovered key sets, restores a new empty database
+without migrations/overwrite, and checks exact draft/confirmation, USD2500 income,
+EUR25 expense and outbox hashes. The bounded raw outbox page must contain fewer
+than100 rows or fail rather than silently truncate the proof; cursor-maintenance
+metadata is not confused with event payload/revision immutability. Repeated intake
+and confirmation requests, both financial consumers and identical outbox publish
+cannot change these hashes; conflicting outbox publish must fail. Foreign-owner
+lookups and all three cross-role SQL reads are denied. Deleted source payloads
+must remain physically absent rather than be resurrected by replay. These checks
+also run in the normal non-recovery Intake restart scenario.
+
+This trusted synthetic three-owner boundary is separate from the earlier clusters,
+not a common six-owner or complete thirteen-owner snapshot. It captures fixture
+data-key material, not all real protected configuration, receipts, external work or
+installed replacement-host provisioning. The actual Intake restore and immediate-
+crash/restart phases passed with cleanup at `2026-11-04T22:58:28.8772565Z`;
+both structured phase proofs explicitly record scope, portable keys, wrong-key
+denial, business reconciliation and immutable replay. `installed=false` and
+`releaseReady=false` remain mandatory.
+
+Normal Intake passed with cleanup at `2026-11-04T23:01:18.1478350Z` and correctly
+keeps `businessRecoveryVerified=false`. Fresh Identity, Profile/Category and default
+Income/Expense recovery regressions passed at `2026-11-04T23:02:39.4502908Z`,
+`2026-11-04T23:03:56.0863271Z` and `2026-11-04T23:05:13.8261510Z` respectively.
+An earlier private wrapper reported failure after its fixture passed because it
+checked an unset native exit code; that wrapper result remains failed. The wrapper
+was corrected to invoke a separate PowerShell process and the normal run above
+passed with actual exit0, without changing or weakening tracked tests.
+
+Local full verification passed **1,619/1,619** across26 projects, zero failures/
+skips, from `2026-11-04T23:12:43.5305679Z` to `2026-11-04T23:17:39.3461300Z`.
+Full restore/Release build passed with zero errors and five existing warnings;
+integration-only build had zero warnings/errors. Full formatting verified0/1299
+files, and final documentation tests passed21/21. Exact-head CI and review remain
+required before merge. No installed or complete POC recovery is inferred.
+
 ## Complete POC Recovery Gate
 
 PR303 component verification on 2026-11-03: full Release build passed with zero errors and
@@ -485,7 +542,7 @@ integrated backup/repair support:
 | Resource or boundary | Required integrated behavior |
 | --- | --- |
 | Consistency | Freeze ingress, stop publishers, drain known broker queues including unacknowledged deliveries, then stop consumers and other writers before cross-owner capture. A per-database dump is not a cross-resource snapshot. |
-| All owned databases | Capture all thirteen business owners, including the Summary module, their schema/migration versions, encrypted state, durable outboxes/inboxes, deletion markers and retained decryption/index keys. Separate scoped drills cover Identity, Income/Expense and Profile/Category, not a common five-owner boundary or all thirteen owners. |
+| All owned databases | Capture all thirteen business owners, including the Summary module, their schema/migration versions, encrypted state, durable outboxes/inboxes, deletion markers and retained decryption/index keys. Separate scoped drills cover Identity, Income/Expense, Profile/Category and Intake, not a common six-owner boundary or all thirteen owners. |
 | Receipt objects | Capture encrypted object bytes and matching receipt metadata under the same quiescence boundary; preserve retention/deletion semantics and reject missing or foreign objects. |
 | Protected configuration | Capture required runtime and Summary module secrets, stable key sets and nonsecret deployment identity through authorized privileged reads. Authenticate a complete bounded manifest and exact artifact coverage. Never put unlock material beside the archive. |
 | Broker and external work | A fresh broker is safe only after an actual empty/drained-queue proof and preserved durable pending work. Published-but-unconsumed messages must not be discarded. Preserve Identity pending transport, receipt jobs and uncertain provider state; do not resend paid work. |

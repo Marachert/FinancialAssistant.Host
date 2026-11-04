@@ -11,5 +11,6 @@
     <ProjectReference Include="../../../services/income/FinancialAssistant.FinancialRecords.Persistence.Integration/FinancialAssistant.FinancialRecords.Persistence.Integration.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../../../services/profile/FinancialAssistant.ProfileCategory.Persistence.Integration/FinancialAssistant.ProfileCategory.Persistence.Integration.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../../../services/identity/FinancialAssistant.Identity.Persistence.Integration/FinancialAssistant.Identity.Persistence.Integration.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../../../services/transaction-intake/FinancialAssistant.Intake.Persistence.Integration/FinancialAssistant.Intake.Persistence.Integration.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>
