@@ -41,9 +41,14 @@ public sealed class NativeHttpsTransportTests
         Assert.StartsWith("HTTP/1.1 400", await RequestWithWrongHost(certs.Root, port));
         foreach (var path in new[] { "/", "/health", "/health/ready", "/gateway/info", "/gateway/status", "/metrics" })
         { using var response = await client.GetAsync(path); Assert.Equal(HttpStatusCode.NotFound, response.StatusCode); }
-        using var oversized = await client.PostAsync("/visible", new ByteArrayContent(new byte[65537]));
+        var oversizedContent = new HeaderOnlyOversizedContent();
+        using var oversizedRequest = new HttpRequestMessage(HttpMethod.Post, "/visible") { Content = oversizedContent };
+        // A declared oversize is rejected before reading; do not race its Connection: close with body writes.
+        oversizedRequest.Headers.ExpectContinue = true;
+        using var oversized = await client.SendAsync(oversizedRequest);
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, oversized.StatusCode);
         Assert.True(oversized.Headers.ConnectionClose);
+        Assert.False(oversizedContent.SerializationAttempted);
         using var acceptedBody = await client.PostAsync("/visible", new ByteArrayContent(new byte[65536]));
         Assert.Equal(HttpStatusCode.OK, acceptedBody.StatusCode);
         using var chunked = await client.PostAsync("/visible", new UnknownLengthContent());
@@ -174,6 +179,7 @@ public sealed class NativeHttpsTransportTests
         var handler = new SocketsHttpHandler
         {
             AllowAutoRedirect = false,
+            Expect100ContinueTimeout = TimeSpan.FromSeconds(15),
             ConnectCallback = async (_, token) =>
             {
                 var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -226,5 +232,16 @@ public sealed class NativeHttpsTransportTests
         protected override bool TryComputeLength(out long length) { length = 0; return false; }
         protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) =>
             stream.WriteAsync(new byte[65537]).AsTask();
+    }
+
+    private sealed class HeaderOnlyOversizedContent : HttpContent
+    {
+        public bool SerializationAttempted { get; private set; }
+        protected override bool TryComputeLength(out long length) { length = 65537; return true; }
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+        {
+            SerializationAttempted = true;
+            throw new InvalidOperationException("The declared oversized request must be rejected before its body is sent.");
+        }
     }
 }

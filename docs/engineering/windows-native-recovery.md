@@ -280,6 +280,21 @@ The56 new orchestration cases cover sequencing, complete encrypted roundtrip,
 faults, cancellation, stale/foreign/drifting evidence, malformed resources,
 individual/aggregate buffer limits, metadata snapshots and plaintext cleanup.
 
+Initial PR308 CI correctly blocked merge because an existing HTTPS test raced the
+server's early413/connection-close response with a known-length body upload on
+Linux. Its test-only companion repair uses `Expect: 100-continue`, asserts that
+the oversized body is never serialized, and retains strict413/connection-close,
+real boundary-sized upload and real chunked/proxied overflow checks. The fixture's
+continue wait exceeds its bounded request timeout, preventing fallback body writes.
+This follows the [.NET8 handler's final-error behavior](https://github.com/dotnet/runtime/blob/v8.0.0/src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/HttpConnection.cs#L619-L660).
+No production TLS behavior, body limit, security assertion or test is removed.
+The original failed CI result remains failed; only a fresh fixing-head run can
+satisfy the merge gate.
+The companion repair passed the actual Windows loopback gateway suite80/80,
+scoped build with zero warnings/errors, changed-source format, privacy1337,
+Markdown160/630 and diff checks. Recovery161/161 is unchanged; no new full local
+suite or Linux success is inferred from these scoped Windows results.
+
 ## Repeatable Owned Drill
 
 On Windows, using PowerShell 7, .NET 8 and the locally available PostgreSQL archive
