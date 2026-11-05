@@ -95,6 +95,7 @@ internal static class AuditFixture
             Check((await service.FindByCorrelationAsync(expired.CorrelationId, default)).Count == 0);
         }
         Check(await service.ConsumeAsync(main, default) == AuditId(main.EventId));
+        await Conflict(() => service.ConsumeAsync(Copy(main, payload: main.Payload with { Outcome = "failed" }), default));
         var recovered = (await service.FindByCorrelationAsync(main.CorrelationId, default)).Single();
         Check(recovered.RecordedAtUtc == At.AddHours(1) && recovered.OccurredAtUtc == At && recovered.ExpiresAtUtc == At.AddDays(10));
         Check((await revoked.FindByCorrelationAsync(main.CorrelationId, default)).Single() == recovered);

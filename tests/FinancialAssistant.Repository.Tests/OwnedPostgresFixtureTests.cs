@@ -101,7 +101,7 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("[ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle','Recovery')]", script);
         Assert.Contains("FinancialAssistant.NativeRecovery.Integration.csproj", script);
         Assert.Contains("Scoped owned business recovery evidence is incomplete.", script);
-        Assert.Contains("[ValidateSet('IncomeExpense','ProfileCategory','Identity','Intake')]", script);
+        Assert.Contains("[ValidateSet('IncomeExpense','ProfileCategory','Identity','Intake','Audit')]", script);
         Assert.Contains("$proof.scope -cne $expectedRecoveryScope", script);
         Assert.Contains("FA_RECOVERY_TEST_SCOPE", script);
         Assert.Contains("$result.recoveryScope", script);
@@ -131,7 +131,8 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("await Child(\"restore\")", source);
         Assert.Contains("REVOKE ALL ON SCHEMA public FROM PUBLIC", source);
         Assert.Contains("\"restore\", null, expectedKeyFailure", source);
-        Assert.Contains("\"Profile/Category exact persistence\" : \"Income exact persistence\"", source);
+        Assert.Contains("new RecoveryScope(\"profile-category\"", source);
+        Assert.Contains("\"Profile/Category exact persistence\"", source);
         Assert.Contains("document.Scope == scopeName", source);
         Assert.Contains("scope = scopeName", source);
         Assert.Contains("wrongKeyRejected = true", source);
@@ -164,6 +165,11 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("recovered-", intake);
         Assert.Contains("proof.OutboxHash == await OutboxHash(database)", intake);
         Assert.Contains("new StorageIdentity(owner).Schema", source);
+        Assert.Contains("new(\"audit\", 17, 19)", source);
+        var audit = File.ReadAllText(Path.Combine(Root(), "backend/services/audit/FinancialAssistant.Audit.Persistence.Integration/AuditIntegration.cs"));
+        Assert.Contains("mode != \"restore\" || recovery", audit);
+        Assert.Contains("proof.Digest == await SnapshotHash(auditDatabase)", audit);
+        Assert.Contains("Audit recovery snapshot", audit);
     }
 
     [Theory]
@@ -172,6 +178,7 @@ public sealed class OwnedPostgresFixtureTests
     [InlineData("FinancialRecords", "IncomeExpense")]
     [InlineData("Identity", "Identity")]
     [InlineData("Intake", "Intake")]
+    [InlineData("Audit", "Audit")]
     public async Task RecoveryScopeCannotBeSilentlyIgnoredByAnotherScenario(string scenario, string scope)
     {
         var start = new ProcessStartInfo("pwsh")

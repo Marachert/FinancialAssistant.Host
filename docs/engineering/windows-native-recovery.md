@@ -1,7 +1,7 @@
 # Native Portable Recovery
 
 FIN-209 is In Progress. This increment provides authenticated portable artifact
-encryption and separately isolated Income/Expense, Profile/Category, Identity and Intake restore
+encryption and separately isolated Income/Expense, Profile/Category, Identity, Intake and Audit restore
 drills. It is not a
 complete POC backup utility, installed-host qualification or permission to restore
 an existing database. No completion credit or first-user readiness is claimed.
@@ -51,6 +51,16 @@ full local1557/1557 and final scoped Windows105/105 are separate results. No lea
 closure, completion credit or installed recovery acceptance is claimed.
 
 ## Portable Protection
+
+The separately scoped Intake follow-on
+[PR311](https://github.com/Marachert/FinancialAssistant.Host/pull/311) is independently
+verified merged=true/CLOSED: actual protected squash
+`b0045e0a24ddfdb7a23cdf382654ca102185c4c6` at `2026-11-04T23:33:56Z`, final
+`177b3c6c45dd5e7a99d9d504fa6d5346b756ef26`. All five exact-head checks passed
+(Backend41933146568/Mobile41933146592/Admin41933146549), decoded CI1619/1619
+across26 projects, no failures/skips. Review completed
+`2026-11-04T23:23:33.864792Z` without findings, final channels/labels clear and
+post-merge Delivery194/Bootstrap582 fully read-back verified. FIN-209 stays open.
 
 The separately scoped Identity follow-on
 [PR310](https://github.com/Marachert/FinancialAssistant.Host/pull/310) is independently
@@ -341,6 +351,7 @@ pwsh -NoProfile -NonInteractive -File tools/scripts/test-owned-postgres.ps1 -Sce
 pwsh -NoProfile -NonInteractive -File tools/scripts/test-owned-postgres.ps1 -Scenario Recovery -RecoveryScope ProfileCategory -ArchivePath <local-pinned-postgresql-archive.zip>
 pwsh -NoProfile -NonInteractive -File tools/scripts/test-owned-postgres.ps1 -Scenario Recovery -RecoveryScope Identity -ArchivePath <local-pinned-postgresql-archive.zip>
 pwsh -NoProfile -NonInteractive -File tools/scripts/test-owned-postgres.ps1 -Scenario Recovery -RecoveryScope Intake -ArchivePath <local-pinned-postgresql-archive.zip>
+pwsh -NoProfile -NonInteractive -File tools/scripts/test-owned-postgres.ps1 -Scenario Recovery -RecoveryScope Audit -ArchivePath <local-pinned-postgresql-archive.zip>
 ```
 
 The runner verifies the archive digest before use. It creates a user-only owned
@@ -353,7 +364,9 @@ Do not run the integration executable directly against a shared cluster.
 `ProfileCategory` selects a separate two-owner fixture; `Identity` selects one
 separate owned database and its bounded fixture configuration.
 `Intake` selects the fixture's Transaction Intake, Income and Expense schemas and
-three separate64-byte data-key artifacts, six artifacts in total. Supplying this option to
+three separate64-byte data-key artifacts, six artifacts in total.
+`Audit` selects the Audit fixture and its empty Score isolation counterpart,
+four schema/key artifacts; this does not prove Score business recovery. Supplying this option to
 any other scenario is rejected before fixture creation or archive use. The runner
 canonicalizes/saves/restores its process environment and checks both phase proofs
 against the selected scope before setting `businessRecoveryVerified=true`.
@@ -361,7 +374,7 @@ The parent result records that scope. A scope tag is not complete-POC acceptance
 
 The explicit Recovery scenario:
 
-1. Initializes the selected Identity, Income/Expense, Profile/Category or Intake schemas, migration/runtime
+1. Initializes the selected Identity, Income/Expense, Profile/Category, Intake or Audit schemas, migration/runtime
    roles and keys, using that scope's existing actual persistence assertions.
 2. Waits for the source business process to exit and rejects active source client
    sessions. It dumps each owned schema separately from this trusted synthetic
@@ -370,7 +383,7 @@ The explicit Recovery scenario:
    random recovery key with independently generated operator material, then
    clears the original key and deletes plaintext dumps.
 4. Independently reads and verifies the exact scope-bound catalog (two artifacts
-   for Identity, four for either two-owner scope, six for Intake), unwraps
+   for Identity, four for Income/Expense, Profile/Category or Audit, six for Intake), unwraps
    the key, authenticates each artifact and creates a new empty restore database.
    Existing targets are rejected. The fresh target revokes default PUBLIC schema
    access; native ownership checks are not weakened to accept a restore.
@@ -525,6 +538,49 @@ integration-only build had zero warnings/errors. Full formatting verified0/1299
 files, and final documentation tests passed21/21. Exact-head CI and review remain
 required before merge. No installed or complete POC recovery is inferred.
 
+### Audit History And Replay Receipts
+
+The explicit Audit scope preserves Audit metadata plus its fixture's empty Score
+schema for independent role isolation. Each uses its actual distinct synthetic
+index/encryption keys; non-adjacent key bytes are represented explicitly in the
+allowlisted scope table rather than inferred. The empty counterpart must pass
+native readiness and contain zero rows. This is not Score business recovery.
+
+The source writes an internal encrypted snapshot proof after its actual Audit
+assertions. This covers every `audit_entries` and `audit_receipts` keyset cursor,
+revision and payload digest in deterministic order. Each bucket has at most100
+pages and the combined snapshot at most10000 items; incomplete scans fail closed.
+No raw metadata or digest inventory is printed or committed. The target must match
+the source digest before and after actual replay/retention checks, then repeat
+after PostgreSQL crash/restart. Original timestamps/expiry, minimum-retention
+policy, revoked-admission historical reads,1000-entry correlation capacity,
+physical expired-payload absence and conflict denial remain required.
+
+This verifies Audit history and retained replay receipts, not all configuration,
+objects, projections, broker state or a cross-resource backup. Actual new-scope
+restore and immediate-crash/restart phases passed with cleanup at
+`2026-11-04T23:44:31.0064620Z`. Both phase proofs explicitly record Audit scope,
+portable keys, wrong-key denial, business reconciliation and immutable replay.
+`installed=false` and `releaseReady=false` remain mandatory. Compilation alone
+is not recovery or installed-host acceptance.
+
+Normal Audit passed with actual crash/restart and cleanup at
+`2026-11-04T23:45:54.8470256Z`, correctly keeping `businessRecoveryVerified=false`.
+The four earlier recovery scopes passed again after the scope-table refactor:
+Identity `2026-11-04T23:49:14.2915644Z`, Profile/Category
+`2026-11-04T23:50:27.7120937Z`, default Income/Expense
+`2026-11-04T23:51:53.6264120Z`, and Intake
+`2026-11-04T23:53:21.4748390Z`; each parent records successful cleanup and recovery.
+These are distinct owned clusters, not one cross-owner recovery point.
+
+Local full verification passed **1,620/1,620** across26 projects, zero failures/
+skips, from `2026-11-04T23:59:40.4935673Z` to `2026-11-05T00:05:17.2758050Z`.
+Repository344/344 includes the new Audit wrong-scenario guard. Full restore and
+Release build passed with zero errors/five existing warnings; the final scoped
+integration build had zero warnings/errors. Full formatting verified0/1299 files
+and final documentation checks passed21/21. Exact-head CI/review and actual
+protected merge remain required; local results are not installed acceptance.
+
 ## Complete POC Recovery Gate
 
 PR303 component verification on 2026-11-03: full Release build passed with zero errors and
@@ -542,7 +598,7 @@ integrated backup/repair support:
 | Resource or boundary | Required integrated behavior |
 | --- | --- |
 | Consistency | Freeze ingress, stop publishers, drain known broker queues including unacknowledged deliveries, then stop consumers and other writers before cross-owner capture. A per-database dump is not a cross-resource snapshot. |
-| All owned databases | Capture all thirteen business owners, including the Summary module, their schema/migration versions, encrypted state, durable outboxes/inboxes, deletion markers and retained decryption/index keys. Separate scoped drills cover Identity, Income/Expense, Profile/Category and Intake, not a common six-owner boundary or all thirteen owners. |
+| All owned databases | Capture all thirteen business owners, including the Summary module, their schema/migration versions, encrypted state, durable outboxes/inboxes, deletion markers and retained decryption/index keys. Separate scoped drills cover Identity, Income/Expense, Profile/Category, Intake and Audit, not a common all-owner boundary. Audit's empty Score counterpart is not Score business recovery. |
 | Receipt objects | Capture encrypted object bytes and matching receipt metadata under the same quiescence boundary; preserve retention/deletion semantics and reject missing or foreign objects. |
 | Protected configuration | Capture required runtime and Summary module secrets, stable key sets and nonsecret deployment identity through authorized privileged reads. Authenticate a complete bounded manifest and exact artifact coverage. Never put unlock material beside the archive. |
 | Broker and external work | A fresh broker is safe only after an actual empty/drained-queue proof and preserved durable pending work. Published-but-unconsumed messages must not be discarded. Preserve Identity pending transport, receipt jobs and uncertain provider state; do not resend paid work. |

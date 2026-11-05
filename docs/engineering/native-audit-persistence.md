@@ -82,6 +82,19 @@ normally; logs contain only the fixed unavailable/retry message.
 
 ## Verification Status
 
+FIN-209's separate [owned Audit recovery scope](windows-native-recovery.md) uses
+`-Scenario Recovery -RecoveryScope Audit`. It captures Audit and an empty Score
+schema/key counterpart only for runtime-role isolation. Recovered Audit state
+must match every bounded entry/replay-receipt cursor, revision and payload hash
+before/after semantic immutable replay/retention checks, including original
+timestamps, revoked-admission history and expired-payload absence, then repeat
+after PostgreSQL crash/restart. The counterpart must be ready and contain zero
+records; it is not financial-score business recovery. Actual new-target restore
+and crash/restart passed with cleanup `2026-11-04T23:44:31.0064620Z`, followed by
+normal Audit, all four earlier recovery scopes and full1620/1620 across26 projects,
+zero failures/skips. Exact-head CI/review/merge remain required. This is not complete POC or installed
+backup qualification, real configuration export or authorization to overwrite.
+
 Audit Release build passed with zero warnings/errors; all 30 unit/HTTP tests passed,
 including new native registration, full-envelope fingerprint, required DTO fields,
 safe metadata/legacy compatibility, immutable revision checks and actual native

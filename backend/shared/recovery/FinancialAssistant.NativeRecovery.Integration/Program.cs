@@ -18,17 +18,21 @@ try
     var mode = Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_MODE") ?? "";
     var directory = Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_DIRECTORY") ?? "";
     var scope = Environment.GetEnvironmentVariable("FA_RECOVERY_TEST_SCOPE") ?? "";
-    Check(scope is "IncomeExpense" or "ProfileCategory" or "Identity" or "Intake");
-    var intake = scope == "Intake";
+    var definition = scope switch
+    {
+        "IncomeExpense" => new RecoveryScope("income-expense", "fa_test_fin275", "income", "FinancialAssistant.FinancialRecords.Persistence.Integration", "Income exact persistence", [new("income", 1, 2), new("expense", 3, 4)]),
+        "ProfileCategory" => new RecoveryScope("profile-category", "fa_test_fin283", "profile", "FinancialAssistant.ProfileCategory.Persistence.Integration", "Profile/Category exact persistence", [new("profile", 1, 2), new("category", 3, 4)]),
+        "Identity" => new RecoveryScope("identity", "fa_test_fin282", "identity", "FinancialAssistant.Identity.Persistence.Integration", "Identity exact persistence", [new("identity", 1, 2)]),
+        "Intake" => new RecoveryScope("intake", "fa_test_fin284", "transaction-intake", "FinancialAssistant.Intake.Persistence.Integration", "Intake exact persistence", [new("transaction-intake", 1, 2), new("income", 3, 4), new("expense", 5, 6)]),
+        // Audit uses an empty Score counterpart only for role-isolation assertions, not Score recovery.
+        "Audit" => new RecoveryScope("audit", "fa_test_fin289", "audit", "FinancialAssistant.Audit.Persistence.Integration", "Audit exact persistence", [new("audit", 17, 19), new("financial-score", 23, 29)]),
+        _ => throw new InvalidOperationException()
+    };
     var identity = scope == "Identity";
-    var profileCategory = scope == "ProfileCategory";
-    var scopeName = intake ? "intake" : identity ? "identity" : profileCategory ? "profile-category" : "income-expense";
-    var owners = intake ? new[] { (Owner: "transaction-intake", Seed: (byte)1), (Owner: "income", Seed: (byte)3), (Owner: "expense", Seed: (byte)5) }
-        : identity ? new[] { (Owner: "identity", Seed: (byte)1) }
-        : profileCategory ? new[] { (Owner: "profile", Seed: (byte)1), (Owner: "category", Seed: (byte)3) }
-        : new[] { (Owner: "income", Seed: (byte)1), (Owner: "expense", Seed: (byte)3) };
-    var sourceDatabase = intake ? "fa_test_fin284" : identity ? "fa_test_fin282" : profileCategory ? "fa_test_fin283" : "fa_test_fin275";
-    var expectedKeyFailure = intake ? "Intake exact persistence" : identity ? "Identity exact persistence" : profileCategory ? "Profile/Category exact persistence" : "Income exact persistence";
+    var scopeName = definition.Name;
+    var owners = definition.Owners;
+    var sourceDatabase = definition.Database;
+    var expectedKeyFailure = definition.KeyFailure;
     Check(credential.Length == 64 && credential.All(char.IsAsciiHexDigit) && operatorSecret.Length == 64 && operatorSecret.All(char.IsAsciiHexDigit)
         && mode is "initial" or "restart" && Path.IsPathFullyQualified(directory) && Directory.Exists(directory));
     Check(int.TryParse(Environment.GetEnvironmentVariable("FA_PERSISTENCE_TEST_PORT"), out var port) && port is >= 49152 and <= 65535);
@@ -58,8 +62,8 @@ try
     var runtime = new DirectoryInfo(RuntimeEnvironment.GetRuntimeDirectory());
     var dotnet = Path.Combine(runtime.Parent!.Parent!.Parent!.FullName, "dotnet.exe");
     Check(File.Exists(dotnet));
-    var project = intake ? "FinancialAssistant.Intake.Persistence.Integration" : identity ? "FinancialAssistant.Identity.Persistence.Integration" : profileCategory ? "FinancialAssistant.ProfileCategory.Persistence.Integration" : "FinancialAssistant.FinancialRecords.Persistence.Integration";
-    var child = Path.Combine(repository.FullName, "backend", "services", intake ? "transaction-intake" : identity ? "identity" : profileCategory ? "profile" : "income", project, "bin", "Release", "net8.0", project + ".dll");
+    var project = definition.Project;
+    var child = Path.Combine(repository.FullName, "backend", "services", definition.ServiceDirectory, project, "bin", "Release", "net8.0", project + ".dll");
     Check(File.Exists(child));
     var marker = Path.Combine(root, "recovery.run"); var catalog = Path.Combine(root, "recovery.json");
     var passphrase = Encoding.ASCII.GetBytes(operatorSecret); var temporary = new List<string>();
@@ -80,7 +84,7 @@ try
             try
             {
                 document.WrappedKey = NativeRecoveryKeyWrapping.Wrap(document.InstallationId, document.BackupId, originalKey, passphrase);
-                foreach (var (owner, seed) in owners)
+                foreach (var (owner, indexSeed, encryptionSeed) in owners)
                 {
                     stage = "trusted quiescent owned schema dump";
                     var raw = Path.Combine(root, Guid.NewGuid().ToString("N") + ".dump");
@@ -98,7 +102,7 @@ try
                         Check(new FileInfo(sourceKeys).Length is > 0 and <= 65536 && (File.GetAttributes(sourceKeys) & FileAttributes.ReparsePoint) == 0);
                         keys = File.ReadAllBytes(sourceKeys);
                     }
-                    else { keys.AsSpan(0, 32).Fill(seed); keys.AsSpan(32, 32).Fill((byte)(seed + 1)); }
+                    else { keys.AsSpan(0, 32).Fill(indexSeed); keys.AsSpan(32, 32).Fill(encryptionSeed); }
                     try { Capture(owner, NativeRecoveryArtifactKind.Configuration, keys, originalKey, document); }
                     finally { CryptographicOperations.ZeroMemory(keys); if (identity) { File.Delete(Path.Combine(root, "captured-identity.keys")); } }
                 }
@@ -250,12 +254,14 @@ static async Task Run(string executable, string[] arguments, string? mode, strin
     }
     if (mode is not null && process.ExitCode != 0)
     {
-        foreach (var name in new[] { "owned fixture validation", "Income exact persistence", "Expense exact persistence", "Profile/Category exact persistence", "Identity exact persistence", "Intake exact persistence", "restored Intake exact state", "restored identity state", "restored identity authentication rollback", "restored exact profile and category state", "cross-service role denial" })
+        foreach (var name in new[] { "owned fixture validation", "Income exact persistence", "Expense exact persistence", "Profile/Category exact persistence", "Identity exact persistence", "Intake exact persistence", "Audit exact persistence", "Audit recovery snapshot", "restored Intake exact state", "restored identity state", "restored identity authentication rollback", "restored exact profile and category state", "cross-service role denial" })
         { if (diagnostics.Contains("at " + name, StringComparison.Ordinal)) { Console.Error.WriteLine("Owned financial child failed at " + name + "."); } }
     }
     if (process.ExitCode != 0 || credential is not null && !string.IsNullOrWhiteSpace(diagnostics)) { throw new InvalidOperationException(); }
 }
 
+sealed record RecoveryScope(string Name, string Database, string ServiceDirectory, string Project, string KeyFailure, RecoveryOwner[] Owners);
+sealed record RecoveryOwner(string Owner, byte IndexSeed, byte EncryptionSeed);
 sealed class RecoveryDocument
 {
     public string Scope { get; set; } = "";

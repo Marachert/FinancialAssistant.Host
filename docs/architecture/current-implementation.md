@@ -132,6 +132,15 @@ groups its fixture's Transaction Intake, Income and Expense schemas/key artifact
 it does not combine the separate Identity/Profile/Category drills into one complete
 POC snapshot. No runtime topology/API or complete30-resource manifest change occurs.
 
+The Intake increment is actually merged through
+[PR311](https://github.com/Marachert/FinancialAssistant.Host/pull/311), actual
+`b0045e0a24ddfdb7a23cdf382654ca102185c4c6` at `2026-11-04T23:33:56Z`, final
+`177b3c6c45dd5e7a99d9d504fa6d5346b756ef26`, all five exact-head checks/review clear,
+decoded CI1619/1619 across26 projects. The next Audit recovery scope adds bounded
+full entry/replay-receipt snapshot comparison around semantic retention/replay
+checks. Its empty Score counterpart is role-isolation evidence only. This adds
+no service, public API, complete recovery or installed/first-user acceptance.
+
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
 supersedes the Compose POC target. FIN-270 is implementation work: no WPF
 installer or accepted native Windows runtime is claimed by this document.
