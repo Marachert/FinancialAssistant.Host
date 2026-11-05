@@ -24,6 +24,7 @@ try
         "ProfileCategory" => new RecoveryScope("profile-category", "fa_test_fin283", "profile", "FinancialAssistant.ProfileCategory.Persistence.Integration", "Profile/Category exact persistence", [new("profile", 1, 2), new("category", 3, 4)]),
         "Identity" => new RecoveryScope("identity", "fa_test_fin282", "identity", "FinancialAssistant.Identity.Persistence.Integration", "Identity exact persistence", [new("identity", 1, 2)]),
         "Intake" => new RecoveryScope("intake", "fa_test_fin284", "transaction-intake", "FinancialAssistant.Intake.Persistence.Integration", "Intake exact persistence", [new("transaction-intake", 1, 2), new("income", 3, 4), new("expense", 5, 6)]),
+        "Projections" => new RecoveryScope("projections", "fa_test_fin287", "financial-summary", "FinancialAssistant.Projections.Persistence.Integration", "Projection exact persistence", [new("financial-summary", 11, 12), new("analytics", 13, 14)]),
         // Audit uses an empty Score counterpart only for role-isolation assertions, not Score recovery.
         "Audit" => new RecoveryScope("audit", "fa_test_fin289", "audit", "FinancialAssistant.Audit.Persistence.Integration", "Audit exact persistence", [new("audit", 17, 19), new("financial-score", 23, 29)]),
         _ => throw new InvalidOperationException()
@@ -254,8 +255,10 @@ static async Task Run(string executable, string[] arguments, string? mode, strin
     }
     if (mode is not null && process.ExitCode != 0)
     {
-        foreach (var name in new[] { "owned fixture validation", "Income exact persistence", "Expense exact persistence", "Profile/Category exact persistence", "Identity exact persistence", "Intake exact persistence", "Audit exact persistence", "Audit recovery snapshot", "restored Intake exact state", "restored identity state", "restored identity authentication rollback", "restored exact profile and category state", "cross-service role denial" })
+        foreach (var name in new[] { "owned fixture validation", "Income exact persistence", "Expense exact persistence", "Profile/Category exact persistence", "Identity exact persistence", "Intake exact persistence", "Audit exact persistence", "Audit recovery snapshot", "Projection exact persistence", "Projection recovery snapshot", "restored Intake exact state", "restored identity state", "restored identity authentication rollback", "restored exact profile and category state", "cross-service role denial" })
         { if (diagnostics.Contains("at " + name, StringComparison.Ordinal)) { Console.Error.WriteLine("Owned financial child failed at " + name + "."); } }
+        foreach (var name in new[] { "before-financial-summary", "before-analytics", "after-financial-summary", "after-analytics", "summary-replay", "analytics-replay", "capacity-replay", "generation-read" })
+        { if (diagnostics.Contains("Projection recovery fixture phase: " + name, StringComparison.Ordinal)) { Console.Error.WriteLine("Projection recovery fixture phase: " + name); } }
     }
     if (process.ExitCode != 0 || credential is not null && !string.IsNullOrWhiteSpace(diagnostics)) { throw new InvalidOperationException(); }
 }

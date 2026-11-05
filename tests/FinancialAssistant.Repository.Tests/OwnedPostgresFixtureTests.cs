@@ -101,7 +101,7 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("[ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle','Recovery')]", script);
         Assert.Contains("FinancialAssistant.NativeRecovery.Integration.csproj", script);
         Assert.Contains("Scoped owned business recovery evidence is incomplete.", script);
-        Assert.Contains("[ValidateSet('IncomeExpense','ProfileCategory','Identity','Intake','Audit')]", script);
+        Assert.Contains("[ValidateSet('IncomeExpense','ProfileCategory','Identity','Intake','Audit','Projections')]", script);
         Assert.Contains("$proof.scope -cne $expectedRecoveryScope", script);
         Assert.Contains("FA_RECOVERY_TEST_SCOPE", script);
         Assert.Contains("$result.recoveryScope", script);
@@ -170,6 +170,16 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("mode != \"restore\" || recovery", audit);
         Assert.Contains("proof.Digest == await SnapshotHash(auditDatabase)", audit);
         Assert.Contains("Audit recovery snapshot", audit);
+        var projections = File.ReadAllText(Path.Combine(Root(), "backend/services/financial-summary/FinancialAssistant.Projections.Persistence.Integration/ProjectionsFixture.cs"));
+        Assert.Contains("mode != \"restore\" || recovery", projections);
+        Assert.Contains("ProjectionRecoveryFixture.VerifyAsync", projections);
+        Assert.Contains("ProjectionRecoveryFixture.CaptureAsync", projections);
+        var analyticsFixture = File.ReadAllText(Path.Combine(Root(), "backend/services/financial-summary/FinancialAssistant.Projections.Persistence.Integration/AnalyticsFixture.cs"));
+        Assert.Contains("InspectPendingOrderedAsync", analyticsFixture);
+        Assert.DoesNotContain("Decode<AnalyticsOutboxMessage>", analyticsFixture);
+        var snapshot = File.ReadAllText(Path.Combine(Root(), "backend/services/financial-summary/FinancialAssistant.Projections.Persistence.Integration/ProjectionRecoveryFixture.cs"));
+        Assert.Contains("LIMIT 20001", snapshot);
+        Assert.Contains("proof.Digest == snapshot.Digest", snapshot);
     }
 
     [Theory]
@@ -179,6 +189,7 @@ public sealed class OwnedPostgresFixtureTests
     [InlineData("Identity", "Identity")]
     [InlineData("Intake", "Intake")]
     [InlineData("Audit", "Audit")]
+    [InlineData("Projections", "Projections")]
     public async Task RecoveryScopeCannotBeSilentlyIgnoredByAnotherScenario(string scenario, string scope)
     {
         var start = new ProcessStartInfo("pwsh")
