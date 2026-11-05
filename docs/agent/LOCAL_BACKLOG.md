@@ -157,7 +157,7 @@ The Identity increment is actually merged through
 (Backend41922585385/Mobile41922585390/Admin41922585560), decoded CI1618/1618 across26,
 review clear at `2026-11-04T22:09:51.055926Z`, final channels/labels clear and
 post-merge Confluence Delivery191/Bootstrap579 verified. No closure credit.
-FIN-209 now continues on `codex/fin-209-intake-restore` from that actual main.
+That Intake increment used `codex/fin-209-intake-restore` from the then-current main.
 The explicit Intake scope captures its three owned synthetic schemas and key sets
 together: Transaction Intake, Income and Expense. Exact drafts/confirmations,
 financial and bounded complete outbox-row hashes, owner/currency/role isolation,
@@ -167,7 +167,24 @@ the actual three-owner restore/crash/restart drill passed with cleanup at
 `2026-11-04T22:58:28.8772565Z`. Normal Intake and all three previous recovery scopes
 passed with cleanup. Local full1619/1619 across26 projects, zero failures/skips,
 finished `2026-11-04T23:17:39.3461300Z`; restore/Release build, full format and final
-Ledger21 passed. CI/review/merge remain pending, not inferred from local results.
+Ledger21 passed. Those local results were not themselves CI/review/merge acceptance.
+The Intake increment is actually merged through
+[PR311](https://github.com/Marachert/FinancialAssistant.Host/pull/311), actual
+`b0045e0a24ddfdb7a23cdf382654ca102185c4c6` at `2026-11-04T23:33:56Z`, final
+`177b3c6c45dd5e7a99d9d504fa6d5346b756ef26`. All five exact-head checks passed
+(Backend41933146568/Mobile41933146592/Admin41933146549), decoded CI1619/1619 across26,
+configured review clear `2026-11-04T23:23:33.864792Z`, final channels/labels clear,
+post-merge Confluence Delivery194/Bootstrap582 verified. No closure credit.
+FIN-209 now continues on `codex/fin-209-audit-restore` from that actual main.
+Audit recovery must preserve all bounded entry/replay-receipt hashes, original
+timestamps and minimum retention, revoked-admission historical reads, physical
+expired-payload absence and immutable replay. Its empty Score schema exists only
+for independent role-isolation/readiness checks, not Score business recovery.
+The actual Audit restore/crash/restart passed with cleanup at
+`2026-11-04T23:44:31.0064620Z`. Normal Audit and all four earlier recovery scopes
+also passed with cleanup after the scope-table refactor. Local full1620/1620 across26
+projects, zero failures/skips, finished `2026-11-05T00:05:17.2758050Z`; full restore/
+Release build, format0/1299 and Ledger21 passed. CI/review/merge are still required.
 No pending installed qualification is silently waived to advance. Native first-user
 bootstrap, Profile-only refresh and protected machine deployment remain explicit
 launch gaps, not inferred acceptance.
