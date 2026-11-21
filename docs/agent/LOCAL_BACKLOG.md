@@ -203,6 +203,30 @@ all five earlier recovery scopes passed with cleanup. Local full1621/1621 across
 projects, zero failures/skips, passed through `2026-11-05T01:25:32.4367174Z`;
 restore/Release build passed with zero errors/five existing warnings. Exact-head
 CI/review/protected merge remain required. No complete POC backup is claimed.
+The Projections increment is actually merged through
+[PR313](https://github.com/Marachert/FinancialAssistant.Host/pull/313), actual
+`53cbc2ed55136858affcf9deceb4ebf06f429d74` at `2026-11-21T11:17:38Z`, final
+`1f4401d5444e7532d06733019032d18788873291`. All five exact-head checks passed
+(Backend41961264489/Mobile41961264522/Admin41961264611), decoded CI1621/1621
+across26 projects and configured review completed `2026-11-05T03:24:33.759845Z`
+without findings. Final fresh channels/labels were clear; actual-merge Confluence
+Delivery202/Bootstrap590 were verified. Original November5 tests are not newly
+executed November21 tests. Jira now returns404; local tracking remains active
+without inventing the cause or a transition. No completion credit is added.
+FIN-209 continues on `codex/fin-209-insights-restore` from that actual main.
+The separate Score/Recommendations/Notifications recovery scope passed actual
+owned new-target restore/crash/restart and cleanup at
+`2026-11-21T12:18:22.2926074Z`, including recovered keys/wrong-key denial, complete
+stored-record digests, immutable replay and preserved pending work. Compilation
+passed with zero errors/two MSBuild cache-file warnings. Normal Insights passed
+with crash/restart and cleanup at `2026-11-21T12:19:31.2270895Z`; all six earlier
+scope regressions passed with cleanup and both phase proofs. Local full1622/1622
+across26 projects, zero failures/skips, passed through
+`2026-11-21T12:39:04.5095894Z`; restore/build0errors/5warnings and fullformat0/1301
+passed. Exact-head CI/review, protected merge and post-merge evidence remain
+required. Complete POC backup,
+installed acceptance or closure is not inferred from this separate scoped drill.
+
 No pending installed qualification is silently waived to advance. Native first-user
 bootstrap, Profile-only refresh and protected machine deployment remain explicit
 launch gaps, not inferred acceptance.

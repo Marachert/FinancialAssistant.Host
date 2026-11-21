@@ -98,6 +98,16 @@ internal static class NativeInsightOrderFixture
                 return true;
             });
         }
+        else if (mode == "restore")
+        {
+            Gate = "immutable restored causal replay";
+            await Current(third.EventId);
+            Check((await Ordered(21, third)).Count > 0);
+            Check((await Ordered(15, stale)).Count == 0);
+            await Conflict(() => Ordered(20, Source(owner, "synthetic-reused-order", At)));
+            await Conflict(() => Ordered(22, third));
+            await Current(third.EventId);
+        }
         else
         {
             Gate = "ordered restart and freshness rollback";

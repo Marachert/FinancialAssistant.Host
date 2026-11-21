@@ -1,18 +1,34 @@
 # POC Readiness Progress
 
-Last updated: 2026-11-03
+Last updated: 2026-11-21
 
 ## Current Snapshot
 
 POC backlog completion after verified local FIN-286 closure is **91.6%**:
 **197 of 215 canonical POC leaf tickets are verified complete**.
 
-Jira is suspended. This is **not a new live Jira census**. The last verified live
+Jira is unavailable (latest read404 after the earlier suspension). This is
+**not a new live Jira census**. The last verified live
 baseline remains 193/215 Done (89.8%), P9 17/39 (43.6%), FIN-270 11/19. Four unique
 subsequent local completions, FIN-288, FIN-289, FIN-276 and FIN-286, raise the fixed
 numerator to 197. No denominator or duplicate rule changed. See
 [local tracking](LOCAL_BACKLOG.md) and [actual merge evidence](LOCAL_DELIVERY_EVIDENCE.json).
 Jira Done and parent transitions remain pending reconciliation, never fabricated.
+
+Latest partial FIN-209 delivery: [PR313](https://github.com/Marachert/FinancialAssistant.Host/pull/313)
+is independently verified merged=true/CLOSED, actual protected squash
+`53cbc2ed55136858affcf9deceb4ebf06f429d74` at `2026-11-21T11:17:38Z`, final
+`1f4401d5444e7532d06733019032d18788873291`. All five exact-head checks and
+configured review passed; decoded CI1621/1621 across26 projects, zero failures/
+skips. Original November5 test evidence was re-read, not newly executed on
+November21. Post-merge Confluence Delivery202/Bootstrap590 were verified.
+Summary/Analytics recovery is a separate scope, not complete application backup.
+The next Score/Recommendations recovery increment passed its separate actual
+restore/crash/restart, normal scenario, all earlier recovery scopes and local
+full1622/1622 across26 projects, zero failures/skips, through
+`2026-11-21T12:39:04.5095894Z`. Exact-head CI/review and protected delivery remain
+pending; this is not complete application backup or installed qualification.
+FIN-209 remains open: **+0.0 percentage points**, first-user **Not Ready**.
 
 FIN-209's [portable recovery increment](../engineering/windows-native-recovery.md)
 is actually merged through [PR303](https://github.com/Marachert/FinancialAssistant.Host/pull/303):

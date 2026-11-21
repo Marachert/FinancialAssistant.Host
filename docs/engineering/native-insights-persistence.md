@@ -135,6 +135,27 @@ All eight affected Confluence post-merge full-body readbacks passed.
 Temporary local tracking is owner-approved in
 [the POC backlog](../agent/LOCAL_BACKLOG.md); no unread Jira status is fabricated.
 
+## Portable Recovery Increment
+
+FIN-209 adds a separately selected `Recovery -RecoveryScope Insights` fixture for
+Score and Recommendations/Notifications. It authenticates schema/configuration
+artifacts and verifies all non-proof stored record counts/ciphertext digests
+before and after semantic replay. Restore checks use owner-specific pending reads
+and retained private publication order; neither global scan cursors nor pending
+acknowledgements are advanced. Original normal-restart behavior remains covered.
+Actual owned new-target restore/crash/restart passed with verified cleanup at
+`2026-11-21T12:18:22.2926074Z`; both phase proofs include wrong-key rejection,
+business reconciliation and immutable replay. Normal Insights also passed with
+crash/restart and cleanup at `2026-11-21T12:19:31.2270895Z`, without claiming
+business restore. All six earlier recovery scopes also passed again with verified
+cleanup and both phase proofs. Local full1622/1622 across26 projects, zero
+failures/skips, passed through `2026-11-21T12:39:04.5095894Z`. Restore/Release
+build passed with zero errors/five CS8604/MSB3101 warnings; full formatting verified
+zero changes across1301 files. Exact-head CI/review, protected merge and post-merge
+evidence remain separate required gates.
+This is not common all-owner backup, notification delivery or installed acceptance.
+See [the recovery boundary](windows-native-recovery.md).
+
 ## Outstanding Work
 
 FIN-288 implementation delivery is verified; its closure ledger is published

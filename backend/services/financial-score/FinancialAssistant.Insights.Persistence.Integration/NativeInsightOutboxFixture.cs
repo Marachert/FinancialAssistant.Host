@@ -21,6 +21,17 @@ internal static class NativeInsightOutboxFixture
             publisher, profile, transaction: context);
         var owners = Enumerable.Range(0, 31).Select(index => Convert.ToHexString(SHA256.HashData(
             Encoding.UTF8.GetBytes("synthetic-native-insight-scan-" + index))).ToLowerInvariant()).ToArray();
+        if (mode == "restore")
+        {
+            Check(await database.ExecuteAsync([], async (records, _) =>
+                await records.GetAsync("insight_outbox_scan", "recommendations-notifications", "recommendations") is not null));
+            foreach (var owner in owners)
+            {
+                var pending = await publisher.ReadRecommendationsAsync(owner);
+                Check(pending.Count is > 0 and <= 25 && pending.All(message => message.Event.UserIdHash == owner && message.PublishedAtUtc is null));
+            }
+            return;
+        }
         if (mode == "initial")
         {
             for (var index = 0; index < owners.Length; index++)

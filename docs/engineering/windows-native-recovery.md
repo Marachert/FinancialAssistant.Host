@@ -1,7 +1,7 @@
 # Native Portable Recovery
 
 FIN-209 is In Progress. This increment provides authenticated portable artifact
-encryption and separately isolated Income/Expense, Profile/Category, Identity, Intake, Audit and Projections restore
+encryption and separately isolated Income/Expense, Profile/Category, Identity, Intake, Audit, Projections and Insights restore
 drills. It is not a
 complete POC backup utility, installed-host qualification or permission to restore
 an existing database. No completion credit or first-user readiness is claimed.
@@ -640,6 +640,54 @@ contract regression. Restore and Release build passed with zero errors/five
 existing warnings; the final scoped integration build had zero warnings/errors.
 Exact-head CI, review and protected merge remain separate required gates.
 
+### Score And Recommendation Recovery
+
+The explicit `Insights` scope uses the real Score and Recommendations/Notifications
+synthetic schema/key pairs, not Audit's empty Score counterpart. A source-bound
+encrypted proof covers every stored record except itself: bucket, owner/record
+hashes, revision and ciphertext digest in deterministic order. The reserved proof
+bucket must be empty at capture and contain exactly one record during verification;
+extra proof records cannot hide outside the comparison. Scans fail closed
+above20000 rows,1MiB per ciphertext cell or64MiB per owner. Native readiness and
+the exact source count/digest must pass before and after restored semantic checks.
+
+Restore mode keeps Score history, first acknowledgements, private publication
+order and both31-owner pending-work sets. It replays consumed sources, checks
+conflicts, expired settings, recommendation/notification lifecycle and explicit
+preferences without rotating discovery cursors, acknowledging pending work or
+advancing causal heads. The normal restart fixture retains its original mutations.
+No notification is sent or relabelled delivered, and no production API changes.
+
+The actual owned new-target restore and crash/restart phases passed, with cleanup
+verified at `2026-11-21T12:18:22.2926074Z`. Both phase proofs explicitly record
+Insights scope, portable keys, wrong-key rejection, business reconciliation and
+immutable replay; `installed=false` and `releaseReady=false` remain mandatory.
+The scoped build passed with zero errors and two MSBuild cache-file warnings.
+Normal Insights passed with actual crash/restart and cleanup at
+`2026-11-21T12:19:31.2270895Z`, correctly recording
+`businessRecoveryVerified=false` for a non-restore scenario. All six earlier
+recovery scopes passed again with cleanup: Projections
+`2026-11-21T11:41:56.1849947Z`, Audit `2026-11-21T11:43:57.8703803Z`, Intake
+`2026-11-21T12:20:52.0306441Z`, Identity `2026-11-21T12:22:13.2306513Z`,
+Profile/Category `2026-11-21T12:23:41.521444Z`, and Income/Expense
+`2026-11-21T12:25:42.0388166Z`. Parent and both phase proofs were independently
+read and validated for every recovery scope. These remain separate owned
+clusters, not a common all-owner recovery point.
+
+Local full verification passed **1,622/1,622** across26 projects, zero failures/
+skips, from `2026-11-21T12:33:05.8473414Z` to
+`2026-11-21T12:39:04.5095894Z`. Repository346/346 includes the new wrong-scenario
+guard and the self-proof-count contract; Recovery161/161 also passed. Full restore
+and Release build passed with zero errors/five warnings (CS8604 and MSB3101).
+Full formatting verified0/1301 files. Exact-head CI, review, protected merge and
+post-merge evidence remain required; local tests are not installed acceptance.
+
+One earlier Intake attempt stopped at a local disk-capacity preflight before
+creating a cluster; it remains a stopped attempt, not a successful test. The owner
+authorized removal of92 verified stopped, re-extractable PostgreSQL vendor copies.
+Source changes, databases, encrypted archives, logs and evidence were preserved;
+new fixtures re-extract the pinned archive rather than reuse missing binaries.
+
 ## Complete POC Recovery Gate
 
 PR303 component verification on 2026-11-03: full Release build passed with zero errors and
@@ -657,7 +705,7 @@ integrated backup/repair support:
 | Resource or boundary | Required integrated behavior |
 | --- | --- |
 | Consistency | Freeze ingress, stop publishers, drain known broker queues including unacknowledged deliveries, then stop consumers and other writers before cross-owner capture. A per-database dump is not a cross-resource snapshot. |
-| All owned databases | Capture all thirteen business owners, including the Summary module, their schema/migration versions, encrypted state, durable outboxes/inboxes, deletion markers and retained decryption/index keys. Separate scoped drills cover Identity, Income/Expense, Profile/Category, Intake, Audit and Projections, not a common all-owner boundary. Audit's empty Score counterpart is not Score business recovery. |
+| All owned databases | Capture all thirteen business owners, including the Summary module, their schema/migration versions, encrypted state, durable outboxes/inboxes, deletion markers and retained decryption/index keys. Separate scoped drills cover Identity, Income/Expense, Profile/Category, Intake, Audit, Projections and Insights, not a common all-owner boundary. Audit's empty Score counterpart is not Score business recovery; the Insights scope exercises actual Score and Recommendations state. |
 | Receipt objects | Capture encrypted object bytes and matching receipt metadata under the same quiescence boundary; preserve retention/deletion semantics and reject missing or foreign objects. |
 | Protected configuration | Capture required runtime and Summary module secrets, stable key sets and nonsecret deployment identity through authorized privileged reads. Authenticate a complete bounded manifest and exact artifact coverage. Never put unlock material beside the archive. |
 | Broker and external work | A fresh broker is safe only after an actual empty/drained-queue proof and preserved durable pending work. Published-but-unconsumed messages must not be discarded. Preserve Identity pending transport, receipt jobs and uncertain provider state; do not resend paid work. |

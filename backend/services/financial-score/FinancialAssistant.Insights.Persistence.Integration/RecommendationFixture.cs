@@ -126,7 +126,7 @@ internal static class RecommendationFixture
             await NoClaim(database, failed.EventId);
             Check(!(await store.GetRecommendationsAsync(owner, "USD", default)).Any(r => r.SourceEventId == failed.EventId));
         }
-        if (mode == "restart") { await Unavailable(() => profile.GetAsync(owner, "USD", default)); }
+        if (mode is "restart" or "restore") { await Unavailable(() => profile.GetAsync(owner, "USD", default)); }
         var before = (await store.GetRecommendationsAsync(owner, "USD", default)).Count;
         var replay = await service.ProcessAnalyticsAsync(source, default);
         Check(replay.Count > 0 && (await store.GetRecommendationsAsync(owner, "USD", default)).Count == before);
@@ -147,7 +147,12 @@ internal static class RecommendationFixture
         var owners = await context.ReadOwnerPageAsync(pageSize: 1);
         Check(owners.Owners.Count == 1 && owners.NextCursor is not null);
         Check((await context.ReadOwnerPageAsync(owners.NextCursor, pageSize: 1)).Owners.Count == 1);
-        if (mode == "restart")
+        if (mode == "restore")
+        {
+            await Conflict(() => service.ProcessAnalyticsAsync(Copy(source, source.EventId, source.Payload with { MonthlyExpenseTotal = 999m }), default));
+            await Conflict(() => triggers.ProcessAsync(Trigger(owner, "synthetic-trigger-0", At.AddMinutes(6)) with { ConfirmedBudgetSpend = 1200m }, default));
+        }
+        if (mode is "restart" or "restore")
         {
             var expired = Analytics(owner, "synthetic-insight-expired", At.AddMinutes(20));
             await Unavailable(() => service.ProcessAnalyticsAsync(expired, default));
