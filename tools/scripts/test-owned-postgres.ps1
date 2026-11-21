@@ -1,6 +1,6 @@
 param([Parameter(Mandatory)][string] $ArchivePath,
     [ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle','Recovery')][string] $Scenario = 'Foundation',
-    [ValidateSet('IncomeExpense','ProfileCategory','Identity','Intake','Audit','Projections','Insights')][string] $RecoveryScope = 'IncomeExpense',
+    [ValidateSet('IncomeExpense','ProfileCategory','Identity','Intake','Audit','Projections','Insights','ReceiptAi')][string] $RecoveryScope = 'IncomeExpense',
     [string] $BrokerFixtureRoot,
     [string] $ResultFile)
 $ErrorActionPreference = 'Stop'
@@ -119,7 +119,7 @@ try {
     $env:FA_RECOVERY_TEST_SCOPE = ''
     if ($Scenario -eq 'Recovery') {
         $env:FA_RECOVERY_TEST_PASSPHRASE = [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
-        $env:FA_RECOVERY_TEST_SCOPE = switch ($RecoveryScope) { 'ProfileCategory' { 'ProfileCategory' } 'Identity' { 'Identity' } 'Intake' { 'Intake' } 'Audit' { 'Audit' } 'Projections' { 'Projections' } 'Insights' { 'Insights' } default { 'IncomeExpense' } }
+        $env:FA_RECOVERY_TEST_SCOPE = switch ($RecoveryScope) { 'ProfileCategory' { 'ProfileCategory' } 'Identity' { 'Identity' } 'Intake' { 'Intake' } 'Audit' { 'Audit' } 'Projections' { 'Projections' } 'Insights' { 'Insights' } 'ReceiptAi' { 'ReceiptAi' } default { 'IncomeExpense' } }
     }
     if ($brokerRoot) { $env:FA_NATIVE_BROKER_FIXTURE_ROOT = $brokerRoot; $env:FA_NATIVE_LIFECYCLE_REPOSITORY = $repo }
     $project = Join-Path $repo $(if ($Scenario -eq 'Identity') {
@@ -170,12 +170,15 @@ try {
         $env:FA_PERSISTENCE_TEST_MODE = 'restart'
         Run-Local $dotnet @('run','--project',$project,'--no-build','--configuration','Release') 'financial-restart'
         if ($Scenario -eq 'Recovery') {
-            $expectedRecoveryScope = switch ($RecoveryScope) { 'ProfileCategory' { 'profile-category' } 'Identity' { 'identity' } 'Intake' { 'intake' } 'Audit' { 'audit' } 'Projections' { 'projections' } 'Insights' { 'insights' } default { 'income-expense' } }
+            $expectedRecoveryScope = switch ($RecoveryScope) { 'ProfileCategory' { 'profile-category' } 'Identity' { 'identity' } 'Intake' { 'intake' } 'Audit' { 'audit' } 'Projections' { 'projections' } 'Insights' { 'insights' } 'ReceiptAi' { 'receipt-ai' } default { 'income-expense' } }
             foreach ($name in @('recovery-initial.json','recovery-restart.json')) {
                 $proof = Get-Content -LiteralPath (Join-Path $run $name) -Raw | ConvertFrom-Json
                 if ($proof.passed -cne $true -or $proof.scope -cne $expectedRecoveryScope -or $proof.portableKeys -cne $true -or
                     $proof.wrongKeyRejected -cne $true -or $proof.businessReconciled -cne $true -or $proof.immutableReplay -cne $true -or $proof.installed -cne $false -or $proof.releaseReady -cne $false) {
                     throw 'Scoped owned business recovery evidence is incomplete.'
+                }
+                if ($RecoveryScope -eq 'ReceiptAi' -and $proof.receiptObjectsReconciled -cne $true) {
+                    throw 'Scoped protected Receipt object recovery evidence is incomplete.'
                 }
             }
             $businessRecoveryVerified = $true
@@ -220,7 +223,7 @@ try {
         $result = @{passed=$passed;cleanupSucceeded=$cleanupSucceeded;scenario=$Scenario;installed=$false;releaseReady=$false;fixture=[IO.Path]::GetRelativePath($repo,$run);archiveDigest=$package[0].hash;verifiedAt=[datetime]::UtcNow.ToString('o')}
         $result.interruptedTransactionRecovered = $interruptedTransactionRecovered
         $result.businessRecoveryVerified = $businessRecoveryVerified
-        if ($Scenario -eq 'Recovery') { $result.recoveryScope = switch ($RecoveryScope) { 'ProfileCategory' { 'profile-category' } 'Identity' { 'identity' } 'Intake' { 'intake' } 'Audit' { 'audit' } 'Projections' { 'projections' } 'Insights' { 'insights' } default { 'income-expense' } } }
+        if ($Scenario -eq 'Recovery') { $result.recoveryScope = switch ($RecoveryScope) { 'ProfileCategory' { 'profile-category' } 'Identity' { 'identity' } 'Intake' { 'intake' } 'Audit' { 'audit' } 'Projections' { 'projections' } 'Insights' { 'insights' } 'ReceiptAi' { 'receipt-ai' } default { 'income-expense' } } }
         $result | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $run 'result.json') -Encoding utf8NoBOM
         if ($ResultFile) { Write-NewJson $ResultFile $result }
         if ($brokerRoot) { Write-NewJson (Join-Path $brokerRoot 'financial-postgres.json') $result }

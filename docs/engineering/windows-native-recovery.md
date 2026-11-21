@@ -1,10 +1,60 @@
 # Native Portable Recovery
 
 FIN-209 is In Progress. This increment provides authenticated portable artifact
-encryption and separately isolated Income/Expense, Profile/Category, Identity, Intake, Audit, Projections and Insights restore
+encryption and separately isolated Income/Expense, Profile/Category, Identity, Intake,
+Audit, Projections, Insights and Receipt/AI restore
 drills. It is not a
 complete POC backup utility, installed-host qualification or permission to restore
 an existing database. No completion credit or first-user readiness is claimed.
+
+## Receipt And AI Scoped Restore
+
+The explicit `ReceiptAi` scope uses the real Receipt/AI persistence fixture and
+native encrypted object store. It captures five independently authenticated
+artifacts after the child process exits and source database sessions are absent:
+two owned schema dumps, two portable key bundles and one encrypted object bundle.
+The bounded synthetic bundle contains exactly four existing `.object` files,
+including the key marker and a deletion tombstone; it excludes the writer lease.
+It is not a general complete-installation object inventory or installed backup.
+
+Recovery creates `fa_test_fin209_restore` without overwriting an existing database
+and a different, initially absent `receipt-files-restored` directory. Both source
+and target files are accessed through the production `ProtectedDirectory` policy:
+local NTFS, protected ownership/DACL, pinned ancestry, exclusive lease, no links,
+bounded opaque names/content and atomic no-overwrite writes. All encrypted file
+names/bytes must match the authenticated bundle before and after child replay,
+including after the actual PostgreSQL crash/restart. Retention is not extended;
+deleted objects cannot be opened or resurrected by another store operation.
+
+An encrypted, owner-bound self-proof compares every non-proof SQL record's
+bucket/indexes/revision/ciphertext digest before and after replay. It includes
+receipt indexes, OCR candidates/publication flags, outbox scan cursor, quota
+reservations and AI completed/failed/reserved claims. Typed native reads verify
+the exact large decimal and zero candidate, owner/role isolation, accepted and
+rejected quota replays, changed-content conflicts and rollback absence. Completed,
+failed and uncertain/reserved AI requests are rejected before a provider can run;
+the synthetic provider call counter must remain zero. No real AI/OCR call occurs.
+
+Receipt `InspectPendingAsync` reuses the production outbox decoder without writing
+its durable cursor. Like delivery discovery, it is bounded to ten pages and at
+most25 pending items; it is not a complete inventory API or a delivery acknowledgement.
+Ordinary `ReadPendingAsync` retains its existing cursor advancement.
+
+Actual isolated restore/crash/restart passed at `2026-11-21T13:21:55.0563799Z`.
+Both phase proofs include portable keys, wrong-key rejection, exact business and
+object reconciliation and immutable replay; parent cleanup passed. Full baseline
+and protected delivery for this increment remain pending. Run with the existing
+cached, manifest-pinned archive:
+
+```powershell
+pwsh -NoProfile -NonInteractive -File tools/scripts/test-owned-postgres.ps1 -Scenario Recovery -RecoveryScope ReceiptAi -ArchivePath C:\ApprovedCache\postgresql-18.6-5-windows-x64-binaries.zip
+```
+
+This completes separate scope coverage of all thirteen business owners, not one
+common all-owner recovery point. Cross-owner quiescence, complete installation
+configuration, broker/search integration, scheduling/retention, installer update/
+repair preservation and approved-host qualification remain FIN-209 requirements.
+`installed=false`, `releaseReady=false`; FIN-209 is not Done and adds no credit.
 
 [PR303](https://github.com/Marachert/FinancialAssistant.Host/pull/303) is independently
 verified merged=true/CLOSED: actual protected squash
@@ -705,8 +755,8 @@ integrated backup/repair support:
 | Resource or boundary | Required integrated behavior |
 | --- | --- |
 | Consistency | Freeze ingress, stop publishers, drain known broker queues including unacknowledged deliveries, then stop consumers and other writers before cross-owner capture. A per-database dump is not a cross-resource snapshot. |
-| All owned databases | Capture all thirteen business owners, including the Summary module, their schema/migration versions, encrypted state, durable outboxes/inboxes, deletion markers and retained decryption/index keys. Separate scoped drills cover Identity, Income/Expense, Profile/Category, Intake, Audit, Projections and Insights, not a common all-owner boundary. Audit's empty Score counterpart is not Score business recovery; the Insights scope exercises actual Score and Recommendations state. |
-| Receipt objects | Capture encrypted object bytes and matching receipt metadata under the same quiescence boundary; preserve retention/deletion semantics and reject missing or foreign objects. |
+| All owned databases | Capture all thirteen business owners, including the Summary module, their schema/migration versions, encrypted state, durable outboxes/inboxes, deletion markers and retained decryption/index keys. Separate scoped drills cover Identity, Income/Expense, Profile/Category, Intake, Audit, Projections, Insights and Receipt/AI, not a common all-owner boundary. Audit's empty Score counterpart is not Score business recovery; the Insights scope exercises actual Score and Recommendations state. |
+| Receipt objects | Integrate the separately verified Receipt/AI schema-plus-object capture with the complete all-owner quiescence boundary and inventory; preserve retention/deletion semantics and reject missing or foreign objects. The four-file synthetic proof is not arbitrary installed-data qualification. |
 | Protected configuration | Capture required runtime and Summary module secrets, stable key sets and nonsecret deployment identity through authorized privileged reads. Authenticate a complete bounded manifest and exact artifact coverage. Never put unlock material beside the archive. |
 | Broker and external work | A fresh broker is safe only after an actual empty/drained-queue proof and preserved durable pending work. Published-but-unconsumed messages must not be discarded. Preserve Identity pending transport, receipt jobs and uncertain provider state; do not resend paid work. |
 | Search | Record an explicit versioned snapshot or rebuild policy. Search is derived, not financial truth; restore owner state and watermarks before enabling reads or replay. |

@@ -1,4 +1,5 @@
 using System.Security.AccessControl;
+using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
 using FinancialAssistant.AiOrchestration.Application;
@@ -27,7 +28,7 @@ try
     var directory = Setting("FA_PERSISTENCE_TEST_DIRECTORY");
     var mode = Setting("FA_PERSISTENCE_TEST_MODE");
     Check(password.Length == 64 && password.All(char.IsAsciiHexDigit) && Path.IsPathFullyQualified(directory)
-        && Directory.Exists(directory) && mode is "initial" or "restart");
+        && Directory.Exists(directory) && mode is "initial" or "restart" or "restore");
     Check(int.TryParse(Setting("FA_PERSISTENCE_TEST_PORT"), out var port) && port is >= 49152 and <= 65535);
     var repository = new DirectoryInfo(AppContext.BaseDirectory);
     while (!File.Exists(Path.Combine(repository.FullName, "FinancialAssistant.Backend.sln")))
@@ -37,6 +38,11 @@ try
         && string.Equals(data.Parent.Parent?.FullName, Path.Combine(repository.FullName, ".codex-runtime", "persistence-test"), StringComparison.OrdinalIgnoreCase));
     for (DirectoryInfo? ancestor = data; ancestor is not null && ancestor.FullName.Length >= repository.FullName.Length; ancestor = ancestor.Parent)
     { Check((ancestor.Attributes & FileAttributes.ReparsePoint) == 0); }
+    var marker = Path.Combine(data.Parent!.FullName, "recovery.run");
+    var recovery = File.Exists(marker);
+    Check(!recovery || new FileInfo(marker).Length == 32 && (File.GetAttributes(marker) & FileAttributes.ReparsePoint) == 0
+        && File.ReadAllText(marker) == data.Parent.Name && Setting("FA_RECOVERY_TEST_SCOPE") == "ReceiptAi");
+    Check(mode != "restore" || recovery);
     var connection = new NpgsqlConnectionStringBuilder
     {
         Host = "127.0.0.1",
@@ -53,8 +59,11 @@ try
     await bootstrap.OpenAsync();
     await using (var location = new NpgsqlCommand("SHOW data_directory", bootstrap))
     { Check(string.Equals(Path.GetFullPath((string)(await location.ExecuteScalarAsync())!), data.FullName, StringComparison.OrdinalIgnoreCase)); }
-    const string databaseName = "fa_test_fin285";
-    await using (var fresh = new NpgsqlCommand("SELECT count(*) FROM pg_database WHERE datname NOT IN('postgres','template0','template1','fa_test_fin285') OR (datname='fa_test_fin285' AND $1='initial')", bootstrap))
+    var databaseName = mode == "restore" ? "fa_test_fin209_restore" : "fa_test_fin285";
+    var catalog = recovery
+        ? "SELECT count(*) FROM pg_database WHERE datname NOT IN('postgres','template0','template1','fa_test_fin285','fa_test_fin209_restore') OR (datname IN('fa_test_fin285','fa_test_fin209_restore') AND $1='initial')"
+        : "SELECT count(*) FROM pg_database WHERE datname NOT IN('postgres','template0','template1','fa_test_fin285') OR (datname='fa_test_fin285' AND $1='initial')";
+    await using (var fresh = new NpgsqlCommand(catalog, bootstrap))
     { fresh.Parameters.AddWithValue(mode); Check((long)(await fresh.ExecuteScalarAsync())! == 0); }
     var owners = new[] { new StorageIdentity("receipt-processing"), new StorageIdentity("ai-orchestration") };
     if (mode == "initial")
@@ -68,8 +77,10 @@ try
     connection.Database = databaseName;
     await using var admin = new NpgsqlConnection(connection.ConnectionString);
     await admin.OpenAsync();
-    var receiptSettings = Settings(databaseName, port, password, 1);
-    var aiSettings = Settings(databaseName, port, password, 3);
+    stage = "Receipt/AI exact persistence";
+    var restoredRoot = mode == "restore" ? data.Parent.FullName : null;
+    var receiptSettings = Settings(databaseName, port, password, 1, "receipt-processing", restoredRoot);
+    var aiSettings = Settings(databaseName, port, password, 3, "ai-orchestration", restoredRoot);
     if (mode == "initial")
     {
         stage = "repeatable service-owned migrations";
@@ -88,7 +99,7 @@ try
     await using var receiptDb = new OwnedPostgresStore(receiptSettings.CreateOptions("receipt-processing"), receiptKeys);
     await using var aiDb = new OwnedPostgresStore(aiSettings.CreateOptions("ai-orchestration"), aiKeys);
     Check(await receiptDb.IsReadyAsync() && await aiDb.IsReadyAsync());
-    var filesPath = Path.Combine(data.Parent!.FullName, "receipt-files");
+    var filesPath = Path.Combine(data.Parent!.FullName, mode == "restore" ? "receipt-files-restored" : "receipt-files");
     using var identity = WindowsIdentity.GetCurrent();
     if (mode == "initial")
     {
@@ -138,28 +149,64 @@ try
         new RegisteredLlmProviderResolver(new[] { syntheticAi }), new JsonSchemaStructuredOutputValidator(), aiMetadata, clock,
         new CallIds(), new AiUsageCostControlPolicy(10, 10000, 1m, true), aiUsage);
     var aiPipeline = new DurableAiOrchestrationService(journal, aiCore);
-    if (mode == "restart")
+    if (mode != "initial")
     {
-        stage = "actual database and object restart";
+        stage = recovery ? "Receipt/AI exact persistence" : "actual database and object restart";
+        if (recovery) { await ReceiptAiRecoveryFixture.VerifyAsync(receiptSettings, aiSettings, admin, Replay); }
+        else { await Replay(); }
+        Console.WriteLine("PASS actual Receipt/AI restart or restored database/object state; no provider replay or financial confirmation.");
+        return 0;
+    }
+
+    async Task Replay()
+    {
         var replay = await Upload(service, ownerId, "synthetic-key", image);
         Check(replay.Replayed && replay.Receipt.ReceiptId == "receipt_fixture_1");
         var result = await results.GetAsync(ownerId, replay.Receipt.ReceiptId, default);
         Check(result?.IntegrationEvent?.Amount == 1234567890.123456789m && result.Metadata.OcrCompletedPublished);
         Check((await results.GetAsync(ownerId, "receipt_zero", default))?.IntegrationEvent?.Amount == 0m);
-        Check((await outbox.ReadPendingAsync()).Count == 0);
+        Check((await (recovery ? outbox.InspectPendingAsync() : outbox.ReadPendingAsync())).Count == 0);
         Check(await aiMetadata.GetAsync(ownerId, "call_synthetic") is { Status: AiCallStatus.Succeeded });
         Check(await aiMetadata.GetAsync("other_owner", "call_synthetic") is null);
         Check(await aiUsage.TryAcquireAsync(ownerId, "synthetic", new DateOnly(2026, 10, 19), 1, "usage_first", default));
-        Check(!await aiUsage.TryAcquireAsync(ownerId, "synthetic", new DateOnly(2026, 10, 19), 1, "usage_after_restart", default));
+        Check(!await aiUsage.TryAcquireAsync(ownerId, "synthetic", new DateOnly(2026, 10, 19), 1,
+            recovery ? "usage_attempt_0" : "usage_after_restart", default));
+        var restoredOcrUsage = new PostgresOcrUsageLimiter(context);
+        Check(await restoredOcrUsage.TryAcquireAsync(ownerId, "synthetic", new DateOnly(2026, 10, 19), 1, "ocr_usage", default));
+        Check(!await restoredOcrUsage.TryAcquireAsync(ownerId, "synthetic", new DateOnly(2026, 10, 19), 1, "ocr_overflow", default));
         await Recorded(() => journal.ReserveAsync(request, default), "completed");
         await Recorded(() => journal.ReserveAsync(request with { RequestId = "request_crash" }, default), "reserved");
+        await Recorded(() => aiPipeline.ExecuteAsync(request with { RequestId = "request_crash" }, default), "reserved");
+        await Recorded(() => aiPipeline.ExecuteAsync(pipelineRequest with { UsageSubjectId = "other_owner", RequestId = "request_foreign_call" }, default), "reserved");
+        await Fails<StorageConflictException>(() => journal.ReserveAsync(request with { Input = "different synthetic input" }, default));
         Check(await aiMetadata.GetAsync(pipelineRequest.UsageSubjectId, "call_execution_1") is { Status: AiCallStatus.Succeeded });
         await Recorded(() => aiPipeline.ExecuteAsync(pipelineRequest, default), "completed");
         await Recorded(() => aiPipeline.ExecuteAsync(pipelineRequest with { RequestId = "request_failed" }, default), "failed");
         Check(syntheticAi.Calls == 0);
         Check(await metadata.GetByIdempotencyKeyAsync(ownerId, "rollback-key", default) is null);
-        Console.WriteLine("PASS actual PostgreSQL/process restart: exact Receipt/OCR/index/outbox state, encrypted object identity, committed AI quotas and no uncertain provider replay.");
-        return 0;
+        foreach (var receipt in new[] { "receipt_fixture_1", "receipt_zero" })
+        {
+            var info = await objects.GetInfoAsync(receipt);
+            Check(info is not null && !info.DeletedOrExpired && info.SizeBytes == image.Length
+                && info.CreatedAtUtc == now && info.ExpiresAtUtc == now.AddHours(1));
+            await using var content = await objects.OpenReadAsync(receipt, default) ?? throw new FixtureFailure();
+            using var buffer = new MemoryStream(); await content.CopyToAsync(buffer);
+            Check(buffer.ToArray().AsSpan().SequenceEqual(image));
+            Check((await metadata.GetAsync(ownerId, receipt, default))?.ReceiptUploadedPublished == true);
+            Check((await results.GetAsync(ownerId, receipt, default))?.Metadata.OcrCompletedPublished == true);
+        }
+        Check((await objects.GetInfoAsync("receipt_fixture_2"))?.DeletedOrExpired == true);
+        Check(await objects.OpenReadAsync("receipt_fixture_2", default) is null);
+        await Fails<NativeReceiptStorageException>(() => objects.StoreAsync("receipt_fixture_2", image, default));
+        await Fails<ReceiptIdempotencyConflictException>(() => Upload(service, ownerId, "synthetic-key", image.Concat(new byte[] { 1 }).ToArray()));
+        Check(await metadata.GetAsync("other_owner", "receipt_fixture_1", default) is null);
+        foreach (var pair in new[] { (owners[0], owners[1]), (owners[1], owners[0]) })
+        {
+            var restricted = new NpgsqlConnectionStringBuilder(connection.ConnectionString) { Username = pair.Item1.RuntimeRole };
+            await using var runtime = new NpgsqlConnection(restricted.ConnectionString); await runtime.OpenAsync();
+            try { await Sql(runtime, $"SELECT * FROM {pair.Item2.Schema}.records"); throw new FixtureFailure(); }
+            catch (PostgresException exception) when (exception.SqlState == "42501") { }
+        }
     }
 
     stage = "atomic upload and concurrent independent scope replay";
@@ -175,6 +222,7 @@ try
     await Fails<ReceiptIdempotencyConflictException>(() => Upload(service, ownerId, "synthetic-key", changed));
     Check(await metadata.GetAsync("other_owner", first.Receipt.ReceiptId, default) is null);
     Check((await outbox.ReadPendingAsync()).Count == 1);
+    Check((await outbox.InspectPendingAsync()).Count == 1);
     var file = await metadata.GetAsync(ownerId, first.Receipt.ReceiptId, default) ?? throw new FixtureFailure();
     Check(!file.ReceiptUploadedPublished);
     await Fails<StorageUnavailableException>(() => metadata.MarkReceiptUploadedPublishedAsync(ownerId, file.ReceiptId, file.ReceiptUploadedEventId, default));
@@ -197,6 +245,8 @@ try
     var unchanged = await new PostgresOcrProcessingStore(secondContext).StoreIfMissingAsync(ocr, ocrEvent with { Amount = 1m }, default);
     Check(unchanged.IntegrationEvent?.Amount == ocrEvent.Amount);
     var pending = await outbox.ReadPendingAsync(); Check(pending.Count == 2);
+    Check((await outbox.InspectPendingAsync()).Select(value => value.Key).Order(StringComparer.Ordinal)
+        .SequenceEqual(pending.Select(value => value.Key).Order(StringComparer.Ordinal)));
     await outbox.PublishAsync(ocrEvent, default); Check((await outbox.ReadPendingAsync()).Count == 2);
     foreach (var intent in pending)
     {
@@ -282,6 +332,11 @@ try
         await using var reader = await raw.ExecuteReaderAsync();
         while (await reader.ReadAsync()) { Check(!Encoding.UTF8.GetString(reader.GetFieldValue<byte[]>(0)).Contains("synthetic", StringComparison.Ordinal)); }
     }
+    if (recovery)
+    {
+        stage = "Receipt/AI recovery snapshot";
+        await ReceiptAiRecoveryFixture.CaptureAsync(receiptSettings, aiSettings, admin);
+    }
     Console.WriteLine("PASS Receipt/AI PostgreSQL: atomic upload and candidate intents, owner/role isolation, exact decimals, independent-scope concurrency, rollback, no false delivery acknowledgement, encrypted metadata and durable conservative quota/request replay. No live provider or broker used.");
     return 0;
 }
@@ -306,15 +361,30 @@ static async Task<bool> Attempt(DurableAiOrchestrationService service, AiCapabil
 }
 static Task<ReceiptUploadResult> Upload(IReceiptProcessingService service, string owner, string key, byte[] bytes) =>
     service.UploadAsync(owner, key, "image/png", new MemoryStream(bytes), default);
-static NativePostgresSettings Settings(string database, int port, string password, byte index) => new()
+static NativePostgresSettings Settings(string database, int port, string password, byte index, string owner, string? restoredRoot)
 {
-    Database = database,
-    Port = port,
-    Password = password,
-    IndexKey = Convert.ToBase64String(Enumerable.Repeat(index, 32).ToArray()),
-    ActiveEncryptionKeyId = "v1",
-    EncryptionKeys = new() { ["v1"] = Convert.ToBase64String(Enumerable.Repeat((byte)(index + 1), 32).ToArray()) }
-};
+    var keys = new byte[64];
+    try
+    {
+        if (restoredRoot is not null)
+        {
+            var path = Path.Combine(restoredRoot, "recovered-" + owner + ".keys");
+            Check(new FileInfo(path).Length == 64 && (File.GetAttributes(path) & FileAttributes.ReparsePoint) == 0);
+            keys = File.ReadAllBytes(path);
+        }
+        else { keys.AsSpan(0, 32).Fill(index); keys.AsSpan(32, 32).Fill((byte)(index + 1)); }
+        return new NativePostgresSettings
+        {
+            Database = database,
+            Port = port,
+            Password = password,
+            ActiveEncryptionKeyId = "v1",
+            IndexKey = Convert.ToBase64String(keys, 0, 32),
+            EncryptionKeys = new() { ["v1"] = Convert.ToBase64String(keys, 32, 32) }
+        };
+    }
+    finally { CryptographicOperations.ZeroMemory(keys); }
+}
 sealed class FixtureFailure : Exception;
 sealed class Clock(DateTimeOffset now) : TimeProvider, FinancialAssistant.ReceiptProcessing.Application.Abstractions.IReceiptProcessingClock, IAiOrchestrationClock
 { public override DateTimeOffset GetUtcNow() => now; public DateTimeOffset UtcNow => now; }

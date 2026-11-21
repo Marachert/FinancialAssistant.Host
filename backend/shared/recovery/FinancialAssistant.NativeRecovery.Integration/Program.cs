@@ -26,11 +26,13 @@ try
         "Intake" => new RecoveryScope("intake", "fa_test_fin284", "transaction-intake", "FinancialAssistant.Intake.Persistence.Integration", "Intake exact persistence", [new("transaction-intake", 1, 2), new("income", 3, 4), new("expense", 5, 6)]),
         "Projections" => new RecoveryScope("projections", "fa_test_fin287", "financial-summary", "FinancialAssistant.Projections.Persistence.Integration", "Projection exact persistence", [new("financial-summary", 11, 12), new("analytics", 13, 14)]),
         "Insights" => new RecoveryScope("insights", "fa_test_fin288", "financial-score", "FinancialAssistant.Insights.Persistence.Integration", "Insight exact persistence", [new("financial-score", 17, 19), new("recommendations-notifications", 23, 29)]),
+        "ReceiptAi" => new RecoveryScope("receipt-ai", "fa_test_fin285", "receipt-processing", "FinancialAssistant.ReceiptAi.Persistence.Integration", "Receipt/AI exact persistence", [new("receipt-processing", 1, 2), new("ai-orchestration", 3, 4)]),
         // Audit uses an empty Score counterpart only for role-isolation assertions, not Score recovery.
         "Audit" => new RecoveryScope("audit", "fa_test_fin289", "audit", "FinancialAssistant.Audit.Persistence.Integration", "Audit exact persistence", [new("audit", 17, 19), new("financial-score", 23, 29)]),
         _ => throw new InvalidOperationException()
     };
     var identity = scope == "Identity";
+    var receiptAi = scope == "ReceiptAi";
     var scopeName = definition.Name;
     var owners = definition.Owners;
     var sourceDatabase = definition.Database;
@@ -69,7 +71,7 @@ try
     Check(File.Exists(child));
     var marker = Path.Combine(root, "recovery.run"); var catalog = Path.Combine(root, "recovery.json");
     var passphrase = Encoding.ASCII.GetBytes(operatorSecret); var temporary = new List<string>();
-    byte[]? recoveredKey = null;
+    byte[]? recoveredKey = null; byte[]? receiptBundle = null;
     try
     {
         RecoveryDocument document;
@@ -108,6 +110,13 @@ try
                     try { Capture(owner, NativeRecoveryArtifactKind.Configuration, keys, originalKey, document); }
                     finally { CryptographicOperations.ZeroMemory(keys); if (identity) { File.Delete(Path.Combine(root, "captured-identity.keys")); } }
                 }
+                if (receiptAi)
+                {
+                    stage = "quiescent protected receipt object capture";
+                    var bundle = await ReceiptObjectRecoveryFixture.CaptureAsync(Path.Combine(root, "receipt-files"));
+                    try { Capture("receipt-processing", NativeRecoveryArtifactKind.ReceiptObject, bundle, originalKey, document); }
+                    finally { CryptographicOperations.ZeroMemory(bundle); }
+                }
                 WriteNew(catalog, JsonSerializer.SerializeToUtf8Bytes(document));
             }
             finally { CryptographicOperations.ZeroMemory(originalKey); }
@@ -121,11 +130,15 @@ try
         Check(new FileInfo(catalog).Length is > 0 and <= 16384 && (File.GetAttributes(catalog) & FileAttributes.ReparsePoint) == 0);
         document = JsonSerializer.Deserialize<RecoveryDocument>(File.ReadAllBytes(catalog), new JsonSerializerOptions
         { UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow, MaxDepth = 8 }) ?? throw new InvalidOperationException();
-        var expectedArtifacts = owners.Length * 2;
+        var expectedArtifacts = owners.Length * 2 + (receiptAi ? 1 : 0);
         Check(document.InstallationId != Guid.Empty && document.BackupId != Guid.Empty && document.Scope == scopeName && document.Artifacts.Count == expectedArtifacts
             && document.Artifacts.Select(artifact => artifact.Id).Distinct().Count() == expectedArtifacts
             && document.Artifacts.Select(artifact => (artifact.Owner, artifact.Kind)).Distinct().Count() == expectedArtifacts
-            && document.Artifacts.All(artifact => owners.Any(owner => owner.Owner == artifact.Owner) && artifact.Kind is NativeRecoveryArtifactKind.Database or NativeRecoveryArtifactKind.Configuration));
+            && owners.All(owner => document.Artifacts.Any(artifact => artifact.Owner == owner.Owner && artifact.Kind == NativeRecoveryArtifactKind.Database)
+                && document.Artifacts.Any(artifact => artifact.Owner == owner.Owner && artifact.Kind == NativeRecoveryArtifactKind.Configuration))
+            && document.Artifacts.All(artifact => owners.Any(owner => owner.Owner == artifact.Owner)
+                && (artifact.Kind is NativeRecoveryArtifactKind.Database or NativeRecoveryArtifactKind.Configuration
+                    || receiptAi && artifact.Owner == "receipt-processing" && artifact.Kind == NativeRecoveryArtifactKind.ReceiptObject)));
         recoveredKey = NativeRecoveryKeyWrapping.Unwrap(document.InstallationId, document.BackupId, document.WrappedKey, passphrase);
         var restores = new List<string>();
         foreach (var artifact in document.Artifacts)
@@ -143,6 +156,8 @@ try
                     var keys = Path.Combine(root, "recovered-" + artifact.Owner + ".keys");
                     WriteNew(keys, plaintext, temporary);
                 }
+                else if (artifact.Kind == NativeRecoveryArtifactKind.ReceiptObject)
+                { Check(receiptAi && receiptBundle is null); receiptBundle = plaintext.ToArray(); }
                 else if (mode == "initial")
                 {
                     var dump = Path.Combine(root, artifact.Id.ToString("N") + ".restore");
@@ -168,6 +183,14 @@ try
                 await Run(Path.Combine(binaries, "pg_restore.exe"), ["--host=127.0.0.1", "--port=" + port, "--username=fa_test_admin", "--no-password",
                     "--dbname=fa_test_fin209_restore", "--exit-on-error", "--single-transaction", dump], null, credential);
             }
+        }
+        if (receiptAi)
+        {
+            stage = "fresh protected receipt object restore";
+            Check(receiptBundle is not null);
+            await ReceiptObjectRecoveryFixture.VerifyAsync(Path.Combine(root, "receipt-files"), receiptBundle!);
+            if (mode == "initial") { await ReceiptObjectRecoveryFixture.RestoreAsync(Path.Combine(root, "receipt-files-restored"), receiptBundle!); }
+            else { await ReceiptObjectRecoveryFixture.VerifyAsync(Path.Combine(root, "receipt-files-restored"), receiptBundle!); }
         }
         stage = "wrong recovered key denial";
         var recoveredFirst = Path.Combine(root, "recovered-" + owners[0].Owner + ".keys");
@@ -200,8 +223,14 @@ try
         }
         stage = "restored key access business reconciliation and immutable replay";
         await Child("restore");
+        if (receiptAi)
+        {
+            stage = "immutable restored receipt objects";
+            await ReceiptObjectRecoveryFixture.VerifyAsync(Path.Combine(root, "receipt-files-restored"), receiptBundle!);
+            await ReceiptObjectRecoveryFixture.VerifyAsync(Path.Combine(root, "receipt-files"), receiptBundle!);
+        }
         WriteNew(Path.Combine(root, mode == "initial" ? "recovery-initial.json" : "recovery-restart.json"), JsonSerializer.SerializeToUtf8Bytes(new
-        { schemaVersion = 1, passed = true, scope = scopeName, portableKeys = true, wrongKeyRejected = true, businessReconciled = true, immutableReplay = true, installed = false, releaseReady = false }));
+        { schemaVersion = 1, passed = true, scope = scopeName, portableKeys = true, wrongKeyRejected = true, businessReconciled = true, receiptObjectsReconciled = receiptAi, immutableReplay = true, installed = false, releaseReady = false }));
         Console.WriteLine("PASS owned recovery scope=" + scopeName + ": encrypted per-owner schema artifacts, independent portable key recovery, new empty target, exact business snapshots/owner isolation and idempotent replay. Not complete POC or installed acceptance.");
 
         async Task Child(string childMode) => await Run(dotnet, [child], childMode, null);
@@ -217,6 +246,7 @@ try
     finally
     {
         CryptographicOperations.ZeroMemory(passphrase); if (recoveredKey is not null) { CryptographicOperations.ZeroMemory(recoveredKey); }
+        if (receiptBundle is not null) { CryptographicOperations.ZeroMemory(receiptBundle); }
         foreach (var path in temporary) { if (File.Exists(path)) { File.Delete(path); } }
     }
     return 0;
@@ -256,7 +286,7 @@ static async Task Run(string executable, string[] arguments, string? mode, strin
     }
     if (mode is not null && process.ExitCode != 0)
     {
-        foreach (var name in new[] { "owned fixture validation", "Income exact persistence", "Expense exact persistence", "Profile/Category exact persistence", "Identity exact persistence", "Intake exact persistence", "Audit exact persistence", "Audit recovery snapshot", "Projection exact persistence", "Projection recovery snapshot", "Insight exact persistence", "Insight recovery snapshot", "restored Intake exact state", "restored identity state", "restored identity authentication rollback", "restored exact profile and category state", "cross-service role denial" })
+        foreach (var name in new[] { "owned fixture validation", "Income exact persistence", "Expense exact persistence", "Profile/Category exact persistence", "Identity exact persistence", "Intake exact persistence", "Audit exact persistence", "Audit recovery snapshot", "Projection exact persistence", "Projection recovery snapshot", "Insight exact persistence", "Insight recovery snapshot", "Receipt/AI exact persistence", "Receipt/AI recovery snapshot", "restored Intake exact state", "restored identity state", "restored identity authentication rollback", "restored exact profile and category state", "cross-service role denial" })
         { if (diagnostics.Contains("at " + name, StringComparison.Ordinal)) { Console.Error.WriteLine("Owned financial child failed at " + name + "."); } }
         foreach (var name in new[] { "before-financial-summary", "before-analytics", "after-financial-summary", "after-analytics", "summary-replay", "analytics-replay", "capacity-replay", "generation-read" })
         { if (diagnostics.Contains("Projection recovery fixture phase: " + name, StringComparison.Ordinal)) { Console.Error.WriteLine("Projection recovery fixture phase: " + name); } }

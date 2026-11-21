@@ -1,5 +1,14 @@
 # Native Receipt, OCR And AI Workflow Persistence
 
+FIN-209 now adds a separate [Receipt/AI portable restore scope](windows-native-recovery.md#receipt-and-ai-scoped-restore).
+Actual recovery/crash/restart passed at `2026-11-21T13:21:55.0563799Z`: owned SQL
+state and encrypted objects restored into a different empty protected directory,
+with exact ciphertext/record equality around replay, preserved retention/deletion,
+quota/request guards and no repeated provider execution. Read-only bounded native
+outbox inspection does not advance its maintenance cursor. This is not a common
+all-owner backup, installed acceptance or authorization to enable live providers;
+full baseline and protected delivery of the follow-on remain pending.
+
 FIN-285 adds service-owned PostgreSQL workflow adapters on the FIN-274 foundation
 and FIN-277 [protected encrypted receipt objects](windows-native-adapters.md).
 This is not a broker, a WPF installer, installed-Windows acceptance or permission

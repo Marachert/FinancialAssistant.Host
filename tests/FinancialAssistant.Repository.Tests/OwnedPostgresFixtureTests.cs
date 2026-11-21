@@ -101,7 +101,7 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("[ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle','Recovery')]", script);
         Assert.Contains("FinancialAssistant.NativeRecovery.Integration.csproj", script);
         Assert.Contains("Scoped owned business recovery evidence is incomplete.", script);
-        Assert.Contains("[ValidateSet('IncomeExpense','ProfileCategory','Identity','Intake','Audit','Projections','Insights')]", script);
+        Assert.Contains("[ValidateSet('IncomeExpense','ProfileCategory','Identity','Intake','Audit','Projections','Insights','ReceiptAi')]", script);
         Assert.Contains("$proof.scope -cne $expectedRecoveryScope", script);
         Assert.Contains("FA_RECOVERY_TEST_SCOPE", script);
         Assert.Contains("$result.recoveryScope", script);
@@ -193,6 +193,17 @@ public sealed class OwnedPostgresFixtureTests
         var insightOutbox = File.ReadAllText(Path.Combine(Root(), "backend/services/financial-score/FinancialAssistant.Insights.Persistence.Integration/NativeInsightOutboxFixture.cs"));
         Assert.Contains("mode == \"restore\"", insightOutbox);
         Assert.Contains("pending.All(message => message.Event.UserIdHash == owner && message.PublishedAtUtc is null)", insightOutbox);
+        var receipt = File.ReadAllText(Path.Combine(Root(), "backend/services/receipt-processing/FinancialAssistant.ReceiptAi.Persistence.Integration/ReceiptAiFixture.cs"));
+        Assert.Contains("mode != \"restore\" || recovery", receipt);
+        Assert.Contains("ReceiptAiRecoveryFixture.VerifyAsync", receipt);
+        Assert.Contains("receipt-files-restored", receipt);
+        Assert.Contains("InspectPendingAsync", receipt);
+        Assert.Contains("syntheticAi.Calls == 0", receipt);
+        var objects = File.ReadAllText(Path.Combine(Root(), "backend/shared/recovery/FinancialAssistant.NativeRecovery.Integration/ReceiptObjectRecoveryFixture.cs"));
+        Assert.Contains("new ProtectedDirectory", objects);
+        Assert.Contains("replace: false", objects);
+        Assert.Contains("!Directory.Exists(path) && !File.Exists(path)", objects);
+        Assert.Contains("CryptographicOperations.FixedTimeEquals(actual, file.Bytes)", objects);
     }
 
     [Theory]
@@ -204,6 +215,7 @@ public sealed class OwnedPostgresFixtureTests
     [InlineData("Audit", "Audit")]
     [InlineData("Projections", "Projections")]
     [InlineData("Insights", "Insights")]
+    [InlineData("ReceiptAi", "ReceiptAi")]
     public async Task RecoveryScopeCannotBeSilentlyIgnoredByAnotherScenario(string scenario, string scope)
     {
         var start = new ProcessStartInfo("pwsh")

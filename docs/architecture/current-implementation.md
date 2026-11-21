@@ -1,5 +1,15 @@
 # Current Implementation And Product Target
 
+Current FIN-209 follow-on adds separately scoped Receipt/AI recovery, not complete
+application backup: PostgreSQL schemas and portable keys plus encrypted objects
+restored into a different, initially empty protected NTFS root. Actual scoped
+restore/crash/restart passed `2026-11-21T13:21:55.0563799Z`, preserving exact
+candidate decimals, quota/request claims, object bytes, retention and tombstones;
+durable completed/failed/reserved requests do not invoke the synthetic provider.
+Normal delivery is unchanged; bounded Receipt outbox inspection uses the native
+decoder without writing its scan cursor. Full baseline and protected delivery
+remain pending. [Recovery contract](../engineering/windows-native-recovery.md).
+
 Reviewed for FIN-269 against merged FIN-194, PR #247, commit
 `783f22746d3902181153076b0871121311e8f4f7` (2026-09-10).
 Use the [live closure ledger](../agent/POC_PROGRESS.md) for subsequent progress;
