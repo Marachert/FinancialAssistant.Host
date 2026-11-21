@@ -151,6 +151,17 @@ rebuilds and pending publications. A bounded native read-only inspection method
 uses the existing Analytics outbox decoder/order checks without advancing its
 delivery cursor; no new public REST endpoint or runtime topology is introduced.
 
+The Projections increment is actually merged through
+[PR313](https://github.com/Marachert/FinancialAssistant.Host/pull/313), actual
+`53cbc2ed55136858affcf9deceb4ebf06f429d74` at `2026-11-21T11:17:38Z`, final
+`1f4401d5444e7532d06733019032d18788873291`, all five exact-head checks/review clear,
+decoded CI1621/1621 across26 projects. The next separate Score/Recommendations
+recovery scope passed its separate actual restore/crash/restart and local
+full1622/1622 across26 projects; exact-head CI/review and delivery remain pending.
+It preserves pending work and private order rather than reusing mutating
+normal-restart steps. No public API, runtime
+topology, complete backup, installed acceptance or completion credit is added.
+
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
 supersedes the Compose POC target. FIN-270 is implementation work: no WPF
 installer or accepted native Windows runtime is claimed by this document.

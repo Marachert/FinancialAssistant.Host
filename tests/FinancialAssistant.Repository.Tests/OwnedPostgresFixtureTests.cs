@@ -101,7 +101,7 @@ public sealed class OwnedPostgresFixtureTests
         Assert.Contains("[ValidateSet('Foundation','Identity','ProfileCategory','FinancialRecords','Intake','ReceiptAi','Projections','Insights','Audit','NativeLifecycle','Recovery')]", script);
         Assert.Contains("FinancialAssistant.NativeRecovery.Integration.csproj", script);
         Assert.Contains("Scoped owned business recovery evidence is incomplete.", script);
-        Assert.Contains("[ValidateSet('IncomeExpense','ProfileCategory','Identity','Intake','Audit','Projections')]", script);
+        Assert.Contains("[ValidateSet('IncomeExpense','ProfileCategory','Identity','Intake','Audit','Projections','Insights')]", script);
         Assert.Contains("$proof.scope -cne $expectedRecoveryScope", script);
         Assert.Contains("FA_RECOVERY_TEST_SCOPE", script);
         Assert.Contains("$result.recoveryScope", script);
@@ -180,6 +180,19 @@ public sealed class OwnedPostgresFixtureTests
         var snapshot = File.ReadAllText(Path.Combine(Root(), "backend/services/financial-summary/FinancialAssistant.Projections.Persistence.Integration/ProjectionRecoveryFixture.cs"));
         Assert.Contains("LIMIT 20001", snapshot);
         Assert.Contains("proof.Digest == snapshot.Digest", snapshot);
+        var insights = File.ReadAllText(Path.Combine(Root(), "backend/services/financial-score/FinancialAssistant.Insights.Persistence.Integration/InsightsFixture.cs"));
+        Assert.Contains("mode != \"restore\" || recovery", insights);
+        Assert.Contains("InsightRecoveryFixture.CaptureAsync", insights);
+        Assert.Contains("InsightRecoveryFixture.VerifyAsync", insights);
+        var insightSnapshot = File.ReadAllText(Path.Combine(Root(), "backend/services/financial-score/FinancialAssistant.Insights.Persistence.Integration/InsightRecoveryFixture.cs"));
+        Assert.Contains("LIMIT 20001", insightSnapshot);
+        Assert.Contains("proof.Digest == snapshot.Digest", insightSnapshot);
+        Assert.Contains("Snapshot(admin, owner, 0)", insightSnapshot);
+        Assert.Contains("Snapshot(admin, owner, 1)", insightSnapshot);
+        Assert.Contains("== expectedProofs", insightSnapshot);
+        var insightOutbox = File.ReadAllText(Path.Combine(Root(), "backend/services/financial-score/FinancialAssistant.Insights.Persistence.Integration/NativeInsightOutboxFixture.cs"));
+        Assert.Contains("mode == \"restore\"", insightOutbox);
+        Assert.Contains("pending.All(message => message.Event.UserIdHash == owner && message.PublishedAtUtc is null)", insightOutbox);
     }
 
     [Theory]
@@ -190,6 +203,7 @@ public sealed class OwnedPostgresFixtureTests
     [InlineData("Intake", "Intake")]
     [InlineData("Audit", "Audit")]
     [InlineData("Projections", "Projections")]
+    [InlineData("Insights", "Insights")]
     public async Task RecoveryScopeCannotBeSilentlyIgnoredByAnotherScenario(string scenario, string scope)
     {
         var start = new ProcessStartInfo("pwsh")

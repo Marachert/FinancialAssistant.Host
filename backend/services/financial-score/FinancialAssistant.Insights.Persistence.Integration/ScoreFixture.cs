@@ -92,13 +92,13 @@ internal static class ScoreFixture
                 FinancialScoreProfileSettings.Unconfigured, At)));
         }
         // Restart's clock makes cached inputs expire; committed replay must still preserve its first facts and acknowledgements.
-        if (mode == "restart") { await Unavailable(() => profile.GetAsync(owner, "USD", default)); }
+        if (mode is "restart" or "restore") { await Unavailable(() => profile.GetAsync(owner, "USD", default)); }
         var replay = await service.ApplyAsync(expense, null, default);
         await service.ApplyAsync(moved, null, default);
         await service.ApplyAsync(archived, null, default);
         Check(replay is not null && (await publisher.ReadPendingAsync(owner)).Count == 4);
         Check((await publisher.GetAsync(owner, replay!.CalculationId))!.PublishedAtUtc == At.AddHours(1));
-        if (mode == "restart")
+        if (mode is "restart" or "restore")
         {
             var expired = Source(owner, "synthetic-expired-input", 3m);
             await Unavailable(() => service.ApplyAsync(expired, null, default));
@@ -120,6 +120,8 @@ internal static class ScoreFixture
         var next = await store.GetHistoryAsync(owner, "USD", At, At.AddHours(1), history[0].CalculatedAtUtc, history[0].CalculationId, 101, default);
         Check(next.All(c => c.CalculationId != history[0].CalculationId));
         if (mode == "initial") { await VerifyPublicationOrderAsync(database); }
+        if (mode == "restore")
+        { await Conflict(() => service.ApplyAsync(Copy(expense, expense.EventId, expense.Payload with { Amount = 999m }), null, default)); }
         await VerifyGlobalOutboxAsync(database, publisher, profile, service, mode);
     }
 
@@ -156,6 +158,19 @@ internal static class ScoreFixture
     {
         var owners = Enumerable.Range(0, 31).Select(index => Convert.ToHexString(SHA256.HashData(
             Encoding.UTF8.GetBytes("synthetic-native-scan-" + index))).ToLowerInvariant()).ToArray();
+        if (mode == "restore")
+        {
+            Check(await database.ExecuteAsync([], async (records, _) =>
+                await records.GetAsync("score_outbox_scan", "financial-score", "pending") is not null));
+            foreach (var owner in owners)
+            {
+                var message = (await publisher.ReadPendingAsync(owner)).Single();
+                Check(message.Event.UserIdHash == owner && message.PublishedAtUtc is null);
+                Check(await database.ExecuteAsync([], (records, _) =>
+                    OwnedPublicationOrder.ReadRequiredAsync(records, "score", owner, message.Event.EventId)) == 1);
+            }
+            return;
+        }
         if (mode == "initial")
         {
             for (var index = 0; index < owners.Length; index++)
