@@ -149,6 +149,21 @@ FIN-276/288 retain the remaining independent owner stages and convergence.
 
 ## Free Verification And Remaining Work
 
+The separate FIN-209 [owned recovery scope](windows-native-recovery.md) uses
+`-Scenario Recovery -RecoveryScope Projections`. It preserves full record digests,
+exact totals/replay/owner/role checks,1000-record capacity and both running100-row
+rebuilds before/after actual restore and crash/restart, without committing stages
+or acknowledging publications. This is separate from the normal restart fixture's
+intentional currency corrections, generation commits and refresh acknowledgements.
+Actual scoped cleanup passed `2026-11-05T00:53:07.5112343Z`; broader verification
+and exact-head CI/review/merge remain required before submission.
+
+Native `PostgresAnalyticsEventPublisher.InspectPendingOrderedAsync` is a bounded
+read-only first scan using the existing decoder and publication-order validation.
+It does not persist the delivery cursor, acknowledge messages or add a REST API.
+Its25-message/ten100-record-page bound is not complete inventory or empty-queue
+evidence. Existing rotating delivery reads are unchanged.
+
 After building the backend solution in Release, on Windows run:
 
 ```powershell

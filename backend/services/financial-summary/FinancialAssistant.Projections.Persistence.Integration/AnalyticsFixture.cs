@@ -143,11 +143,13 @@ internal static class AnalyticsFixture
         catch (StorageUnavailableException) { }
         var outcome = await store.UpsertIfNewerAsync(AnalyticsPersistenceContext.ReadSource(moved), default);
         Check(!outcome.Accepted && outcome.PendingPublicationCurrencies.SequenceEqual(new[] { "EUR" }));
-        var stillPending = await Pending(publisher, owner, other);
+        var stillPending = mode == "restore" ? await PendingWithoutCursor(publisher, owner, other) : await Pending(publisher, owner, other);
         Check(stillPending.Count == 4 && stillPending.All(message => message.Event.CausationId != expense.EventId));
         Check(stillPending.Where(message => message.Event.UserIdHash == owner).Select(message => message.SourceSequence).Order()
             .SequenceEqual(new long?[] { 2, 3, 5 }));
         Check(stillPending.Single(message => message.Event.CausationId == moved.EventId).Event.Payload.MonthlyExpenseTotal == 12.3401m);
+        if (mode == "restore")
+        { await Conflict(() => projector.ApplyAsync(Copy(expense, expense.EventId, expense.Payload with { Amount = 99m }), default)); }
         if (mode == "restart")
         {
             var originalEur = stillPending.Single(message => message.Event.CausationId == moved.EventId);
@@ -176,6 +178,8 @@ internal static class AnalyticsFixture
     { try { await operation(); throw new VerificationFailure(); } catch (StorageConflictException) { } }
     private static async Task<IReadOnlyList<AnalyticsOutboxMessage>> Pending(PostgresAnalyticsEventPublisher publisher, string firstOwner, string secondOwner) =>
         (await publisher.ReadPendingOrderedAsync()).Where(message => message.Event.UserIdHash == firstOwner || message.Event.UserIdHash == secondOwner).ToArray();
+    private static async Task<IReadOnlyList<AnalyticsOutboxMessage>> PendingWithoutCursor(PostgresAnalyticsEventPublisher publisher, string firstOwner, string secondOwner) =>
+        (await publisher.InspectPendingOrderedAsync()).Where(message => message.Event.UserIdHash == firstOwner || message.Event.UserIdHash == secondOwner).ToArray();
     private static void Check(bool value) { if (!value) { throw new VerificationFailure(); } }
     private sealed class FixtureClock : TimeProvider
     {

@@ -43,10 +43,13 @@ public sealed class PostgresAnalyticsEventPublisher(AnalyticsPersistenceContext 
     public Task<IReadOnlyList<AnalyticsOutboxMessage>> ReadPendingAsync(CancellationToken token = default) => ReadPendingCoreAsync(false, token);
     public Task<IReadOnlyList<AnalyticsOutboxMessage>> ReadPendingOrderedAsync(CancellationToken token = default) => ReadPendingCoreAsync(true, token);
 
-    private Task<IReadOnlyList<AnalyticsOutboxMessage>> ReadPendingCoreAsync(bool requireOrder, CancellationToken token) =>
+    // A bounded first scan for diagnostics/recovery that does not advance the delivery cursor.
+    public Task<IReadOnlyList<AnalyticsOutboxMessage>> InspectPendingOrderedAsync(CancellationToken token = default) => ReadPendingCoreAsync(true, token, false);
+
+    private Task<IReadOnlyList<AnalyticsOutboxMessage>> ReadPendingCoreAsync(bool requireOrder, CancellationToken token, bool persistCursor = true) =>
         context.WithMaintenanceRecordsAsync<IReadOnlyList<AnalyticsOutboxMessage>>(async (records, _) =>
         {
-            var durable = await records.GetAsync("outbox_scan", "analytics", "pending");
+            var durable = persistCursor ? await records.GetAsync("outbox_scan", "analytics", "pending") : null;
             var after = durable is null ? null : OwnedRecordCodec.Decode<ScanCursor>(1, durable).After;
             var pending = new List<AnalyticsOutboxMessage>();
             var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -73,7 +76,7 @@ public sealed class PostgresAnalyticsEventPublisher(AnalyticsPersistenceContext 
                     if (pending.Count == 25) { break; }
                 }
             }
-            await WriteCursorAsync(records, "pending", durable, after);
+            if (persistCursor) { await WriteCursorAsync(records, "pending", durable, after); }
             return pending;
         }, token);
 

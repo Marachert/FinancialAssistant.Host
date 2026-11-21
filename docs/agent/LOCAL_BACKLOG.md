@@ -175,7 +175,7 @@ The Intake increment is actually merged through
 (Backend41933146568/Mobile41933146592/Admin41933146549), decoded CI1619/1619 across26,
 configured review clear `2026-11-04T23:23:33.864792Z`, final channels/labels clear,
 post-merge Confluence Delivery194/Bootstrap582 verified. No closure credit.
-FIN-209 now continues on `codex/fin-209-audit-restore` from that actual main.
+That Audit increment used `codex/fin-209-audit-restore` from the then-current main.
 Audit recovery must preserve all bounded entry/replay-receipt hashes, original
 timestamps and minimum retention, revoked-admission historical reads, physical
 expired-payload absence and immutable replay. Its empty Score schema exists only
@@ -184,7 +184,25 @@ The actual Audit restore/crash/restart passed with cleanup at
 `2026-11-04T23:44:31.0064620Z`. Normal Audit and all four earlier recovery scopes
 also passed with cleanup after the scope-table refactor. Local full1620/1620 across26
 projects, zero failures/skips, finished `2026-11-05T00:05:17.2758050Z`; full restore/
-Release build, format0/1299 and Ledger21 passed. CI/review/merge are still required.
+Release build, format0/1299 and Ledger21 passed. These were local results only.
+The Audit increment is actually merged through
+[PR312](https://github.com/Marachert/FinancialAssistant.Host/pull/312), actual
+`f6a00e883ecda69f4716b532a398dd8374a578d8` at `2026-11-05T00:22:41Z`, final
+`67428cab193fd86c0bd77c46a1e8b54cc4fcc550`, all five checks green
+(Backend41939225637/Mobile41939225893/Admin41939225658), decoded CI1620/1620 across26,
+review clear `2026-11-05T00:10:55.447674Z`, final channels/labels clear and
+post-merge Confluence Delivery197/Bootstrap585 verified. No closure credit.
+FIN-209 now continues on `codex/fin-209-projection-restore` from that actual main.
+The separate Summary/Analytics restore/crash/restart passed with cleanup at
+`2026-11-05T00:53:07.5112343Z`: all stored records match their source digests before/
+after replay, both rebuilds retain100 staged records, pending publications remain
+unacknowledged and exact totals/owner/role/key isolation pass. The native bounded
+read-only inspector reuses the production outbox decoder without cursor writes.
+Earlier failed fixture/extraction attempts remain failed. Normal Projections and
+all five earlier recovery scopes passed with cleanup. Local full1621/1621 across26
+projects, zero failures/skips, passed through `2026-11-05T01:25:32.4367174Z`;
+restore/Release build passed with zero errors/five existing warnings. Exact-head
+CI/review/protected merge remain required. No complete POC backup is claimed.
 No pending installed qualification is silently waived to advance. Native first-user
 bootstrap, Profile-only refresh and protected machine deployment remain explicit
 launch gaps, not inferred acceptance.

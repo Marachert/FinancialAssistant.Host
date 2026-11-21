@@ -141,6 +141,16 @@ full entry/replay-receipt snapshot comparison around semantic retention/replay
 checks. Its empty Score counterpart is role-isolation evidence only. This adds
 no service, public API, complete recovery or installed/first-user acceptance.
 
+The Audit increment is actually merged through
+[PR312](https://github.com/Marachert/FinancialAssistant.Host/pull/312), actual
+`f6a00e883ecda69f4716b532a398dd8374a578d8` at `2026-11-05T00:22:41Z`, final
+`67428cab193fd86c0bd77c46a1e8b54cc4fcc550`, all five checks/review clear,
+decoded CI1620/1620 across26. The next Summary/Analytics recovery scope verifies
+all-record source digests around idempotent replay while preserving staged
+rebuilds and pending publications. A bounded native read-only inspection method
+uses the existing Analytics outbox decoder/order checks without advancing its
+delivery cursor; no new public REST endpoint or runtime topology is introduced.
+
 The 2026-09-15 [Windows-native deployment decision](windows-native-poc.md)
 supersedes the Compose POC target. FIN-270 is implementation work: no WPF
 installer or accepted native Windows runtime is claimed by this document.
