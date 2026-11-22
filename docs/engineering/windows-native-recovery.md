@@ -42,8 +42,11 @@ Ordinary `ReadPendingAsync` retains its existing cursor advancement.
 
 Actual isolated restore/crash/restart passed at `2026-11-21T13:21:55.0563799Z`.
 Both phase proofs include portable keys, wrong-key rejection, exact business and
-object reconciliation and immutable replay; parent cleanup passed. Full baseline
-and protected delivery for this increment remain pending. Run with the existing
+object reconciliation and immutable replay; parent cleanup passed. Full local
+baseline1623/1623 across26 projects, zero failures/skips, finished
+`2026-11-21T13:50:46.6575995Z`; format zero changes/1303 files, ledger21/21,
+privacy1341 and Markdown160/656 links passed. CI/review and protected delivery
+remain pending. Run with the existing
 cached, manifest-pinned archive:
 
 ```powershell
