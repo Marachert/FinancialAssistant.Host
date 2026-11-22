@@ -1,7 +1,8 @@
 # Temporary POC Backlog
 
 Owner-approved 2026-10-29: continue no-cost POC development using repository-local
-tracking until Jira is restored. Jira currently returns `SUSPENDED_INACTIVITY`;
+tracking until Jira is restored. Latest Jira reads return404 Not Found after the
+earlier `SUSPENDED_INACTIVITY` response;
 do not pay to unblock it, create a replacement site or fabricate Jira transitions.
 Scope below comes from the last verified Jira snapshot and repository evidence,
 not a claim that suspended Jira was read successfully today.
@@ -42,6 +43,28 @@ credit/reset redemption, real-provider send or additional spending. Later option
 improvements must not delay independent free POC implementation.
 
 ## Active Work
+
+Latest local verification: full1623/1623 across26, zero failures/skips, finished
+`2026-11-21T13:50:46.6575995Z`; restore/Release build passed (zero errors, four
+existing cache warnings). All eight recovery scopes and normal Receipt/AI passed
+with cleanup. Format zero changes/1303 files, ledger21/21, privacy1341 and
+Markdown160/656 links passed. November21 evidence was re-read on November22,
+not rerun. CI/review/protected delivery remain pending; no FIN-209 closure.
+
+Current FIN-209 increment: `codex/fin-209-receipt-ai-restore`, from actual main
+`95471121cd6cc720f56dee6a7979ededd9cb7320`. PR314 is independently verified merged
+at `2026-11-21T13:00:38Z`, final `4ab22d2b5b0229e944562310dcbff81138808e52`, all
+five checks green and configured review clear, CI1622/1622 across26, no failures/
+skips. All nine post-merge Confluence bodies were verified: Delivery206,
+Bootstrap594, Architecture173, Security48, Testing66, Deployment136, Release136,
+Home148, Overview138. The Receipt/AI follow-on adds a separate five-artifact
+restore scope: two schemas, two portable key bundles and encrypted receipt
+objects restored into a new empty protected directory. Actual scoped recovery
+passed at `2026-11-21T13:21:55.0563799Z`, including crash/restart, wrong-key denial,
+unchanged SQL records and object ciphertext, receipt deletion/retention and zero
+synthetic provider calls during replay. Full local baseline passed as recorded
+above; protected delivery remains pending. FIN-209 stays open without closure
+credit or first-user readiness.
 
 | Key | Local state | Scope and dependencies |
 | --- | --- | --- |

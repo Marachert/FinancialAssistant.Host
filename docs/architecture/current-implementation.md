@@ -1,5 +1,17 @@
 # Current Implementation And Product Target
 
+Current FIN-209 follow-on adds separately scoped Receipt/AI recovery, not complete
+application backup: PostgreSQL schemas and portable keys plus encrypted objects
+restored into a different, initially empty protected NTFS root. Actual scoped
+restore/crash/restart passed `2026-11-21T13:21:55.0563799Z`, preserving exact
+candidate decimals, quota/request claims, object bytes, retention and tombstones;
+durable completed/failed/reserved requests do not invoke the synthetic provider.
+Normal delivery is unchanged; bounded Receipt outbox inspection uses the native
+decoder without writing its scan cursor. Full local1623/1623 across26 projects,
+zero failures/skips, finished `2026-11-21T13:50:46.6575995Z`; format, privacy and
+documentation gates passed. CI/review/protected delivery remain pending.
+[Recovery contract](../engineering/windows-native-recovery.md).
+
 Reviewed for FIN-269 against merged FIN-194, PR #247, commit
 `783f22746d3902181153076b0871121311e8f4f7` (2026-09-10).
 Use the [live closure ledger](../agent/POC_PROGRESS.md) for subsequent progress;
@@ -157,7 +169,10 @@ The Projections increment is actually merged through
 `1f4401d5444e7532d06733019032d18788873291`, all five exact-head checks/review clear,
 decoded CI1621/1621 across26 projects. The next separate Score/Recommendations
 recovery scope passed its separate actual restore/crash/restart and local
-full1622/1622 across26 projects; exact-head CI/review and delivery remain pending.
+full1622/1622 across26 projects; PR314 was subsequently verified merged at
+`2026-11-21T13:00:38Z` as `95471121cd6cc720f56dee6a7979ededd9cb7320`, all five
+exact-head checks green and configured review clear. This historical snapshot
+is distinct from the current Receipt/AI increment above.
 It preserves pending work and private order rather than reusing mutating
 normal-restart steps. No public API, runtime
 topology, complete backup, installed acceptance or completion credit is added.

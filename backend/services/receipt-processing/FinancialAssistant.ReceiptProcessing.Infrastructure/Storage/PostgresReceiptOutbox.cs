@@ -47,10 +47,17 @@ public sealed class PostgresReceiptOutbox(ReceiptPersistenceContext context) : I
     }
 
     public Task<IReadOnlyList<ReceiptOutboxMessage>> ReadPendingAsync(CancellationToken token = default) =>
+        ReadPendingCoreAsync(true, token);
+
+    // Bounded inspection reuses the delivery decoder without advancing its durable scan cursor.
+    public Task<IReadOnlyList<ReceiptOutboxMessage>> InspectPendingAsync(CancellationToken token = default) =>
+        ReadPendingCoreAsync(false, token);
+
+    private Task<IReadOnlyList<ReceiptOutboxMessage>> ReadPendingCoreAsync(bool advanceCursor, CancellationToken token) =>
         context.WithRecordsAsync<IReadOnlyList<ReceiptOutboxMessage>>("outbox-maintenance", async (records, _) =>
         {
             var scan = await records.GetAsync("receipt_scan", "receipt", "pending");
-            var after = scan is null ? null : OwnedRecordCodec.Decode<ScanCursor>(1, scan).After;
+            var after = scan is null || !advanceCursor ? null : OwnedRecordCodec.Decode<ScanCursor>(1, scan).After;
             var result = new List<ReceiptOutboxMessage>();
             var seen = new HashSet<string>(StringComparer.Ordinal);
             var wrapped = false;
@@ -70,9 +77,12 @@ public sealed class PostgresReceiptOutbox(ReceiptPersistenceContext context) : I
                     if (result.Count == 25) { break; }
                 }
             }
-            var encoded = OwnedRecordCodec.Encode(1, new ScanCursor(after));
-            if (scan is null) { await records.InsertAsync("receipt_scan", "receipt", "pending", encoded); }
-            else { await records.ReplaceAsync("receipt_scan", "receipt", "pending", scan.Revision, encoded); }
+            if (advanceCursor)
+            {
+                var encoded = OwnedRecordCodec.Encode(1, new ScanCursor(after));
+                if (scan is null) { await records.InsertAsync("receipt_scan", "receipt", "pending", encoded); }
+                else { await records.ReplaceAsync("receipt_scan", "receipt", "pending", scan.Revision, encoded); }
+            }
             return result;
         }, token);
 
